@@ -64,19 +64,19 @@ export function Proveedores() {
   };
 
   const columns = [
-    { key: 'avatar', label: '', render: (p: typeof proveedores[0]) => <ImageCell src={p.avatar} alt={p.nombre} /> },
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'email', label: 'Email' },
-    { key: 'telefono', label: 'Teléfono' },
-    { key: 'categoria', label: 'Categoría' },
-    { key: 'totalOrdenes', label: 'Órdenes', render: (p: typeof proveedores[0]) => p.totalOrdenes.toString() },
+    { key: 'avatar', header: '', render: (p: typeof proveedores[0]) => <ImageCell src={p.avatar} alt={p.nombre} /> },
+    { key: 'nombre', header: 'Nombre' },
+    { key: 'email', header: 'Email' },
+    { key: 'telefono', header: 'Teléfono' },
+    { key: 'categoria', header: 'Categoría' },
+    { key: 'totalOrdenes', header: 'Órdenes', render: (p: typeof proveedores[0]) => p.totalOrdenes.toString() },
   ];
 
   return (
     <div className={styles.container}>
       <PageHeader title="Proveedores" subtitle="Gestiona tus proveedores">
         <Button onClick={() => { resetForm(); setEditingId(null); setShowForm(true); }}>
-          + Nuevo Proveedor
+          + Nuevo
         </Button>
       </PageHeader>
 

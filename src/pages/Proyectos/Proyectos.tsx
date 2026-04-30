@@ -87,20 +87,20 @@ export function Proyectos() {
   };
 
   const columns = [
-    { key: 'id', label: 'ID' },
-    { key: 'nombre', label: 'Proyecto' },
-    { key: 'cliente', label: 'Cliente' },
-    { key: 'estado', label: 'Estado', render: (p: typeof proyectos[0]) => getEstadoBadge(p.estado) },
-    { key: 'presupuesto', label: 'Presupuesto', render: (p: typeof proyectos[0]) => formatCurrency(p.presupuesto) },
-    { key: 'gastado', label: 'Gastado', render: (p: typeof proyectos[0]) => formatCurrency(p.gastado) },
-    { key: 'progreso', label: 'Progreso', render: (p: typeof proyectos[0]) => (
+    { key: 'id', header: 'ID' },
+    { key: 'nombre', header: 'Proyecto' },
+    { key: 'cliente', header: 'Cliente' },
+    { key: 'estado', header: 'Estado', render: (p: typeof proyectos[0]) => getEstadoBadge(p.estado) },
+    { key: 'presupuesto', header: 'Presupuesto', render: (p: typeof proyectos[0]) => formatCurrency(p.presupuesto) },
+    { key: 'gastado', header: 'Gastado', render: (p: typeof proyectos[0]) => formatCurrency(p.gastado) },
+    { key: 'progreso', header: 'Progreso', render: (p: typeof proyectos[0]) => (
       <div className={styles.progressBar}>
         <div className={styles.progressFill} style={{ width: `${p.progreso}%` }}></div>
         <span className={styles.progressText}>{p.progreso}%</span>
       </div>
     )},
-    { key: 'fechaInicio', label: 'Inicio' },
-    { key: 'fechaFin', label: 'Fin' },
+    { key: 'fechaInicio', header: 'Inicio' },
+    { key: 'fechaFin', header: 'Fin' },
   ];
 
   return (

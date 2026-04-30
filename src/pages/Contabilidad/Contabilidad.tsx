@@ -66,21 +66,21 @@ export function Contabilidad() {
   };
 
   const columns = [
-    { key: 'id', label: 'ID' },
-    { key: 'descripcion', label: 'Descripción' },
-    { key: 'tipo', label: 'Tipo', render: (t: typeof transaccionesContables[0]) => (
+    { key: 'id', header: 'ID' },
+    { key: 'descripcion', header: 'Descripción' },
+    { key: 'tipo', header: 'Tipo', render: (t: typeof transaccionesContables[0]) => (
       <span className={`${styles.badge} ${t.tipo === 'ingreso' ? styles.ingreso : styles.egreso}`}>
         {t.tipo === 'ingreso' ? 'Ingreso' : 'Egreso'}
       </span>
     )},
-    { key: 'monto', label: 'Monto', render: (t: typeof transaccionesContables[0]) => (
+    { key: 'monto', header: 'Monto', render: (t: typeof transaccionesContables[0]) => (
       <span className={t.tipo === 'ingreso' ? styles.positivo : styles.negativo}>
         {t.tipo === 'ingreso' ? '+' : '-'}{formatCurrency(t.monto)}
       </span>
     )},
-    { key: 'categoria', label: 'Categoría' },
-    { key: 'fecha', label: 'Fecha' },
-    { key: 'estado', label: 'Estado', render: (t: typeof transaccionesContables[0]) => (
+    { key: 'categoria', header: 'Categoría' },
+    { key: 'fecha', header: 'Fecha' },
+    { key: 'estado', header: 'Estado', render: (t: typeof transaccionesContables[0]) => (
       <span className={`${styles.badge} ${t.estado === 'conciliada' ? styles.conciliada : styles.pendiente}`}>
         {t.estado === 'conciliada' ? 'Conciliada' : 'Pendiente'}
       </span>

@@ -78,15 +78,15 @@ export function RRHH() {
   };
 
   const columns = [
-    { key: 'avatar', label: '', render: (e: typeof empleados[0]) => <ImageCell src={e.avatar} alt={e.nombre} /> },
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'cargo', label: 'Cargo' },
-    { key: 'departamento', label: 'Departamento' },
-    { key: 'email', label: 'Email' },
-    { key: 'telefono', label: 'Teléfono' },
-    { key: 'fechaIngreso', label: 'Ingreso' },
-    { key: 'salario', label: 'Salario', render: (e: typeof empleados[0]) => formatCurrency(e.salario) },
-    { key: 'estado', label: 'Estado', render: (e: typeof empleados[0]) => (
+    { key: 'avatar', header: '', render: (e: typeof empleados[0]) => <ImageCell src={e.avatar} alt={e.nombre} /> },
+    { key: 'nombre', header: 'Nombre' },
+    { key: 'cargo', header: 'Cargo' },
+    { key: 'departamento', header: 'Departamento' },
+    { key: 'email', header: 'Email' },
+    { key: 'telefono', header: 'Teléfono' },
+    { key: 'fechaIngreso', header: 'Ingreso' },
+    { key: 'salario', header: 'Salario', render: (e: typeof empleados[0]) => formatCurrency(e.salario) },
+    { key: 'estado', header: 'Estado', render: (e: typeof empleados[0]) => (
       <span className={`${styles.badge} ${e.estado === 'activo' ? styles.activo : styles.inactivo}`}>
         {e.estado === 'activo' ? 'Activo' : 'Inactivo'}
       </span>
