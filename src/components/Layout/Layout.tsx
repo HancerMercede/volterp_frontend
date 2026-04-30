@@ -17,7 +17,7 @@ export function Layout() {
       <aside className={styles.sidebar}>
         <div className={styles.logo}>
           <span className={styles.logoIcon}>M</span>
-          Mi Empresa
+          Bohuco
         </div>
         <nav className={styles.nav}>
           {navItems.map((item) => (
@@ -34,8 +34,15 @@ export function Layout() {
           ))}
         </nav>
         <div className={styles.user}>
-          <p className={styles.userName}>Juan Pérez</p>
-          <span className={styles.userRole}>Administrador</span>
+          <img
+            src="https://i.pravatar.cc/150?img=68"
+            alt="Avatar"
+            className={styles.avatarImg}
+          />
+          <div className={styles.userInfo}>
+            <p className={styles.userName}>Hancer Mercedes</p>
+            <span className={styles.userRole}>Administrador</span>
+          </div>
         </div>
       </aside>
       <main className={styles.main}>

@@ -34,7 +34,11 @@ export function Sidebar() {
         ))}
       </nav>
       <div className={styles.user}>
-        <div className={styles.avatar}>HM</div>
+        <img
+          src="https://i.pravatar.cc/150?img=68"
+          alt="Avatar"
+          className={styles.avatarImg}
+        />
         <div className={styles.userInfo}>
           <p className={styles.userName}>Hancer Mercedes</p>
           <span className={styles.userRole}>Administrador</span>

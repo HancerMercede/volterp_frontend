@@ -68,11 +68,27 @@
   padding: 12px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatarImg {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #FACC15;
+}
+
+.userInfo {
+  flex: 1;
 }
 
 .userName {
   font-weight: 600;
   font-size: 14px;
+  color: white;
 }
 
 .userRole {

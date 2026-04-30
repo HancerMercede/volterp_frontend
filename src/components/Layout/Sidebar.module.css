@@ -84,17 +84,12 @@
   gap: 12px;
 }
 
-.avatar {
+.avatarImg {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-primary);
+  object-fit: cover;
+  border: 2px solid var(--primary);
 }
 
 .userInfo {
