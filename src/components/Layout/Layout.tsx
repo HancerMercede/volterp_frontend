@@ -7,6 +7,10 @@ const navItems = [
   { label: 'Compras', path: '/compras', icon: '🛒' },
   { label: 'Inventario', path: '/inventario', icon: '📦' },
   { label: 'Clientes', path: '/clientes', icon: '👥' },
+  { label: 'Proveedores', path: '/proveedores', icon: '🚚' },
+  { label: 'Contabilidad', path: '/contabilidad', icon: '💳' },
+  { label: 'RRHH', path: '/rrhh', icon: '👔' },
+  { label: 'Proyectos', path: '/proyectos', icon: '📋' },
   { label: 'Reportes', path: '/reportes', icon: '📈' },
   { label: 'Configuración', path: '/configuracion', icon: '⚙️' },
 ];
@@ -16,8 +20,8 @@ export function Layout() {
     <div className={styles.layout}>
       <aside className={styles.sidebar}>
         <div className={styles.logo}>
-          <span className={styles.logoIcon}>M</span>
-          Bohuco
+          <img src="/src/assets/logo.svg" alt="Logo" className={styles.logoIcon} />
+          Volterp
         </div>
         <nav className={styles.nav}>
           {navItems.map((item) => (

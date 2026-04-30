@@ -26,15 +26,9 @@
 }
 
 .logoIcon {
-  width: 32px;
-  height: 32px;
-  background: #FACC15;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #111827;
-  font-weight: bold;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
 }
 
 .nav {

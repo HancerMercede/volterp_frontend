@@ -10,6 +10,10 @@ export function ERPProvider({ children }: ERPProviderProps) {
   const [compras, setCompras] = useState(initialERPState.compras);
   const [productos, setProductos] = useState(initialERPState.productos);
   const [clientes, setClientes] = useState(initialERPState.clientes);
+  const [proveedores, setProveedores] = useState(initialERPState.proveedores);
+  const [transaccionesContables, setTransaccionesContables] = useState(initialERPState.transaccionesContables);
+  const [empleados, setEmpleados] = useState(initialERPState.empleados);
+  const [proyectos, setProyectos] = useState(initialERPState.proyectos);
 
   const value: ERPContextType = {
     ventas,
@@ -20,6 +24,14 @@ export function ERPProvider({ children }: ERPProviderProps) {
     setProductos,
     clientes,
     setClientes,
+    proveedores,
+    setProveedores,
+    transaccionesContables,
+    setTransaccionesContables,
+    empleados,
+    setEmpleados,
+    proyectos,
+    setProyectos,
     stats: initialERPState.stats,
     actividades: initialERPState.actividades,
     recordatorios: initialERPState.recordatorios,

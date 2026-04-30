@@ -7,14 +7,22 @@ import {
   dashboardStats,
   actividades,
   recordatorios,
+  proveedores as initialProveedores,
+  transaccionesContables as initialTransacciones,
+  empleados as initialEmpleados,
+  proyectos as initialProyectos,
 } from '../data/mockData';
-import type { Venta, Compra, Producto, Cliente } from '../data/mockData';
+import type { Venta, Compra, Producto, Cliente, Proveedor, TransaccionContable, Empleado, Proyecto } from '../data/mockData';
 
 export interface ERPState {
   ventas: Venta[];
   compras: Compra[];
   productos: Producto[];
   clientes: Cliente[];
+  proveedores: Proveedor[];
+  transaccionesContables: TransaccionContable[];
+  empleados: Empleado[];
+  proyectos: Proyecto[];
   stats: typeof dashboardStats;
   actividades: typeof actividades;
   recordatorios: typeof recordatorios;
@@ -25,6 +33,10 @@ export interface ERPActions {
   setCompras: React.Dispatch<React.SetStateAction<Compra[]>>;
   setProductos: React.Dispatch<React.SetStateAction<Producto[]>>;
   setClientes: React.Dispatch<React.SetStateAction<Cliente[]>>;
+  setProveedores: React.Dispatch<React.SetStateAction<Proveedor[]>>;
+  setTransaccionesContables: React.Dispatch<React.SetStateAction<TransaccionContable[]>>;
+  setEmpleados: React.Dispatch<React.SetStateAction<Empleado[]>>;
+  setProyectos: React.Dispatch<React.SetStateAction<Proyecto[]>>;
 }
 
 export type ERPContextType = ERPState & ERPActions;
@@ -44,6 +56,10 @@ export const initialERPState: ERPState = {
   compras: initialCompras,
   productos: initialProductos,
   clientes: initialClientes,
+  proveedores: initialProveedores,
+  transaccionesContables: initialTransacciones,
+  empleados: initialEmpleados,
+  proyectos: initialProyectos,
   stats: dashboardStats,
   actividades,
   recordatorios,

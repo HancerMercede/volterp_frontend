@@ -257,3 +257,82 @@ export const recordatorios = [
   { id: 3, texto: 'Reunión con proveedores TechDistributor', fecha: '2026-05-02' },
   { id: 4, texto: 'Renovar licencia de software contable', fecha: '2026-05-05' },
 ];
+
+export interface Proveedor {
+  id: string;
+  nombre: string;
+  email: string;
+  telefono: string;
+  direccion: string;
+  categoria: string;
+  totalOrdenes: number;
+  avatar: string;
+}
+
+export interface TransaccionContable {
+  id: string;
+  descripcion: string;
+  tipo: 'ingreso' | 'egreso';
+  monto: number;
+  fecha: string;
+  categoria: string;
+  estado: 'conciliada' | 'pendiente';
+}
+
+export interface Empleado {
+  id: string;
+  nombre: string;
+  cargo: string;
+  departamento: string;
+  email: string;
+  telefono: string;
+  fechaIngreso: string;
+  salario: number;
+  avatar: string;
+  estado: 'activo' | 'inactivo';
+}
+
+export interface Proyecto {
+  id: string;
+  nombre: string;
+  cliente: string;
+  estado: 'en_progreso' | 'completado' | 'pendiente';
+  presupuesto: number;
+  gastado: number;
+  fechaInicio: string;
+  fechaFin: string;
+  progreso: number;
+}
+
+export const proveedores: Proveedor[] = [
+  { id: 'PRV001', nombre: 'TechDistributor RD', email: 'ventas@techdistributor.com', telefono: '809-111-1111', direccion: 'Av. Winston Churchill 555, Santo Domingo', categoria: 'Electrónica', totalOrdenes: 45, avatar: 'https://i.pravatar.cc/150?img=52' },
+  { id: 'PRV002', nombre: 'AudioWorld', email: 'contacto@audioworld.com', telefono: '809-222-2222', direccion: 'Calle El Ejecutivo 222, Santiago', categoria: 'Audio', totalOrdenes: 28, avatar: 'https://i.pravatar.cc/150?img=53' },
+  { id: 'PRV003', nombre: 'Suministros OfficePro', email: 'pedidos@officepro.com', telefono: '809-333-3333', direccion: 'Av. Rafael Alarg 888, La Romana', categoria: 'Oficina', totalOrdenes: 62, avatar: 'https://i.pravatar.cc/150?img=54' },
+  { id: 'PRV004', nombre: 'DataCloud Solutions', email: 'ventas@datacloud.com', telefono: '809-444-4444', direccion: 'Torre Empresarial, Piso 12, Santo Domingo', categoria: 'Software', totalOrdenes: 15, avatar: 'https://i.pravatar.cc/150?img=55' },
+  { id: 'PRV005', nombre: 'Comercializadora Verde', email: 'info@comercializadoraverde.com', telefono: '809-555-5555', direccion: 'Carretera Mella km 8, Santo Domingo', categoria: 'Suministros', totalOrdenes: 33, avatar: 'https://i.pravatar.cc/150?img=56' },
+];
+
+export const transaccionesContables: TransaccionContable[] = [
+  { id: 'CNT001', descripcion: 'Venta de productos tecnológicos', tipo: 'ingreso', monto: 125000, fecha: '2026-04-28', categoria: 'Ventas', estado: 'conciliada' },
+  { id: 'CNT002', descripcion: 'Pago a proveedor TechDistributor', tipo: 'egreso', monto: 45000, fecha: '2026-04-27', categoria: 'Proveedores', estado: 'conciliada' },
+  { id: 'CNT003', descripcion: 'Servicios de hosting mensual', tipo: 'egreso', monto: 2500, fecha: '2026-04-26', categoria: 'Servicios', estado: 'pendiente' },
+  { id: 'CNT004', descripcion: 'Venta de licencias de software', tipo: 'ingreso', monto: 35000, fecha: '2026-04-25', categoria: 'Software', estado: 'conciliada' },
+  { id: 'CNT005', descripcion: 'Mantenimiento de equipos', tipo: 'egreso', monto: 8500, fecha: '2026-04-24', categoria: 'Mantenimiento', estado: 'conciliada' },
+  { id: 'CNT006', descripcion: 'Pago de alquiler de oficina', tipo: 'egreso', monto: 15000, fecha: '2026-04-23', categoria: 'Alquiler', estado: 'conciliada' },
+];
+
+export const empleados: Empleado[] = [
+  { id: 'EMP001', nombre: 'Laura Martínez', cargo: 'Gerente de Ventas', departamento: 'Ventas', email: 'laura@volterp.com', telefono: '809-777-0001', fechaIngreso: '2023-01-15', salario: 85000, avatar: 'https://i.pravatar.cc/150?img=1', estado: 'activo' },
+  { id: 'EMP002', nombre: 'Miguel Torres', cargo: 'Desarrollador FullStack', departamento: 'TI', email: 'miguel@volterp.com', telefono: '809-777-0002', fechaIngreso: '2023-03-20', salario: 95000, avatar: 'https://i.pravatar.cc/150?img=2', estado: 'activo' },
+  { id: 'EMP003', nombre: 'Sandra Peña', cargo: 'Contadora', departamento: 'Contabilidad', email: 'sandra@volterp.com', telefono: '809-777-0003', fechaIngreso: '2022-08-10', salario: 75000, avatar: 'https://i.pravatar.cc/150?img=5', estado: 'activo' },
+  { id: 'EMP004', nombre: 'Carlos Ruiz', cargo: 'Analista de Recursos Humanos', departamento: 'RRHH', email: 'carlos@volterp.com', telefono: '809-777-0004', fechaIngreso: '2024-02-01', salario: 65000, avatar: 'https://i.pravatar.cc/150?img=12', estado: 'activo' },
+  { id: 'EMP005', nombre: 'Ana López', cargo: 'Asistente de Dirección', departamento: 'Administración', email: 'ana@volterp.com', telefono: '809-777-0005', fechaIngreso: '2024-06-15', salario: 45000, avatar: 'https://i.pravatar.cc/150?img=9', estado: 'inactivo' },
+];
+
+export const proyectos: Proyecto[] = [
+  { id: 'PRY001', nombre: 'Sistema de Inventario v2.0', cliente: 'Tech Solutions RD', estado: 'en_progreso', presupuesto: 250000, gastado: 145000, fechaInicio: '2026-01-15', fechaFin: '2026-06-30', progreso: 58 },
+  { id: 'PRY002', nombre: 'Portal de Clientes Premium', cliente: 'Inversiones García', estado: 'en_progreso', presupuesto: 180000, gastado: 95000, fechaInicio: '2026-02-01', fechaFin: '2026-05-15', progreso: 53 },
+  { id: 'PRY003', nombre: 'Migración a la nube', cliente: 'López & Asocs', estado: 'pendiente', presupuesto: 320000, gastado: 0, fechaInicio: '2026-05-01', fechaFin: '2026-08-30', progreso: 0 },
+  { id: 'PRY004', nombre: 'App móvil de ventas', cliente: 'Tech Solutions RD', estado: 'completado', presupuesto: 150000, gastado: 148000, fechaInicio: '2025-11-01', fechaFin: '2026-03-15', progreso: 100 },
+  { id: 'PRY005', nombre: 'Automatización de procesos', cliente: 'Inversiones García', estado: 'completado', presupuesto: 85000, gastado: 82000, fechaInicio: '2025-09-01', fechaFin: '2025-12-20', progreso: 100 },
+];
