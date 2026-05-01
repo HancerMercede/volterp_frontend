@@ -26,20 +26,22 @@ export function Sidebar() {
         />
         <span className={styles.logoText}>VOLTERP</span>
       </div>
-      <nav className={styles.nav}>
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
-            }
-            end={item.path === "/"}
-          >
-            <span className={styles.navIcon}>{item.icon}</span>
-            {item.label}
-          </NavLink>
-        ))}
+      <nav className={styles.navScroll}>
+        <nav className={styles.nav}>
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
+              }
+              end={item.path === "/"}
+            >
+              <span className={styles.navIcon}>{item.icon}</span>
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
       </nav>
       <div className={styles.user}>
         <img
