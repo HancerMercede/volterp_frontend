@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useERP, useUI } from '../../context';
-import { Table, Button, PageHeader, ImageCell, ActionButtons } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination } from '../../components/UI';
+import { usePagination } from '../../hooks/usePagination';
+import { paginate } from '../../utils/pagination';
 import styles from './Compras.module.css';
+
+const ITEMS_PER_PAGE = 20;
 
 export function Compras() {
   const { compras, setCompras, productos } = useERP();
@@ -9,6 +13,7 @@ export function Compras() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
   const [formData, setFormData] = useState({
     proveedor: '',
     producto: '',
@@ -18,11 +23,19 @@ export function Compras() {
     estado: 'pendiente' as 'recibida' | 'pendiente' | 'cancelada',
   });
 
-  const filteredCompras = compras.filter(c =>
-    c.proveedor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCompras = useMemo(() => {
+    return compras.filter(c =>
+      c.proveedor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.id.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [compras, searchTerm]);
+
+  const paginatedCompras = useMemo(() => {
+    return paginate(filteredCompras, page, ITEMS_PER_PAGE);
+  }, [filteredCompras, page]);
+
+  const paginationInfo = getInfo(filteredCompras.length);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,7 +132,7 @@ export function Compras() {
             placeholder="Buscar compras..." 
             className={styles.search}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
           />
           <Button onClick={() => { resetForm(); setShowForm(true); }}>
             + Nueva Compra
@@ -204,7 +217,12 @@ export function Compras() {
         </div>
       )}
 
-      <Table data={filteredCompras} columns={columns} />
+      <Table data={paginatedCompras} columns={columns} />
+
+      <Pagination
+        pagination={paginationInfo}
+        onPageChange={goToPage}
+      />
     </div>
   );
 }

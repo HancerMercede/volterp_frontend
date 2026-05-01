@@ -1,13 +1,18 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell, ActionButtons } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination } from '../../components/UI';
+import { usePagination } from '../../hooks/usePagination';
+import { paginate } from '../../utils/pagination';
 import styles from './Clientes.module.css';
+
+const ITEMS_PER_PAGE = 20;
 
 export function Clientes() {
   const { clientes, setClientes } = useERP();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -17,11 +22,19 @@ export function Clientes() {
     empresa: '',
   });
 
-  const filteredClientes = clientes.filter(c =>
-    c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.telefono.includes(searchTerm)
-  );
+  const filteredClientes = useMemo(() => {
+    return clientes.filter(c =>
+      c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.telefono.includes(searchTerm)
+    );
+  }, [clientes, searchTerm]);
+
+  const paginatedClientes = useMemo(() => {
+    return paginate(filteredClientes, page, ITEMS_PER_PAGE);
+  }, [filteredClientes, page]);
+
+  const paginationInfo = getInfo(filteredClientes.length);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +122,7 @@ export function Clientes() {
             placeholder="Buscar cliente..." 
             className={styles.search}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
           />
           <Button onClick={() => { resetForm(); setShowForm(true); }}>
             + Nuevo Cliente
@@ -182,7 +195,12 @@ export function Clientes() {
         </div>
       )}
 
-      <Table data={filteredClientes} columns={columns} />
+      <Table data={paginatedClientes} columns={columns} />
+      
+      <Pagination
+        pagination={paginationInfo}
+        onPageChange={goToPage}
+      />
     </div>
   );
 }

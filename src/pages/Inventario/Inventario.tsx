@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell, ActionButtons } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination } from '../../components/UI';
+import { usePagination } from '../../hooks/usePagination';
+import { paginate } from '../../utils/pagination';
 import styles from './Inventario.module.css';
+
+const ITEMS_PER_PAGE = 20;
 
 export function Inventario() {
   const { productos, setProductos } = useERP();
@@ -9,6 +13,7 @@ export function Inventario() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStock, setFilterStock] = useState<'all' | 'low' | 'out'>('all');
+  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
   const [formData, setFormData] = useState({
     nombre: '',
     categoria: '',
@@ -19,15 +24,23 @@ export function Inventario() {
     descripcion: '',
   });
 
-  const filteredProductos = productos.filter(p => {
-    const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.proveedor.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (filterStock === 'low') return matchesSearch && p.stock > 0 && p.stock < 10;
-    if (filterStock === 'out') return matchesSearch && p.stock === 0;
-    return matchesSearch;
-  });
+  const filteredProductos = useMemo(() => {
+    return productos.filter(p => {
+      const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.proveedor.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      if (filterStock === 'low') return matchesSearch && p.stock > 0 && p.stock < 10;
+      if (filterStock === 'out') return matchesSearch && p.stock === 0;
+      return matchesSearch;
+    });
+  }, [productos, searchTerm, filterStock]);
+
+  const paginatedProductos = useMemo(() => {
+    return paginate(filteredProductos, page, ITEMS_PER_PAGE);
+  }, [filteredProductos, page]);
+
+  const paginationInfo = getInfo(filteredProductos.length);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,12 +131,12 @@ export function Inventario() {
             placeholder="Buscar producto..." 
             className={styles.search}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
           />
           <select 
             className={styles.filter}
             value={filterStock}
-            onChange={(e) => setFilterStock(e.target.value as any)}
+            onChange={(e) => { setFilterStock(e.target.value as any); goToPage(1); }}
           >
             <option value="all">Todos</option>
             <option value="low">Stock bajo</option>
@@ -201,7 +214,12 @@ export function Inventario() {
         </div>
       )}
 
-      <Table data={filteredProductos} columns={columns} />
+      <Table data={paginatedProductos} columns={columns} />
+
+      <Pagination
+        pagination={paginationInfo}
+        onPageChange={goToPage}
+      />
     </div>
   );
 }
