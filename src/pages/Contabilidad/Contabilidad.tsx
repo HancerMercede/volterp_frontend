@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, Pagination, SearchInput } from '../../components/UI';
+import { Table, Button, PageHeader, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import styles from './Contabilidad.module.css';
@@ -146,31 +146,44 @@ export function Contabilidad() {
         onPageChange={goToPage}
       />
 
-      {showForm && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
-            <h3>{editingId ? 'Editar Transacción' : 'Nueva Transacción'}</h3>
-            <form onSubmit={handleSubmit}>
-              <input type="text" placeholder="Descripción" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} required />
-              <select value={formData.tipo} onChange={e => setFormData({...formData, tipo: e.target.value as 'ingreso' | 'egreso'})}>
-                <option value="ingreso">Ingreso</option>
-                <option value="egreso">Egreso</option>
-              </select>
-              <input type="number" placeholder="Monto" value={formData.monto} onChange={e => setFormData({...formData, monto: Number(e.target.value)})} required />
-              <input type="date" value={formData.fecha} onChange={e => setFormData({...formData, fecha: e.target.value})} required />
-              <input type="text" placeholder="Categoría" value={formData.categoria} onChange={e => setFormData({...formData, categoria: e.target.value})} required />
-              <select value={formData.estado} onChange={e => setFormData({...formData, estado: e.target.value as 'conciliada' | 'pendiente'})}>
-                <option value="pendiente">Pendiente</option>
-                <option value="conciliada">Conciliada</option>
-              </select>
-              <div className={styles.modalActions}>
-                <Button type="button" onClick={() => setShowForm(false)}>Cancelar</Button>
-                <Button type="submit">{editingId ? 'Guardar' : 'Crear'}</Button>
-              </div>
-            </form>
-          </div>
+      <Modal
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        title={editingId ? 'Editar Transacción' : 'Nueva Transacción'}
+        onSubmit={handleSubmit}
+        submitLabel={editingId ? 'Guardar' : 'Crear'}
+      >
+        <div className="formGroup">
+          <label>Descripción</label>
+          <input type="text" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} required />
         </div>
-      )}
+        <div className="formGroup">
+          <label>Tipo</label>
+          <select value={formData.tipo} onChange={e => setFormData({...formData, tipo: e.target.value as 'ingreso' | 'egreso'})}>
+            <option value="ingreso">Ingreso</option>
+            <option value="egreso">Egreso</option>
+          </select>
+        </div>
+        <div className="formGroup">
+          <label>Monto</label>
+          <input type="number" value={formData.monto} onChange={e => setFormData({...formData, monto: Number(e.target.value)})} required />
+        </div>
+        <div className="formGroup">
+          <label>Fecha</label>
+          <input type="date" value={formData.fecha} onChange={e => setFormData({...formData, fecha: e.target.value})} required />
+        </div>
+        <div className="formGroup">
+          <label>Categoría</label>
+          <input type="text" value={formData.categoria} onChange={e => setFormData({...formData, categoria: e.target.value})} required />
+        </div>
+        <div className="formGroup">
+          <label>Estado</label>
+          <select value={formData.estado} onChange={e => setFormData({...formData, estado: e.target.value as 'conciliada' | 'pendiente'})}>
+            <option value="pendiente">Pendiente</option>
+            <option value="conciliada">Conciliada</option>
+          </select>
+        </div>
+      </Modal>
     </div>
   );
 }

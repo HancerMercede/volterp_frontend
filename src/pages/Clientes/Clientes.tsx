@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination, SearchInput } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import { ITEMS_PER_PAGE } from '../../config/pagination';
@@ -128,70 +128,61 @@ export function Clientes() {
         </div>
       </PageHeader>
 
-      {showForm && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
-            <h2>{editingId ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
-            <form onSubmit={handleSubmit}>
-              <div className={styles.formGroup}>
-                <label>Nombre</label>
-                <input 
-                  type="text" 
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Email</label>
-                <input 
-                  type="email" 
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Teléfono</label>
-                <input 
-                  type="tel" 
-                  value={formData.telefono}
-                  onChange={(e) => setFormData({...formData, telefono: e.target.value})}
-                  placeholder="809-XXX-XXXX"
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Dirección</label>
-                <input 
-                  type="text" 
-                  value={formData.direccion}
-                  onChange={(e) => setFormData({...formData, direccion: e.target.value})}
-                />
-              </div>
-              {!editingId && (
-                <div className={styles.formGroup}>
-                  <label>Total Compras</label>
-                  <input 
-                    type="number" 
-                    min="0" 
-                    value={formData.totalCompras}
-                    onChange={(e) => setFormData({...formData, totalCompras: parseInt(e.target.value)})}
-                  />
-                </div>
-              )}
-              <div className={styles.formActions}>
-                <Button type="button" variant="secondary" onClick={() => { setShowForm(false); setEditingId(null); }}>
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  {editingId ? 'Actualizar' : 'Crear'}
-                </Button>
-              </div>
-            </form>
-          </div>
+      <Modal
+        isOpen={showForm}
+        onClose={() => { setShowForm(false); setEditingId(null); }}
+        title={editingId ? 'Editar Cliente' : 'Nuevo Cliente'}
+        onSubmit={handleSubmit}
+        submitLabel={editingId ? 'Actualizar' : 'Crear'}
+      >
+        <div className={styles.formGroup}>
+          <label>Nombre</label>
+          <input 
+            type="text" 
+            value={formData.nombre}
+            onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+            required
+          />
         </div>
-      )}
+        <div className={styles.formGroup}>
+          <label>Email</label>
+          <input 
+            type="email" 
+            value={formData.email}
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Teléfono</label>
+          <input 
+            type="tel" 
+            value={formData.telefono}
+            onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+            placeholder="809-XXX-XXXX"
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Dirección</label>
+          <input 
+            type="text" 
+            value={formData.direccion}
+            onChange={(e) => setFormData({...formData, direccion: e.target.value})}
+          />
+        </div>
+        {!editingId && (
+          <div className={styles.formGroup}>
+            <label>Total Compras</label>
+            <input 
+              type="number" 
+              min="0" 
+              value={formData.totalCompras}
+              onChange={(e) => setFormData({...formData, totalCompras: parseInt(e.target.value)})}
+            />
+          </div>
+        )}
+      </Modal>
 
       <Table data={paginatedClientes} columns={columns} />
       

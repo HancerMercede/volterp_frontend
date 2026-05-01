@@ -14,6 +14,7 @@
   --surface: #ffffff;
   --surface-hover: #F3F4F6;
   --surface-soft: #FEFEFE;
+  --surface-blur: rgba(255, 255, 255, 0.85);
   --border: #E5E7EB;
   --border-light: rgba(0, 0, 0, 0.06);
 
@@ -85,4 +86,37 @@ body {
   background: var(--background);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formGroup label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: var(--surface);
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--focus-ring);
 }

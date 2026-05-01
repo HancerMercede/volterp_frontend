@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination, SearchInput } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import { ITEMS_PER_PAGE } from '../../config/pagination';
@@ -146,71 +146,61 @@ export function Inventario() {
         </div>
       </PageHeader>
 
-      {showForm && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
-            <h2>{editingId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-            <form onSubmit={handleSubmit}>
-              <div className={styles.formGroup}>
-                <label>Nombre</label>
-                <input 
-                  type="text" 
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Categoría</label>
-                <input 
-                  type="text" 
-                  value={formData.categoria}
-                  onChange={(e) => setFormData({...formData, categoria: e.target.value})}
-                  placeholder="ej. Computación, Accesorios"
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Stock</label>
-                <input 
-                  type="number" 
-                  min="0" 
-                  value={formData.stock}
-                  onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value)})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Precio</label>
-                <input 
-                  type="number" 
-                  min="0" 
-                  value={formData.precio}
-                  onChange={(e) => setFormData({...formData, precio: parseInt(e.target.value)})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Proveedor</label>
-                <input 
-                  type="text" 
-                  value={formData.proveedor}
-                  onChange={(e) => setFormData({...formData, proveedor: e.target.value})}
-                  required
-                />
-              </div>
-              <div className={styles.formActions}>
-                <Button type="button" variant="secondary" onClick={() => { setShowForm(false); setEditingId(null); }}>
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  {editingId ? 'Actualizar' : 'Crear'}
-                </Button>
-              </div>
-            </form>
-          </div>
+      <Modal
+        isOpen={showForm}
+        onClose={() => { setShowForm(false); setEditingId(null); }}
+        title={editingId ? 'Editar Producto' : 'Nuevo Producto'}
+        onSubmit={handleSubmit}
+        submitLabel={editingId ? 'Actualizar' : 'Crear'}
+      >
+        <div className={styles.formGroup}>
+          <label>Nombre</label>
+          <input 
+            type="text" 
+            value={formData.nombre}
+            onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+            required
+          />
         </div>
-      )}
+        <div className={styles.formGroup}>
+          <label>Categoría</label>
+          <input 
+            type="text" 
+            value={formData.categoria}
+            onChange={(e) => setFormData({...formData, categoria: e.target.value})}
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Stock</label>
+          <input 
+            type="number" 
+            min="0" 
+            value={formData.stock}
+            onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value)})}
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Precio</label>
+          <input 
+            type="number" 
+            min="0" 
+            value={formData.precio}
+            onChange={(e) => setFormData({...formData, precio: parseInt(e.target.value)})}
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Proveedor</label>
+          <input 
+            type="text" 
+            value={formData.proveedor}
+            onChange={(e) => setFormData({...formData, proveedor: e.target.value})}
+            required
+          />
+        </div>
+      </Modal>
 
       <Table data={paginatedProductos} columns={columns} />
 

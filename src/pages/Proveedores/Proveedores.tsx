@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useERP } from "../../context/ERPContext";
-import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput } from "../../components/UI";
+import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput, Modal } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
@@ -141,77 +141,82 @@ export function Proveedores() {
         onPageChange={goToPage}
       />
 
-      {showForm && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
-            <h3>{editingId ? "Editar Proveedor" : "Nuevo Proveedor"}</h3>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Nombre"
-                value={formData.nombre}
-                onChange={(e) =>
-                  setFormData({ ...formData, nombre: e.target.value })
-                }
-                required
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                required
-              />
-              <input
-                type="tel"
-                placeholder="Teléfono"
-                value={formData.telefono}
-                onChange={(e) =>
-                  setFormData({ ...formData, telefono: e.target.value })
-                }
-                required
-              />
-              <input
-                type="text"
-                placeholder="Dirección"
-                value={formData.direccion}
-                onChange={(e) =>
-                  setFormData({ ...formData, direccion: e.target.value })
-                }
-                required
-              />
-              <input
-                type="text"
-                placeholder="Categoría"
-                value={formData.categoria}
-                onChange={(e) =>
-                  setFormData({ ...formData, categoria: e.target.value })
-                }
-                required
-              />
-              <input
-                type="number"
-                placeholder="Total Órdenes"
-                value={formData.totalOrdenes}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    totalOrdenes: Number(e.target.value),
-                  })
-                }
-              />
-              <div className={styles.modalActions}>
-                <Button type="button" onClick={() => setShowForm(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit">{editingId ? "Guardar" : "Crear"}</Button>
-              </div>
-            </form>
-          </div>
+      <Modal
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        title={editingId ? "Editar Proveedor" : "Nuevo Proveedor"}
+        onSubmit={handleSubmit}
+        submitLabel={editingId ? "Guardar" : "Crear"}
+      >
+        <div className={styles.formGroup}>
+          <label>Nombre</label>
+          <input
+            type="text"
+            value={formData.nombre}
+            onChange={(e) =>
+              setFormData({ ...formData, nombre: e.target.value })
+            }
+            required
+          />
         </div>
-      )}
+        <div className={styles.formGroup}>
+          <label>Email</label>
+          <input
+            type="email"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Teléfono</label>
+          <input
+            type="tel"
+            value={formData.telefono}
+            onChange={(e) =>
+              setFormData({ ...formData, telefono: e.target.value })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Dirección</label>
+          <input
+            type="text"
+            value={formData.direccion}
+            onChange={(e) =>
+              setFormData({ ...formData, direccion: e.target.value })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Categoría</label>
+          <input
+            type="text"
+            value={formData.categoria}
+            onChange={(e) =>
+              setFormData({ ...formData, categoria: e.target.value })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Total Órdenes</label>
+          <input
+            type="number"
+            value={formData.totalOrdenes}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                totalOrdenes: Number(e.target.value),
+              })
+            }
+          />
+        </div>
+      </Modal>
     </div>
   );
 }

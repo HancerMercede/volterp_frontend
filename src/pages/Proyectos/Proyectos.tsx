@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, Pagination, SearchInput } from '../../components/UI';
+import { Table, Button, PageHeader, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import styles from './Proyectos.module.css';
@@ -161,31 +161,50 @@ export function Proyectos() {
         onPageChange={goToPage}
       />
 
-      {showForm && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
-            <h3>{editingId ? 'Editar Proyecto' : 'Nuevo Proyecto'}</h3>
-            <form onSubmit={handleSubmit}>
-              <input type="text" placeholder="Nombre del Proyecto" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} required />
-              <input type="text" placeholder="Cliente" value={formData.cliente} onChange={e => setFormData({...formData, cliente: e.target.value})} required />
-              <select value={formData.estado} onChange={e => setFormData({...formData, estado: e.target.value as 'en_progreso' | 'completado' | 'pendiente'})}>
-                <option value="pendiente">Pendiente</option>
-                <option value="en_progreso">En Progreso</option>
-                <option value="completado">Completado</option>
-              </select>
-              <input type="number" placeholder="Presupuesto" value={formData.presupuesto} onChange={e => setFormData({...formData, presupuesto: Number(e.target.value)})} required />
-              <input type="number" placeholder="Gastado" value={formData.gastado} onChange={e => setFormData({...formData, gastado: Number(e.target.value)})} required />
-              <input type="number" placeholder="Progreso (%)" value={formData.progreso} onChange={e => setFormData({...formData, progreso: Number(e.target.value)})} required />
-              <input type="date" placeholder="Fecha Inicio" value={formData.fechaInicio} onChange={e => setFormData({...formData, fechaInicio: e.target.value})} required />
-              <input type="date" placeholder="Fecha Fin" value={formData.fechaFin} onChange={e => setFormData({...formData, fechaFin: e.target.value})} required />
-              <div className={styles.modalActions}>
-                <Button type="button" onClick={() => setShowForm(false)}>Cancelar</Button>
-                <Button type="submit">{editingId ? 'Guardar' : 'Crear'}</Button>
-              </div>
-            </form>
-          </div>
+      <Modal
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        title={editingId ? 'Editar Proyecto' : 'Nuevo Proyecto'}
+        onSubmit={handleSubmit}
+        submitLabel={editingId ? 'Guardar' : 'Crear'}
+      >
+        <div className="formGroup">
+          <label>Nombre del Proyecto</label>
+          <input type="text" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} required />
         </div>
-      )}
+        <div className="formGroup">
+          <label>Cliente</label>
+          <input type="text" value={formData.cliente} onChange={e => setFormData({...formData, cliente: e.target.value})} required />
+        </div>
+        <div className="formGroup">
+          <label>Estado</label>
+          <select value={formData.estado} onChange={e => setFormData({...formData, estado: e.target.value as 'en_progreso' | 'completado' | 'pendiente'})}>
+            <option value="pendiente">Pendiente</option>
+            <option value="en_progreso">En Progreso</option>
+            <option value="completado">Completado</option>
+          </select>
+        </div>
+        <div className="formGroup">
+          <label>Presupuesto</label>
+          <input type="number" value={formData.presupuesto} onChange={e => setFormData({...formData, presupuesto: Number(e.target.value)})} required />
+        </div>
+        <div className="formGroup">
+          <label>Gastado</label>
+          <input type="number" value={formData.gastado} onChange={e => setFormData({...formData, gastado: Number(e.target.value)})} required />
+        </div>
+        <div className="formGroup">
+          <label>Progreso (%)</label>
+          <input type="number" value={formData.progreso} onChange={e => setFormData({...formData, progreso: Number(e.target.value)})} required />
+        </div>
+        <div className="formGroup">
+          <label>Fecha Inicio</label>
+          <input type="date" value={formData.fechaInicio} onChange={e => setFormData({...formData, fechaInicio: e.target.value})} required />
+        </div>
+        <div className="formGroup">
+          <label>Fecha Fin</label>
+          <input type="date" value={formData.fechaFin} onChange={e => setFormData({...formData, fechaFin: e.target.value})} required />
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import { ITEMS_PER_PAGE } from '../../config/pagination';
@@ -149,30 +149,49 @@ export function RRHH() {
         onPageChange={goToPage}
       />
 
-      {showForm && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
-            <h3>{editingId ? 'Editar Empleado' : 'Nuevo Empleado'}</h3>
-            <form onSubmit={handleSubmit}>
-              <input type="text" placeholder="Nombre" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} required />
-              <input type="text" placeholder="Cargo" value={formData.cargo} onChange={e => setFormData({...formData, cargo: e.target.value})} required />
-              <input type="text" placeholder="Departamento" value={formData.departamento} onChange={e => setFormData({...formData, departamento: e.target.value})} required />
-              <input type="email" placeholder="Email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required />
-              <input type="tel" placeholder="Teléfono" value={formData.telefono} onChange={e => setFormData({...formData, telefono: e.target.value})} required />
-              <input type="date" placeholder="Fecha de Ingreso" value={formData.fechaIngreso} onChange={e => setFormData({...formData, fechaIngreso: e.target.value})} required />
-              <input type="number" placeholder="Salario" value={formData.salario} onChange={e => setFormData({...formData, salario: Number(e.target.value)})} required />
-              <select value={formData.estado} onChange={e => setFormData({...formData, estado: e.target.value as 'activo' | 'inactivo'})}>
-                <option value="activo">Activo</option>
-                <option value="inactivo">Inactivo</option>
-              </select>
-              <div className={styles.modalActions}>
-                <Button type="button" onClick={() => setShowForm(false)}>Cancelar</Button>
-                <Button type="submit">{editingId ? 'Guardar' : 'Crear'}</Button>
-              </div>
-            </form>
-          </div>
+      <Modal
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        title={editingId ? 'Editar Empleado' : 'Nuevo Empleado'}
+        onSubmit={handleSubmit}
+        submitLabel={editingId ? 'Guardar' : 'Crear'}
+      >
+        <div className={styles.formGroup}>
+          <label>Nombre</label>
+          <input type="text" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} required />
         </div>
-      )}
+        <div className={styles.formGroup}>
+          <label>Cargo</label>
+          <input type="text" value={formData.cargo} onChange={e => setFormData({...formData, cargo: e.target.value})} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Departamento</label>
+          <input type="text" value={formData.departamento} onChange={e => setFormData({...formData, departamento: e.target.value})} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Email</label>
+          <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Teléfono</label>
+          <input type="tel" value={formData.telefono} onChange={e => setFormData({...formData, telefono: e.target.value})} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Fecha de Ingreso</label>
+          <input type="date" value={formData.fechaIngreso} onChange={e => setFormData({...formData, fechaIngreso: e.target.value})} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Salario</label>
+          <input type="number" value={formData.salario} onChange={e => setFormData({...formData, salario: Number(e.target.value)})} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Estado</label>
+          <select value={formData.estado} onChange={e => setFormData({...formData, estado: e.target.value as 'activo' | 'inactivo'})}>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </Modal>
     </div>
   );
 }

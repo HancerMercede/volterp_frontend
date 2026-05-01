@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useERP, useUI } from '../../context';
 import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
@@ -47,6 +47,23 @@ export function Ventas() {
       (c.empresa && c.empresa.toLowerCase().includes(search))
     );
   }, [clientes, clienteSearch]);
+
+  // Auto-seleccionar cliente cuando hay coincidencia parcial
+  useEffect(() => {
+    if (!clienteSearch.trim()) {
+      if (selectedCliente) setSelectedCliente('');
+      return;
+    }
+    const search = clienteSearch.toLowerCase();
+    const match = clientes.find(c => 
+      c.nombre.toLowerCase().includes(search) || 
+      c.email.toLowerCase().includes(search) ||
+      (c.empresa && c.empresa.toLowerCase().includes(search))
+    );
+    if (match && match.id !== selectedCliente) {
+      setSelectedCliente(match.id);
+    }
+  }, [clienteSearch, clientes, selectedCliente]);
 
   // Filtrar productos
   const filteredProducts = useMemo(() => {
