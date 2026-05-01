@@ -32,6 +32,8 @@
 
 .activo {
   color: #10B981;
+  padding-left: 0.8rem;
+  border-radius: 0.2rem;
 }
 
 .inactivo {
@@ -44,7 +46,8 @@
   margin-bottom: 24px;
 }
 
-.searchInput, .select {
+.searchInput,
+.select {
   padding: 10px 16px;
   border: 1px solid #E5E7EB;
   border-radius: 8px;
@@ -61,7 +64,8 @@
   min-width: 150px;
 }
 
-.searchInput:focus, .select:focus {
+.searchInput:focus,
+.select:focus {
   outline: none;
   border-color: #FACC15;
 }
@@ -115,7 +119,8 @@
   gap: 12px;
 }
 
-.modalContent input, .modalContent select {
+.modalContent input,
+.modalContent select {
   padding: 10px 12px;
   border: 1px solid #E5E7EB;
   border-radius: 8px;
@@ -123,7 +128,8 @@
   font-family: inherit;
 }
 
-.modalContent input:focus, .modalContent select:focus {
+.modalContent input:focus,
+.modalContent select:focus {
   outline: none;
   border-color: #FACC15;
 }

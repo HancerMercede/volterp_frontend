@@ -6,6 +6,7 @@
   --primary: #FACC15;
   --primary-dark: #EAB308;
   --primary-light: #FEF08A;
+  --primary-gradient: linear-gradient(180deg, #FACC15 0%, #EAB308 100%);
 
   --background: #F9FAFB;
   --surface: #ffffff;
