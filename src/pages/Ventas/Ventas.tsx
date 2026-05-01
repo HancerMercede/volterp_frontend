@@ -281,7 +281,61 @@ export function Ventas() {
       {showForm && (
         <div className={styles.modalFull}>
           <div className={styles.posContainer}>
-            {/* Panel Izquierdo - Carrito */}
+            {/* Panel Izquierdo - Catálogo de Productos */}
+            <div className={styles.productsPanel}>
+              <div className={styles.productsHeader}>
+                <h3>📦 Productos</h3>
+                <SearchInput 
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="Buscar productos..."
+                  className={styles.productSearchInput}
+                />
+              </div>
+              
+              <div className={styles.categoryTabs}>
+                {categorias.map(cat => (
+                  <button 
+                    key={cat}
+                    className={`${styles.categoryTab} ${categoriaFilter === cat ? styles.active : ''}`}
+                    onClick={() => setCategoriaFilter(cat)}
+                  >
+                    {cat === 'todos' ? 'Todos' : cat}
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.productsGrid}>
+                {paginatedProducts.map(producto => (
+                  <div 
+                    key={producto.id} 
+                    className={styles.productCard}
+                    onClick={() => agregarAlCarrito(producto)}
+                  >
+                    <img src={producto.imagen} alt={producto.nombre} className={styles.productImg} />
+                    <span className={styles.productName}>{producto.nombre}</span>
+                    <span className={styles.productPrice}>{formatCurrency(producto.precio)}</span>
+                    <button className={styles.addBtn}>+</button>
+                  </div>
+                ))}
+              </div>
+              
+              {totalProductPages > 1 && (
+                <Pagination
+                  pagination={{
+                    total: filteredProducts.length,
+                    page: currentPage,
+                    pageSize: productsPerPage,
+                    totalPages: totalProductPages,
+                    hasNext: currentPage < totalProductPages,
+                    hasPrev: currentPage > 1
+                  }}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </div>
+
+            {/* Panel Derecho - Carrito */}
             <div className={styles.cartPanel}>
               <div className={styles.panelHeader}>
                 <h3>🛒 Carrito</h3>
@@ -329,14 +383,10 @@ export function Ventas() {
                   <span>Total items:</span>
                   <strong>{totales.totalItems}</strong>
                 </div>
-                <div className={styles.cartTotal}>
-                  <span>Total:</span>
-                  <strong>{formatCurrency(totales.subtotal)}</strong>
-                </div>
               </div>
             </div>
 
-            {/* Panel Central - Resumen */}
+            {/* Panel Derecho - Resumen */}
             <div className={styles.summaryPanel}>
               <h3>📋 Resumen</h3>
               
@@ -407,60 +457,6 @@ export function Ventas() {
               <Button variant="secondary" onClick={() => { setShowForm(false); setCarrito([]); }}>
                 Cancelar
               </Button>
-            </div>
-
-            {/* Panel Inferior - Catálogo de Productos */}
-            <div className={styles.productsPanel}>
-              <div className={styles.productsHeader}>
-                <h3>📦 Productos</h3>
-                <SearchInput 
-                  value={searchTerm}
-                  onChange={setSearchTerm}
-                  placeholder="Buscar productos..."
-                  className={styles.productSearchInput}
-                />
-              </div>
-              
-              <div className={styles.categoryTabs}>
-                {categorias.map(cat => (
-                  <button 
-                    key={cat}
-                    className={`${styles.categoryTab} ${categoriaFilter === cat ? styles.active : ''}`}
-                    onClick={() => setCategoriaFilter(cat)}
-                  >
-                    {cat === 'todos' ? 'Todos' : cat}
-                  </button>
-                ))}
-              </div>
-
-              <div className={styles.productsGrid}>
-                {paginatedProducts.map(producto => (
-                  <div 
-                    key={producto.id} 
-                    className={styles.productCard}
-                    onClick={() => agregarAlCarrito(producto)}
-                  >
-                    <img src={producto.imagen} alt={producto.nombre} className={styles.productImg} />
-                    <span className={styles.productName}>{producto.nombre}</span>
-                    <span className={styles.productPrice}>{formatCurrency(producto.precio)}</span>
-                    <button className={styles.addBtn}>+</button>
-                  </div>
-                ))}
-              </div>
-              
-              {totalProductPages > 1 && (
-                <Pagination
-                  pagination={{
-                    total: filteredProducts.length,
-                    page: currentPage,
-                    pageSize: productsPerPage,
-                    totalPages: totalProductPages,
-                    hasNext: currentPage < totalProductPages,
-                    hasPrev: currentPage > 1
-                  }}
-                  onPageChange={handlePageChange}
-                />
-              )}
             </div>
           </div>
         </div>
