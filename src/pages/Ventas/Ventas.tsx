@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useERP, useUI } from '../../context';
-import { Table, Button, PageHeader, ImageCell } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, ActionButtons } from '../../components/UI';
 import styles from './Ventas.module.css';
 
 export function Ventas() {
@@ -126,10 +126,7 @@ export function Ventas() {
       key: 'actions',
       header: 'Acciones',
       render: (v: typeof ventas[0]) => (
-        <div className={styles.actions}>
-          <Button size="small" variant="secondary" onClick={() => handleEdit(v)}>Editar</Button>
-          <Button size="small" variant="danger" onClick={() => handleDelete(v.id)}>Eliminar</Button>
-        </div>
+        <ActionButtons onEdit={() => handleEdit(v)} onDelete={() => handleDelete(v.id)} />
       ),
     },
   ];

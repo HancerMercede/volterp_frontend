@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, ActionButtons } from '../../components/UI';
 import styles from './Clientes.module.css';
 
 export function Clientes() {
@@ -95,10 +95,7 @@ export function Clientes() {
       key: 'actions',
       header: 'Acciones',
       render: (c: typeof clientes[0]) => (
-        <div className={styles.actions}>
-          <Button size="small" variant="secondary" onClick={() => handleEdit(c)}>Editar</Button>
-          <Button size="small" variant="danger" onClick={() => handleDelete(c.id)}>Eliminar</Button>
-        </div>
+        <ActionButtons onEdit={() => handleEdit(c)} onDelete={() => handleDelete(c.id)} />
       ),
     },
   ];

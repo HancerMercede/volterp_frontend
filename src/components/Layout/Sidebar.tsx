@@ -1,22 +1,26 @@
-import { NavLink } from "react-router-dom";
-import styles from "./Sidebar.module.css";
+import { NavLink } from 'react-router-dom';
+import styles from './Sidebar.module.css';
 
 const navItems = [
-  { label: "Dashboard", path: "/", icon: "📊" },
-  { label: "Ventas", path: "/ventas", icon: "💰" },
-  { label: "Compras", path: "/compras", icon: "🛒" },
-  { label: "Inventario", path: "/inventario", icon: "📦" },
-  { label: "Clientes", path: "/clientes", icon: "👥" },
-  { label: "Reportes", path: "/reportes", icon: "📈" },
-  { label: "Configuración", path: "/configuracion", icon: "⚙️" },
+  { label: 'Dashboard', path: '/', icon: '📊' },
+  { label: 'Ventas', path: '/ventas', icon: '💰' },
+  { label: 'Compras', path: '/compras', icon: '🛒' },
+  { label: 'Inventario', path: '/inventario', icon: '📦' },
+  { label: 'Clientes', path: '/clientes', icon: '👥' },
+  { label: 'Proveedores', path: '/proveedores', icon: '🚚' },
+  { label: 'Contabilidad', path: '/contabilidad', icon: '💳' },
+  { label: 'RRHH', path: '/rrhh', icon: '👔' },
+  { label: 'Proyectos', path: '/proyectos', icon: '📋' },
+  { label: 'Reportes', path: '/reportes', icon: '📈' },
+  { label: 'Configuración', path: '/configuracion', icon: '⚙️' },
 ];
 
 export function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
-        <span className={styles.logoIcon}>M</span>
-        Bohuco
+        <img src="/src/assets/logo.svg" alt="Logo" className={styles.logoIcon} />
+        <span className={styles.logoText}>Volterp</span>
       </div>
       <nav className={styles.nav}>
         {navItems.map((item) => (
@@ -24,9 +28,9 @@ export function Sidebar() {
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
+              `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
             }
-            end={item.path === "/"}
+            end={item.path === '/'}
           >
             <span className={styles.navIcon}>{item.icon}</span>
             {item.label}

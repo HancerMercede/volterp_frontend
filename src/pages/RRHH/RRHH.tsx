@@ -78,7 +78,7 @@ export function RRHH() {
   };
 
   const columns = [
-    { key: 'avatar', header: '', render: (e: typeof empleados[0]) => <ImageCell src={e.avatar} alt={e.nombre} /> },
+    { key: 'avatar', header: '', render: (e: typeof empleados[0]) => <ImageCell src={e.avatar} name={e.nombre} /> },
     { key: 'nombre', header: 'Nombre' },
     { key: 'cargo', header: 'Cargo' },
     { key: 'departamento', header: 'Departamento' },

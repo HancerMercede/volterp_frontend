@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, ActionButtons } from '../../components/UI';
 import styles from './Inventario.module.css';
 
 export function Inventario() {
@@ -104,10 +104,7 @@ export function Inventario() {
       key: 'actions',
       header: 'Acciones',
       render: (p: typeof productos[0]) => (
-        <div className={styles.actions}>
-          <Button size="small" variant="secondary" onClick={() => handleEdit(p)}>Editar</Button>
-          <Button size="small" variant="danger" onClick={() => handleDelete(p.id)}>Eliminar</Button>
-        </div>
+        <ActionButtons onEdit={() => handleEdit(p)} onDelete={() => handleDelete(p.id)} />
       ),
     },
   ];

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import styles from './Table.module.css';
+import { ActionButtons } from './ActionButtons';
 
 interface Column<T> {
   key: keyof T | string;
@@ -35,17 +36,11 @@ export function Table<T extends { id: string }>({ data, columns, onEdit, onDelet
                 </td>
               ))}
               {(onEdit || onDelete) && (
-                <td className={styles.actions}>
-                  {onEdit && (
-                    <button className={styles.actionBtn} onClick={() => onEdit(item)}>
-                      ✏️
-                    </button>
-                  )}
-                  {onDelete && (
-                    <button className={styles.actionBtn} onClick={() => onDelete(item.id)}>
-                      🗑️
-                    </button>
-                  )}
+                <td>
+                  <ActionButtons 
+                    onEdit={onEdit ? () => onEdit(item) : undefined}
+                    onDelete={onDelete ? () => onDelete(item.id) : undefined}
+                  />
                 </td>
               )}
             </tr>

@@ -1,0 +1,40 @@
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn svg {
+  flex-shrink: 0;
+}
+
+.edit {
+  background: #ECFDF5;
+  color: #059669;
+}
+
+.edit:hover {
+  background: #D1FAE5;
+  transform: scale(1.05);
+}
+
+.delete {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
+.delete:hover {
+  background: #FEE2E2;
+  transform: scale(1.05);
+}

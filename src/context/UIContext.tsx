@@ -1,22 +1,5 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
-
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
-
-export interface Toast {
-  id: string;
-  message: string;
-  type: ToastType;
-}
-
-interface UIContextType {
-  toasts: Toast[];
-  isLoading: boolean;
-  addToast: (message: string, type: ToastType) => void;
-  removeToast: (id: string) => void;
-  setLoading: (loading: boolean) => void;
-}
-
-export const UIContext = createContext<UIContextType | undefined>(undefined);
+import { useState, type ReactNode } from 'react';
+import { UIContext, type Toast, type ToastType } from './UIContext';
 
 export function UIProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -37,12 +20,4 @@ export function UIProvider({ children }: { children: ReactNode }) {
       {children}
     </UIContext.Provider>
   );
-}
-
-export function useUI() {
-  const context = useContext(UIContext);
-  if (!context) {
-    throw new Error('useUI must be used within UIProvider');
-  }
-  return context;
 }
