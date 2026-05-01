@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader } from '../../components/UI';
+import { Table, Button, PageHeader, Pagination } from '../../components/UI';
+import { usePagination } from '../../hooks/usePagination';
+import { paginate } from '../../utils/pagination';
 import styles from './Contabilidad.module.css';
+
+const ITEMS_PER_PAGE = 20;
 
 export function Contabilidad() {
   const { transaccionesContables, setTransaccionesContables } = useERP();
@@ -9,6 +13,7 @@ export function Contabilidad() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTipo, setFilterTipo] = useState<'todos' | 'ingreso' | 'egreso'>('todos');
+  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
   const [formData, setFormData] = useState({
     descripcion: '',
     tipo: 'ingreso' as 'ingreso' | 'egreso',
@@ -18,12 +23,20 @@ export function Contabilidad() {
     estado: 'pendiente' as 'conciliada' | 'pendiente',
   });
 
-  const filteredTransacciones = transaccionesContables.filter(t => {
-    const matchesSearch = t.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.categoria.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTipo = filterTipo === 'todos' || t.tipo === filterTipo;
-    return matchesSearch && matchesTipo;
-  });
+  const filteredTransacciones = useMemo(() => {
+    return transaccionesContables.filter(t => {
+      const matchesSearch = t.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.categoria.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesTipo = filterTipo === 'todos' || t.tipo === filterTipo;
+      return matchesSearch && matchesTipo;
+    });
+  }, [transaccionesContables, searchTerm, filterTipo]);
+
+  const paginatedTransacciones = useMemo(() => {
+    return paginate(filteredTransacciones, page, ITEMS_PER_PAGE);
+  }, [filteredTransacciones, page]);
+
+  const paginationInfo = getInfo(filteredTransacciones.length);
 
   const totalIngresos = transaccionesContables.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + t.monto, 0);
   const totalEgresos = transaccionesContables.filter(t => t.tipo === 'egreso').reduce((acc, t) => acc + t.monto, 0);
@@ -117,17 +130,22 @@ export function Contabilidad() {
           type="text"
           placeholder="Buscar transacciones..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
           className={styles.searchInput}
         />
-        <select value={filterTipo} onChange={(e) => setFilterTipo(e.target.value as typeof filterTipo)} className={styles.select}>
+        <select value={filterTipo} onChange={(e) => { setFilterTipo(e.target.value as typeof filterTipo); goToPage(1); }} className={styles.select}>
           <option value="todos">Todos</option>
           <option value="ingreso">Ingresos</option>
           <option value="egreso">Egresos</option>
         </select>
       </div>
 
-      <Table columns={columns} data={filteredTransacciones} onEdit={handleEdit} onDelete={handleDelete} />
+      <Table columns={columns} data={paginatedTransacciones} onEdit={handleEdit} onDelete={handleDelete} />
+
+      <Pagination
+        pagination={paginationInfo}
+        onPageChange={goToPage}
+      />
 
       {showForm && (
         <div className={styles.modal}>

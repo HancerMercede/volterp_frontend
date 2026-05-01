@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader } from '../../components/UI';
+import { Table, Button, PageHeader, Pagination } from '../../components/UI';
+import { usePagination } from '../../hooks/usePagination';
+import { paginate } from '../../utils/pagination';
 import styles from './Proyectos.module.css';
+
+const ITEMS_PER_PAGE = 20;
 
 export function Proyectos() {
   const { proyectos, setProyectos } = useERP();
@@ -9,6 +13,7 @@ export function Proyectos() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState<'todos' | 'en_progreso' | 'completado' | 'pendiente'>('todos');
+  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
   const [formData, setFormData] = useState({
     nombre: '',
     cliente: '',
@@ -20,12 +25,20 @@ export function Proyectos() {
     progreso: 0,
   });
 
-  const filteredProyectos = proyectos.filter(p => {
-    const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.cliente.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesEstado = filterEstado === 'todos' || p.estado === filterEstado;
-    return matchesSearch && matchesEstado;
-  });
+  const filteredProyectos = useMemo(() => {
+    return proyectos.filter(p => {
+      const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.cliente.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesEstado = filterEstado === 'todos' || p.estado === filterEstado;
+      return matchesSearch && matchesEstado;
+    });
+  }, [proyectos, searchTerm, filterEstado]);
+
+  const paginatedProyectos = useMemo(() => {
+    return paginate(filteredProyectos, page, ITEMS_PER_PAGE);
+  }, [filteredProyectos, page]);
+
+  const paginationInfo = getInfo(filteredProyectos.length);
 
   const totalPresupuesto = proyectos.reduce((acc, p) => acc + p.presupuesto, 0);
   const enProgreso = proyectos.filter(p => p.estado === 'en_progreso').length;
@@ -131,10 +144,10 @@ export function Proyectos() {
           type="text"
           placeholder="Buscar proyectos..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
           className={styles.searchInput}
         />
-        <select value={filterEstado} onChange={(e) => setFilterEstado(e.target.value as typeof filterEstado)} className={styles.select}>
+        <select value={filterEstado} onChange={(e) => { setFilterEstado(e.target.value as typeof filterEstado); goToPage(1); }} className={styles.select}>
           <option value="todos">Todos</option>
           <option value="en_progreso">En Progreso</option>
           <option value="completado">Completados</option>
@@ -142,7 +155,12 @@ export function Proyectos() {
         </select>
       </div>
 
-      <Table columns={columns} data={filteredProyectos} onEdit={handleEdit} onDelete={handleDelete} />
+      <Table columns={columns} data={paginatedProyectos} onEdit={handleEdit} onDelete={handleDelete} />
+
+      <Pagination
+        pagination={paginationInfo}
+        onPageChange={goToPage}
+      />
 
       {showForm && (
         <div className={styles.modal}>

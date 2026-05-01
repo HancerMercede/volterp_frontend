@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, Pagination } from '../../components/UI';
+import { usePagination } from '../../hooks/usePagination';
+import { paginate } from '../../utils/pagination';
 import styles from './RRHH.module.css';
+
+const ITEMS_PER_PAGE = 20;
 
 export function RRHH() {
   const { empleados, setEmpleados } = useERP();
@@ -9,6 +13,7 @@ export function RRHH() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEstado, setFilterEstado] = useState<'todos' | 'activo' | 'inactivo'>('todos');
+  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
   const [formData, setFormData] = useState({
     nombre: '',
     cargo: '',
@@ -20,13 +25,21 @@ export function RRHH() {
     estado: 'activo' as 'activo' | 'inactivo',
   });
 
-  const filteredEmpleados = empleados.filter(e => {
-    const matchesSearch = e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      e.cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      e.departamento.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesEstado = filterEstado === 'todos' || e.estado === filterEstado;
-    return matchesSearch && matchesEstado;
-  });
+  const filteredEmpleados = useMemo(() => {
+    return empleados.filter(e => {
+      const matchesSearch = e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.departamento.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesEstado = filterEstado === 'todos' || e.estado === filterEstado;
+      return matchesSearch && matchesEstado;
+    });
+  }, [empleados, searchTerm, filterEstado]);
+
+  const paginatedEmpleados = useMemo(() => {
+    return paginate(filteredEmpleados, page, ITEMS_PER_PAGE);
+  }, [filteredEmpleados, page]);
+
+  const paginationInfo = getInfo(filteredEmpleados.length);
 
   const totalSalarios = empleados.filter(e => e.estado === 'activo').reduce((acc, e) => acc + e.salario, 0);
   const activos = empleados.filter(e => e.estado === 'activo').length;
@@ -121,17 +134,22 @@ export function RRHH() {
           type="text"
           placeholder="Buscar empleados..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
           className={styles.searchInput}
         />
-        <select value={filterEstado} onChange={(e) => setFilterEstado(e.target.value as typeof filterEstado)} className={styles.select}>
+        <select value={filterEstado} onChange={(e) => { setFilterEstado(e.target.value as typeof filterEstado); goToPage(1); }} className={styles.select}>
           <option value="todos">Todos</option>
           <option value="activo">Activos</option>
           <option value="inactivo">Inactivos</option>
         </select>
       </div>
 
-      <Table columns={columns} data={filteredEmpleados} onEdit={handleEdit} onDelete={handleDelete} />
+      <Table columns={columns} data={paginatedEmpleados} onEdit={handleEdit} onDelete={handleDelete} />
+
+      <Pagination
+        pagination={paginationInfo}
+        onPageChange={goToPage}
+      />
 
       {showForm && (
         <div className={styles.modal}>

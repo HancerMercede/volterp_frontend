@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useERP } from "../../context/ERPContext";
-import { Table, Button, PageHeader, ImageCell } from "../../components/UI";
+import { Table, Button, PageHeader, ImageCell, Pagination } from "../../components/UI";
+import { usePagination } from "../../hooks/usePagination";
+import { paginate } from "../../utils/pagination";
 import styles from "./Proveedores.module.css";
+
+const ITEMS_PER_PAGE = 20;
 
 export function Proveedores() {
   const { proveedores, setProveedores } = useERP();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -17,12 +22,20 @@ export function Proveedores() {
     totalOrdenes: 0,
   });
 
-  const filteredProveedores = proveedores.filter(
-    (p) =>
-      p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.categoria.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredProveedores = useMemo(() => {
+    return proveedores.filter(
+      (p) =>
+        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.categoria.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  }, [proveedores, searchTerm]);
+
+  const paginatedProveedores = useMemo(() => {
+    return paginate(filteredProveedores, page, ITEMS_PER_PAGE);
+  }, [filteredProveedores, page]);
+
+  const paginationInfo = getInfo(filteredProveedores.length);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,16 +126,21 @@ export function Proveedores() {
           type="text"
           placeholder="Buscar proveedores..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
           className={styles.searchInput}
         />
       </div>
 
       <Table
         columns={columns}
-        data={filteredProveedores}
+        data={paginatedProveedores}
         onEdit={handleEdit}
         onDelete={handleDelete}
+      />
+
+      <Pagination
+        pagination={paginationInfo}
+        onPageChange={goToPage}
       />
 
       {showForm && (

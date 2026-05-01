@@ -1,7 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useERP, useUI } from '../../context';
 import { Table, Button, PageHeader, ImageCell, Pagination } from '../../components/UI';
+import { usePagination } from '../../hooks/usePagination';
+import { paginate } from '../../utils/pagination';
 import styles from './Ventas.module.css';
+
+const ITEMS_PER_PAGE = 20;
 
 interface CarritoItem {
   productoId: string;
@@ -17,6 +21,7 @@ export function Ventas() {
   const { addToast } = useUI();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
   
   // Estado del carrito
   const [carrito, setCarrito] = useState<CarritoItem[]>([]);
@@ -168,11 +173,19 @@ export function Ventas() {
   };
 
   // Filtrar ventas para la tabla
-  const filteredVentas = ventas.filter(v =>
-    v.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredVentas = useMemo(() => {
+    return ventas.filter(v =>
+      v.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.id.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [ventas, searchTerm]);
+
+  const paginatedVentas = useMemo(() => {
+    return paginate(filteredVentas, page, ITEMS_PER_PAGE);
+  }, [filteredVentas, page]);
+
+  const paginationInfo = getInfo(filteredVentas.length);
 
   const getClienteByName = (nombre: string) => clientes.find(c => c.nombre === nombre);
   const getProductoByName = (nombre: string) => productos.find(p => p.nombre === nombre);
@@ -221,7 +234,7 @@ export function Ventas() {
             placeholder="Buscar ventas..." 
             className={styles.search}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
           />
           <Button onClick={() => { setShowForm(true); }}>
             + Nueva Venta
@@ -401,7 +414,12 @@ export function Ventas() {
         </div>
       )}
 
-      <Table data={filteredVentas} columns={columns} onEdit={handleEdit} onDelete={handleDelete} />
+      <Table data={paginatedVentas} columns={columns} onEdit={handleEdit} onDelete={handleDelete} />
+
+      <Pagination
+        pagination={paginationInfo}
+        onPageChange={goToPage}
+      />
     </div>
   );
 }
