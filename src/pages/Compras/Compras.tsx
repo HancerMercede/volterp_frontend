@@ -5,7 +5,7 @@ import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import styles from './Compras.module.css';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 export function Compras() {
   const { compras, setCompras, productos } = useERP();

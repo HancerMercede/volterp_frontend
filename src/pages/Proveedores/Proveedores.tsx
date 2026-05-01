@@ -5,7 +5,7 @@ import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import styles from "./Proveedores.module.css";
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 export function Proveedores() {
   const { proveedores, setProveedores } = useERP();
