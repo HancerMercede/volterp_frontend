@@ -8,28 +8,37 @@
   --primary-light: #FEF08A;
   --primary-gradient: linear-gradient(180deg, #FACC15 0%, #EAB308 100%);
 
-  --background: #F9FAFB;
+  --background: #F8F9FC;
   --surface: #ffffff;
   --surface-hover: #F3F4F6;
+  --surface-soft: #FEFEFE;
   --border: #E5E7EB;
+  --border-light: rgba(0, 0, 0, 0.06);
+
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.3);
 
   --gray-50: #F9FAFB;
   --gray-100: #F3F4F6;
   --gray-200: #E5E7EB;
   --gray-300: #D1D5DB;
 
-  --text-primary: #111827;
+  --text-primary: #1F2937;
   --text-secondary: #6B7280;
   --text-muted: #9CA3AF;
 
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.06);
 
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 14px;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   --font-display: 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;

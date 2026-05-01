@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useERP, useUI } from '../../context';
-import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, Pagination } from '../../components/UI';
 import styles from './Ventas.module.css';
 
 interface CarritoItem {
@@ -207,13 +207,6 @@ export function Ventas() {
       render: (v: typeof ventas[0]) => (
         <span className={`${styles.badge} ${styles[v.estado]}`}>{v.estado}</span>
       )
-    },
-    {
-      key: 'actions',
-      header: 'Acciones',
-      render: (v: typeof ventas[0]) => (
-        <ActionButtons onEdit={() => handleEdit(v)} onDelete={() => handleDelete(v.id)} />
-      ),
     },
   ];
 

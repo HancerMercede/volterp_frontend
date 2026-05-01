@@ -7,16 +7,18 @@
 .search {
   padding: 10px 16px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   width: 240px;
   font-size: 14px;
   background: var(--surface);
   font-family: var(--font-body);
+  transition: var(--transition);
 }
 
 .search:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
 }
 
 .badge {
@@ -61,9 +63,12 @@
 }
 
 .modalContent {
-  background: var(--surface);
+  background: var(--glass-bg);
   padding: 32px;
   border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
   width: 100%;
   max-width: 480px;
   max-height: 90vh;
@@ -94,16 +99,18 @@
   width: 100%;
   padding: 10px 14px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   font-size: 14px;
   font-family: var(--font-body);
   background: var(--surface);
+  transition: var(--transition);
 }
 
 .formGroup input:focus,
 .formGroup select:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
 }
 
 .formActions {
@@ -141,9 +148,11 @@
 
 /* Cart Panel */
 .cartPanel {
-  background: var(--surface);
+  background: var(--glass-bg);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -190,7 +199,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .panelHeader h3 {
@@ -325,7 +334,7 @@
 
 .cartFooter {
   padding: 16px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-light);
   background: var(--background);
 }
 
@@ -337,19 +346,6 @@
 
 .cartTotal:first-child {
   margin-bottom: 8px;
-}
-
-/* Summary Panel */
-.summaryPanel {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 300px;
-  flex-shrink: 0;
 }
 
 .summaryPanel h3 {
@@ -402,9 +398,11 @@
 
 /* Products Panel */
 .productsPanel {
-  background: var(--surface);
+  background: var(--glass-bg);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -417,7 +415,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .productsHeader h3 {
@@ -429,28 +427,35 @@
 .productSearch {
   padding: 8px 14px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   font-size: 14px;
   width: 250px;
+  transition: var(--transition);
+}
+
+.productSearch:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
 }
 
 .categoryTabs {
   display: flex;
   gap: 8px;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-light);
   overflow-x: auto;
 }
 
 .categoryTab {
   padding: 8px 16px;
   border-radius: 20px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   background: var(--surface);
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
 
 .categoryTab:hover {
@@ -493,18 +498,19 @@
 }
 
 .productCard {
-  background: var(--background);
+  background: var(--surface);
   border-radius: var(--radius);
   padding: 12px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid transparent;
+  transition: var(--transition);
+  border: 1px solid var(--border-light);
 }
 
 .productCard:hover {
   border-color: var(--primary);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .productImg {
@@ -554,5 +560,5 @@
 /* Products pagination */
 .productsPanelPagination {
   padding: 12px 16px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-light);
 }
