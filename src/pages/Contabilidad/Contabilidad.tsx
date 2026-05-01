@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, Pagination } from '../../components/UI';
+import { Table, Button, PageHeader, Pagination, SearchInput } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import styles from './Contabilidad.module.css';
@@ -126,12 +126,11 @@ export function Contabilidad() {
       </div>
 
       <div className={styles.filters}>
-        <input
-          type="text"
-          placeholder="Buscar transacciones..."
+        <SearchInput
           value={searchTerm}
-          onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
-          className={styles.searchInput}
+          onChange={(value) => { setSearchTerm(value); goToPage(1); }}
+          placeholder="Buscar transacciones..."
+          width="240px"
         />
         <select value={filterTipo} onChange={(e) => { setFilterTipo(e.target.value as typeof filterTipo); goToPage(1); }} className={styles.select}>
           <option value="todos">Todos</option>

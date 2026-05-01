@@ -5,3 +5,4 @@ export { ImageCell } from './ImageCell';
 export { ToastContainer } from './Toast';
 export { Pagination } from './Pagination';
 export { ActionButtons } from './ActionButtons';
+export { SearchInput } from './SearchInput';

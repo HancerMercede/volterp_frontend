@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useERP, useUI } from '../../context';
-import { Table, Button, PageHeader, ImageCell, Pagination } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
+import { ITEMS_PER_PAGE } from '../../config/pagination';
 import styles from './Ventas.module.css';
-
-const ITEMS_PER_PAGE = 10;
 
 interface CarritoItem {
   productoId: string;
@@ -26,6 +25,7 @@ export function Ventas() {
   // Estado del carrito
   const [carrito, setCarrito] = useState<CarritoItem[]>([]);
   const [selectedCliente, setSelectedCliente] = useState('');
+  const [clienteSearch, setClienteSearch] = useState('');
   const [ventaEstado, setVentaEstado] = useState<'pendiente' | 'completada'>('pendiente');
 
   // Filtros de categoría
@@ -36,6 +36,17 @@ export function Ventas() {
     const cats = [...new Set(productos.map(p => p.categoria))];
     return ['todos', ...cats];
   }, [productos]);
+
+  // Filtrar clientes para el dropdown
+  const filteredClientes = useMemo(() => {
+    if (!clienteSearch.trim()) return clientes;
+    const search = clienteSearch.toLowerCase();
+    return clientes.filter(c => 
+      c.nombre.toLowerCase().includes(search) || 
+      c.email.toLowerCase().includes(search) ||
+      (c.empresa && c.empresa.toLowerCase().includes(search))
+    );
+  }, [clientes, clienteSearch]);
 
   // Filtrar productos
   const filteredProducts = useMemo(() => {
@@ -229,12 +240,11 @@ export function Ventas() {
     <div>
       <PageHeader title="Ventas" subtitle="Gestión de ventas y pedidos">
         <div className={styles.headerActions}>
-          <input 
-            type="text" 
-            placeholder="Buscar ventas..." 
-            className={styles.search}
+          <SearchInput 
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
+            onChange={(value) => { setSearchTerm(value); goToPage(1); }}
+            placeholder="Buscar ventas..."
+            width="240px"
           />
           <Button onClick={() => { setShowForm(true); }}>
             + Nueva Venta
@@ -306,12 +316,20 @@ export function Ventas() {
               
               <div className={styles.formGroup}>
                 <label>Cliente</label>
+                <input 
+                  type="text" 
+                  placeholder="Buscar cliente..."
+                  className={styles.searchInput}
+                  value={clienteSearch}
+                  onChange={(e) => setClienteSearch(e.target.value)}
+                />
                 <select 
                   value={selectedCliente}
                   onChange={(e) => setSelectedCliente(e.target.value)}
+                  style={{ marginTop: '8px' }}
                 >
                   <option value="">Seleccionar cliente...</option>
-                  {clientes.map(c => (
+                  {filteredClientes.map(c => (
                     <option key={c.id} value={c.id}>{c.nombre} {c.empresa && `(${c.empresa})`}</option>
                   ))}
                 </select>
@@ -360,12 +378,11 @@ export function Ventas() {
             <div className={styles.productsPanel}>
               <div className={styles.productsHeader}>
                 <h3>📦 Productos</h3>
-                <input 
-                  type="text" 
-                  placeholder="🔍 Buscar productos..." 
-                  className={styles.productSearch}
+                <SearchInput 
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={setSearchTerm}
+                  placeholder="Buscar productos..."
+                  className={styles.productSearchInput}
                 />
               </div>
               

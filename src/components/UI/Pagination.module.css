@@ -8,8 +8,9 @@
 }
 
 .info {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
+  font-family: var(--font-body);
 }
 
 .controls {
@@ -26,8 +27,9 @@
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
+  font-family: var(--font-body);
   cursor: pointer;
   transition: var(--transition);
   display: flex;
@@ -53,11 +55,12 @@
 }
 
 .btn.arrow {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .dots {
   padding: 0 8px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 14px;
+  font-family: var(--font-body);
 }

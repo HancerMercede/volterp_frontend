@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell, Pagination } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
+import { ITEMS_PER_PAGE } from '../../config/pagination';
 import styles from './RRHH.module.css';
-
-const ITEMS_PER_PAGE = 10;
 
 export function RRHH() {
   const { empleados, setEmpleados } = useERP();
@@ -130,12 +129,11 @@ export function RRHH() {
       </div>
 
       <div className={styles.filters}>
-        <input
-          type="text"
-          placeholder="Buscar empleados..."
+        <SearchInput
           value={searchTerm}
-          onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
-          className={styles.searchInput}
+          onChange={(value) => { setSearchTerm(value); goToPage(1); }}
+          placeholder="Buscar empleados..."
+          width="240px"
         />
         <select value={filterEstado} onChange={(e) => { setFilterEstado(e.target.value as typeof filterEstado); goToPage(1); }} className={styles.select}>
           <option value="todos">Todos</option>

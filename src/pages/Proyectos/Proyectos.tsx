@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, Pagination } from '../../components/UI';
+import { Table, Button, PageHeader, Pagination, SearchInput } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import styles from './Proyectos.module.css';
@@ -140,12 +140,11 @@ export function Proyectos() {
       </div>
 
       <div className={styles.filters}>
-        <input
-          type="text"
-          placeholder="Buscar proyectos..."
+        <SearchInput
           value={searchTerm}
-          onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
-          className={styles.searchInput}
+          onChange={(value) => { setSearchTerm(value); goToPage(1); }}
+          placeholder="Buscar proyectos..."
+          width="240px"
         />
         <select value={filterEstado} onChange={(e) => { setFilterEstado(e.target.value as typeof filterEstado); goToPage(1); }} className={styles.select}>
           <option value="todos">Todos</option>

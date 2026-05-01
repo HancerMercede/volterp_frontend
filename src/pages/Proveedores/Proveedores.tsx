@@ -1,11 +1,10 @@
 import { useState, useMemo } from "react";
 import { useERP } from "../../context/ERPContext";
-import { Table, Button, PageHeader, ImageCell, Pagination } from "../../components/UI";
+import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
+import { ITEMS_PER_PAGE } from "../../config/pagination";
 import styles from "./Proveedores.module.css";
-
-const ITEMS_PER_PAGE = 10;
 
 export function Proveedores() {
   const { proveedores, setProveedores } = useERP();
@@ -122,12 +121,11 @@ export function Proveedores() {
       </PageHeader>
 
       <div className={styles.searchBar}>
-        <input
-          type="text"
-          placeholder="Buscar proveedores..."
+        <SearchInput
           value={searchTerm}
-          onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
-          className={styles.searchInput}
+          onChange={(value) => { setSearchTerm(value); goToPage(1); }}
+          placeholder="Buscar proveedores..."
+          width="300px"
         />
       </div>
 

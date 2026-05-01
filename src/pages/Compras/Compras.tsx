@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useERP, useUI } from '../../context';
-import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination, SearchInput } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
+import { ITEMS_PER_PAGE } from '../../config/pagination';
 import styles from './Compras.module.css';
-
-const ITEMS_PER_PAGE = 10;
 
 export function Compras() {
   const { compras, setCompras, productos } = useERP();
@@ -127,12 +126,11 @@ export function Compras() {
     <div>
       <PageHeader title="Compras" subtitle="Gestión de compras y proveedores">
         <div className={styles.headerActions}>
-          <input 
-            type="text" 
-            placeholder="Buscar compras..." 
-            className={styles.search}
+          <SearchInput 
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
+            onChange={(value) => { setSearchTerm(value); goToPage(1); }}
+            placeholder="Buscar compras..."
+            width="240px"
           />
           <Button onClick={() => { resetForm(); setShowForm(true); }}>
             + Nueva Compra

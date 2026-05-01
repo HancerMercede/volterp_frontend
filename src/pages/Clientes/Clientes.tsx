@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination } from '../../components/UI';
+import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination, SearchInput } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
+import { ITEMS_PER_PAGE } from '../../config/pagination';
 import styles from './Clientes.module.css';
-
-const ITEMS_PER_PAGE = 10;
 
 export function Clientes() {
   const { clientes, setClientes } = useERP();
@@ -117,12 +116,11 @@ export function Clientes() {
     <div>
       <PageHeader title="Clientes" subtitle="Gestión de clientes y contactos">
         <div className={styles.headerActions}>
-          <input 
-            type="text" 
-            placeholder="Buscar cliente..." 
-            className={styles.search}
+          <SearchInput 
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); goToPage(1); }}
+            onChange={(value) => { setSearchTerm(value); goToPage(1); }}
+            placeholder="Buscar cliente..."
+            width="240px"
           />
           <Button onClick={() => { resetForm(); setShowForm(true); }}>
             + Nuevo Cliente
