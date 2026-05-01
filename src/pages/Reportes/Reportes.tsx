@@ -12,7 +12,7 @@ export function Reportes() {
 
   return (
     <div>
-      <PageHeader title="Reportes" />
+      <PageHeader title="Reportes" subtitle="Análisis y métricas del negocio" />
 
       <div className={styles.grid}>
         <div className={styles.card}>

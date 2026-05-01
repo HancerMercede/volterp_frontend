@@ -19,7 +19,7 @@ export function Configuracion() {
 
   return (
     <div>
-      <PageHeader title="Configuración" />
+      <PageHeader title="Configuración" subtitle="Personaliza la aplicación" />
 
       <div className={styles.sections}>
         <div className={styles.section}>

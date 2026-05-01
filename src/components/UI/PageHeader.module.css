@@ -20,22 +20,26 @@
 .search {
   padding: 10px 16px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   width: 240px;
   font-size: 14px;
   background: var(--surface);
   font-family: var(--font-body);
+  transition: var(--transition);
 }
 
 .search:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
 }
 
 .content {
-  background: var(--surface);
+  background: var(--glass-bg);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
   padding: 24px;
 }
 

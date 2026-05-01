@@ -4,11 +4,15 @@ import styles from './Layout.module.css';
 
 export function Layout() {
   return (
-    <div className={styles.layout}>
-      <Sidebar />
-      <main className={styles.main}>
-        <Outlet />
-      </main>
+    <div className={styles.appWrapper}>
+      <div className={styles.appContainer}>
+        <div className={styles.layout}>
+          <Sidebar />
+          <main className={styles.main}>
+            <Outlet />
+          </main>
+        </div>
+      </div>
     </div>
   );
 }

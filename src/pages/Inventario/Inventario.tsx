@@ -111,7 +111,7 @@ export function Inventario() {
 
   return (
     <div>
-      <PageHeader title="Inventario">
+      <PageHeader title="Inventario" subtitle="Control de productos y stock">
         <div className={styles.headerActions}>
           <input 
             type="text" 

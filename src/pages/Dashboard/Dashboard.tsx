@@ -1,5 +1,6 @@
 import { useDashboard } from '../../application/hooks/useDashboard';
 import { KpiCard, StatsRow, SalesChart, CategoryDonut, TopProducts, RecentActivities, Reminders } from '../../components/Dashboard';
+import { PageHeader } from '../../components/UI';
 import { formatCurrency } from '../../domain/dashboard/constants';
 import styles from './Dashboard.module.css';
 
@@ -17,10 +18,7 @@ export function Dashboard() {
 
   return (
     <>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Dashboard</h1>
-        <input type="text" placeholder="Buscar..." className={styles.search} />
-      </header>
+      <PageHeader title="Dashboard" subtitle="Resumen general del negocio" />
 
       <StatsRow stats={dashboardStats} />
 

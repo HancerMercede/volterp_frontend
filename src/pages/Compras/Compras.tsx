@@ -112,7 +112,7 @@ export function Compras() {
 
   return (
     <div>
-      <PageHeader title="Compras">
+      <PageHeader title="Compras" subtitle="Gestión de compras y proveedores">
         <div className={styles.headerActions}>
           <input 
             type="text" 

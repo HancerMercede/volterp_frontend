@@ -214,7 +214,7 @@ export function Ventas() {
 
   return (
     <div>
-      <PageHeader title="Ventas">
+      <PageHeader title="Ventas" subtitle="Gestión de ventas y pedidos">
         <div className={styles.headerActions}>
           <input 
             type="text" 

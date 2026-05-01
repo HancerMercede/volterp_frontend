@@ -102,7 +102,7 @@ export function Clientes() {
 
   return (
     <div>
-      <PageHeader title="Clientes">
+      <PageHeader title="Clientes" subtitle="Gestión de clientes y contactos">
         <div className={styles.headerActions}>
           <input 
             type="text" 
