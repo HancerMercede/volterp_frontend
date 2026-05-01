@@ -37,21 +37,30 @@ export function Ventas() {
     return ['todos', ...cats];
   }, [productos]);
 
-  // Filtrar clientes para el dropdown
-  const filteredClientes = useMemo(() => {
-    if (!clienteSearch.trim()) return clientes;
+  // Dropdown muestra los primeros 50 clientes + el seleccionado (si existe)
+  const dropdownClientes = useMemo(() => {
+    const top50 = clientes.slice(0, 50);
+    if (selectedCliente && !top50.find(c => c.id === selectedCliente)) {
+      const selected = clientes.find(c => c.id === selectedCliente);
+      if (selected) return [selected, ...top50];
+    }
+    return top50;
+  }, [clientes, selectedCliente]);
+
+  // Search filtra el dropdown cuando el usuario escribe
+  const searchFilteredClientes = useMemo(() => {
+    if (!clienteSearch.trim()) return dropdownClientes;
     const search = clienteSearch.toLowerCase();
-    return clientes.filter(c => 
+    return dropdownClientes.filter(c => 
       c.nombre.toLowerCase().includes(search) || 
       c.email.toLowerCase().includes(search) ||
       (c.empresa && c.empresa.toLowerCase().includes(search))
     );
-  }, [clientes, clienteSearch]);
+  }, [dropdownClientes, clienteSearch]);
 
   // Auto-seleccionar cliente cuando hay coincidencia parcial
   useEffect(() => {
     if (!clienteSearch.trim()) {
-      if (selectedCliente) setSelectedCliente('');
       return;
     }
     const search = clienteSearch.toLowerCase();
@@ -342,11 +351,20 @@ export function Ventas() {
                 />
                 <select 
                   value={selectedCliente}
-                  onChange={(e) => setSelectedCliente(e.target.value)}
+                  onChange={(e) => {
+                    const clienteId = e.target.value;
+                    setSelectedCliente(clienteId);
+                    if (!clienteId) {
+                      setClienteSearch('');
+                    } else {
+                      const cliente = clientes.find(c => c.id === clienteId);
+                      if (cliente) setClienteSearch(cliente.nombre);
+                    }
+                  }}
                   style={{ marginTop: '8px' }}
                 >
                   <option value="">Seleccionar cliente...</option>
-                  {filteredClientes.map(c => (
+                  {searchFilteredClientes.map(c => (
                     <option key={c.id} value={c.id}>{c.nombre} {c.empresa && `(${c.empresa})`}</option>
                   ))}
                 </select>
