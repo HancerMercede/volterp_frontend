@@ -44,12 +44,12 @@
   flex: 1;
 }
 
+
 .navScroll {
   flex: 1;
   min-height: 0;
   max-height: calc(100vh - 180px);
   overflow-y: auto;
-  overflow-x: hidden;
   margin-bottom: 12px;
   scrollbar-width: none;
 }
@@ -76,7 +76,7 @@
 .navLink:hover {
   background: rgba(255, 255, 255, 0.08);
   color: white;
-  transform: translateX(4px);
+  letter-spacing: 0.07em;
 }
 
 .navLinkActive {
