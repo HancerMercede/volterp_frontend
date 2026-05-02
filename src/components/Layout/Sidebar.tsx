@@ -1,21 +1,24 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context";
+import { usePermission } from "../../hooks/usePermission";
+import { MODULOS } from "../../domain/constants/permisos";
+import { ROL_LABELS } from "../../domain/constants/roles";
 import styles from "./Sidebar.module.css";
 
-const navItems = [
-  { label: "Dashboard", path: "/", icon: "📊" },
-  { label: "Ventas", path: "/ventas", icon: "💰" },
-  { label: "Compras", path: "/compras", icon: "🛒" },
-  { label: "Inventario", path: "/inventario", icon: "📦" },
-  { label: "Clientes", path: "/clientes", icon: "👥" },
-  { label: "Proveedores", path: "/proveedores", icon: "🚚" },
-  { label: "Contabilidad", path: "/contabilidad", icon: "💳" },
-  { label: "RRHH", path: "/rrhh", icon: "👔" },
-  { label: "Proyectos", path: "/proyectos", icon: "📋" },
-  { label: "Reportes", path: "/reportes", icon: "📈" },
-  { label: "Configuración", path: "/configuracion", icon: "⚙️" },
-];
-
 export function Sidebar() {
+  const { user, logout } = useAuth();
+  const { canRead } = usePermission();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const visibleNavItems = MODULOS.filter(modulo => 
+    canRead(modulo.key as any)
+  );
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
@@ -28,14 +31,14 @@ export function Sidebar() {
       </div>
       <nav className={styles.navScroll}>
         <nav className={styles.nav}>
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
-              key={item.path}
-              to={item.path}
+              key={item.key}
+              to={`/${item.key === 'dashboard' ? '' : item.key}`}
               className={({ isActive }) =>
                 `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
               }
-              end={item.path === "/"}
+              end={item.key === 'dashboard'}
             >
               <span className={styles.navIcon}>{item.icon}</span>
               {item.label}
@@ -43,16 +46,23 @@ export function Sidebar() {
           ))}
         </nav>
       </nav>
-      <div className={styles.user}>
-        <img
-          src="https://i.pravatar.cc/150?img=68"
-          alt="Avatar"
-          className={styles.avatarImg}
-        />
-        <div className={styles.userInfo}>
-          <p className={styles.userName}>Hancer Mercedes</p>
-          <span className={styles.userRole}>Administrador</span>
+      <div className={styles.userSection}>
+        <div className={styles.user}>
+          <img
+            src={user?.avatar || "https://i.pravatar.cc/150?img=68"}
+            alt="Avatar"
+            className={styles.avatarImg}
+          />
+          <div className={styles.userInfo}>
+            <p className={styles.userName}>{user?.nombre || 'Usuario'}</p>
+            <span className={styles.userRole}>
+              {user?.rol ? ROL_LABELS[user.rol as keyof typeof ROL_LABELS] || user.rol : 'Usuario'}
+            </span>
+          </div>
         </div>
+        <button className={styles.logoutBtn} onClick={handleLogout} title="Cerrar sesión">
+          ⏻
+        </button>
       </div>
     </aside>
   );

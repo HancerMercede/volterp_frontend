@@ -5,3 +5,6 @@ export type { ERPState, ERPActions, ERPContextType } from './ERPContext';
 export { UIProvider } from './UIContext.tsx';
 export { useUI } from './UIContext';
 export type { Toast, ToastType } from './UIContext';
+
+export { AuthProvider, useAuth } from './AuthContext';
+export type { User } from './AuthContext';
