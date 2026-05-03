@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import { usePermission } from "../../hooks/usePermission";
@@ -5,7 +6,22 @@ import { MODULOS } from "../../domain/constants/permisos";
 import { ROL_LABELS } from "../../domain/constants/roles";
 import styles from "./Sidebar.module.css";
 
+const MODULE_TRANSLATIONS: Record<string, string> = {
+  dashboard: 'sidebar.dashboard',
+  ventas: 'sidebar.ventas',
+  compras: 'sidebar.compras',
+  inventario: 'sidebar.inventario',
+  clientes: 'sidebar.clientes',
+  proveedores: 'sidebar.proveedores',
+  contabilidad: 'sidebar.contabilidad',
+  rrhh: 'sidebar.rrhh',
+  proyectos: 'sidebar.proyectos',
+  reportes: 'sidebar.reportes',
+  configuracion: 'sidebar.configuracion',
+};
+
 export function Sidebar() {
+  const { t } = useTranslation();
   const { user, logout } = useAuthStore();
   const { canRead } = usePermission();
   const navigate = useNavigate();
@@ -15,7 +31,7 @@ export function Sidebar() {
     navigate('/login');
   };
 
-  const visibleNavItems = MODULOS.filter(modulo => 
+  const visibleNavItems = MODULOS.filter(modulo =>
     canRead(modulo.key as any)
   );
 
@@ -41,7 +57,7 @@ export function Sidebar() {
               end={item.key === 'dashboard'}
             >
               <span className={styles.navIcon}>{item.icon}</span>
-              {item.label}
+              {t(MODULE_TRANSLATIONS[item.key] || item.key)}
             </NavLink>
           ))}
           <NavLink
@@ -51,7 +67,7 @@ export function Sidebar() {
             }
           >
             <span className={styles.navIcon}>💬</span>
-            Soporte
+            {t('sidebar.soporte')}
           </NavLink>
         </nav>
       </nav>
@@ -63,13 +79,13 @@ export function Sidebar() {
             className={styles.avatarImg}
           />
           <div className={styles.userInfo}>
-            <p className={styles.userName}>{user?.nombre || 'Usuario'}</p>
+            <p className={styles.userName}>{user?.nombre || t('auth.username')}</p>
             <span className={styles.userRole}>
               {user?.rol ? ROL_LABELS[user.rol as keyof typeof ROL_LABELS] || user.rol : 'Usuario'}
             </span>
           </div>
         </div>
-        <button className={styles.logoutBtn} onClick={handleLogout} title="Cerrar sesión">
+        <button className={styles.logoutBtn} onClick={handleLogout} title={t('auth.logout')}>
           ⏻
         </button>
       </div>

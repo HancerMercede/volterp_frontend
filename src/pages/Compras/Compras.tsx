@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCompraStore } from '../../stores/compraStore';
 import { useProductoStore } from '../../stores/productoStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -10,6 +11,7 @@ import type { Compra } from '../../data/mockData';
 import styles from './Compras.module.css';
 
 export function Compras() {
+  const { t } = useTranslation();
   const { compras, addCompra, updateCompra, deleteCompra } = useCompraStore();
   const { productos } = useProductoStore();
   const { addToast } = useUIStore();
@@ -45,14 +47,14 @@ export function Compras() {
     if (editingId) {
       updateCompra(editingId, formData);
       setEditingId(null);
-      addToast('Compra actualizada correctamente', 'success');
+      addToast(t('compras.purchaseUpdated'), 'success');
     } else {
       const newCompra: Compra = {
         ...formData,
         id: `C${String(compras.length + 1).padStart(3, '0')}`,
       };
       addCompra(newCompra);
-      addToast('Compra creada correctamente', 'success');
+      addToast(t('compras.purchaseCreated'), 'success');
     }
     setShowForm(false);
     resetForm();
@@ -76,20 +78,20 @@ export function Compras() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('¿Eliminar esta compra?')) {
+    if (confirm(t('compras.deleteConfirm'))) {
       deleteCompra(id);
-      addToast('Compra eliminada', 'error');
+      addToast(t('compras.purchaseDeleted'), 'error');
     }
   };
 
   const getProductoByName = (nombre: string) => productos.find(p => p.nombre === nombre);
 
   const columns = [
-    { key: 'id', header: 'ID' },
-    { key: 'proveedor', header: 'Proveedor' },
+    { key: 'id', header: t('common.id') },
+    { key: 'proveedor', header: t('compras.supplier') },
     {
       key: 'producto',
-      header: 'Producto',
+      header: t('compras.product'),
       render: (c: Compra) => {
         const producto = getProductoByName(c.producto);
         return producto ? (
@@ -104,22 +106,22 @@ export function Compras() {
     },
     {
       key: 'total',
-      header: 'Total',
+      header: t('common.total'),
       render: (c: Compra) => `$${c.total.toLocaleString()}`
     },
-    { key: 'fecha', header: 'Fecha' },
+    { key: 'fecha', header: t('common.date') },
     {
       key: 'estado',
-      header: 'Estado',
+      header: t('common.status'),
       render: (c: Compra) => (
         <span className={`${styles.badge} ${styles[c.estado]}`}>
-          {c.estado}
+          {c.estado === 'pendiente' ? t('compras.pending') : c.estado === 'recibida' ? t('compras.received') : t('compras.cancelled')}
         </span>
       )
     },
     {
       key: 'actions',
-      header: 'Acciones',
+      header: t('common.actions'),
       render: (c: Compra) => (
         <ActionButtons onEdit={() => handleEdit(c)} onDelete={() => handleDelete(c.id)} />
       ),
@@ -128,16 +130,16 @@ export function Compras() {
 
   return (
     <div>
-      <PageHeader title="Compras" subtitle="Gestión de compras y proveedores">
+      <PageHeader title={t('compras.title')} subtitle={t('compras.subtitle')}>
         <div className={styles.headerActions}>
           <SearchInput
             value={searchTerm}
             onChange={(value) => { setSearchTerm(value); goToPage(1); }}
-            placeholder="Buscar compras..."
+            placeholder={t('compras.searchPurchases')}
             width="240px"
           />
           <Button onClick={() => { resetForm(); setShowForm(true); }}>
-            + Nueva Compra
+            + {t('compras.newPurchase')}
           </Button>
         </div>
       </PageHeader>
@@ -145,12 +147,12 @@ export function Compras() {
       <Modal
         isOpen={showForm}
         onClose={() => { setShowForm(false); setEditingId(null); }}
-        title={editingId ? 'Editar Compra' : 'Nueva Compra'}
+        title={editingId ? t('compras.editPurchase') : t('compras.newPurchase')}
         onSubmit={handleSubmit}
-        submitLabel={editingId ? 'Actualizar' : 'Crear'}
+        submitLabel={editingId ? t('common.update') : t('common.create')}
       >
         <div className={styles.formGroup}>
-          <label>Proveedor</label>
+          <label>{t('compras.supplier')}</label>
           <input
             type="text"
             value={formData.proveedor}
@@ -159,7 +161,7 @@ export function Compras() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Producto</label>
+          <label>{t('compras.product')}</label>
           <input
             type="text"
             value={formData.producto}
@@ -168,7 +170,7 @@ export function Compras() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Cantidad</label>
+          <label>{t('common.quantity')}</label>
           <input
             type="number"
             min="1"
@@ -178,7 +180,7 @@ export function Compras() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Total</label>
+          <label>{t('common.total')}</label>
           <input
             type="number"
             value={formData.total}
@@ -187,7 +189,7 @@ export function Compras() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Fecha</label>
+          <label>{t('common.date')}</label>
           <input
             type="date"
             value={formData.fecha}
@@ -196,14 +198,14 @@ export function Compras() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Estado</label>
+          <label>{t('common.status')}</label>
           <select
             value={formData.estado}
             onChange={(e) => setFormData({...formData, estado: e.target.value as any})}
           >
-            <option value="pendiente">Pendiente</option>
-            <option value="recibida">Recibida</option>
-            <option value="cancelada">Cancelada</option>
+            <option value="pendiente">{t('compras.pending')}</option>
+            <option value="recibida">{t('compras.received')}</option>
+            <option value="cancelada">{t('compras.cancelled')}</option>
           </select>
         </div>
       </Modal>

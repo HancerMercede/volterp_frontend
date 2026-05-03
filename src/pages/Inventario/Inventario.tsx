@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useProductoStore } from '../../stores/productoStore';
 import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
@@ -8,6 +9,7 @@ import type { Producto } from '../../data/mockData';
 import styles from './Inventario.module.css';
 
 export function Inventario() {
+  const { t } = useTranslation();
   const { productos, addProducto, updateProducto, deleteProducto } = useProductoStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -79,16 +81,16 @@ export function Inventario() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('¿Eliminar este producto?')) {
+    if (confirm(t('inventario.deleteConfirm'))) {
       deleteProducto(id);
     }
   };
 
   const columns = [
-    { key: 'id', header: 'ID' },
+    { key: 'id', header: t('common.id') },
     {
       key: 'nombre',
-      header: 'Producto',
+      header: t('common.product'),
       render: (p: Producto) => (
         <ImageCell
           src={p.imagen}
@@ -100,7 +102,7 @@ export function Inventario() {
     },
     {
       key: 'stock',
-      header: 'Stock',
+      header: t('inventario.stock'),
       render: (p: Producto) => (
         <span className={p.stock === 0 ? styles.outOfStock : p.stock < 10 ? styles.lowStock : ''}>
           {p.stock}
@@ -109,13 +111,13 @@ export function Inventario() {
     },
     {
       key: 'precio',
-      header: 'Precio',
+      header: t('common.price'),
       render: (p: Producto) => `$${p.precio.toLocaleString()}`
     },
-    { key: 'proveedor', header: 'Proveedor' },
+    { key: 'proveedor', header: t('common.supplier') },
     {
       key: 'actions',
-      header: 'Acciones',
+      header: t('common.actions'),
       render: (p: Producto) => (
         <ActionButtons onEdit={() => handleEdit(p)} onDelete={() => handleDelete(p.id)} />
       ),
@@ -124,12 +126,12 @@ export function Inventario() {
 
   return (
     <div>
-      <PageHeader title="Inventario" subtitle="Control de productos y stock">
+      <PageHeader title={t('inventario.title')} subtitle={t('inventario.subtitle')}>
         <div className={styles.headerActions}>
           <SearchInput
             value={searchTerm}
             onChange={(value) => { setSearchTerm(value); goToPage(1); }}
-            placeholder="Buscar producto..."
+            placeholder={t('inventario.searchPlaceholder')}
             width="240px"
           />
           <select
@@ -137,12 +139,12 @@ export function Inventario() {
             value={filterStock}
             onChange={(e) => { setFilterStock(e.target.value as any); goToPage(1); }}
           >
-            <option value="all">Todos</option>
-            <option value="low">Stock bajo</option>
-            <option value="out">Sin stock</option>
+            <option value="all">{t('inventario.all')}</option>
+            <option value="low">{t('inventario.lowStock')}</option>
+            <option value="out">{t('inventario.outOfStock')}</option>
           </select>
           <Button onClick={() => { resetForm(); setShowForm(true); }}>
-            + Nuevo Producto
+            + {t('inventario.newProduct')}
           </Button>
         </div>
       </PageHeader>
@@ -150,12 +152,12 @@ export function Inventario() {
       <Modal
         isOpen={showForm}
         onClose={() => { setShowForm(false); setEditingId(null); }}
-        title={editingId ? 'Editar Producto' : 'Nuevo Producto'}
+        title={editingId ? t('inventario.editProduct') : t('inventario.newProduct')}
         onSubmit={handleSubmit}
-        submitLabel={editingId ? 'Actualizar' : 'Crear'}
+        submitLabel={editingId ? t('common.update') : t('common.create')}
       >
         <div className={styles.formGroup}>
-          <label>Nombre</label>
+          <label>{t('common.name')}</label>
           <input
             type="text"
             value={formData.nombre}
@@ -164,7 +166,7 @@ export function Inventario() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Categoría</label>
+          <label>{t('common.category')}</label>
           <input
             type="text"
             value={formData.categoria}
@@ -173,7 +175,7 @@ export function Inventario() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Stock</label>
+          <label>{t('inventario.stock')}</label>
           <input
             type="number"
             min="0"
@@ -183,7 +185,7 @@ export function Inventario() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Precio</label>
+          <label>{t('common.price')}</label>
           <input
             type="number"
             min="0"
@@ -193,7 +195,7 @@ export function Inventario() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Proveedor</label>
+          <label>{t('common.supplier')}</label>
           <input
             type="text"
             value={formData.proveedor}

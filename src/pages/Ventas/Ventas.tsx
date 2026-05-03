@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useVentaStore } from "../../stores/ventaStore";
 import { useClienteStore } from "../../stores/clienteStore";
 import { useProductoStore } from "../../stores/productoStore";
@@ -28,6 +29,7 @@ interface CarritoItem {
 }
 
 export function Ventas() {
+  const { t } = useTranslation();
   const { ventas, addVenta, deleteVenta } = useVentaStore();
   const { clientes } = useClienteStore();
   const { productos } = useProductoStore();
@@ -177,11 +179,11 @@ export function Ventas() {
 
   const completarVenta = () => {
     if (!selectedCliente) {
-      addToast("Por favor selecciona un cliente", "warning");
+      addToast(t('ventas.selectClientWarning'), "warning");
       return;
     }
     if (carrito.length === 0) {
-      addToast("El carrito está vacío", "warning");
+      addToast(t('ventas.cartEmptyWarning'), "warning");
       return;
     }
 
@@ -189,7 +191,7 @@ export function Ventas() {
 
     const nuevasVentas: Venta[] = carrito.map((item, index) => ({
       id: `V${String(ventas.length + index + 1).padStart(3, "0")}`,
-      cliente: clienteData?.nombre || "Cliente",
+      cliente: clienteData?.nombre || t('ventas.client'),
       clienteId: selectedCliente,
       producto: item.producto,
       productoId: item.productoId,
@@ -200,7 +202,7 @@ export function Ventas() {
     }));
 
     nuevasVentas.forEach((venta) => addVenta(venta));
-    addToast(`Venta completada: ${nuevasVentas.length} productos`, "success");
+    addToast(t('ventas.saleCompleted'), "success");
 
     setCarrito([]);
     setSelectedCliente("");
@@ -210,16 +212,16 @@ export function Ventas() {
 
   const guardarBorrador = () => {
     if (!selectedCliente || carrito.length === 0) {
-      addToast("Carrito vacío o sin cliente", "warning");
+      addToast(t('ventas.draftWarning'), "warning");
       return;
     }
-    addToast("Borrador guardado", "info");
+    addToast(t('ventas.draftSaved'), "info");
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("¿Eliminar esta venta?")) {
+    if (confirm(t('ventas.deleteConfirm'))) {
       deleteVenta(id);
-      addToast("Venta eliminada", "error");
+      addToast(t('ventas.saleDeleted'), "error");
     }
   };
 
@@ -248,10 +250,10 @@ export function Ventas() {
     productos.find((p) => p.nombre === nombre);
 
   const columns = [
-    { key: "id", header: "ID" },
+    { key: "id", header: t('common.id') },
     {
       key: "cliente",
-      header: "Cliente",
+      header: t('ventas.client'),
       render: (v: Venta) => {
         const cliente = getClienteByName(v.cliente);
         return cliente ? (
@@ -268,7 +270,7 @@ export function Ventas() {
     },
     {
       key: "producto",
-      header: "Producto",
+      header: t('ventas.product'),
       render: (v: Venta) => {
         const producto = getProductoByName(v.producto);
         return producto ? (
@@ -285,16 +287,16 @@ export function Ventas() {
     },
     {
       key: "total",
-      header: "Total",
+      header: t('common.total'),
       render: (v: Venta) => `$${v.total.toLocaleString()}`,
     },
-    { key: "fecha", header: "Fecha" },
+    { key: "fecha", header: t('common.date') },
     {
       key: "estado",
-      header: "Estado",
+      header: t('common.status'),
       render: (v: Venta) => (
         <span className={`${styles.badge} ${styles[v.estado]}`}>
-          {v.estado}
+          {v.estado === 'completada' ? t('ventas.completed') : t('ventas.pending')}
         </span>
       ),
     },
@@ -304,7 +306,7 @@ export function Ventas() {
 
   return (
     <div>
-      <PageHeader title="Ventas" subtitle="Gestión de ventas y pedidos">
+      <PageHeader title={t('ventas.title')} subtitle={t('ventas.subtitle')}>
         <div className={styles.headerActions}>
           <SearchInput
             value={searchTerm}
@@ -312,7 +314,7 @@ export function Ventas() {
               setSearchTerm(value);
               goToPage(1);
             }}
-            placeholder="Buscar ventas..."
+            placeholder={t('ventas.searchSales')}
             width="240px"
           />
           <Button
@@ -320,7 +322,7 @@ export function Ventas() {
               setShowForm(true);
             }}
           >
-            + Nueva Venta
+            + {t('ventas.newSale')}
           </Button>
         </div>
       </PageHeader>
@@ -330,11 +332,11 @@ export function Ventas() {
           <div className={styles.posContainer}>
             <div className={styles.productsPanel}>
               <div className={styles.productsHeader}>
-                <h3>📦 Productos</h3>
+                <h3>📦 {t('ventas.products')}</h3>
                 <SearchInput
                   value={searchTerm}
                   onChange={setSearchTerm}
-                  placeholder="Buscar productos..."
+                  placeholder={t('ventas.searchProducts')}
                   className={styles.productSearchInput}
                 />
               </div>
@@ -346,7 +348,7 @@ export function Ventas() {
                     className={`${styles.categoryTab} ${categoriaFilter === cat ? styles.active : ""}`}
                     onClick={() => setCategoriaFilter(cat)}
                   >
-                    {cat === "todos" ? "Todos" : cat}
+                    {cat === "todos" ? t('ventas.allProducts') : cat}
                   </button>
                 ))}
               </div>
@@ -394,13 +396,13 @@ export function Ventas() {
 
             <div className={styles.cartPanel}>
               <div className={styles.panelHeader}>
-                <h3>🛒 Carrito</h3>
+                <h3>🛒 {t('ventas.cart')}</h3>
                 {carrito.length > 0 && (
                   <button
                     className={styles.clearCart}
                     onClick={() => setCarrito([])}
                   >
-                    Limpiar
+                    {t('ventas.clear')}
                   </button>
                 )}
               </div>
@@ -408,8 +410,8 @@ export function Ventas() {
               {carrito.length === 0 ? (
                 <div className={styles.emptyCart}>
                   <span>🛒</span>
-                  <p>El carrito está vacío</p>
-                  <small>Agrega productos del catálogo</small>
+                  <p>{t('ventas.cartEmpty')}</p>
+                  <small>{t('ventas.addProductsHint')}</small>
                 </div>
               ) : (
                 <div className={styles.cartItems}>
@@ -459,24 +461,24 @@ export function Ventas() {
 
               <div className={styles.cartFooter}>
                 <div className={styles.cartTotal}>
-                  <span>Total items:</span>
+                  <span>{t('ventas.totalItems')}:</span>
                   <strong>{totales.totalItems}</strong>
                 </div>
                 <div className={styles.cartTotal}>
-                  <span>Total:</span>
+                  <span>{t('common.total')}:</span>
                   <strong>{formatCurrency(totales.subtotal)}</strong>
                 </div>
               </div>
             </div>
 
             <div className={styles.summaryPanel}>
-              <h3>📋 Resumen</h3>
+              <h3>📋 {t('ventas.summary')}</h3>
 
               <div className={styles.formGroup}>
-                <label>Cliente</label>
+                <label>{t('ventas.client')}</label>
                 <input
                   type="text"
-                  placeholder="Buscar cliente..."
+                  placeholder={t('ventas.searchClient')}
                   className={styles.searchInput}
                   value={clienteSearch}
                   onChange={(e) => setClienteSearch(e.target.value)}
@@ -495,7 +497,7 @@ export function Ventas() {
                   }}
                   style={{ marginTop: "8px" }}
                 >
-                  <option value="">Seleccionar cliente...</option>
+                  <option value="">{t('ventas.selectClient')}</option>
                   {searchFilteredClientes.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.nombre} {c.empresa && `(${c.empresa})`}
@@ -506,32 +508,32 @@ export function Ventas() {
 
               <div className={styles.totals}>
                 <div className={styles.totalRow}>
-                  <span>Subtotal</span>
+                  <span>{t('common.subtotal')}</span>
                   <span>{formatCurrency(totales.subtotal)}</span>
                 </div>
                 <div className={styles.totalRow}>
-                  <span>ITBIS (18%)</span>
+                  <span>{t('ventas.itbisLabel')}</span>
                   <span>{formatCurrency(totales.itbis)}</span>
                 </div>
                 <div className={`${styles.totalRow} ${styles.totalFinal}`}>
-                  <span>TOTAL</span>
+                  <span>{t('ventas.totalAmount')}</span>
                   <span>{formatCurrency(totales.total)}</span>
                 </div>
               </div>
 
               <div className={styles.formGroup}>
-                <label>Estado</label>
+                <label>{t('common.status')}</label>
                 <select
                   value={ventaEstado}
                   onChange={(e) => setVentaEstado(e.target.value as any)}
                 >
-                  <option value="pendiente">Pendiente</option>
-                  <option value="completada">Completada</option>
+                  <option value="pendiente">{t('ventas.pending')}</option>
+                  <option value="completada">{t('ventas.completed')}</option>
                 </select>
               </div>
 
               <div className={styles.formGroup}>
-                <label>Fecha</label>
+                <label>{t('common.date')}</label>
                 <input
                   type="text"
                   value={new Date().toISOString().split("T")[0]}
@@ -540,10 +542,10 @@ export function Ventas() {
               </div>
 
               <Button onClick={completarVenta} className={styles.completeBtn}>
-                ✅ Completar Venta
+                ✅ {t('ventas.checkout')}
               </Button>
               <Button variant="secondary" onClick={guardarBorrador}>
-                💾 Guardar Borrador
+                💾 {t('ventas.saveDraft')}
               </Button>
               <Button
                 variant="secondary"
@@ -552,7 +554,7 @@ export function Ventas() {
                   setCarrito([]);
                 }}
               >
-                Cancelar
+                {t('common.cancel')}
               </Button>
             </div>
           </div>

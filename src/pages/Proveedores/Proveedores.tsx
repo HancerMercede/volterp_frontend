@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useProveedorStore } from "../../stores/proveedorStore";
 import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput, Modal } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
@@ -8,6 +9,7 @@ import type { Proveedor } from "../../data/mockData";
 import styles from "./Proveedores.module.css";
 
 export function Proveedores() {
+  const { t } = useTranslation();
   const { proveedores, addProveedor, updateProveedor, deleteProveedor } = useProveedorStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -79,7 +81,7 @@ export function Proveedores() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("¿Eliminar proveedor?")) {
+    if (confirm(t('proveedores.deleteConfirm'))) {
       deleteProveedor(id);
     }
   };
@@ -90,20 +92,20 @@ export function Proveedores() {
       header: "",
       render: (p: Proveedor) => <ImageCell src={p.avatar} name={p.nombre} />,
     },
-    { key: "nombre", header: "Nombre" },
-    { key: "email", header: "Email" },
-    { key: "telefono", header: "Teléfono" },
-    { key: "categoria", header: "Categoría" },
+    { key: "nombre", header: t('common.name') },
+    { key: "email", header: t('common.email') },
+    { key: "telefono", header: t('common.phone') },
+    { key: "categoria", header: t('common.category') },
     {
       key: "totalOrdenes",
-      header: "Órdenes",
+      header: t('proveedores.totalOrders'),
       render: (p: Proveedor) => p.totalOrdenes.toString(),
     },
   ];
 
   return (
     <div className={styles.container}>
-      <PageHeader title="Proveedores" subtitle="Gestiona tus proveedores">
+      <PageHeader title={t('proveedores.title')} subtitle={t('proveedores.subtitle')}>
         <Button
           onClick={() => {
             resetForm();
@@ -111,7 +113,7 @@ export function Proveedores() {
             setShowForm(true);
           }}
         >
-          + Nuevo Proveedor
+          + {t('proveedores.newProvider')}
         </Button>
       </PageHeader>
 
@@ -119,7 +121,7 @@ export function Proveedores() {
         <SearchInput
           value={searchTerm}
           onChange={(value) => { setSearchTerm(value); goToPage(1); }}
-          placeholder="Buscar proveedores..."
+          placeholder={t('proveedores.searchProvider')}
           width="300px"
         />
       </div>
@@ -139,12 +141,12 @@ export function Proveedores() {
       <Modal
         isOpen={showForm}
         onClose={() => setShowForm(false)}
-        title={editingId ? "Editar Proveedor" : "Nuevo Proveedor"}
+        title={editingId ? t('proveedores.editProvider') : t('proveedores.newProvider')}
         onSubmit={handleSubmit}
-        submitLabel={editingId ? "Guardar" : "Crear"}
+        submitLabel={editingId ? t('common.save') : t('common.create')}
       >
         <div className={styles.formGroup}>
-          <label>Nombre</label>
+          <label>{t('common.name')}</label>
           <input
             type="text"
             value={formData.nombre}
@@ -155,7 +157,7 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Email</label>
+          <label>{t('common.email')}</label>
           <input
             type="email"
             value={formData.email}
@@ -166,7 +168,7 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Teléfono</label>
+          <label>{t('common.phone')}</label>
           <input
             type="tel"
             value={formData.telefono}
@@ -177,7 +179,7 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Dirección</label>
+          <label>{t('common.address')}</label>
           <input
             type="text"
             value={formData.direccion}
@@ -188,7 +190,7 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Categoría</label>
+          <label>{t('common.category')}</label>
           <input
             type="text"
             value={formData.categoria}
@@ -199,7 +201,7 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Total Órdenes</label>
+          <label>{t('proveedores.totalOrders')}</label>
           <input
             type="number"
             value={formData.totalOrdenes}

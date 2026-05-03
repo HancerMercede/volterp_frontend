@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useVentaStore } from '../../stores/ventaStore';
 import { useCompraStore } from '../../stores/compraStore';
 import { useProductoStore } from '../../stores/productoStore';
@@ -7,6 +8,7 @@ import { PageHeader } from '../../components/UI';
 import styles from './Reportes.module.css';
 
 export function Reportes() {
+  const { t } = useTranslation();
   const { ventas } = useVentaStore();
   const { compras } = useCompraStore();
   const { productos } = useProductoStore();
@@ -59,41 +61,41 @@ export function Reportes() {
 
   return (
     <div>
-      <PageHeader title="Reportes" subtitle="Análisis y métricas del negocio" />
+      <PageHeader title={t('reportes.title')} subtitle={t('reportes.subtitle')} />
 
       <div className={styles.grid}>
         <div className={styles.card}>
-          <h3 className={styles.cardTitle}>Resumen de Ventas</h3>
+          <h3 className={styles.cardTitle}>{t('reportes.salesSummary')}</h3>
           <p className={styles.cardValue}>${totalVentas.toLocaleString()}</p>
-          <p className={styles.cardSubtext}>{ventas.length} transacciones</p>
+          <p className={styles.cardSubtext}>{ventas.length} {t('reportes.transactions')}</p>
         </div>
 
         <div className={styles.card}>
-          <h3 className={styles.cardTitle}>Resumen de Compras</h3>
+          <h3 className={styles.cardTitle}>{t('reportes.purchasesSummary')}</h3>
           <p className={styles.cardValue}>${totalCompras.toLocaleString()}</p>
-          <p className={styles.cardSubtext}>{compras.length} transacciones</p>
+          <p className={styles.cardSubtext}>{compras.length} {t('reportes.transactions')}</p>
         </div>
 
         <div className={styles.card}>
-          <h3 className={styles.cardTitle}>Total Clientes</h3>
+          <h3 className={styles.cardTitle}>{t('reportes.totalClients')}</h3>
           <p className={styles.cardValue}>{clientes.length}</p>
-          <p className={styles.cardSubtext}>Clientes registrados</p>
+          <p className={styles.cardSubtext}>{t('reportes.registeredClients')}</p>
         </div>
 
         <div className={styles.card}>
-          <h3 className={styles.cardTitle}>Inventario</h3>
+          <h3 className={styles.cardTitle}>{t('reportes.inventory')}</h3>
           <p className={styles.cardValue}>{productos.length}</p>
-          <p className={styles.cardSubtext}>{productosSinStock} sin stock, {productosStockBajo} bajo</p>
+          <p className={styles.cardSubtext}>{productosSinStock} {t('reportes.outOfStock')}, {productosStockBajo} {t('reportes.lowStock')}</p>
         </div>
       </div>
 
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Top Clientes por Compras</h3>
+        <h3 className={styles.sectionTitle}>{t('reportes.topClients')}</h3>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Cliente</th>
-              <th>Total Compras</th>
+              <th>{t('reportes.client')}</th>
+              <th>{t('reportes.totalPurchases')}</th>
             </tr>
           </thead>
           <tbody>
@@ -111,13 +113,13 @@ export function Reportes() {
       </div>
 
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>🏆 Productos Más Vendidos</h3>
+        <h3 className={styles.sectionTitle}>{t('reportes.topProducts')}</h3>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Producto</th>
-              <th>Cantidad Vendida</th>
-              <th>Total Generado</th>
+              <th>{t('reportes.product')}</th>
+              <th>{t('reportes.quantitySold')}</th>
+              <th>{t('reportes.totalGenerated')}</th>
             </tr>
           </thead>
           <tbody>
@@ -133,7 +135,7 @@ export function Reportes() {
       </div>
 
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>📊 Ventas Últimos 7 Días</h3>
+        <h3 className={styles.sectionTitle}>{t('reportes.last7DaysSales')}</h3>
         <div className={styles.chartContainer}>
           {ventasPorFecha.map((v, idx) => (
             <div key={idx} className={styles.chartBar}>

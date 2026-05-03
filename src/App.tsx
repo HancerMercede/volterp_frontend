@@ -16,6 +16,7 @@ import { Soporte } from './pages/Soporte/Soporte';
 import { Login } from './pages/Login/Login';
 import { useAuthStore } from './stores/authStore';
 import { ToastContainer } from './components/UI';
+import './i18n';
 import './styles/variables.css';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {

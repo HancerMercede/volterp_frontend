@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTransaccionStore } from '../../stores/transaccionStore';
 import { Table, Button, PageHeader, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
@@ -9,6 +10,7 @@ import styles from './Contabilidad.module.css';
 const ITEMS_PER_PAGE = 10;
 
 export function Contabilidad() {
+  const { t } = useTranslation();
   const { transacciones, addTransaccion, updateTransaccion, deleteTransaccion } = useTransaccionStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -70,7 +72,7 @@ export function Contabilidad() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('¿Eliminar transacción?')) {
+    if (confirm(t('contabilidad.deleteConfirm'))) {
       deleteTransaccion(id);
     }
   };
@@ -80,46 +82,46 @@ export function Contabilidad() {
   };
 
   const columns = [
-    { key: 'id', header: 'ID' },
-    { key: 'descripcion', header: 'Descripción' },
-    { key: 'tipo', header: 'Tipo', render: (t: TransaccionContable) => (
-      <span className={`${styles.badge} ${t.tipo === 'ingreso' ? styles.ingreso : styles.egreso}`}>
-        {t.tipo === 'ingreso' ? 'Ingreso' : 'Egreso'}
+    { key: 'id', header: t('common.id') },
+    { key: 'descripcion', header: t('common.description') },
+    { key: 'tipo', header: t('common.type'), render: (tr: TransaccionContable) => (
+      <span className={`${styles.badge} ${tr.tipo === 'ingreso' ? styles.ingreso : styles.egreso}`}>
+        {tr.tipo === 'ingreso' ? t('contabilidad.income') : t('contabilidad.expense')}
       </span>
     )},
-    { key: 'monto', header: 'Monto', render: (t: TransaccionContable) => (
-      <span className={t.tipo === 'ingreso' ? styles.positivo : styles.negativo}>
-        {t.tipo === 'ingreso' ? '+' : '-'}{formatCurrency(t.monto)}
+    { key: 'monto', header: t('common.amount'), render: (tr: TransaccionContable) => (
+      <span className={tr.tipo === 'ingreso' ? styles.positivo : styles.negativo}>
+        {tr.tipo === 'ingreso' ? '+' : '-'}{formatCurrency(tr.monto)}
       </span>
     )},
-    { key: 'categoria', header: 'Categoría' },
-    { key: 'fecha', header: 'Fecha' },
-    { key: 'estado', header: 'Estado', render: (t: TransaccionContable) => (
-      <span className={`${styles.badge} ${t.estado === 'conciliada' ? styles.conciliada : styles.pendiente}`}>
-        {t.estado === 'conciliada' ? 'Conciliada' : 'Pendiente'}
+    { key: 'categoria', header: t('common.category') },
+    { key: 'fecha', header: t('common.date') },
+    { key: 'estado', header: t('common.status'), render: (tr: TransaccionContable) => (
+      <span className={`${styles.badge} ${tr.estado === 'conciliada' ? styles.conciliada : styles.pendiente}`}>
+        {tr.estado === 'conciliada' ? t('contabilidad.reconciled') : t('contabilidad.pending')}
       </span>
     )},
   ];
 
   return (
     <div className={styles.container}>
-      <PageHeader title="Contabilidad" subtitle="Gestión financiera y contable">
+      <PageHeader title={t('contabilidad.title')} subtitle={t('contabilidad.subtitle')}>
         <Button onClick={() => { resetForm(); setEditingId(null); setShowForm(true); }}>
-          + Nueva Transacción
+          + {t('contabilidad.newTransaction')}
         </Button>
       </PageHeader>
 
       <div className={styles.summaryCards}>
         <div className={styles.card}>
-          <span className={styles.cardLabel}>Ingresos</span>
+          <span className={styles.cardLabel}>{t('contabilidad.income')}</span>
           <span className={`${styles.cardValue} ${styles.positivo}`}>{formatCurrency(totalIngresos)}</span>
         </div>
         <div className={styles.card}>
-          <span className={styles.cardLabel}>Egresos</span>
+          <span className={styles.cardLabel}>{t('contabilidad.expenses')}</span>
           <span className={`${styles.cardValue} ${styles.negativo}`}>{formatCurrency(totalEgresos)}</span>
         </div>
         <div className={styles.card}>
-          <span className={styles.cardLabel}>Balance</span>
+          <span className={styles.cardLabel}>{t('contabilidad.balance')}</span>
           <span className={`${styles.cardValue} ${balance >= 0 ? styles.positivo : styles.negativo}`}>
             {formatCurrency(balance)}
           </span>
@@ -130,13 +132,13 @@ export function Contabilidad() {
         <SearchInput
           value={searchTerm}
           onChange={(value) => { setSearchTerm(value); goToPage(1); }}
-          placeholder="Buscar transacciones..."
+          placeholder={t('contabilidad.searchTransaction')}
           width="240px"
         />
         <select value={filterTipo} onChange={(e) => { setFilterTipo(e.target.value as typeof filterTipo); goToPage(1); }} className={styles.select}>
-          <option value="todos">Todos</option>
-          <option value="ingreso">Ingresos</option>
-          <option value="egreso">Egresos</option>
+          <option value="todos">{t('contabilidad.filterAll')}</option>
+          <option value="ingreso">{t('contabilidad.income')}</option>
+          <option value="egreso">{t('contabilidad.expenses')}</option>
         </select>
       </div>
 
@@ -150,38 +152,38 @@ export function Contabilidad() {
       <Modal
         isOpen={showForm}
         onClose={() => setShowForm(false)}
-        title={editingId ? 'Editar Transacción' : 'Nueva Transacción'}
+        title={editingId ? t('contabilidad.editTransaction') : t('contabilidad.newTransaction')}
         onSubmit={handleSubmit}
-        submitLabel={editingId ? 'Guardar' : 'Crear'}
+        submitLabel={editingId ? t('common.save') : t('common.create')}
       >
         <div className="formGroup">
-          <label>Descripción</label>
+          <label>{t('common.description')}</label>
           <input type="text" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} required />
         </div>
         <div className="formGroup">
-          <label>Tipo</label>
+          <label>{t('common.type')}</label>
           <select value={formData.tipo} onChange={e => setFormData({...formData, tipo: e.target.value as 'ingreso' | 'egreso'})}>
-            <option value="ingreso">Ingreso</option>
-            <option value="egreso">Egreso</option>
+            <option value="ingreso">{t('contabilidad.income')}</option>
+            <option value="egreso">{t('contabilidad.expenses')}</option>
           </select>
         </div>
         <div className="formGroup">
-          <label>Monto</label>
+          <label>{t('common.amount')}</label>
           <input type="number" value={formData.monto} onChange={e => setFormData({...formData, monto: Number(e.target.value)})} required />
         </div>
         <div className="formGroup">
-          <label>Fecha</label>
+          <label>{t('common.date')}</label>
           <input type="date" value={formData.fecha} onChange={e => setFormData({...formData, fecha: e.target.value})} required />
         </div>
         <div className="formGroup">
-          <label>Categoría</label>
+          <label>{t('common.category')}</label>
           <input type="text" value={formData.categoria} onChange={e => setFormData({...formData, categoria: e.target.value})} required />
         </div>
         <div className="formGroup">
-          <label>Estado</label>
+          <label>{t('common.status')}</label>
           <select value={formData.estado} onChange={e => setFormData({...formData, estado: e.target.value as 'conciliada' | 'pendiente'})}>
-            <option value="pendiente">Pendiente</option>
-            <option value="conciliada">Conciliada</option>
+            <option value="pendiente">{t('contabilidad.pending')}</option>
+            <option value="conciliada">{t('contabilidad.reconciled')}</option>
           </select>
         </div>
       </Modal>

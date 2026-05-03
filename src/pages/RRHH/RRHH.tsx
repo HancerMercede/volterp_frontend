@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button, PageHeader, Pagination } from "../../components/UI";
 import { useEmpleadoStore } from "../../stores/empleadoStore";
@@ -14,6 +15,7 @@ import { EmpleadoFormModal } from "../../components/RRHH/EmpleadoFormModal";
 import styles from "./RRHH.module.css";
 
 export function RRHH() {
+  const { t } = useTranslation();
   const { empleados, addEmpleado, updateEmpleado, deleteEmpleado } = useEmpleadoStore();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,7 +66,7 @@ export function RRHH() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("¿Eliminar empleado?")) deleteEmpleado(id);
+    if (confirm(t('rrhh.deleteConfirm'))) deleteEmpleado(id);
   };
 
   const openNewForm = () => {
@@ -74,10 +76,10 @@ export function RRHH() {
 
   return (
     <div className={styles.container}>
-      <PageHeader title="Recursos Humanos" subtitle="Gestión de empleados">
+      <PageHeader title={t('rrhh.title')} subtitle={t('rrhh.subtitle')}>
         <>
-          <Button variant="secondary" onClick={() => navigate("/rrhh/nomina")}>Ver Nómina</Button>
-          <Button onClick={openNewForm}>+ Nuevo Empleado</Button>
+          <Button variant="secondary" onClick={() => navigate("/rrhh/nomina")}>{t('rrhh.viewPayroll')}</Button>
+          <Button onClick={openNewForm}>+ {t('rrhh.newEmployee')}</Button>
         </>
       </PageHeader>
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useChatStore } from '../../stores/chatStore';
 import { ChatHeader } from '../../components/Support/ChatHeader';
 import { ChatWindow } from '../../components/Support/ChatWindow';
@@ -8,6 +9,7 @@ import { getAIResponse } from '../../data/soporteResponses';
 import styles from './Soporte.module.css';
 
 export function Soporte() {
+  const { t } = useTranslation();
   const { messages, addMessage, setTyping, setEscalating, isEscalating, isTyping } = useChatStore();
   const { addToast } = useUIStore();
   const [showEscalation, setShowEscalation] = useState(false);
@@ -31,7 +33,7 @@ export function Soporte() {
     setEscalating(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setEscalating(false);
-    addToast('Tu mensaje ha sido enviado a nuestro equipo de soporte. Te contactaremos pronto.', 'success');
+    addToast(t('soporte.escalationSuccess'), 'success');
     setShowEscalation(false);
   };
 

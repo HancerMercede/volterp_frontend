@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useDashboard } from '../../application/hooks/useDashboard';
 import { KpiCard, StatsRow, SalesChart, CategoryDonut, TopProducts, RecentActivities, Reminders } from '../../components/Dashboard';
 import { PageHeader } from '../../components/UI';
@@ -5,20 +6,21 @@ import { formatCurrency } from '../../domain/dashboard/constants';
 import styles from './Dashboard.module.css';
 
 export function Dashboard() {
-  const { 
-    kpis, 
-    topProducts, 
-    activities, 
-    reminders, 
-    dashboardStats, 
-    salesChartData, 
+  const { t } = useTranslation();
+  const {
+    kpis,
+    topProducts,
+    activities,
+    reminders,
+    dashboardStats,
+    salesChartData,
     categoryData,
-    maxSales 
+    maxSales
   } = useDashboard();
 
   return (
     <>
-      <PageHeader title="Dashboard" subtitle="Resumen general del negocio" />
+      <PageHeader title={t('dashboard.title')} subtitle={t('dashboard.subtitle')} />
 
       <StatsRow stats={dashboardStats} />
 

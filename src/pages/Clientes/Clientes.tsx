@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useClienteStore } from "../../stores/clienteStore";
 import {
   Table,
@@ -17,6 +18,7 @@ import type { Cliente } from "../../data/mockData";
 import styles from "./Clientes.module.css";
 
 export function Clientes() {
+  const { t } = useTranslation();
   const { clientes, addCliente, updateCliente, deleteCliente } = useClienteStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -90,16 +92,16 @@ export function Clientes() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("¿Eliminar este cliente?")) {
+    if (confirm(t('clientes.deleteConfirm'))) {
       deleteCliente(id);
     }
   };
 
   const columns = [
-    { key: "id", header: "ID" },
+    { key: "id", header: t('common.id') },
     {
       key: "nombre",
-      header: "Cliente",
+      header: t('clientes.client'),
       render: (c: Cliente) => (
         <ImageCell
           src={c.avatar}
@@ -109,17 +111,17 @@ export function Clientes() {
         />
       ),
     },
-    { key: "email", header: "Email" },
-    { key: "telefono", header: "Teléfono" },
+    { key: "email", header: t('common.email') },
+    { key: "telefono", header: t('common.phone') },
     {
       key: "totalCompras",
-      header: "Total Compras",
+      header: t('clientes.totalPurchases'),
       render: (c: Cliente) =>
         `$${c.totalCompras.toLocaleString()}`,
     },
     {
       key: "actions",
-      header: "Acciones",
+      header: t('common.actions'),
       render: (c: Cliente) => (
         <ActionButtons
           onEdit={() => handleEdit(c)}
@@ -131,7 +133,7 @@ export function Clientes() {
 
   return (
     <div>
-      <PageHeader title="Clientes" subtitle="Gestión de clientes y contactos">
+      <PageHeader title={t('clientes.title')} subtitle={t('clientes.subtitle')}>
         <div className={styles.headerActions}>
           <SearchInput
             value={searchTerm}
@@ -139,7 +141,7 @@ export function Clientes() {
               setSearchTerm(value);
               goToPage(1);
             }}
-            placeholder="Buscar cliente..."
+            placeholder={t('clientes.searchClient')}
             width="240px"
           />
           <Button
@@ -148,7 +150,7 @@ export function Clientes() {
               setShowForm(true);
             }}
           >
-            + Nuevo Cliente
+            + {t('clientes.newClient')}
           </Button>
         </div>
       </PageHeader>
@@ -159,12 +161,12 @@ export function Clientes() {
           setShowForm(false);
           setEditingId(null);
         }}
-        title={editingId ? "Editar Cliente" : "Nuevo Cliente"}
+        title={editingId ? t('clientes.editClient') : t('clientes.newClient')}
         onSubmit={handleSubmit}
-        submitLabel={editingId ? "Actualizar" : "Crear"}
+        submitLabel={editingId ? t('common.update') : t('common.create')}
       >
         <div className={styles.formGroup}>
-          <label>Nombre</label>
+          <label>{t('clientes.clientName')}</label>
           <input
             type="text"
             value={formData.nombre}
@@ -175,7 +177,7 @@ export function Clientes() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Email</label>
+          <label>{t('clientes.clientEmail')}</label>
           <input
             type="email"
             value={formData.email}
@@ -186,7 +188,7 @@ export function Clientes() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Teléfono</label>
+          <label>{t('clientes.clientPhone')}</label>
           <input
             type="tel"
             value={formData.telefono}
@@ -198,7 +200,7 @@ export function Clientes() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Dirección</label>
+          <label>{t('common.address')}</label>
           <input
             type="text"
             value={formData.direccion}
@@ -209,7 +211,7 @@ export function Clientes() {
         </div>
         {!editingId && (
           <div className={styles.formGroup}>
-            <label>Total Compras</label>
+            <label>{t('clientes.totalPurchases')}</label>
             <input
               type="number"
               min="0"

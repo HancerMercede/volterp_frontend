@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button, PageHeader, SearchInput } from "../../components/UI";
 import { useEmpleadoStore } from "../../stores/empleadoStore";
@@ -7,6 +8,7 @@ import type { Empleado } from "../../domain/entities/Empleado";
 import styles from "./Nomina.module.css";
 
 export function Nomina() {
+  const { t } = useTranslation();
   const { empleados } = useEmpleadoStore();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,21 +34,21 @@ export function Nomina() {
   return (
     <div className={styles.container}>
       <PageHeader
-        title="Nómina"
-        subtitle="Cálculo y procesamiento de nómina"
+        title={t('nomina.title')}
+        subtitle={t('nomina.subtitle')}
       >
         <Button variant="secondary" onClick={() => navigate("/rrhh")}>
-          ← Volver a RRHH
+          ← {t('nomina.backToRRHH')}
         </Button>
       </PageHeader>
 
       <div className={styles.content}>
         <div className={styles.sidebar}>
-          <h3>Seleccionar Empleado</h3>
+          <h3>{t('nomina.selectEmployee')}</h3>
           <SearchInput
             value={searchTerm}
             onChange={setSearchTerm}
-            placeholder="Buscar empleado..."
+            placeholder={t('nomina.searchEmployee')}
             width="100%"
           />
 
@@ -76,22 +78,22 @@ export function Nomina() {
                 <div>
                   <h2>{selectedEmpleado.nombre}</h2>
                   <p>{selectedEmpleado.cargo} - {selectedEmpleado.departamento}</p>
-                  <p className={styles.salario}>Salario Base: {formatCurrency(selectedEmpleado.salarioBase)}</p>
+                  <p className={styles.salario}>{t('nomina.baseSalary')}: {formatCurrency(selectedEmpleado.salarioBase)}</p>
                 </div>
               </div>
 
               <NominaCalculator salarioBase={selectedEmpleado.salarioBase} />
 
               <div className={styles.infoBox}>
-                <h4>Información de Pago</h4>
-                <p><strong>Periodicidad:</strong> {selectedEmpleado.periodicidadPago}</p>
-                <p><strong>Banco:</strong> {selectedEmpleado.cuentaBancaria.banco}</p>
-                <p><strong>Cuenta:</strong> {selectedEmpleado.cuentaBancaria.numeroCuenta}</p>
+                <h4>{t('nomina.paymentInfo')}</h4>
+                <p><strong>{t('nomina.periodicity')}:</strong> {selectedEmpleado.periodicidadPago}</p>
+                <p><strong>{t('nomina.bank')}:</strong> {selectedEmpleado.cuentaBancaria.banco}</p>
+                <p><strong>{t('nomina.account')}:</strong> {selectedEmpleado.cuentaBancaria.numeroCuenta}</p>
               </div>
             </>
           ) : (
             <div className={styles.emptyState}>
-              <p>Seleccione un empleado para calcular su nómina</p>
+              <p>{t('nomina.selectEmployeeEmpty')}</p>
             </div>
           )}
         </div>

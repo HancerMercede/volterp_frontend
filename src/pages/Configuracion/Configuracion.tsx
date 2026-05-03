@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader, Button } from '../../components/UI';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher/LanguageSwitcher';
 import styles from './Configuracion.module.css';
 
 export function Configuracion() {
+  const { t } = useTranslation();
   const [empresa, setEmpresa] = useState({
     nombre: 'Mi Empresa',
     rnc: '123-456789-0',
@@ -12,97 +15,105 @@ export function Configuracion() {
   });
 
   const [config, setConfig] = useState({
-   iva: 18,
+    iva: 18,
     moneda: 'DOP',
     zonaHoraria: 'America/Santo_Domingo',
   });
 
   return (
     <div>
-      <PageHeader title="Configuración" subtitle="Personaliza la aplicación" />
+      <PageHeader title={t('configuracion.title')} subtitle={t('configuracion.subtitle')} />
 
       <div className={styles.sections}>
         <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>Datos de la Empresa</h3>
+          <h3 className={styles.sectionTitle}>{t('configuracion.companyData')}</h3>
           <div className={styles.form}>
             <div className={styles.formGroup}>
-              <label>Nombre de la Empresa</label>
-              <input 
-                type="text" 
+              <label>{t('configuracion.companyName')}</label>
+              <input
+                type="text"
                 value={empresa.nombre}
                 onChange={(e) => setEmpresa({...empresa, nombre: e.target.value})}
               />
             </div>
             <div className={styles.formGroup}>
-              <label>RNC</label>
-              <input 
-                type="text" 
+              <label>{t('configuracion.companyRNC')}</label>
+              <input
+                type="text"
                 value={empresa.rnc}
                 onChange={(e) => setEmpresa({...empresa, rnc: e.target.value})}
               />
             </div>
             <div className={styles.formGroup}>
-              <label>Teléfono</label>
-              <input 
-                type="tel" 
+              <label>{t('configuracion.companyPhone')}</label>
+              <input
+                type="tel"
                 value={empresa.telefono}
                 onChange={(e) => setEmpresa({...empresa, telefono: e.target.value})}
               />
             </div>
             <div className={styles.formGroup}>
-              <label>Email</label>
-              <input 
-                type="email" 
+              <label>{t('configuracion.companyEmail')}</label>
+              <input
+                type="email"
                 value={empresa.email}
                 onChange={(e) => setEmpresa({...empresa, email: e.target.value})}
               />
             </div>
             <div className={styles.formGroup}>
-              <label>Dirección</label>
-              <input 
-                type="text" 
+              <label>{t('configuracion.companyAddress')}</label>
+              <input
+                type="text"
                 value={empresa.direccion}
                 onChange={(e) => setEmpresa({...empresa, direccion: e.target.value})}
               />
             </div>
-            <Button>Guardar Cambios</Button>
+            <Button>{t('common.save')}</Button>
           </div>
         </div>
 
         <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>Configuración General</h3>
+          <h3 className={styles.sectionTitle}>{t('configuracion.generalSettings')}</h3>
           <div className={styles.form}>
             <div className={styles.formGroup}>
-              <label>Porcentaje IVA (%)</label>
-              <input 
-                type="number" 
+              <label>{t('configuracion.ivaPercentage')}</label>
+              <input
+                type="number"
                 value={config.iva}
                 onChange={(e) => setConfig({...config, iva: parseInt(e.target.value)})}
               />
             </div>
             <div className={styles.formGroup}>
-              <label>Moneda</label>
-              <select 
+              <label>{t('configuracion.currency')}</label>
+              <select
                 value={config.moneda}
                 onChange={(e) => setConfig({...config, moneda: e.target.value})}
               >
-                <option value="DOP">Peso Dominicano (DOP)</option>
-                <option value="USD">Dólar Americano (USD)</option>
-                <option value="EUR">Euro (EUR)</option>
+                <option value="DOP">{t('configuracion.currencyDOP')}</option>
+                <option value="USD">{t('configuracion.currencyUSD')}</option>
+                <option value="EUR">{t('configuracion.currencyEUR')}</option>
               </select>
             </div>
             <div className={styles.formGroup}>
-              <label>Zona Horaria</label>
-              <select 
+              <label>{t('configuracion.timezone')}</label>
+              <select
                 value={config.zonaHoraria}
                 onChange={(e) => setConfig({...config, zonaHoraria: e.target.value})}
               >
                 <option value="America/Santo_Domingo">Santo Domingo (GMT-4)</option>
-                <option value="America/New_York">Nueva York (GMT-5)</option>
+                <option value="America/New_York">New York (GMT-5)</option>
                 <option value="Europe/Madrid">Madrid (GMT+1)</option>
               </select>
             </div>
-            <Button>Guardar Configuración</Button>
+            <Button>{t('common.save')}</Button>
+          </div>
+        </div>
+
+        <div className={styles.section}>
+          <h3 className={styles.sectionTitle}>{t('configuracion.language')}</h3>
+          <div className={styles.form}>
+            <LanguageSwitcher />
+            <p className={styles.hint}>{t('configuracion.languageHint')}</p>
           </div>
         </div>
       </div>
