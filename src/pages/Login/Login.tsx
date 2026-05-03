@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context";
+import { useAuthStore } from "../../stores/authStore";
 import styles from "./Login.module.css";
 
 interface LoginUser {
@@ -24,7 +24,7 @@ const MOCK_USERS: Record<string, { password: string; user: LoginUser }> = {
 
 export function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

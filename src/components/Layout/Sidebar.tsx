@@ -1,12 +1,12 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context";
+import { useAuthStore } from "../../stores/authStore";
 import { usePermission } from "../../hooks/usePermission";
 import { MODULOS } from "../../domain/constants/permisos";
 import { ROL_LABELS } from "../../domain/constants/roles";
 import styles from "./Sidebar.module.css";
 
 export function Sidebar() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore();
   const { canRead } = usePermission();
   const navigate = useNavigate();
 

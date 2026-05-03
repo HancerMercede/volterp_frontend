@@ -13,12 +13,13 @@ import { Proyectos } from './pages/Proyectos/Proyectos';
 import { Reportes } from './pages/Reportes/Reportes';
 import { Configuracion } from './pages/Configuracion/Configuracion';
 import { Login } from './pages/Login/Login';
-import { ERPProvider, UIProvider, AuthProvider, useAuth } from './context';
+import { ERPProvider, UIProvider } from './context';
+import { useAuthStore } from './stores/authStore';
 import { ToastContainer } from './components/UI';
 import './styles/variables.css';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
@@ -49,12 +50,10 @@ function App() {
   return (
     <UIProvider>
       <ERPProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <AppRoutes />
-            <ToastContainer />
-          </BrowserRouter>
-        </AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+          <ToastContainer />
+        </BrowserRouter>
       </ERPProvider>
     </UIProvider>
   );

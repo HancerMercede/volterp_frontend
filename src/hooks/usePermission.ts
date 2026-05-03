@@ -1,4 +1,4 @@
-import { useAuth } from '../context';
+import { useAuthStore } from '../stores/authStore';
 import { MATRIZ_PERMISOS, type Modulo, type PermisosModulo } from '../domain/constants/permisos';
 import { Rol, Permiso } from '../domain/constants/roles';
 
@@ -13,7 +13,7 @@ interface UsePermissionResult {
 }
 
 export function usePermission(): UsePermissionResult {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   const userRole = user?.rol ? (user.rol as Rol) : null;
   const isAdmin = userRole === Rol.ADMIN;
