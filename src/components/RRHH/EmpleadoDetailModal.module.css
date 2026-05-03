@@ -1,0 +1,99 @@
+.content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid var(--primary);
+  object-fit: cover;
+}
+
+.headerInfo h2 {
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+}
+
+.headerInfo p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.activo { background: #D1FAE5; color: #065F46; }
+.inactivo { background: #FEE2E2; color: #991B1B; }
+.vacaciones { background: #DBEAFE; color: #1E40AF; }
+.licencia { background: #FEF3C7; color: #92400E; }
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.section h3 {
+  margin: 0 0 12px 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sectionFull {
+  background: transparent;
+  padding: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.grid label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.grid span {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.highlight {
+  color: var(--primary) !important;
+  font-weight: 600;
+  font-size: 16px !important;
+}

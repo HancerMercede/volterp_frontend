@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button, PageHeader, Pagination } from "../../components/UI";
 import { useERP } from "../../context/ERPContext";
 import { usePagination } from "../../hooks/usePagination";
@@ -14,6 +15,7 @@ import styles from "./RRHH.module.css";
 
 export function RRHH() {
   const { empleados, setEmpleados } = useERP();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState<"todos" | EstadoEmpleado>("todos");
   const [showForm, setShowForm] = useState(false);
@@ -73,7 +75,10 @@ export function RRHH() {
   return (
     <div className={styles.container}>
       <PageHeader title="Recursos Humanos" subtitle="Gestión de empleados">
-        <Button onClick={openNewForm}>+ Nuevo Empleado</Button>
+        <>
+          <Button variant="secondary" onClick={() => navigate("/rrhh/nomina")}>Ver Nómina</Button>
+          <Button onClick={openNewForm}>+ Nuevo Empleado</Button>
+        </>
       </PageHeader>
 
       <EmpleadoStats empleados={empleados} />

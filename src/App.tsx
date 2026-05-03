@@ -8,6 +8,7 @@ import { Clientes } from './pages/Clientes/Clientes';
 import { Proveedores } from './pages/Proveedores/Proveedores';
 import { Contabilidad } from './pages/Contabilidad/Contabilidad';
 import { RRHH } from './pages/RRHH/RRHH';
+import { Nomina } from './pages/RRHH/Nomina';
 import { Proyectos } from './pages/Proyectos/Proyectos';
 import { Reportes } from './pages/Reportes/Reportes';
 import { Configuracion } from './pages/Configuracion/Configuracion';
@@ -35,6 +36,7 @@ function AppRoutes() {
         <Route path="/proveedores" element={<Proveedores />} />
         <Route path="/contabilidad" element={<Contabilidad />} />
         <Route path="/rrhh" element={<RRHH />} />
+        <Route path="/rrhh/nomina" element={<Nomina />} />
         <Route path="/proyectos" element={<Proyectos />} />
         <Route path="/reportes" element={<Reportes />} />
         <Route path="/configuracion" element={<Configuracion />} />

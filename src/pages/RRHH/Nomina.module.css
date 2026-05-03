@@ -1,0 +1,147 @@
+.container {
+  padding: 0;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  min-height: calc(100vh - 180px);
+}
+
+.sidebar {
+  background: var(--glass-bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  height: fit-content;
+}
+
+.sidebar h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.empleadoList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+.empleadoItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.empleadoItem:hover {
+  border-color: var(--primary);
+  background: var(--glass-bg);
+}
+
+.selected {
+  border-color: var(--primary);
+  background: rgba(250, 204, 21, 0.1);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.empleadoInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.nombre {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.cargo {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.main {
+  background: var(--glass-bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.empleadoHeader {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.avatarLarge {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary);
+}
+
+.empleadoHeader h2 {
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+}
+
+.empleadoHeader p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.salario {
+  margin-top: 8px !important;
+  font-weight: 600;
+  color: var(--primary) !important;
+}
+
+.infoBox {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+
+.infoBox h4 {
+  margin: 0 0 12px 0;
+  color: var(--text-primary);
+}
+
+.infoBox p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
