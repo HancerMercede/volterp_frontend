@@ -12,7 +12,8 @@ import {
   empleados as initialEmpleados,
   proyectos as initialProyectos,
 } from '../data/mockData';
-import type { Venta, Compra, Producto, Cliente, Proveedor, TransaccionContable, Empleado, Proyecto } from '../data/mockData';
+import type { Venta, Compra, Producto, Cliente, Proveedor, TransaccionContable, Proyecto } from '../data/mockData';
+import type { Empleado } from '../domain/entities/Empleado';
 
 export interface ERPState {
   ventas: Venta[];
