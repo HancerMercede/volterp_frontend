@@ -1,14 +1,15 @@
 import { useState, useMemo } from 'react';
-import { useERP } from '../../context/ERPContext';
+import { useProyectoStore } from '../../stores/proyectoStore';
 import { Table, Button, PageHeader, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
+import type { Proyecto } from '../../data/mockData';
 import styles from './Proyectos.module.css';
 
 const ITEMS_PER_PAGE = 10;
 
 export function Proyectos() {
-  const { proyectos, setProyectos } = useERP();
+  const { proyectos, addProyecto, updateProyecto, deleteProyecto } = useProyectoStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,14 +51,14 @@ export function Proyectos() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
-      setProyectos(proyectos.map(p => p.id === editingId ? { ...p, ...formData } : p));
+      updateProyecto(editingId, formData);
       setEditingId(null);
     } else {
-      const newProyecto = {
+      const newProyecto: Proyecto = {
         ...formData,
         id: `PRY${String(proyectos.length + 1).padStart(3, '0')}`,
       };
-      setProyectos([...proyectos, newProyecto]);
+      addProyecto(newProyecto);
     }
     setShowForm(false);
     resetForm();
@@ -67,7 +68,7 @@ export function Proyectos() {
     setFormData({ nombre: '', cliente: '', estado: 'pendiente', presupuesto: 0, gastado: 0, fechaInicio: '', fechaFin: '', progreso: 0 });
   };
 
-  const handleEdit = (proyecto: typeof proyectos[0]) => {
+  const handleEdit = (proyecto: Proyecto) => {
     setFormData({
       nombre: proyecto.nombre,
       cliente: proyecto.cliente,
@@ -84,7 +85,7 @@ export function Proyectos() {
 
   const handleDelete = (id: string) => {
     if (confirm('¿Eliminar proyecto?')) {
-      setProyectos(proyectos.filter(p => p.id !== id));
+      deleteProyecto(id);
     }
   };
 
@@ -103,10 +104,10 @@ export function Proyectos() {
     { key: 'id', header: 'ID' },
     { key: 'nombre', header: 'Proyecto' },
     { key: 'cliente', header: 'Cliente' },
-    { key: 'estado', header: 'Estado', render: (p: typeof proyectos[0]) => getEstadoBadge(p.estado) },
-    { key: 'presupuesto', header: 'Presupuesto', render: (p: typeof proyectos[0]) => formatCurrency(p.presupuesto) },
-    { key: 'gastado', header: 'Gastado', render: (p: typeof proyectos[0]) => formatCurrency(p.gastado) },
-    { key: 'progreso', header: 'Progreso', render: (p: typeof proyectos[0]) => (
+    { key: 'estado', header: 'Estado', render: (p: Proyecto) => getEstadoBadge(p.estado) },
+    { key: 'presupuesto', header: 'Presupuesto', render: (p: Proyecto) => formatCurrency(p.presupuesto) },
+    { key: 'gastado', header: 'Gastado', render: (p: Proyecto) => formatCurrency(p.gastado) },
+    { key: 'progreso', header: 'Progreso', render: (p: Proyecto) => (
       <div className={styles.progressBar}>
         <div className={styles.progressFill} style={{ width: `${p.progreso}%` }}></div>
         <span className={styles.progressText}>{p.progreso}%</span>

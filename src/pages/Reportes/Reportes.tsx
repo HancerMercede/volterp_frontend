@@ -1,21 +1,26 @@
 import { useMemo } from 'react';
-import { useERP } from '../../context/ERPContext';
+import { useVentaStore } from '../../stores/ventaStore';
+import { useCompraStore } from '../../stores/compraStore';
+import { useProductoStore } from '../../stores/productoStore';
+import { useClienteStore } from '../../stores/clienteStore';
 import { PageHeader } from '../../components/UI';
 import styles from './Reportes.module.css';
 
 export function Reportes() {
-  const { ventas, compras, productos, clientes } = useERP();
+  const { ventas } = useVentaStore();
+  const { compras } = useCompraStore();
+  const { productos } = useProductoStore();
+  const { clientes } = useClienteStore();
 
   const totalVentas = ventas.filter(v => v.estado === 'completada').reduce((sum, v) => sum + v.total, 0);
   const totalCompras = compras.filter(c => c.estado === 'recibida').reduce((sum, c) => sum + c.total, 0);
   const productosSinStock = productos.filter(p => p.stock === 0).length;
   const productosStockBajo = productos.filter(p => p.stock > 0 && p.stock < 10).length;
 
-  // Top Productos Más Vendidos
   const topProductosVendidos = useMemo(() => {
     const ventasCompletadas = ventas.filter(v => v.estado === 'completada');
     const productosMap = new Map<string, { nombre: string; cantidad: number; total: number }>();
-    
+
     ventasCompletadas.forEach(v => {
       const existente = productosMap.get(v.productoId);
       if (existente) {
@@ -31,10 +36,9 @@ export function Reportes() {
       .slice(0, 10);
   }, [ventas]);
 
-  // Ventas por Fecha (últimos 7 días)
   const ventasPorFecha = useMemo(() => {
     const ultimos7Dias: Record<string, { fecha: string; cantidad: number; total: number }> = {};
-    
+
     for (let i = 6; i >= 0; i--) {
       const fecha = new Date();
       fecha.setDate(fecha.getDate() - i);
@@ -135,10 +139,10 @@ export function Reportes() {
             <div key={idx} className={styles.chartBar}>
               <div className={styles.barLabel}>{new Date(v.fecha).toLocaleDateString('es-DO', { weekday: 'short' })}</div>
               <div className={styles.barContainer}>
-                <div 
-                  className={styles.bar} 
-                  style={{ 
-                    height: `${Math.max((v.total / Math.max(...ventasPorFecha.map(vf => vf.total), 1)) * 100, 5)}%` 
+                <div
+                  className={styles.bar}
+                  style={{
+                    height: `${Math.max((v.total / Math.max(...ventasPorFecha.map(vf => vf.total), 1)) * 100, 5)}%`
                   }}
                 />
               </div>

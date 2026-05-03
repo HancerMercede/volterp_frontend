@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
-import { useERP } from "../../context";
+import { useVentaStore } from "../../stores/ventaStore";
+import { useClienteStore } from "../../stores/clienteStore";
+import { useProductoStore } from "../../stores/productoStore";
 import { useUIStore } from "../../stores/uiStore";
 import {
   Table,
@@ -12,6 +14,8 @@ import {
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
+import type { Venta } from "../../data/mockData";
+import type { Producto } from "../../data/mockData";
 import styles from "./Ventas.module.css";
 
 interface CarritoItem {
@@ -24,7 +28,9 @@ interface CarritoItem {
 }
 
 export function Ventas() {
-  const { ventas, setVentas, clientes, productos } = useERP();
+  const { ventas, addVenta, deleteVenta } = useVentaStore();
+  const { clientes } = useClienteStore();
+  const { productos } = useProductoStore();
   const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,7 +38,6 @@ export function Ventas() {
     initialPageSize: ITEMS_PER_PAGE,
   });
 
-  // Estado del carrito
   const [carrito, setCarrito] = useState<CarritoItem[]>([]);
   const [selectedCliente, setSelectedCliente] = useState("");
   const [clienteSearch, setClienteSearch] = useState("");
@@ -40,16 +45,13 @@ export function Ventas() {
     "pendiente",
   );
 
-  // Filtros de categoría
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
 
-  // Obtener categorías únicas
   const categorias = useMemo(() => {
     const cats = [...new Set(productos.map((p) => p.categoria))];
     return ["todos", ...cats];
   }, [productos]);
 
-  // Dropdown muestra los primeros 50 clientes + el seleccionado (si existe)
   const dropdownClientes = useMemo(() => {
     const top50 = clientes.slice(0, 50);
     if (selectedCliente && !top50.find((c) => c.id === selectedCliente)) {
@@ -59,7 +61,6 @@ export function Ventas() {
     return top50;
   }, [clientes, selectedCliente]);
 
-  // Search filtra el dropdown cuando el usuario escribe
   const searchFilteredClientes = useMemo(() => {
     if (!clienteSearch.trim()) return dropdownClientes;
     const search = clienteSearch.toLowerCase();
@@ -71,7 +72,6 @@ export function Ventas() {
     );
   }, [dropdownClientes, clienteSearch]);
 
-  // Auto-seleccionar cliente cuando hay coincidencia parcial
   useEffect(() => {
     if (!clienteSearch.trim()) {
       return;
@@ -88,7 +88,6 @@ export function Ventas() {
     }
   }, [clienteSearch, clientes, selectedCliente]);
 
-  // Filtrar productos
   const filteredProducts = useMemo(() => {
     return productos.filter((p) => {
       const matchesSearch = p.nombre
@@ -100,7 +99,6 @@ export function Ventas() {
     });
   }, [productos, searchTerm, categoriaFilter]);
 
-  // Paginación de productos
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 50;
 
@@ -117,7 +115,6 @@ export function Ventas() {
     setCurrentPage(page);
   };
 
-  // Calcular totales
   const totales = useMemo(() => {
     const subtotal = carrito.reduce((acc, item) => acc + item.subtotal, 0);
     const itbis = subtotal * 0.18;
@@ -126,8 +123,7 @@ export function Ventas() {
     return { subtotal, itbis, total, totalItems };
   }, [carrito]);
 
-  // Agregar producto al carrito
-  const agregarAlCarrito = (producto: (typeof productos)[0]) => {
+  const agregarAlCarrito = (producto: Producto) => {
     const existingItem = carrito.find(
       (item) => item.productoId === producto.id,
     );
@@ -159,7 +155,6 @@ export function Ventas() {
     }
   };
 
-  // Actualizar cantidad
   const actualizarCantidad = (productoId: string, delta: number) => {
     setCarrito(
       carrito.map((item) => {
@@ -176,12 +171,10 @@ export function Ventas() {
     );
   };
 
-  // Eliminar del carrito
   const eliminarDelCarrito = (productoId: string) => {
     setCarrito(carrito.filter((item) => item.productoId !== productoId));
   };
 
-  // Completar venta
   const completarVenta = () => {
     if (!selectedCliente) {
       addToast("Por favor selecciona un cliente", "warning");
@@ -194,8 +187,7 @@ export function Ventas() {
 
     const clienteData = clientes.find((c) => c.id === selectedCliente);
 
-    // Crear una venta por cada item del carrito
-    const nuevasVentas = carrito.map((item, index) => ({
+    const nuevasVentas: Venta[] = carrito.map((item, index) => ({
       id: `V${String(ventas.length + index + 1).padStart(3, "0")}`,
       cliente: clienteData?.nombre || "Cliente",
       clienteId: selectedCliente,
@@ -207,17 +199,15 @@ export function Ventas() {
       estado: ventaEstado as "completada" | "pendiente",
     }));
 
-    setVentas([...ventas, ...nuevasVentas]);
+    nuevasVentas.forEach((venta) => addVenta(venta));
     addToast(`Venta completada: ${nuevasVentas.length} productos`, "success");
 
-    // Limpiar
     setCarrito([]);
     setSelectedCliente("");
     setVentaEstado("pendiente");
     setShowForm(false);
   };
 
-  // Guardar borrador
   const guardarBorrador = () => {
     if (!selectedCliente || carrito.length === 0) {
       addToast("Carrito vacío o sin cliente", "warning");
@@ -226,22 +216,17 @@ export function Ventas() {
     addToast("Borrador guardado", "info");
   };
 
-  // Eliminar venta existente
   const handleDelete = (id: string) => {
     if (confirm("¿Eliminar esta venta?")) {
-      setVentas(ventas.filter((v) => v.id !== id));
+      deleteVenta(id);
       addToast("Venta eliminada", "error");
     }
   };
 
-  // Editar venta
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleEdit = (_venta?: (typeof ventas)[0]) => {
-    // Por ahora solo abrimos el modal simple
+  const handleEdit = (_venta?: Venta) => {
     setShowForm(true);
   };
 
-  // Filtrar ventas para la tabla
   const filteredVentas = useMemo(() => {
     return ventas.filter(
       (v) =>
@@ -267,7 +252,7 @@ export function Ventas() {
     {
       key: "cliente",
       header: "Cliente",
-      render: (v: (typeof ventas)[0]) => {
+      render: (v: Venta) => {
         const cliente = getClienteByName(v.cliente);
         return cliente ? (
           <ImageCell
@@ -284,7 +269,7 @@ export function Ventas() {
     {
       key: "producto",
       header: "Producto",
-      render: (v: (typeof ventas)[0]) => {
+      render: (v: Venta) => {
         const producto = getProductoByName(v.producto);
         return producto ? (
           <ImageCell
@@ -301,13 +286,13 @@ export function Ventas() {
     {
       key: "total",
       header: "Total",
-      render: (v: (typeof ventas)[0]) => `$${v.total.toLocaleString()}`,
+      render: (v: Venta) => `$${v.total.toLocaleString()}`,
     },
     { key: "fecha", header: "Fecha" },
     {
       key: "estado",
       header: "Estado",
-      render: (v: (typeof ventas)[0]) => (
+      render: (v: Venta) => (
         <span className={`${styles.badge} ${styles[v.estado]}`}>
           {v.estado}
         </span>
@@ -343,7 +328,6 @@ export function Ventas() {
       {showForm && (
         <div className={styles.modalFull}>
           <div className={styles.posContainer}>
-            {/* Panel Izquierdo - Catálogo de Productos */}
             <div className={styles.productsPanel}>
               <div className={styles.productsHeader}>
                 <h3>📦 Productos</h3>
@@ -408,7 +392,6 @@ export function Ventas() {
               )}
             </div>
 
-            {/* Panel Central - Carrito */}
             <div className={styles.cartPanel}>
               <div className={styles.panelHeader}>
                 <h3>🛒 Carrito</h3>
@@ -486,7 +469,6 @@ export function Ventas() {
               </div>
             </div>
 
-            {/* Panel Derecho - Resumen */}
             <div className={styles.summaryPanel}>
               <h3>📋 Resumen</h3>
 

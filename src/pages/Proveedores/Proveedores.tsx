@@ -1,13 +1,14 @@
 import { useState, useMemo } from "react";
-import { useERP } from "../../context/ERPContext";
+import { useProveedorStore } from "../../stores/proveedorStore";
 import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput, Modal } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
+import type { Proveedor } from "../../data/mockData";
 import styles from "./Proveedores.module.css";
 
 export function Proveedores() {
-  const { proveedores, setProveedores } = useERP();
+  const { proveedores, addProveedor, updateProveedor, deleteProveedor } = useProveedorStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,11 +40,7 @@ export function Proveedores() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
-      setProveedores(
-        proveedores.map((p) =>
-          p.id === editingId ? { ...p, ...formData } : p,
-        ),
-      );
+      updateProveedor(editingId, formData);
       setEditingId(null);
     } else {
       const newProveedor = {
@@ -51,7 +48,7 @@ export function Proveedores() {
         id: `PRV${String(proveedores.length + 1).padStart(3, "0")}`,
         avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
       };
-      setProveedores([...proveedores, newProveedor]);
+      addProveedor(newProveedor);
     }
     setShowForm(false);
     resetForm();
@@ -68,7 +65,7 @@ export function Proveedores() {
     });
   };
 
-  const handleEdit = (proveedor: (typeof proveedores)[0]) => {
+  const handleEdit = (proveedor: Proveedor) => {
     setFormData({
       nombre: proveedor.nombre,
       email: proveedor.email,
@@ -83,7 +80,7 @@ export function Proveedores() {
 
   const handleDelete = (id: string) => {
     if (confirm("¿Eliminar proveedor?")) {
-      setProveedores(proveedores.filter((p) => p.id !== id));
+      deleteProveedor(id);
     }
   };
 
@@ -91,9 +88,7 @@ export function Proveedores() {
     {
       key: "avatar",
       header: "",
-      render: (p: (typeof proveedores)[0]) => (
-        <ImageCell src={p.avatar} name={p.nombre} />
-      ),
+      render: (p: Proveedor) => <ImageCell src={p.avatar} name={p.nombre} />,
     },
     { key: "nombre", header: "Nombre" },
     { key: "email", header: "Email" },
@@ -102,7 +97,7 @@ export function Proveedores() {
     {
       key: "totalOrdenes",
       header: "Órdenes",
-      render: (p: (typeof proveedores)[0]) => p.totalOrdenes.toString(),
+      render: (p: Proveedor) => p.totalOrdenes.toString(),
     },
   ];
 

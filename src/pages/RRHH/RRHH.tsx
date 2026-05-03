@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, PageHeader, Pagination } from "../../components/UI";
-import { useERP } from "../../context/ERPContext";
+import { useEmpleadoStore } from "../../stores/empleadoStore";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
@@ -14,7 +14,7 @@ import { EmpleadoFormModal } from "../../components/RRHH/EmpleadoFormModal";
 import styles from "./RRHH.module.css";
 
 export function RRHH() {
-  const { empleados, setEmpleados } = useERP();
+  const { empleados, addEmpleado, updateEmpleado, deleteEmpleado } = useEmpleadoStore();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState<"todos" | EstadoEmpleado>("todos");
@@ -24,7 +24,7 @@ export function RRHH() {
   const handleSubmit = (formData: EmpleadoFormData, editingId: string | null) => {
     const now = new Date().toISOString();
     if (editingId) {
-      setEmpleados(empleados.map((e) => (e.id === editingId ? { ...e, ...formData, updatedAt: now } : e)));
+      updateEmpleado(editingId, { ...formData, updatedAt: now });
     } else {
       const newEmpleado: Empleado = {
         ...formData,
@@ -38,7 +38,7 @@ export function RRHH() {
         createdAt: now,
         updatedAt: now,
       };
-      setEmpleados([...empleados, newEmpleado]);
+      addEmpleado(newEmpleado);
     }
     setShowForm(false);
   };
@@ -64,7 +64,7 @@ export function RRHH() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("¿Eliminar empleado?")) setEmpleados(empleados.filter((e) => e.id !== id));
+    if (confirm("¿Eliminar empleado?")) deleteEmpleado(id);
   };
 
   const openNewForm = () => {

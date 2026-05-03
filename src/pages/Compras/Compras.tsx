@@ -1,14 +1,17 @@
 import { useState, useMemo } from 'react';
-import { useERP } from '../../context';
+import { useCompraStore } from '../../stores/compraStore';
+import { useProductoStore } from '../../stores/productoStore';
 import { useUIStore } from '../../stores/uiStore';
 import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import { ITEMS_PER_PAGE } from '../../config/pagination';
+import type { Compra } from '../../data/mockData';
 import styles from './Compras.module.css';
 
 export function Compras() {
-  const { compras, setCompras, productos } = useERP();
+  const { compras, addCompra, updateCompra, deleteCompra } = useCompraStore();
+  const { productos } = useProductoStore();
   const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -40,15 +43,15 @@ export function Compras() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
-      setCompras(compras.map(c => c.id === editingId ? { ...c, ...formData } : c));
+      updateCompra(editingId, formData);
       setEditingId(null);
       addToast('Compra actualizada correctamente', 'success');
     } else {
-      const newCompra = {
+      const newCompra: Compra = {
         ...formData,
         id: `C${String(compras.length + 1).padStart(3, '0')}`,
       };
-      setCompras([...compras, newCompra]);
+      addCompra(newCompra);
       addToast('Compra creada correctamente', 'success');
     }
     setShowForm(false);
@@ -66,7 +69,7 @@ export function Compras() {
     });
   };
 
-  const handleEdit = (compra: typeof compras[0]) => {
+  const handleEdit = (compra: Compra) => {
     setFormData(compra);
     setEditingId(compra.id);
     setShowForm(true);
@@ -74,7 +77,7 @@ export function Compras() {
 
   const handleDelete = (id: string) => {
     if (confirm('¿Eliminar esta compra?')) {
-      setCompras(compras.filter(c => c.id !== id));
+      deleteCompra(id);
       addToast('Compra eliminada', 'error');
     }
   };
@@ -84,14 +87,14 @@ export function Compras() {
   const columns = [
     { key: 'id', header: 'ID' },
     { key: 'proveedor', header: 'Proveedor' },
-    { 
-      key: 'producto', 
+    {
+      key: 'producto',
       header: 'Producto',
-      render: (c: typeof compras[0]) => {
+      render: (c: Compra) => {
         const producto = getProductoByName(c.producto);
         return producto ? (
-          <ImageCell 
-            src={producto.imagen} 
+          <ImageCell
+            src={producto.imagen}
             name={c.producto}
             subtext={`x${c.cantidad}`}
             type="product"
@@ -99,16 +102,16 @@ export function Compras() {
         ) : c.producto;
       }
     },
-    { 
-      key: 'total', 
+    {
+      key: 'total',
       header: 'Total',
-      render: (c: typeof compras[0]) => `$${c.total.toLocaleString()}` 
+      render: (c: Compra) => `$${c.total.toLocaleString()}`
     },
     { key: 'fecha', header: 'Fecha' },
-    { 
-      key: 'estado', 
+    {
+      key: 'estado',
       header: 'Estado',
-      render: (c: typeof compras[0]) => (
+      render: (c: Compra) => (
         <span className={`${styles.badge} ${styles[c.estado]}`}>
           {c.estado}
         </span>
@@ -117,7 +120,7 @@ export function Compras() {
     {
       key: 'actions',
       header: 'Acciones',
-      render: (c: typeof compras[0]) => (
+      render: (c: Compra) => (
         <ActionButtons onEdit={() => handleEdit(c)} onDelete={() => handleDelete(c.id)} />
       ),
     },
@@ -127,7 +130,7 @@ export function Compras() {
     <div>
       <PageHeader title="Compras" subtitle="Gestión de compras y proveedores">
         <div className={styles.headerActions}>
-          <SearchInput 
+          <SearchInput
             value={searchTerm}
             onChange={(value) => { setSearchTerm(value); goToPage(1); }}
             placeholder="Buscar compras..."
@@ -148,8 +151,8 @@ export function Compras() {
       >
         <div className={styles.formGroup}>
           <label>Proveedor</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={formData.proveedor}
             onChange={(e) => setFormData({...formData, proveedor: e.target.value})}
             required
@@ -157,8 +160,8 @@ export function Compras() {
         </div>
         <div className={styles.formGroup}>
           <label>Producto</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={formData.producto}
             onChange={(e) => setFormData({...formData, producto: e.target.value})}
             required
@@ -166,9 +169,9 @@ export function Compras() {
         </div>
         <div className={styles.formGroup}>
           <label>Cantidad</label>
-          <input 
-            type="number" 
-            min="1" 
+          <input
+            type="number"
+            min="1"
             value={formData.cantidad}
             onChange={(e) => setFormData({...formData, cantidad: parseInt(e.target.value)})}
             required
@@ -176,8 +179,8 @@ export function Compras() {
         </div>
         <div className={styles.formGroup}>
           <label>Total</label>
-          <input 
-            type="number" 
+          <input
+            type="number"
             value={formData.total}
             onChange={(e) => setFormData({...formData, total: parseInt(e.target.value)})}
             required
@@ -185,8 +188,8 @@ export function Compras() {
         </div>
         <div className={styles.formGroup}>
           <label>Fecha</label>
-          <input 
-            type="date" 
+          <input
+            type="date"
             value={formData.fecha}
             onChange={(e) => setFormData({...formData, fecha: e.target.value})}
             required
@@ -194,7 +197,7 @@ export function Compras() {
         </div>
         <div className={styles.formGroup}>
           <label>Estado</label>
-          <select 
+          <select
             value={formData.estado}
             onChange={(e) => setFormData({...formData, estado: e.target.value as any})}
           >

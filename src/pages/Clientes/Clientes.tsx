@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useERP } from "../../context/ERPContext";
+import { useClienteStore } from "../../stores/clienteStore";
 import {
   Table,
   Button,
@@ -13,10 +13,11 @@ import {
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
+import type { Cliente } from "../../data/mockData";
 import styles from "./Clientes.module.css";
 
 export function Clientes() {
-  const { clientes, setClientes } = useERP();
+  const { clientes, addCliente, updateCliente, deleteCliente } = useClienteStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -50,17 +51,15 @@ export function Clientes() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
-      setClientes(
-        clientes.map((c) => (c.id === editingId ? { ...c, ...formData } : c)),
-      );
+      updateCliente(editingId, formData);
       setEditingId(null);
     } else {
-      const newCliente = {
+      const newCliente: Cliente = {
         ...formData,
         id: `CL${String(clientes.length + 1).padStart(3, "0")}`,
         avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
       };
-      setClientes([...clientes, newCliente]);
+      addCliente(newCliente);
     }
     setShowForm(false);
     resetForm();
@@ -77,7 +76,7 @@ export function Clientes() {
     });
   };
 
-  const handleEdit = (cliente: (typeof clientes)[0]) => {
+  const handleEdit = (cliente: Cliente) => {
     setFormData({
       nombre: cliente.nombre,
       email: cliente.email,
@@ -92,7 +91,7 @@ export function Clientes() {
 
   const handleDelete = (id: string) => {
     if (confirm("¿Eliminar este cliente?")) {
-      setClientes(clientes.filter((c) => c.id !== id));
+      deleteCliente(id);
     }
   };
 
@@ -101,7 +100,7 @@ export function Clientes() {
     {
       key: "nombre",
       header: "Cliente",
-      render: (c: (typeof clientes)[0]) => (
+      render: (c: Cliente) => (
         <ImageCell
           src={c.avatar}
           name={c.nombre}
@@ -115,13 +114,13 @@ export function Clientes() {
     {
       key: "totalCompras",
       header: "Total Compras",
-      render: (c: (typeof clientes)[0]) =>
+      render: (c: Cliente) =>
         `$${c.totalCompras.toLocaleString()}`,
     },
     {
       key: "actions",
       header: "Acciones",
-      render: (c: (typeof clientes)[0]) => (
+      render: (c: Cliente) => (
         <ActionButtons
           onEdit={() => handleEdit(c)}
           onDelete={() => handleDelete(c.id)}

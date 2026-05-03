@@ -1,13 +1,13 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, PageHeader, SearchInput } from "../../components/UI";
-import { useERP } from "../../context/ERPContext";
+import { useEmpleadoStore } from "../../stores/empleadoStore";
 import { NominaCalculator } from "../../components/RRHH/NominaCalculator";
 import type { Empleado } from "../../domain/entities/Empleado";
 import styles from "./Nomina.module.css";
 
 export function Nomina() {
-  const { empleados } = useERP();
+  const { empleados } = useEmpleadoStore();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEmpleado, setSelectedEmpleado] = useState<Empleado | null>(null);

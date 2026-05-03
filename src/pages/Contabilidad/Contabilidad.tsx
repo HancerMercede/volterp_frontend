@@ -1,14 +1,15 @@
 import { useState, useMemo } from 'react';
-import { useERP } from '../../context/ERPContext';
+import { useTransaccionStore } from '../../stores/transaccionStore';
 import { Table, Button, PageHeader, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
+import type { TransaccionContable } from '../../data/mockData';
 import styles from './Contabilidad.module.css';
 
 const ITEMS_PER_PAGE = 10;
 
 export function Contabilidad() {
-  const { transaccionesContables, setTransaccionesContables } = useERP();
+  const { transacciones, addTransaccion, updateTransaccion, deleteTransaccion } = useTransaccionStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,13 +25,13 @@ export function Contabilidad() {
   });
 
   const filteredTransacciones = useMemo(() => {
-    return transaccionesContables.filter(t => {
+    return transacciones.filter(t => {
       const matchesSearch = t.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
         t.categoria.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesTipo = filterTipo === 'todos' || t.tipo === filterTipo;
       return matchesSearch && matchesTipo;
     });
-  }, [transaccionesContables, searchTerm, filterTipo]);
+  }, [transacciones, searchTerm, filterTipo]);
 
   const paginatedTransacciones = useMemo(() => {
     return paginate(filteredTransacciones, page, ITEMS_PER_PAGE);
@@ -38,21 +39,21 @@ export function Contabilidad() {
 
   const paginationInfo = getInfo(filteredTransacciones.length);
 
-  const totalIngresos = transaccionesContables.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + t.monto, 0);
-  const totalEgresos = transaccionesContables.filter(t => t.tipo === 'egreso').reduce((acc, t) => acc + t.monto, 0);
+  const totalIngresos = transacciones.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + t.monto, 0);
+  const totalEgresos = transacciones.filter(t => t.tipo === 'egreso').reduce((acc, t) => acc + t.monto, 0);
   const balance = totalIngresos - totalEgresos;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
-      setTransaccionesContables(transaccionesContables.map(t => t.id === editingId ? { ...t, ...formData } : t));
+      updateTransaccion(editingId, formData);
       setEditingId(null);
     } else {
-      const newTransaccion = {
+      const newTransaccion: TransaccionContable = {
         ...formData,
-        id: `CNT${String(transaccionesContables.length + 1).padStart(3, '0')}`,
+        id: `CNT${String(transacciones.length + 1).padStart(3, '0')}`,
       };
-      setTransaccionesContables([...transaccionesContables, newTransaccion]);
+      addTransaccion(newTransaccion);
     }
     setShowForm(false);
     resetForm();
@@ -62,7 +63,7 @@ export function Contabilidad() {
     setFormData({ descripcion: '', tipo: 'ingreso', monto: 0, fecha: '', categoria: '', estado: 'pendiente' });
   };
 
-  const handleEdit = (t: typeof transaccionesContables[0]) => {
+  const handleEdit = (t: TransaccionContable) => {
     setFormData({ descripcion: t.descripcion, tipo: t.tipo, monto: t.monto, fecha: t.fecha, categoria: t.categoria, estado: t.estado });
     setEditingId(t.id);
     setShowForm(true);
@@ -70,7 +71,7 @@ export function Contabilidad() {
 
   const handleDelete = (id: string) => {
     if (confirm('¿Eliminar transacción?')) {
-      setTransaccionesContables(transaccionesContables.filter(t => t.id !== id));
+      deleteTransaccion(id);
     }
   };
 
@@ -81,19 +82,19 @@ export function Contabilidad() {
   const columns = [
     { key: 'id', header: 'ID' },
     { key: 'descripcion', header: 'Descripción' },
-    { key: 'tipo', header: 'Tipo', render: (t: typeof transaccionesContables[0]) => (
+    { key: 'tipo', header: 'Tipo', render: (t: TransaccionContable) => (
       <span className={`${styles.badge} ${t.tipo === 'ingreso' ? styles.ingreso : styles.egreso}`}>
         {t.tipo === 'ingreso' ? 'Ingreso' : 'Egreso'}
       </span>
     )},
-    { key: 'monto', header: 'Monto', render: (t: typeof transaccionesContables[0]) => (
+    { key: 'monto', header: 'Monto', render: (t: TransaccionContable) => (
       <span className={t.tipo === 'ingreso' ? styles.positivo : styles.negativo}>
         {t.tipo === 'ingreso' ? '+' : '-'}{formatCurrency(t.monto)}
       </span>
     )},
     { key: 'categoria', header: 'Categoría' },
     { key: 'fecha', header: 'Fecha' },
-    { key: 'estado', header: 'Estado', render: (t: typeof transaccionesContables[0]) => (
+    { key: 'estado', header: 'Estado', render: (t: TransaccionContable) => (
       <span className={`${styles.badge} ${t.estado === 'conciliada' ? styles.conciliada : styles.pendiente}`}>
         {t.estado === 'conciliada' ? 'Conciliada' : 'Pendiente'}
       </span>

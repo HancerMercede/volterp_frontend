@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
-import { useERP } from '../../context';
+import { useDashboardStore } from '../../stores/dashboardStore';
 import type { KpiCard, TopProduct, Activity, Reminder, DashboardStats, SalesChartData, CategoryData } from '../../domain/dashboard/types';
 import { KPI_CONFIG, TOP_PRODUCTS_CONFIG, REMINDERS_CONFIG, DASHBOARD_STATS, SALES_CHART_DATA, CATEGORY_DATA, formatCurrency } from '../../domain/dashboard/constants';
 
 export function useDashboard() {
-  const { stats, actividades } = useERP();
+  const { stats, actividades } = useDashboardStore();
 
   const kpis = useMemo((): KpiCard[] => {
     const values = [stats.ventas, stats.compras, stats.clientes, stats.utilidad];
-    
+
     return KPI_CONFIG.map((config, index) => ({
       id: `kpi-${index}`,
       label: config.label,

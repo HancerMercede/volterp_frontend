@@ -13,7 +13,6 @@ import { Proyectos } from './pages/Proyectos/Proyectos';
 import { Reportes } from './pages/Reportes/Reportes';
 import { Configuracion } from './pages/Configuracion/Configuracion';
 import { Login } from './pages/Login/Login';
-import { ERPProvider, UIProvider } from './context';
 import { useAuthStore } from './stores/authStore';
 import { ToastContainer } from './components/UI';
 import './styles/variables.css';
@@ -48,14 +47,10 @@ function AppRoutes() {
 
 function App() {
   return (
-    <UIProvider>
-      <ERPProvider>
-        <BrowserRouter>
-          <AppRoutes />
-          <ToastContainer />
-        </BrowserRouter>
-      </ERPProvider>
-    </UIProvider>
+    <BrowserRouter>
+      <AppRoutes />
+      <ToastContainer />
+    </BrowserRouter>
   );
 }
 
