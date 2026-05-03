@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
-import { useERP, useUI } from "../../context";
+import { useERP } from "../../context";
+import { useUIStore } from "../../stores/uiStore";
 import {
   Table,
   Button,
@@ -24,7 +25,7 @@ interface CarritoItem {
 
 export function Ventas() {
   const { ventas, setVentas, clientes, productos } = useERP();
-  const { addToast } = useUI();
+  const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { page, goToPage, getInfo } = usePagination({

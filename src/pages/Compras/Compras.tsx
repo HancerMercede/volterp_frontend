@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useERP, useUI } from '../../context';
+import { useERP } from '../../context';
+import { useUIStore } from '../../stores/uiStore';
 import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
@@ -8,7 +9,7 @@ import styles from './Compras.module.css';
 
 export function Compras() {
   const { compras, setCompras, productos } = useERP();
-  const { addToast } = useUI();
+  const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
