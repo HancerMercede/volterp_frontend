@@ -1,0 +1,11 @@
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badgeActivo { background: #D1FAE5; color: #065F46; }
+.badgeInactivo { background: #FEE2E2; color: #991B1B; }
+.badgeVacaciones { background: #DBEAFE; color: #1E40AF; }
+.badgeLicencia { background: #FEF3C7; color: #92400E; }

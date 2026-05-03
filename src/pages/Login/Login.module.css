@@ -8,7 +8,8 @@
 }
 
 .loginCard {
-  background: rgba(31, 41, 55, 0.95);
+  background: radial-gradient(circle at top left, rgba(250, 204, 21, .15), transparent 35%),
+    linear-gradient(135deg, #0F172A, #020617);
   border-radius: 16px;
   border: 1px solid rgba(250, 204, 21, 0.2);
   padding: 40px;
