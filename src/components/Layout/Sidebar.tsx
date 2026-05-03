@@ -44,6 +44,15 @@ export function Sidebar() {
               {item.label}
             </NavLink>
           ))}
+          <NavLink
+            to="/soporte"
+            className={({ isActive }) =>
+              `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
+            }
+          >
+            <span className={styles.navIcon}>💬</span>
+            Soporte
+          </NavLink>
         </nav>
       </nav>
       <div className={styles.userSection}>

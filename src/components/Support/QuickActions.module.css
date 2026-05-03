@@ -1,0 +1,48 @@
+.container {
+  margin: 20px 0;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.button:hover {
+  background: var(--surface-tertiary);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.icon {
+  font-size: 16px;
+}
+
+.text {
+  font-weight: 500;
+}

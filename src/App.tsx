@@ -12,6 +12,7 @@ import { Nomina } from './pages/RRHH/Nomina';
 import { Proyectos } from './pages/Proyectos/Proyectos';
 import { Reportes } from './pages/Reportes/Reportes';
 import { Configuracion } from './pages/Configuracion/Configuracion';
+import { Soporte } from './pages/Soporte/Soporte';
 import { Login } from './pages/Login/Login';
 import { useAuthStore } from './stores/authStore';
 import { ToastContainer } from './components/UI';
@@ -40,6 +41,7 @@ function AppRoutes() {
         <Route path="/proyectos" element={<Proyectos />} />
         <Route path="/reportes" element={<Reportes />} />
         <Route path="/configuracion" element={<Configuracion />} />
+        <Route path="/soporte" element={<Soporte />} />
       </Route>
     </Routes>
   );
