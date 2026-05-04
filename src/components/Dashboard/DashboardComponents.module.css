@@ -195,34 +195,6 @@
   font-weight: 500;
 }
 
-.barChart {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  height: 180px;
-  padding: 0 10px;
-  border-bottom: 1px solid #E5E7EB;
-}
-
-.barItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-
-.bar {
-  width: 32px;
-  background: linear-gradient(180deg, #FACC15 0%, #EAB308 100%);
-  border-radius: 6px 6px 0 0;
-}
-
-.barLabel {
-  font-size: 12px;
-  color: #6B7280;
-}
-
 .chartLegend {
   display: flex;
   justify-content: center;
@@ -254,30 +226,20 @@
   backdrop-filter: blur(10px);
 }
 
-.donutChart {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  margin: 0 auto 16px;
+.donutChartWrapper {
   position: relative;
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 16px;
 }
 
-.donutChart::before {
-  content: '';
+.donutCenter {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90px;
-  height: 90px;
-  background: white;
-  border-radius: 50%;
-}
-
-.donutCenter {
   text-align: center;
-  margin-top: -70px;
-  margin-bottom: 20px;
+  pointer-events: none;
 }
 
 .donutValue {

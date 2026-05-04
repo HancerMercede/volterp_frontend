@@ -14,8 +14,7 @@ export function Dashboard() {
     reminders,
     dashboardStats,
     salesChartData,
-    categoryData,
-    maxSales
+    categoryData
   } = useDashboard();
 
   return (
@@ -31,7 +30,7 @@ export function Dashboard() {
       </section>
 
       <div className={styles.chartsSection}>
-        <SalesChart data={salesChartData} maxValue={maxSales} />
+        <SalesChart data={salesChartData} />
         <CategoryDonut data={categoryData} totalLabel={formatCurrency(145660)} />
       </div>
 

@@ -12,7 +12,9 @@ export function Nomina() {
   const { empleados } = useEmpleadoStore();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedEmpleado, setSelectedEmpleado] = useState<Empleado | null>(null);
+  const [selectedEmpleado, setSelectedEmpleado] = useState<Empleado | null>(
+    null,
+  );
 
   const empleadosActivos = useMemo(
     () => empleados.filter((e) => e.estado === "activo"),
@@ -21,34 +23,36 @@ export function Nomina() {
 
   const filteredEmpleados = useMemo(() => {
     if (!searchTerm) return empleadosActivos.slice(0, 10);
-    return empleadosActivos.filter((e) =>
-      e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      e.cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      e.departamento.toLowerCase().includes(searchTerm.toLowerCase()),
+    return empleadosActivos.filter(
+      (e) =>
+        e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.departamento.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [empleadosActivos, searchTerm]);
 
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP", minimumFractionDigits: 0 }).format(amount);
+    new Intl.NumberFormat("es-DO", {
+      style: "currency",
+      currency: "DOP",
+      minimumFractionDigits: 0,
+    }).format(amount);
 
   return (
     <div className={styles.container}>
-      <PageHeader
-        title={t('nomina.title')}
-        subtitle={t('nomina.subtitle')}
-      >
+      <PageHeader title={t("nomina.title")} subtitle={t("nomina.subtitle")}>
         <Button variant="secondary" onClick={() => navigate("/rrhh")}>
-          ← {t('nomina.backToRRHH')}
+          {t("nomina.backToRRHH")}
         </Button>
       </PageHeader>
 
       <div className={styles.content}>
         <div className={styles.sidebar}>
-          <h3>{t('nomina.selectEmployee')}</h3>
+          <h3>{t("nomina.selectEmployee")}</h3>
           <SearchInput
             value={searchTerm}
             onChange={setSearchTerm}
-            placeholder={t('nomina.searchEmployee')}
+            placeholder={t("nomina.searchEmployee")}
             width="100%"
           />
 
@@ -60,7 +64,11 @@ export function Nomina() {
                 className={`${styles.empleadoItem} ${selectedEmpleado?.id === emp.id ? styles.selected : ""}`}
                 onClick={() => setSelectedEmpleado(emp)}
               >
-                <img src={emp.avatar} alt={emp.nombre} className={styles.avatar} />
+                <img
+                  src={emp.avatar}
+                  alt={emp.nombre}
+                  className={styles.avatar}
+                />
                 <div className={styles.empleadoInfo}>
                   <span className={styles.nombre}>{emp.nombre}</span>
                   <span className={styles.cargo}>{emp.cargo}</span>
@@ -74,26 +82,44 @@ export function Nomina() {
           {selectedEmpleado ? (
             <>
               <div className={styles.empleadoHeader}>
-                <img src={selectedEmpleado.avatar} alt={selectedEmpleado.nombre} className={styles.avatarLarge} />
+                <img
+                  src={selectedEmpleado.avatar}
+                  alt={selectedEmpleado.nombre}
+                  className={styles.avatarLarge}
+                />
                 <div>
                   <h2>{selectedEmpleado.nombre}</h2>
-                  <p>{selectedEmpleado.cargo} - {selectedEmpleado.departamento}</p>
-                  <p className={styles.salario}>{t('nomina.baseSalary')}: {formatCurrency(selectedEmpleado.salarioBase)}</p>
+                  <p>
+                    {selectedEmpleado.cargo} - {selectedEmpleado.departamento}
+                  </p>
+                  <p className={styles.salario}>
+                    {t("nomina.baseSalary")}:{" "}
+                    {formatCurrency(selectedEmpleado.salarioBase)}
+                  </p>
                 </div>
               </div>
 
               <NominaCalculator salarioBase={selectedEmpleado.salarioBase} />
 
               <div className={styles.infoBox}>
-                <h4>{t('nomina.paymentInfo')}</h4>
-                <p><strong>{t('nomina.periodicity')}:</strong> {selectedEmpleado.periodicidadPago}</p>
-                <p><strong>{t('nomina.bank')}:</strong> {selectedEmpleado.cuentaBancaria.banco}</p>
-                <p><strong>{t('nomina.account')}:</strong> {selectedEmpleado.cuentaBancaria.numeroCuenta}</p>
+                <h4>{t("nomina.paymentInfo")}</h4>
+                <p>
+                  <strong>{t("nomina.periodicity")}:</strong>{" "}
+                  {selectedEmpleado.periodicidadPago}
+                </p>
+                <p>
+                  <strong>{t("nomina.bank")}:</strong>{" "}
+                  {selectedEmpleado.cuentaBancaria.banco}
+                </p>
+                <p>
+                  <strong>{t("nomina.account")}:</strong>{" "}
+                  {selectedEmpleado.cuentaBancaria.numeroCuenta}
+                </p>
               </div>
             </>
           ) : (
             <div className={styles.emptyState}>
-              <p>{t('nomina.selectEmployeeEmpty')}</p>
+              <p>{t("nomina.selectEmployeeEmpty")}</p>
             </div>
           )}
         </div>

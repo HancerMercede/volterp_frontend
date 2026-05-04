@@ -6,7 +6,10 @@ import { useEmpleadoStore } from "../../stores/empleadoStore";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import { useEmpleadoForm, type EmpleadoFormData } from "../../application/hooks/useEmpleadoForm";
+import {
+  useEmpleadoForm,
+  type EmpleadoFormData,
+} from "../../application/hooks/useEmpleadoForm";
 import type { Empleado, EstadoEmpleado } from "../../domain/entities/Empleado";
 import { EmpleadoStats } from "../../components/RRHH/EmpleadoStats";
 import { EmpleadoFilters } from "../../components/RRHH/EmpleadoFilters";
@@ -16,14 +19,22 @@ import styles from "./RRHH.module.css";
 
 export function RRHH() {
   const { t } = useTranslation();
-  const { empleados, addEmpleado, updateEmpleado, deleteEmpleado } = useEmpleadoStore();
+  const { empleados, addEmpleado, updateEmpleado, deleteEmpleado } =
+    useEmpleadoStore();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterEstado, setFilterEstado] = useState<"todos" | EstadoEmpleado>("todos");
+  const [filterEstado, setFilterEstado] = useState<"todos" | EstadoEmpleado>(
+    "todos",
+  );
   const [showForm, setShowForm] = useState(false);
-  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
+  const { page, goToPage, getInfo } = usePagination({
+    initialPageSize: ITEMS_PER_PAGE,
+  });
 
-  const handleSubmit = (formData: EmpleadoFormData, editingId: string | null) => {
+  const handleSubmit = (
+    formData: EmpleadoFormData,
+    editingId: string | null,
+  ) => {
     const now = new Date().toISOString();
     if (editingId) {
       updateEmpleado(editingId, { ...formData, updatedAt: now });
@@ -45,7 +56,16 @@ export function RRHH() {
     setShowForm(false);
   };
 
-  const { formData, currentStep, editingId, setCurrentStep, updateField, reset, startEdit, submit } = useEmpleadoForm(handleSubmit);
+  const {
+    formData,
+    currentStep,
+    editingId,
+    setCurrentStep,
+    updateField,
+    reset,
+    startEdit,
+    submit,
+  } = useEmpleadoForm(handleSubmit);
 
   const filteredEmpleados = useMemo(() => {
     return empleados.filter((e) => {
@@ -53,11 +73,16 @@ export function RRHH() {
         e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         e.cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
         e.departamento.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesSearch && (filterEstado === "todos" || e.estado === filterEstado);
+      return (
+        matchesSearch && (filterEstado === "todos" || e.estado === filterEstado)
+      );
     });
   }, [empleados, searchTerm, filterEstado]);
 
-  const paginatedEmpleados = useMemo(() => paginate(filteredEmpleados, page, ITEMS_PER_PAGE), [filteredEmpleados, page]);
+  const paginatedEmpleados = useMemo(
+    () => paginate(filteredEmpleados, page, ITEMS_PER_PAGE),
+    [filteredEmpleados, page],
+  );
   const paginationInfo = getInfo(filteredEmpleados.length);
 
   const handleEdit = (empleado: Empleado) => {
@@ -66,7 +91,7 @@ export function RRHH() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm(t('rrhh.deleteConfirm'))) deleteEmpleado(id);
+    if (confirm(t("rrhh.deleteConfirm"))) deleteEmpleado(id);
   };
 
   const openNewForm = () => {
@@ -76,10 +101,15 @@ export function RRHH() {
 
   return (
     <div className={styles.container}>
-      <PageHeader title={t('rrhh.title')} subtitle={t('rrhh.subtitle')}>
+      <PageHeader title={t("rrhh.title")} subtitle={t("rrhh.subtitle")}>
         <>
-          <Button variant="secondary" onClick={() => navigate("/rrhh/nomina")}>{t('rrhh.viewPayroll')}</Button>
-          <Button onClick={openNewForm}>+ {t('rrhh.newEmployee')}</Button>
+          <Button variant="secondary" onClick={() => navigate("/rrhh/asistencia")}>
+            {t("rrhh.viewAttendance")}
+          </Button>
+          <Button variant="secondary" onClick={() => navigate("/rrhh/nomina")}>
+            {t("rrhh.viewPayroll")}
+          </Button>
+          <Button onClick={openNewForm}>+ {t("rrhh.newEmployee")}</Button>
         </>
       </PageHeader>
 
@@ -88,11 +118,21 @@ export function RRHH() {
       <EmpleadoFilters
         searchTerm={searchTerm}
         filterEstado={filterEstado}
-        onSearchChange={(v) => { setSearchTerm(v); goToPage(1); }}
-        onEstadoChange={(v) => { setFilterEstado(v); goToPage(1); }}
+        onSearchChange={(v) => {
+          setSearchTerm(v);
+          goToPage(1);
+        }}
+        onEstadoChange={(v) => {
+          setFilterEstado(v);
+          goToPage(1);
+        }}
       />
 
-      <EmpleadoTable empleados={paginatedEmpleados} onEdit={handleEdit} onDelete={handleDelete} />
+      <EmpleadoTable
+        empleados={paginatedEmpleados}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
       <Pagination pagination={paginationInfo} onPageChange={goToPage} />
 
