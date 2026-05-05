@@ -1,210 +1,362 @@
-import { useState } from 'react';
-import { useERP } from '../../context/ERPContext';
-import { Table, Button, PageHeader, ImageCell } from '../../components/UI';
-import styles from './Inventario.module.css';
+import { useState, useMemo, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useProductoStore } from "../../stores/productoStore";
+import { useCategoryStore } from "../../stores/categoryStore";
+import {
+  Table,
+  Button,
+  PageHeader,
+  ImageCell,
+  ActionButtons,
+  Pagination,
+  SearchInput,
+  Modal,
+} from "../../components/UI";
+import { usePagination } from "../../hooks/usePagination";
+import { paginate } from "../../utils/pagination";
+import { ITEMS_PER_PAGE } from "../../config/pagination";
+import type { Producto } from "../../data/mockData";
+import styles from "./Inventario.module.css";
 
 export function Inventario() {
-  const { productos, setProductos } = useERP();
+  const { t } = useTranslation();
+  const {
+    productos,
+    loading,
+    error,
+    fetchProductos,
+    createProducto,
+    updateProducto,
+    deleteProducto,
+  } = useProductoStore();
+  const { categories, fetchCategories } = useCategoryStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStock, setFilterStock] = useState<'all' | 'low' | 'out'>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStock, setFilterStock] = useState<"all" | "low" | "out">("all");
+  const { page, goToPage, getInfo } = usePagination({
+    initialPageSize: ITEMS_PER_PAGE,
+  });
   const [formData, setFormData] = useState({
-    nombre: '',
-    categoria: '',
+    nombre: "",
+    categoria: "",
+    categoriaId: null as number | null,
     stock: 0,
     precio: 0,
-    proveedor: '',
-    imagen: '',
-    descripcion: '',
+    imagen: "",
+    descripcion: "",
+    isActive: true,
   });
 
-  const filteredProductos = productos.filter(p => {
-    const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.proveedor.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (filterStock === 'low') return matchesSearch && p.stock > 0 && p.stock < 10;
-    if (filterStock === 'out') return matchesSearch && p.stock === 0;
-    return matchesSearch;
-  });
+  useEffect(() => {
+    fetchProductos();
+    fetchCategories();
+  }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    console.log("imagen en formData:", formData.imagen?.substring(0, 50));
+  }, [formData.imagen]);
+
+  const filteredProductos = useMemo(() => {
+    return productos.filter((p) => {
+      const matchesSearch =
+        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.categoria.toLowerCase().includes(searchTerm.toLowerCase());
+
+      if (filterStock === "low")
+        return matchesSearch && p.stock > 0 && p.stock < 10;
+      if (filterStock === "out") return matchesSearch && p.stock === 0;
+      return matchesSearch;
+    });
+  }, [productos, searchTerm, filterStock]);
+
+  const paginatedProductos = useMemo(() => {
+    return paginate(filteredProductos, page, ITEMS_PER_PAGE);
+  }, [filteredProductos, page]);
+
+  const paginationInfo = getInfo(filteredProductos.length);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      setProductos(productos.map(p => p.id === editingId ? { ...p, ...formData } : p));
-      setEditingId(null);
-    } else {
-      const newProducto = {
-        ...formData,
-        id: `P${String(productos.length + 1).padStart(3, '0')}`,
-        imagen: formData.imagen || 'https://via.placeholder.com/200?text=Producto',
-        descripcion: formData.descripcion || formData.nombre,
-      };
-      setProductos([...productos, newProducto]);
+    try {
+      if (editingId) {
+        await updateProducto(editingId, formData);
+        setEditingId(null);
+      } else {
+        await createProducto(formData);
+      }
+      setShowForm(false);
+      resetForm();
+    } catch {
+      // Error is handled in store
     }
-    setShowForm(false);
-    resetForm();
   };
 
   const resetForm = () => {
     setFormData({
-      nombre: '',
-      categoria: '',
+      nombre: "",
+      categoria: "",
+      categoriaId: null,
       stock: 0,
       precio: 0,
-      proveedor: '',
-      imagen: '',
-      descripcion: '',
+      imagen: "",
+      descripcion: "",
+      isActive: true,
     });
   };
 
-  const handleEdit = (producto: typeof productos[0]) => {
-    setFormData(producto);
+  const handleEdit = (producto: Producto) => {
+    setFormData({
+      nombre: producto.nombre,
+      categoria: producto.categoria,
+      categoriaId: producto.categoriaId ?? null,
+      stock: producto.stock,
+      precio: producto.precio,
+      imagen: producto.imagen,
+      descripcion: producto.descripcion,
+      isActive: producto.isActive ?? true,
+    });
     setEditingId(producto.id);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('¿Eliminar este producto?')) {
-      setProductos(productos.filter(p => p.id !== id));
+  const handleDelete = async (id: string) => {
+    if (confirm(t("inventario.deleteConfirm"))) {
+      try {
+        await deleteProducto(id);
+      } catch {
+        // Error is handled in store
+      }
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    console.log("formData.imagen:", formData.imagen);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, imagen: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const columns = [
-    { key: 'id', header: 'ID' },
-    { 
-      key: 'nombre', 
-      header: 'Producto',
-      render: (p: typeof productos[0]) => (
-        <ImageCell 
-          src={p.imagen} 
-          name={p.nombre} 
+    { key: "id", header: t("common.id") },
+    {
+      key: "nombre",
+      header: t("common.product"),
+      render: (p: Producto) => (
+        <ImageCell
+          src={p.imagen}
+          name={p.nombre}
           subtext={p.categoria}
           type="product"
         />
-      )
+      ),
     },
-    { 
-      key: 'stock', 
-      header: 'Stock',
-      render: (p: typeof productos[0]) => (
-        <span className={p.stock === 0 ? styles.outOfStock : p.stock < 10 ? styles.lowStock : ''}>
+    {
+      key: "stock",
+      header: t("inventario.stock"),
+      render: (p: Producto) => (
+        <span
+          className={
+            p.stock === 0
+              ? styles.outOfStock
+              : p.stock < 10
+                ? styles.lowStock
+                : ""
+          }
+        >
           {p.stock}
         </span>
-      )
+      ),
     },
-    { 
-      key: 'precio', 
-      header: 'Precio',
-      render: (p: typeof productos[0]) => `$${p.precio.toLocaleString()}` 
-    },
-    { key: 'proveedor', header: 'Proveedor' },
     {
-      key: 'actions',
-      header: 'Acciones',
-      render: (p: typeof productos[0]) => (
-        <div className={styles.actions}>
-          <Button size="small" variant="secondary" onClick={() => handleEdit(p)}>Editar</Button>
-          <Button size="small" variant="danger" onClick={() => handleDelete(p.id)}>Eliminar</Button>
-        </div>
+      key: "precio",
+      header: t("common.price"),
+      render: (p: Producto) => `$${p.precio.toLocaleString()}`,
+    },
+    {
+      key: "actions",
+      header: t("common.actions"),
+      render: (p: Producto) => (
+        <ActionButtons
+          onEdit={() => handleEdit(p)}
+          onDelete={() => handleDelete(p.id)}
+        />
       ),
     },
   ];
 
   return (
     <div>
-      <PageHeader title="Inventario">
+      <PageHeader
+        title={t("inventario.title")}
+        subtitle={t("inventario.subtitle")}
+      >
         <div className={styles.headerActions}>
-          <input 
-            type="text" 
-            placeholder="Buscar producto..." 
-            className={styles.search}
+          <SearchInput
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(value) => {
+              setSearchTerm(value);
+              goToPage(1);
+            }}
+            placeholder={t("inventario.searchPlaceholder")}
+            width="240px"
           />
-          <select 
+          <select
             className={styles.filter}
             value={filterStock}
-            onChange={(e) => setFilterStock(e.target.value as any)}
+            onChange={(e) => {
+              setFilterStock(e.target.value as any);
+              goToPage(1);
+            }}
           >
-            <option value="all">Todos</option>
-            <option value="low">Stock bajo</option>
-            <option value="out">Sin stock</option>
+            <option value="all">{t("inventario.all")}</option>
+            <option value="low">{t("inventario.lowStock")}</option>
+            <option value="out">{t("inventario.outOfStock")}</option>
           </select>
-          <Button onClick={() => { resetForm(); setShowForm(true); }}>
-            + Nuevo Producto
+          <Button
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+          >
+            + {t("inventario.newProduct")}
           </Button>
         </div>
       </PageHeader>
 
-      {showForm && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
-            <h2>{editingId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-            <form onSubmit={handleSubmit}>
-              <div className={styles.formGroup}>
-                <label>Nombre</label>
-                <input 
-                  type="text" 
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Categoría</label>
-                <input 
-                  type="text" 
-                  value={formData.categoria}
-                  onChange={(e) => setFormData({...formData, categoria: e.target.value})}
-                  placeholder="ej. Computación, Accesorios"
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Stock</label>
-                <input 
-                  type="number" 
-                  min="0" 
-                  value={formData.stock}
-                  onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value)})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Precio</label>
-                <input 
-                  type="number" 
-                  min="0" 
-                  value={formData.precio}
-                  onChange={(e) => setFormData({...formData, precio: parseInt(e.target.value)})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Proveedor</label>
-                <input 
-                  type="text" 
-                  value={formData.proveedor}
-                  onChange={(e) => setFormData({...formData, proveedor: e.target.value})}
-                  required
-                />
-              </div>
-              <div className={styles.formActions}>
-                <Button type="button" variant="secondary" onClick={() => { setShowForm(false); setEditingId(null); }}>
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  {editingId ? 'Actualizar' : 'Crear'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {loading && <p>Cargando...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <Table data={filteredProductos} columns={columns} />
+      <Modal
+        isOpen={showForm}
+        onClose={() => {
+          setShowForm(false);
+          setEditingId(null);
+        }}
+        title={
+          editingId ? t("inventario.editProduct") : t("inventario.newProduct")
+        }
+        onSubmit={handleSubmit}
+        submitLabel={editingId ? t("common.update") : t("common.create")}
+      >
+        <div className={styles.formGroup}>
+          <label>{t("common.name")}</label>
+          <input
+            className={styles.input}
+            type="text"
+            value={formData.nombre}
+            onChange={(e) =>
+              setFormData({ ...formData, nombre: e.target.value })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t("common.category")}</label>
+          <select
+            className={styles.select}
+            value={formData.categoriaId ?? ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              const catId = val ? parseInt(val) : null;
+              const cat = categories.find((c) => c.id === catId);
+              setFormData({
+                ...formData,
+                categoriaId: catId,
+                categoria: cat?.name || "",
+              });
+            }}
+            required
+          >
+            <option value="">-- {t("inventario.selectCategory")} --</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t("inventario.stock")}</label>
+          <input
+            className={styles.input}
+            type="number"
+            min="0"
+            value={formData.stock}
+            onChange={(e) =>
+              setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t("common.price")}</label>
+          <input
+            className={styles.input}
+            type="number"
+            min="0"
+            step="0.01"
+            value={formData.precio}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                precio: parseFloat(e.target.value) || 0,
+              })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t("common.image")}</label>
+          <input
+            className={styles.input}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          {formData.imagen && (
+            <img
+              src={formData.imagen}
+              alt="Preview"
+              style={{ width: "100px", marginTop: "8px" }}
+            />
+          )}
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t("common.description")}</label>
+          <input
+            className={styles.input}
+            type="text"
+            value={formData.descripcion}
+            onChange={(e) =>
+              setFormData({ ...formData, descripcion: e.target.value })
+            }
+          />
+        </div>
+        {editingId && (
+          <div className={styles.formGroup}>
+            <label>
+              <input
+                type="checkbox"
+                checked={formData.isActive}
+                onChange={(e) =>
+                  setFormData({ ...formData, isActive: e.target.checked })
+                }
+              />{" "}
+              {t("inventario.active")}
+            </label>
+          </div>
+        )}
+      </Modal>
+
+      <Table data={paginatedProductos} columns={columns} />
+
+      <Pagination pagination={paginationInfo} onPageChange={goToPage} />
     </div>
   );
 }

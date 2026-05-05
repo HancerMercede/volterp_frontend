@@ -1,8 +1,8 @@
-import { useUI } from '../../context/UIContext';
+import { useUIStore } from '../../stores/uiStore';
 import styles from './Toast.module.css';
 
 export function ToastContainer() {
-  const { toasts, removeToast, isLoading } = useUI();
+  const { toasts, removeToast, isLoading } = useUIStore();
 
   return (
     <>

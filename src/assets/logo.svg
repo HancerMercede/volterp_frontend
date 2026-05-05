@@ -1,0 +1,38 @@
+<svg width="100%" viewBox="0 0 680 680" role="img" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <circle cx="340" cy="340" r="240" fill="url(#bgGlow)"/>
+
+  <circle cx="340" cy="340" r="210" fill="none" stroke="#FACC15" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="340" cy="340" r="197" fill="none" stroke="#FDE68A" stroke-width="1" opacity="0.35"/>
+
+  <g stroke="#FACC15" stroke-width="3" stroke-linecap="round" opacity="0.55">
+    <line x1="340" y1="136" x2="340" y2="120"/>
+    <line x1="340" y1="544" x2="340" y2="560"/>
+    <line x1="136" y1="340" x2="120" y2="340"/>
+    <line x1="544" y1="340" x2="560" y2="340"/>
+    <line x1="192" y1="192" x2="181" y2="181"/>
+    <line x1="488" y1="192" x2="499" y2="181"/>
+    <line x1="192" y1="488" x2="181" y2="499"/>
+    <line x1="488" y1="488" x2="499" y2="499"/>
+  </g>
+
+  <path d="M390 130 L290 330 L345 330 L265 550 L420 305 L365 305 Z" fill="#3B0764" opacity="0.45" transform="translate(6,8)"/>
+
+  <path d="M390 130 L290 330 L345 330 L265 550 L420 305 L365 305 Z" fill="#7C3AED"/>
+
+  <path d="M375 165 L295 325 L338 325 L288 470 L398 295 L355 295 Z" fill="#818CF8" opacity="0.7"/>
+
+  <path d="M368 190 L305 320 L340 320 L300 430 L372 300 L337 300 Z" fill="#C4B5FD" opacity="0.55"/>
+
+  <path d="M358 215 L318 312 L336 312 L318 385 L355 305 L337 305 Z" fill="#ffffff" opacity="0.22"/>
+
+  <circle cx="393" cy="133" r="6" fill="#FACC15" opacity="0.9"/>
+
+  <circle cx="264" cy="551" r="6" fill="#FACC15" opacity="0.9"/>
+</svg>

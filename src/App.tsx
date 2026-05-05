@@ -1,36 +1,63 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout/Layout';
 import { Dashboard } from './pages/Dashboard/Dashboard';
 import { Ventas } from './pages/Ventas/Ventas';
 import { Compras } from './pages/Compras/Compras';
 import { Inventario } from './pages/Inventario/Inventario';
 import { Clientes } from './pages/Clientes/Clientes';
+import { Proveedores } from './pages/Proveedores/Proveedores';
+import { Contabilidad } from './pages/Contabilidad/Contabilidad';
+import { RRHH } from './pages/RRHH/RRHH';
+import { Nomina } from './pages/RRHH/Nomina';
+import { Asistencia } from './pages/RRHH/Asistencia';
+import { Proyectos } from './pages/Proyectos/Proyectos';
 import { Reportes } from './pages/Reportes/Reportes';
 import { Configuracion } from './pages/Configuracion/Configuracion';
-import { ERPProvider, UIProvider } from './context';
+import { Soporte } from './pages/Soporte/Soporte';
+import { Login } from './pages/Login/Login';
+import { Register } from './pages/Register/Register';
+import { useAuthStore } from './stores/authStore';
 import { ToastContainer } from './components/UI';
+import './i18n';
 import './styles/variables.css';
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/ventas" element={<Ventas />} />
+        <Route path="/compras" element={<Compras />} />
+        <Route path="/inventario" element={<Inventario />} />
+        <Route path="/clientes" element={<Clientes />} />
+        <Route path="/proveedores" element={<Proveedores />} />
+        <Route path="/contabilidad" element={<Contabilidad />} />
+        <Route path="/rrhh" element={<RRHH />} />
+        <Route path="/rrhh/nomina" element={<Nomina />} />
+        <Route path="/rrhh/asistencia" element={<Asistencia />} />
+        <Route path="/proyectos" element={<Proyectos />} />
+        <Route path="/reportes" element={<Reportes />} />
+        <Route path="/configuracion" element={<Configuracion />} />
+        <Route path="/soporte" element={<Soporte />} />
+      </Route>
+    </Routes>
+  );
+}
 
 function App() {
   return (
-    <UIProvider>
-      <ERPProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/ventas" element={<Ventas />} />
-              <Route path="/compras" element={<Compras />} />
-              <Route path="/inventario" element={<Inventario />} />
-              <Route path="/clientes" element={<Clientes />} />
-              <Route path="/reportes" element={<Reportes />} />
-              <Route path="/configuracion" element={<Configuracion />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-        <ToastContainer />
-      </ERPProvider>
-    </UIProvider>
+    <BrowserRouter>
+      <AppRoutes />
+      <ToastContainer />
+    </BrowserRouter>
   );
 }
 

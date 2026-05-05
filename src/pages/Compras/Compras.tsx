@@ -1,42 +1,72 @@
-import { useState } from 'react';
-import { useERP, useUI } from '../../context';
-import { Table, Button, PageHeader, ImageCell } from '../../components/UI';
-import styles from './Compras.module.css';
+import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useCompraStore } from "../../stores/compraStore";
+import { useProductoStore } from "../../stores/productoStore";
+import { useUIStore } from "../../stores/uiStore";
+import {
+  Table,
+  Button,
+  PageHeader,
+  ImageCell,
+  ActionButtons,
+  Pagination,
+  SearchInput,
+  Modal,
+} from "../../components/UI";
+import { usePagination } from "../../hooks/usePagination";
+import { paginate } from "../../utils/pagination";
+import { ITEMS_PER_PAGE } from "../../config/pagination";
+import type { Compra } from "../../data/mockData";
+import styles from "./Compras.module.css";
 
 export function Compras() {
-  const { compras, setCompras, productos } = useERP();
-  const { addToast } = useUI();
+  const { t } = useTranslation();
+  const { compras, addCompra, updateCompra, deleteCompra } = useCompraStore();
+  const { productos } = useProductoStore();
+  const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const { page, goToPage, getInfo } = usePagination({
+    initialPageSize: ITEMS_PER_PAGE,
+  });
   const [formData, setFormData] = useState({
-    proveedor: '',
-    producto: '',
+    proveedor: "",
+    producto: "",
     cantidad: 1,
     total: 0,
-    fecha: new Date().toISOString().split('T')[0],
-    estado: 'pendiente' as 'recibida' | 'pendiente' | 'cancelada',
+    fecha: new Date().toISOString().split("T")[0],
+    estado: "pendiente" as "recibida" | "pendiente" | "cancelada",
   });
 
-  const filteredCompras = compras.filter(c =>
-    c.proveedor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCompras = useMemo(() => {
+    return compras.filter(
+      (c) =>
+        c.proveedor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.id.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  }, [compras, searchTerm]);
+
+  const paginatedCompras = useMemo(() => {
+    return paginate(filteredCompras, page, ITEMS_PER_PAGE);
+  }, [filteredCompras, page]);
+
+  const paginationInfo = getInfo(filteredCompras.length);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
-      setCompras(compras.map(c => c.id === editingId ? { ...c, ...formData } : c));
+      updateCompra(editingId, formData);
       setEditingId(null);
-      addToast('Compra actualizada correctamente', 'success');
+      addToast(t("compras.purchaseUpdated"), "success");
     } else {
-      const newCompra = {
+      const newCompra: Compra = {
         ...formData,
-        id: `C${String(compras.length + 1).padStart(3, '0')}`,
+        id: `C${String(compras.length + 1).padStart(3, "0")}`,
       };
-      setCompras([...compras, newCompra]);
-      addToast('Compra creada correctamente', 'success');
+      addCompra(newCompra);
+      addToast(t("compras.purchaseCreated"), "success");
     }
     setShowForm(false);
     resetForm();
@@ -44,170 +74,190 @@ export function Compras() {
 
   const resetForm = () => {
     setFormData({
-      proveedor: '',
-      producto: '',
+      proveedor: "",
+      producto: "",
       cantidad: 1,
       total: 0,
-      fecha: new Date().toISOString().split('T')[0],
-      estado: 'pendiente',
+      fecha: new Date().toISOString().split("T")[0],
+      estado: "pendiente",
     });
   };
 
-  const handleEdit = (compra: typeof compras[0]) => {
+  const handleEdit = (compra: Compra) => {
     setFormData(compra);
     setEditingId(compra.id);
     setShowForm(true);
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('¿Eliminar esta compra?')) {
-      setCompras(compras.filter(c => c.id !== id));
-      addToast('Compra eliminada', 'error');
+    if (confirm(t("compras.deleteConfirm"))) {
+      deleteCompra(id);
+      addToast(t("compras.purchaseDeleted"), "error");
     }
   };
 
-  const getProductoByName = (nombre: string) => productos.find(p => p.nombre === nombre);
+  const getProductoByName = (nombre: string) =>
+    productos.find((p) => p.nombre === nombre);
 
   const columns = [
-    { key: 'id', header: 'ID' },
-    { key: 'proveedor', header: 'Proveedor' },
-    { 
-      key: 'producto', 
-      header: 'Producto',
-      render: (c: typeof compras[0]) => {
+    { key: "id", header: t("common.id") },
+    { key: "proveedor", header: t("compras.supplier") },
+    {
+      key: "producto",
+      header: t("compras.product"),
+      render: (c: Compra) => {
         const producto = getProductoByName(c.producto);
         return producto ? (
-          <ImageCell 
-            src={producto.imagen} 
+          <ImageCell
+            src={producto.imagen}
             name={c.producto}
             subtext={`x${c.cantidad}`}
             type="product"
           />
-        ) : c.producto;
-      }
-    },
-    { 
-      key: 'total', 
-      header: 'Total',
-      render: (c: typeof compras[0]) => `$${c.total.toLocaleString()}` 
-    },
-    { key: 'fecha', header: 'Fecha' },
-    { 
-      key: 'estado', 
-      header: 'Estado',
-      render: (c: typeof compras[0]) => (
-        <span className={`${styles.badge} ${styles[c.estado]}`}>
-          {c.estado}
-        </span>
-      )
+        ) : (
+          c.producto
+        );
+      },
     },
     {
-      key: 'actions',
-      header: 'Acciones',
-      render: (c: typeof compras[0]) => (
-        <div className={styles.actions}>
-          <Button size="small" variant="secondary" onClick={() => handleEdit(c)}>Editar</Button>
-          <Button size="small" variant="danger" onClick={() => handleDelete(c.id)}>Eliminar</Button>
-        </div>
+      key: "total",
+      header: t("common.total"),
+      render: (c: Compra) => `$${c.total.toLocaleString()}`,
+    },
+    { key: "fecha", header: t("common.date") },
+    {
+      key: "estado",
+      header: t("common.status"),
+      render: (c: Compra) => (
+        <span className={`${styles.badge} ${styles[c.estado]}`}>
+          {c.estado === "pendiente"
+            ? t("compras.pending")
+            : c.estado === "recibida"
+              ? t("compras.received")
+              : t("compras.cancelled")}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: t("common.actions"),
+      render: (c: Compra) => (
+        <ActionButtons
+          onEdit={() => handleEdit(c)}
+          onDelete={() => handleDelete(c.id)}
+        />
       ),
     },
   ];
 
   return (
     <div>
-      <PageHeader title="Compras">
+      <PageHeader title={t("compras.title")} subtitle={t("compras.subtitle")}>
         <div className={styles.headerActions}>
-          <input 
-            type="text" 
-            placeholder="Buscar compras..." 
-            className={styles.search}
+          <SearchInput
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(value) => {
+              setSearchTerm(value);
+              goToPage(1);
+            }}
+            placeholder={t("compras.searchPurchases")}
+            width="240px"
           />
-          <Button onClick={() => { resetForm(); setShowForm(true); }}>
-            + Nueva Compra
+          <Button
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+          >
+            + {t("compras.newPurchase")}
           </Button>
         </div>
       </PageHeader>
 
-      {showForm && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
-            <h2>{editingId ? 'Editar Compra' : 'Nueva Compra'}</h2>
-            <form onSubmit={handleSubmit}>
-              <div className={styles.formGroup}>
-                <label>Proveedor</label>
-                <input 
-                  type="text" 
-                  value={formData.proveedor}
-                  onChange={(e) => setFormData({...formData, proveedor: e.target.value})}
-                  placeholder="Nombre del proveedor"
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Producto</label>
-                <input 
-                  type="text" 
-                  value={formData.producto}
-                  onChange={(e) => setFormData({...formData, producto: e.target.value})}
-                  placeholder="Nombre del producto"
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Cantidad</label>
-                <input 
-                  type="number" 
-                  min="1" 
-                  value={formData.cantidad}
-                  onChange={(e) => setFormData({...formData, cantidad: parseInt(e.target.value)})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Total</label>
-                <input 
-                  type="number" 
-                  value={formData.total}
-                  onChange={(e) => setFormData({...formData, total: parseInt(e.target.value)})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Fecha</label>
-                <input 
-                  type="date" 
-                  value={formData.fecha}
-                  onChange={(e) => setFormData({...formData, fecha: e.target.value})}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Estado</label>
-                <select 
-                  value={formData.estado}
-                  onChange={(e) => setFormData({...formData, estado: e.target.value as any})}
-                >
-                  <option value="pendiente">Pendiente</option>
-                  <option value="recibida">Recibida</option>
-                  <option value="cancelada">Cancelada</option>
-                </select>
-              </div>
-              <div className={styles.formActions}>
-                <Button type="button" variant="secondary" onClick={() => { setShowForm(false); setEditingId(null); }}>
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  {editingId ? 'Actualizar' : 'Crear'}
-                </Button>
-              </div>
-            </form>
-          </div>
+      <Modal
+        isOpen={showForm}
+        onClose={() => {
+          setShowForm(false);
+          setEditingId(null);
+        }}
+        title={editingId ? t("compras.editPurchase") : t("compras.newPurchase")}
+        onSubmit={handleSubmit}
+        submitLabel={editingId ? t("common.update") : t("common.create")}
+      >
+        <div className={styles.formGroup}>
+          <label>{t("compras.supplier")}</label>
+          <input
+            type="text"
+            value={formData.proveedor}
+            onChange={(e) =>
+              setFormData({ ...formData, proveedor: e.target.value })
+            }
+            required
+          />
         </div>
-      )}
+        <div className={styles.formGroup}>
+          <label>{t("compras.product")}</label>
+          <input
+            type="text"
+            value={formData.producto}
+            onChange={(e) =>
+              setFormData({ ...formData, producto: e.target.value })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t("common.quantity")}</label>
+          <input
+            type="number"
+            min="1"
+            value={formData.cantidad}
+            onChange={(e) =>
+              setFormData({ ...formData, cantidad: parseInt(e.target.value) })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t("common.total")}</label>
+          <input
+            type="number"
+            value={formData.total}
+            onChange={(e) =>
+              setFormData({ ...formData, total: parseInt(e.target.value) })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t("common.date")}</label>
+          <input
+            type="date"
+            value={formData.fecha}
+            onChange={(e) =>
+              setFormData({ ...formData, fecha: e.target.value })
+            }
+            required
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t("common.status")}</label>
+          <select
+            value={formData.estado}
+            onChange={(e) =>
+              setFormData({ ...formData, estado: e.target.value as any })
+            }
+          >
+            <option value="pendiente">{t("pending")}</option>
+            <option value="recibida">{t("received")}</option>
+            <option value="cancelada">{t("cancelled")}</option>
+          </select>
+        </div>
+      </Modal>
 
-      <Table data={filteredCompras} columns={columns} />
+      <Table data={paginatedCompras} columns={columns} />
+
+      <Pagination pagination={paginationInfo} onPageChange={goToPage} />
     </div>
   );
 }

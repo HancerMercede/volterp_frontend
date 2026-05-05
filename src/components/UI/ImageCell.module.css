@@ -1,37 +1,37 @@
 .imageCell {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
-.image {
+.image, .avatar {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
-  object-fit: cover;
-  background: var(--gray-100);
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
   border-radius: 50%;
   object-fit: cover;
   background: var(--gray-100);
+  flex-shrink: 0;
 }
 
 .info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .name {
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .subtext {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
