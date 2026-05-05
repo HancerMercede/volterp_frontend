@@ -40,6 +40,7 @@ function mapToCreateRequest(data: Omit<Producto, 'id'>): CreateProductRequest {
     price: data.precio,
     categoryId: data.categoriaId ?? null,
     companyId: 1,
+    imageUrl: data.imagen || null,
   };
 }
 
@@ -52,6 +53,7 @@ function mapToUpdateRequest(data: Partial<Producto>): UpdateProductRequest {
     price: data.precio ?? 0,
     categoryId: data.categoriaId ?? null,
     isActive: data.isActive ?? true,
+    imageUrl: data.imagen || null,
   };
 }
 
@@ -85,7 +87,9 @@ export const useProductoStore = create<ProductoStore>()(
         }
         set({ loading: true, error: null });
         try {
-          const dto = await productService.createProduct(token, mapToCreateRequest(data));
+          const requestData = mapToCreateRequest(data);
+          console.log('mapToCreateRequest result:', requestData);
+          const dto = await productService.createProduct(token, requestData);
           set({ productos: [...get().productos, mapDtoToProducto(dto)], loading: false });
         } catch (err) {
           set({ error: (err as Error).message, loading: false });

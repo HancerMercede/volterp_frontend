@@ -50,6 +50,7 @@ export interface CreateProductRequest {
   stock: number;
   categoryId: number | null;
   companyId: number;
+  imageUrl?: string | null;
 }
 
 export interface UpdateProductRequest {
@@ -60,4 +61,5 @@ export interface UpdateProductRequest {
   stock: number;
   categoryId: number | null;
   isActive: boolean;
+  imageUrl?: string | null;
 }
