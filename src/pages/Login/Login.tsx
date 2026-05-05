@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../stores/authStore";
 import { authService } from "../../infrastructure/api/authService";
 import styles from "./Login.module.css";
 
 export function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
   const { login } = useAuthStore();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -14,6 +17,9 @@ export function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  // Show session expired banner when redirected from auto-logout
+  const sessionExpired = (location.state as { expired?: boolean } | null)?.expired === true;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +82,12 @@ export function Login() {
             <h2>Bienvenido</h2>
             <p>Inicie sesión para continuar</p>
           </div>
+
+          {sessionExpired && (
+            <div className={styles.sessionExpiredBanner}>
+              <span>⚠️</span> {t('auth.sessionExpired')}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className={styles.form}>
             <div className={`${styles.inputGroup} ${focusedField === "username" ? styles.focused : ""} ${error && !username ? styles.error : ""}`}>

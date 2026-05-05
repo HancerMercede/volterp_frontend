@@ -72,7 +72,7 @@ export const useProductoStore = create<ProductoStore>()(
         }
         set({ loading: true, error: null });
         try {
-          const dtos = await productService.getProducts(token);
+          const dtos = await productService.getProducts();
           set({ productos: dtos.map(mapDtoToProducto), loading: false });
         } catch (err) {
           set({ error: (err as Error).message, loading: false });
@@ -89,7 +89,7 @@ export const useProductoStore = create<ProductoStore>()(
         try {
           const requestData = mapToCreateRequest(data);
           console.log('mapToCreateRequest result:', requestData);
-          const dto = await productService.createProduct(token, requestData);
+          const dto = await productService.createProduct(requestData);
           set({ productos: [...get().productos, mapDtoToProducto(dto)], loading: false });
         } catch (err) {
           set({ error: (err as Error).message, loading: false });
@@ -105,7 +105,7 @@ export const useProductoStore = create<ProductoStore>()(
         }
         set({ loading: true, error: null });
         try {
-          const dto = await productService.updateProduct(token, parseInt(id), mapToUpdateRequest(data));
+          const dto = await productService.updateProduct(parseInt(id), mapToUpdateRequest(data));
           set({
             productos: get().productos.map(p => p.id === id ? mapDtoToProducto(dto) : p),
             loading: false,
@@ -124,7 +124,7 @@ export const useProductoStore = create<ProductoStore>()(
         }
         set({ loading: true, error: null });
         try {
-          await productService.deleteProduct(token, parseInt(id));
+          await productService.deleteProduct(parseInt(id));
           set({ productos: get().productos.filter(p => p.id !== id), loading: false });
         } catch (err) {
           set({ error: (err as Error).message, loading: false });

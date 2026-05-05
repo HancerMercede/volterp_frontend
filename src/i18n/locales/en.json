@@ -136,7 +136,10 @@
     "orderPending": "Pending",
     "saleDate": "Sale Date",
     "selectCategory": "All categories",
-    "addProductsHint": "Add products from the catalog"
+    "addProductsHint": "Add products from the catalog",
+    "completed": "Completed",
+    "pending": "Pending",
+    "cancelled": "Cancelled"
   },
   "compras": {
     "title": "Purchases",
@@ -148,7 +151,8 @@
     "purchaseDate": "Purchase Date",
     "purchaseCreated": "Purchase created successfully",
     "purchaseUpdated": "Purchase updated successfully",
-    "purchaseDeleted": "Purchase deleted"
+    "purchaseDeleted": "Purchase deleted",
+    "searchPurchases": "Search purchase..."
   },
   "inventario": {
     "title": "Inventory",

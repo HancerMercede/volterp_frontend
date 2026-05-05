@@ -1,10 +1,14 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Sidebar } from './Sidebar';
+import { useTokenExpiry } from '../../hooks/useTokenExpiry';
 import styles from './Layout.module.css';
 
 export function Layout() {
   const location = useLocation();
+
+  // Mounts proactive timer + reactive 401 listener for auto-logout
+  useTokenExpiry();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

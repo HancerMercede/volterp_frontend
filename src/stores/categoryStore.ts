@@ -26,7 +26,7 @@ export const useCategoryStore = create<CategoryStore>()(
         }
         set({ loading: true, error: null });
         try {
-          const dtos = await categoryService.getCategories(token);
+          const dtos = await categoryService.getCategories();
           set({ categories: dtos, loading: false });
         } catch (err) {
           set({ error: (err as Error).message, loading: false });
