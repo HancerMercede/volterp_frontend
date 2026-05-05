@@ -1,54 +1,73 @@
-import { useState, useEffect } from 'react';
-import { useAuthStore } from '../../stores/authStore';
-import { userService, type UserDto, type CreateUserRequest } from '../../infrastructure/api/userService';
-import { ROL_LABELS, ROL_COLORS } from '../../domain/constants/roles';
-import { Button, Modal } from '../../components/UI';
-import styles from './UserManagement.module.css';
+import { useState, useEffect } from "react";
+import { useAuthStore } from "../../stores/authStore";
+import {
+  userService,
+  type UserDto,
+  type CreateUserRequest,
+} from "../../infrastructure/api/userService";
+import { ROL_LABELS, ROL_COLORS } from "../../domain/constants/roles";
+import { Button, Modal } from "../../components/UI";
+import styles from "./UserManagement.module.css";
 
-const ROLES = ['admin', 'ventas', 'inventario', 'contabilidad', 'rrhh'] as const;
+const ROLES = [
+  "admin",
+  "ventas",
+  "inventario",
+  "contabilidad",
+  "rrhh",
+] as const;
 
 export function UserManagement() {
   const { token } = useAuthStore();
   const [users, setUsers] = useState<UserDto[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newUser, setNewUser] = useState<CreateUserRequest>({
-    username: '',
-    password: '',
-    email: '',
-    fullName: '',
-    role: 'User',
+    username: "",
+    password: "",
+    email: "",
+    fullName: "",
+    role: "User",
   });
 
   useEffect(() => {
-    if (token) loadUsers();
-  }, [token]);
-
-  async function loadUsers() {
     if (!token) return;
-    setLoading(true);
-    setError('');
-    try {
-      const data = await userService.getUsers(token);
-      setUsers(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error loading users');
-    } finally {
-      setLoading(false);
+
+    async function loadUsers() {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await userService.getUsers(token!);
+        setUsers(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error loading users");
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+    loadUsers();
+  }, [token]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!token) return;
     try {
-      const created = await userService.createUser(token, { ...newUser, role: newUser.role === 'User' ? 'User' : newUser.role });
+      const created = await userService.createUser(token, {
+        ...newUser,
+        role: newUser.role === "User" ? "User" : newUser.role,
+      });
       setUsers([...users, created]);
       setShowCreateModal(false);
-      setNewUser({ username: '', password: '', email: '', fullName: '', role: 'User' });
+      setNewUser({
+        username: "",
+        password: "",
+        email: "",
+        fullName: "",
+        role: "User",
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error creating user');
+      setError(err instanceof Error ? err.message : "Error creating user");
     }
   }
 
@@ -56,29 +75,33 @@ export function UserManagement() {
     if (!token) return;
     try {
       const updated = await userService.updateUserRole(token, userId, newRole);
-      setUsers(users.map(u => u.id === userId ? updated : u));
+      setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error updating role');
+      setError(err instanceof Error ? err.message : "Error updating role");
     }
   }
 
   async function handleToggleStatus(userId: number, currentStatus: boolean) {
     if (!token) return;
     try {
-      const updated = await userService.updateUserStatus(token, userId, !currentStatus);
-      setUsers(users.map(u => u.id === userId ? updated : u));
+      const updated = await userService.updateUserStatus(
+        token,
+        userId,
+        !currentStatus,
+      );
+      setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error updating status');
+      setError(err instanceof Error ? err.message : "Error updating status");
     }
   }
 
   async function handleDelete(userId: number) {
-    if (!token || !confirm('¿Eliminar este usuario?')) return;
+    if (!token || !confirm("¿Eliminar este usuario?")) return;
     try {
       await userService.deleteUser(token, userId);
-      setUsers(users.filter(u => u.id !== userId));
+      setUsers(users.filter((u) => u.id !== userId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error deleting user');
+      setError(err instanceof Error ? err.message : "Error deleting user");
     }
   }
 
@@ -86,7 +109,9 @@ export function UserManagement() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h3>Gestión de Usuarios</h3>
-        <Button onClick={() => setShowCreateModal(true)}>+ Nuevo Usuario</Button>
+        <Button onClick={() => setShowCreateModal(true)}>
+          + Nuevo Usuario
+        </Button>
       </div>
 
       {error && <div className={styles.error}>{error}</div>}
@@ -109,7 +134,7 @@ export function UserManagement() {
               </tr>
             </thead>
             <tbody>
-              {users.map(user => (
+              {users.map((user) => (
                 <tr key={user.id}>
                   <td className={styles.username}>{user.username}</td>
                   <td>{user.email}</td>
@@ -117,33 +142,47 @@ export function UserManagement() {
                   <td>
                     <select
                       value={user.role.toLowerCase()}
-                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                      onChange={(e) =>
+                        handleRoleChange(user.id, e.target.value)
+                      }
                       className={styles.roleSelect}
-                      style={{ 
-                        borderColor: ROL_COLORS[user.role.toLowerCase() as keyof typeof ROL_COLORS],
-                        color: ROL_COLORS[user.role.toLowerCase() as keyof typeof ROL_COLORS]
+                      style={{
+                        borderColor:
+                          ROL_COLORS[
+                            user.role.toLowerCase() as keyof typeof ROL_COLORS
+                          ],
+                        color:
+                          ROL_COLORS[
+                            user.role.toLowerCase() as keyof typeof ROL_COLORS
+                          ],
                       }}
                     >
-                      {ROLES.map(role => (
-                        <option key={role} value={role}>{ROL_LABELS[role]}</option>
+                      {ROLES.map((role) => (
+                        <option key={role} value={role}>
+                          {ROL_LABELS[role]}
+                        </option>
                       ))}
                     </select>
                   </td>
                   <td>
-                    <span className={`${styles.badge} ${user.isActive ? styles.active : styles.inactive}`}>
-                      {user.isActive ? 'Activo' : 'Inactivo'}
+                    <span
+                      className={`${styles.badge} ${user.isActive ? styles.active : styles.inactive}`}
+                    >
+                      {user.isActive ? "Activo" : "Inactivo"}
                     </span>
                   </td>
                   <td>
                     <div className={styles.actions}>
                       <button
                         className={styles.iconBtn}
-                        onClick={() => handleToggleStatus(user.id, user.isActive)}
-                        title={user.isActive ? 'Desactivar' : 'Activar'}
+                        onClick={() =>
+                          handleToggleStatus(user.id, user.isActive)
+                        }
+                        title={user.isActive ? "Desactivar" : "Activar"}
                       >
-                        {user.isActive ? '⛔' : '✅'}
+                        {user.isActive ? "⛔" : "✅"}
                       </button>
-                      {user.role.toLowerCase() !== 'admin' && (
+                      {user.role.toLowerCase() !== "admin" && (
                         <button
                           className={`${styles.iconBtn} ${styles.deleteBtn}`}
                           onClick={() => handleDelete(user.id)}
@@ -174,7 +213,9 @@ export function UserManagement() {
           <input
             type="text"
             value={newUser.username}
-            onChange={e => setNewUser({ ...newUser, username: e.target.value })}
+            onChange={(e) =>
+              setNewUser({ ...newUser, username: e.target.value })
+            }
             required
             minLength={3}
           />
@@ -184,7 +225,7 @@ export function UserManagement() {
           <input
             type="email"
             value={newUser.email}
-            onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
             required
           />
         </div>
@@ -193,7 +234,9 @@ export function UserManagement() {
           <input
             type="text"
             value={newUser.fullName}
-            onChange={e => setNewUser({ ...newUser, fullName: e.target.value })}
+            onChange={(e) =>
+              setNewUser({ ...newUser, fullName: e.target.value })
+            }
             required
           />
         </div>
@@ -202,7 +245,9 @@ export function UserManagement() {
           <input
             type="password"
             value={newUser.password}
-            onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+            onChange={(e) =>
+              setNewUser({ ...newUser, password: e.target.value })
+            }
             required
             minLength={6}
           />
@@ -211,10 +256,12 @@ export function UserManagement() {
           <label>Rol</label>
           <select
             value={newUser.role}
-            onChange={e => setNewUser({ ...newUser, role: e.target.value })}
+            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
           >
-            {ROLES.map(role => (
-              <option key={role} value={role}>{ROL_LABELS[role]}</option>
+            {ROLES.map((role) => (
+              <option key={role} value={role}>
+                {ROL_LABELS[role]}
+              </option>
             ))}
           </select>
         </div>

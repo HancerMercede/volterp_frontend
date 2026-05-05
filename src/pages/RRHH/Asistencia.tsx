@@ -1,24 +1,23 @@
-import { useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { PageHeader, Button, Pagination } from '../../components/UI';
-import { useAsistenciaStore } from '../../stores/asistenciaStore';
-import { useEmpleadoStore } from '../../stores/empleadoStore';
-import { AsistenciaDashboard } from '../../components/Asistencia/AsistenciaDashboard';
-import { AsistenciaStats } from '../../components/Asistencia/AsistenciaStats';
-import { PoncheCard } from '../../components/Asistencia/PoncheCard';
-import { getPaginationInfo } from '../../utils/pagination';
-import styles from './Asistencia.module.css';
-
-const ITEMS_PER_PAGE = 10;
+import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { PageHeader, Button, Pagination } from "../../components/UI";
+import { useAsistenciaStore } from "../../stores/asistenciaStore";
+import { useEmpleadoStore } from "../../stores/empleadoStore";
+import { AsistenciaDashboard } from "../../components/Asistencia/AsistenciaDashboard";
+import { AsistenciaStats } from "../../components/Asistencia/AsistenciaStats";
+import { PoncheCard } from "../../components/Asistencia/PoncheCard";
+import { getPaginationInfo } from "../../utils/pagination";
+import styles from "./Asistencia.module.css";
+import { ITEMS_PER_PAGE } from "../../config/pagination";
 
 export function Asistencia() {
   const { t } = useTranslation();
   const { registros, configuracion, registrarPonche } = useAsistenciaStore();
   const { empleados } = useEmpleadoStore();
-  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState('EMP001');
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("EMP001");
   const [page, setPage] = useState(1);
 
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = new Date().toISOString().split("T")[0];
   const registrosHoy = registros
     .filter((r) => r.fecha === hoy && r.empleadoId === empleadoSeleccionado)
     .sort((a, b) => b.creadoEn.localeCompare(a.creadoEn));
@@ -35,10 +34,14 @@ export function Asistencia() {
   }, [todosRegistrosEmpleado, page]);
 
   const paginationInfo = useMemo(() => {
-    return getPaginationInfo(todosRegistrosEmpleado.length, page, ITEMS_PER_PAGE);
+    return getPaginationInfo(
+      todosRegistrosEmpleado.length,
+      page,
+      ITEMS_PER_PAGE,
+    );
   }, [todosRegistrosEmpleado.length, page]);
 
-  const handlePonche = (tipo: 'entrada' | 'salida' | 'pausa') => {
+  const handlePonche = (tipo: "entrada" | "salida" | "pausa") => {
     if (!configuracion.enabled) return;
     registrarPonche(empleadoSeleccionado, tipo);
   };
@@ -52,7 +55,10 @@ export function Asistencia() {
 
   return (
     <div className={styles.container}>
-      <PageHeader title={t('asistencia.title')} subtitle={t('asistencia.subtitle')} />
+      <PageHeader
+        title={t("asistencia.title")}
+        subtitle={t("asistencia.subtitle")}
+      />
 
       <AsistenciaStats />
 
@@ -61,7 +67,7 @@ export function Asistencia() {
       {configuracion.enabled && (
         <div className={styles.registroSection}>
           <div className={styles.empleadoSelector}>
-            <label>{t('asistencia.selectEmployee')}:</label>
+            <label>{t("asistencia.selectEmployee")}:</label>
             <select
               value={empleadoSeleccionado}
               onChange={(e) => handleEmpleadoChange(e.target.value)}
@@ -75,25 +81,30 @@ export function Asistencia() {
             </select>
           </div>
 
-          <h3 className={styles.sectionTitle}>{t('asistencia.registerPunch')}</h3>
+          <h3 className={styles.sectionTitle}>
+            {t("asistencia.registerPunch")}
+          </h3>
           <div className={styles.poncheButtons}>
-            <Button onClick={() => handlePonche('entrada')} variant="secondary">
-              ➡️ {t('asistencia.entry')}
+            <Button onClick={() => handlePonche("entrada")} variant="secondary">
+              ➡️ {t("asistencia.entry")}
             </Button>
-            <Button onClick={() => handlePonche('pausa')} variant="secondary">
-              ☕ {t('asistencia.pause')}
+            <Button onClick={() => handlePonche("pausa")} variant="secondary">
+              ☕ {t("asistencia.pause")}
             </Button>
-            <Button onClick={() => handlePonche('salida')}>
-              ⬅️ {t('asistencia.exit')}
+            <Button onClick={() => handlePonche("salida")}>
+              ⬅️ {t("asistencia.exit")}
             </Button>
           </div>
 
           <div className={styles.ponchesList}>
             <h4 className={styles.listTitle}>
-              {t('asistencia.todayPunches')} {empleadoInfo && `- ${empleadoInfo.nombre}`}
+              {t("asistencia.todayPunches")}{" "}
+              {empleadoInfo && `- ${empleadoInfo.nombre}`}
             </h4>
             {registrosHoy.length === 0 ? (
-              <p className={styles.emptyText}>{t('asistencia.noPunchesToday')}</p>
+              <p className={styles.emptyText}>
+                {t("asistencia.noPunchesToday")}
+              </p>
             ) : (
               registrosHoy.map((reg) => (
                 <PoncheCard key={reg.id} registro={reg} />
@@ -102,9 +113,9 @@ export function Asistencia() {
           </div>
 
           <div className={styles.ponchesList}>
-            <h4 className={styles.listTitle}>{t('asistencia.punchHistory')}</h4>
+            <h4 className={styles.listTitle}>{t("asistencia.punchHistory")}</h4>
             {paginatedRegistros.length === 0 ? (
-              <p className={styles.emptyText}>{t('asistencia.noPunches')}</p>
+              <p className={styles.emptyText}>{t("asistencia.noPunches")}</p>
             ) : (
               <>
                 {paginatedRegistros.map((reg) => (
