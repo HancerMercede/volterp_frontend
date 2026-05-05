@@ -17,19 +17,21 @@ const ROLES = [
   "rrhh",
 ] as const;
 
+const InitialState = {
+  username: "",
+  password: "",
+  email: "",
+  fullName: "",
+  role: "User",
+};
+
 export function UserManagement() {
   const { token } = useAuthStore();
   const [users, setUsers] = useState<UserDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newUser, setNewUser] = useState<CreateUserRequest>({
-    username: "",
-    password: "",
-    email: "",
-    fullName: "",
-    role: "User",
-  });
+  const [newUser, setNewUser] = useState<CreateUserRequest>(InitialState);
 
   useEffect(() => {
     if (!token) return;

@@ -191,6 +191,7 @@ export function Inventario() {
         <div className={styles.formGroup}>
           <label>{t('common.name')}</label>
           <input
+            className={styles.input}
             type="text"
             value={formData.nombre}
             onChange={(e) => setFormData({...formData, nombre: e.target.value})}
@@ -200,6 +201,7 @@ export function Inventario() {
         <div className={styles.formGroup}>
           <label>{t('common.category')}</label>
           <select
+            className={styles.select}
             value={formData.categoriaId ?? ''}
             onChange={(e) => {
               const val = e.target.value;
@@ -222,6 +224,7 @@ export function Inventario() {
         <div className={styles.formGroup}>
           <label>{t('inventario.stock')}</label>
           <input
+            className={styles.input}
             type="number"
             min="0"
             value={formData.stock}
@@ -232,6 +235,7 @@ export function Inventario() {
         <div className={styles.formGroup}>
           <label>{t('common.price')}</label>
           <input
+            className={styles.input}
             type="number"
             min="0"
             step="0.01"
@@ -243,6 +247,7 @@ export function Inventario() {
         <div className={styles.formGroup}>
           <label>{t('common.image')}</label>
           <input
+            className={styles.input}
             type="file"
             accept="image/*"
             onChange={handleImageChange}
@@ -254,6 +259,7 @@ export function Inventario() {
         <div className={styles.formGroup}>
           <label>{t('common.description')}</label>
           <input
+            className={styles.input}
             type="text"
             value={formData.descripcion}
             onChange={(e) => setFormData({...formData, descripcion: e.target.value})}

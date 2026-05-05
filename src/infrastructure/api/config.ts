@@ -5,5 +5,7 @@ export const API_CONFIG = {
       LOGIN: '/api/auth/login',
       REGISTER: '/api/auth/register',
     },
+    PRODUCTS: '/api/products',
+    CATEGORIES: '/api/categories',
   },
 };
