@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProductoStore } from '../../stores/productoStore';
+import { useCategoryStore } from '../../stores/categoryStore';
 import { Table, Button, PageHeader, ImageCell, ActionButtons, Pagination, SearchInput, Modal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
@@ -10,7 +11,8 @@ import styles from './Inventario.module.css';
 
 export function Inventario() {
   const { t } = useTranslation();
-  const { productos, addProducto, updateProducto, deleteProducto } = useProductoStore();
+  const { productos, loading, error, fetchProductos, createProducto, updateProducto, deleteProducto } = useProductoStore();
+  const { categories, fetchCategories } = useCategoryStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,18 +21,23 @@ export function Inventario() {
   const [formData, setFormData] = useState({
     nombre: '',
     categoria: '',
+    categoriaId: null as number | null,
     stock: 0,
     precio: 0,
-    proveedor: '',
     imagen: '',
     descripcion: '',
+    isActive: true,
   });
+
+  useEffect(() => {
+    fetchProductos();
+    fetchCategories();
+  }, []);
 
   const filteredProductos = useMemo(() => {
     return productos.filter(p => {
       const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.proveedor.toLowerCase().includes(searchTerm.toLowerCase());
+        p.categoria.toLowerCase().includes(searchTerm.toLowerCase());
 
       if (filterStock === 'low') return matchesSearch && p.stock > 0 && p.stock < 10;
       if (filterStock === 'out') return matchesSearch && p.stock === 0;
@@ -44,45 +51,68 @@ export function Inventario() {
 
   const paginationInfo = getInfo(filteredProductos.length);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateProducto(editingId, formData);
-      setEditingId(null);
-    } else {
-      const newProducto: Producto = {
-        ...formData,
-        id: `P${String(productos.length + 1).padStart(3, '0')}`,
-        imagen: formData.imagen || 'https://via.placeholder.com/200?text=Producto',
-        descripcion: formData.descripcion || formData.nombre,
-      };
-      addProducto(newProducto);
+    try {
+      if (editingId) {
+        await updateProducto(editingId, formData);
+        setEditingId(null);
+      } else {
+        await createProducto(formData);
+      }
+      setShowForm(false);
+      resetForm();
+    } catch {
+      // Error is handled in store
     }
-    setShowForm(false);
-    resetForm();
   };
 
   const resetForm = () => {
     setFormData({
       nombre: '',
       categoria: '',
+      categoriaId: null,
       stock: 0,
       precio: 0,
-      proveedor: '',
       imagen: '',
       descripcion: '',
+      isActive: true,
     });
   };
 
   const handleEdit = (producto: Producto) => {
-    setFormData(producto);
+    setFormData({
+      nombre: producto.nombre,
+      categoria: producto.categoria,
+      categoriaId: producto.categoriaId ?? null,
+      stock: producto.stock,
+      precio: producto.precio,
+      imagen: producto.imagen,
+      descripcion: producto.descripcion,
+      isActive: producto.isActive ?? true,
+    });
     setEditingId(producto.id);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm(t('inventario.deleteConfirm'))) {
-      deleteProducto(id);
+      try {
+        await deleteProducto(id);
+      } catch {
+        // Error is handled in store
+      }
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, imagen: reader.result as string });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -114,7 +144,6 @@ export function Inventario() {
       header: t('common.price'),
       render: (p: Producto) => `$${p.precio.toLocaleString()}`
     },
-    { key: 'proveedor', header: t('common.supplier') },
     {
       key: 'actions',
       header: t('common.actions'),
@@ -149,6 +178,9 @@ export function Inventario() {
         </div>
       </PageHeader>
 
+      {loading && <p>Cargando...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
       <Modal
         isOpen={showForm}
         onClose={() => { setShowForm(false); setEditingId(null); }}
@@ -167,12 +199,25 @@ export function Inventario() {
         </div>
         <div className={styles.formGroup}>
           <label>{t('common.category')}</label>
-          <input
-            type="text"
-            value={formData.categoria}
-            onChange={(e) => setFormData({...formData, categoria: e.target.value})}
+          <select
+            value={formData.categoriaId ?? ''}
+            onChange={(e) => {
+              const val = e.target.value;
+              const catId = val ? parseInt(val) : null;
+              const cat = categories.find(c => c.id === catId);
+              setFormData({
+                ...formData,
+                categoriaId: catId,
+                categoria: cat?.name || '',
+              });
+            }}
             required
-          />
+          >
+            <option value="">-- {t('inventario.selectCategory')} --</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
         </div>
         <div className={styles.formGroup}>
           <label>{t('inventario.stock')}</label>
@@ -180,7 +225,7 @@ export function Inventario() {
             type="number"
             min="0"
             value={formData.stock}
-            onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value)})}
+            onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
             required
           />
         </div>
@@ -189,20 +234,43 @@ export function Inventario() {
           <input
             type="number"
             min="0"
+            step="0.01"
             value={formData.precio}
-            onChange={(e) => setFormData({...formData, precio: parseInt(e.target.value)})}
+            onChange={(e) => setFormData({...formData, precio: parseFloat(e.target.value) || 0})}
             required
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('common.supplier')}</label>
+          <label>{t('common.image')}</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          {formData.imagen && (
+            <img src={formData.imagen} alt="Preview" style={{ width: '100px', marginTop: '8px' }} />
+          )}
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t('common.description')}</label>
           <input
             type="text"
-            value={formData.proveedor}
-            onChange={(e) => setFormData({...formData, proveedor: e.target.value})}
-            required
+            value={formData.descripcion}
+            onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
           />
         </div>
+        {editingId && (
+          <div className={styles.formGroup}>
+            <label>
+              <input
+                type="checkbox"
+                checked={formData.isActive}
+                onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+              />
+              {' '}{t('inventario.active')}
+            </label>
+          </div>
+        )}
       </Modal>
 
       <Table data={paginatedProductos} columns={columns} />

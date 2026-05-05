@@ -1,46 +1,138 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useAuthStore } from './authStore';
+import { productService } from '../infrastructure/api/productService';
+import type { ProductDto, CreateProductRequest, UpdateProductRequest } from '../infrastructure/api/types';
 import type { Producto } from '../data/mockData';
-import { productos as initialProductos } from '../data/mockData';
 
 interface ProductoStore {
   productos: Producto[];
   loading: boolean;
   error: string | null;
-  setProductos: (productos: Producto[]) => void;
-  addProducto: (producto: Producto) => void;
-  updateProducto: (id: string, data: Partial<Producto>) => void;
-  deleteProducto: (id: string) => void;
+  fetchProductos: () => Promise<void>;
+  createProducto: (data: Omit<Producto, 'id'>) => Promise<void>;
+  updateProducto: (id: string, data: Partial<Producto>) => Promise<void>;
+  deleteProducto: (id: string) => Promise<void>;
+  clearError: () => void;
+}
+
+function mapDtoToProducto(dto: ProductDto): Producto {
+  return {
+    id: String(dto.id),
+    nombre: dto.name,
+    categoria: dto.category,
+    categoriaId: dto.categoryId,
+    stock: dto.stock,
+    precio: dto.price,
+    imagen: dto.imageUrl || 'https://via.placeholder.com/200?text=Producto',
+    descripcion: dto.description || '',
+    proveedor: '',
+    isActive: dto.isActive,
+  };
+}
+
+function mapToCreateRequest(data: Omit<Producto, 'id'>): CreateProductRequest {
+  return {
+    name: data.nombre,
+    category: data.categoria,
+    description: data.descripcion || null,
+    stock: data.stock,
+    price: data.precio,
+    categoryId: data.categoriaId ?? null,
+    companyId: 1,
+  };
+}
+
+function mapToUpdateRequest(data: Partial<Producto>): UpdateProductRequest {
+  return {
+    name: data.nombre ?? '',
+    category: data.categoria ?? '',
+    description: data.descripcion ?? null,
+    stock: data.stock ?? 0,
+    price: data.precio ?? 0,
+    categoryId: data.categoriaId ?? null,
+    isActive: data.isActive ?? true,
+  };
 }
 
 export const useProductoStore = create<ProductoStore>()(
   persist(
-    (set) => ({
-      productos: initialProductos,
+    (set, get) => ({
+      productos: [],
       loading: false,
       error: null,
 
-      setProductos: (productos) => set({ productos }),
+      fetchProductos: async () => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: 'No authenticated' });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const dtos = await productService.getProducts(token);
+          set({ productos: dtos.map(mapDtoToProducto), loading: false });
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+        }
+      },
 
-      addProducto: (producto) =>
-        set((state) => ({
-          productos: [...state.productos, producto],
-        })),
+      createProducto: async (data) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: 'No authenticated' });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const dto = await productService.createProduct(token, mapToCreateRequest(data));
+          set({ productos: [...get().productos, mapDtoToProducto(dto)], loading: false });
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+          throw err;
+        }
+      },
 
-      updateProducto: (id, data) =>
-        set((state) => ({
-          productos: state.productos.map((p) =>
-            p.id === id ? { ...p, ...data } : p
-          ),
-        })),
+      updateProducto: async (id, data) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: 'No authenticated' });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const dto = await productService.updateProduct(token, parseInt(id), mapToUpdateRequest(data));
+          set({
+            productos: get().productos.map(p => p.id === id ? mapDtoToProducto(dto) : p),
+            loading: false,
+          });
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+          throw err;
+        }
+      },
 
-      deleteProducto: (id) =>
-        set((state) => ({
-          productos: state.productos.filter((p) => p.id !== id),
-        })),
+      deleteProducto: async (id) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: 'No authenticated' });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          await productService.deleteProduct(token, parseInt(id));
+          set({ productos: get().productos.filter(p => p.id !== id), loading: false });
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+          throw err;
+        }
+      },
+
+      clearError: () => set({ error: null }),
     }),
     {
       name: 'producto-storage',
+      partialize: (state) => ({ productos: state.productos }),
     }
   )
 );

@@ -28,11 +28,13 @@ export interface Producto {
   id: string;
   nombre: string;
   categoria: string;
+  categoriaId?: number | null;
   stock: number;
   precio: number;
-  proveedor: string;
+  proveedor?: string;
   imagen: string;
   descripcion: string;
+  isActive?: boolean;
 }
 
 export interface Cliente {
