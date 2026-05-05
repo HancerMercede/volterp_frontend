@@ -15,7 +15,7 @@ interface UsePermissionResult {
 export function usePermission(): UsePermissionResult {
   const { user } = useAuthStore();
 
-  const userRole = user?.rol ? (user.rol as Rol) : null;
+  const userRole = user?.role ? (user.role.toLowerCase() as Rol) : null;
   const isAdmin = userRole === Rol.ADMIN;
 
   const hasPermission = (modulo: Modulo, permiso: Permiso): boolean => {

@@ -74,14 +74,14 @@ export function Sidebar() {
       <div className={styles.userSection}>
         <div className={styles.user}>
           <img
-            src={user?.avatar || "https://i.pravatar.cc/150?img=68"}
+            src={"https://i.pravatar.cc/150?img=68"}
             alt="Avatar"
             className={styles.avatarImg}
           />
           <div className={styles.userInfo}>
-            <p className={styles.userName}>{user?.nombre || t('auth.username')}</p>
+            <p className={styles.userName}>{user?.fullName || user?.username || t('auth.username')}</p>
             <span className={styles.userRole}>
-              {user?.rol ? ROL_LABELS[user.rol as keyof typeof ROL_LABELS] || user.rol : 'Usuario'}
+              {user?.role ? ROL_LABELS[user.role as keyof typeof ROL_LABELS] || user.role : 'Usuario'}
             </span>
           </div>
         </div>

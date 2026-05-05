@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuthStore } from "../../stores/authStore";
 import { authService } from "../../infrastructure/api/authService";
-import styles from "./Login.module.css";
+import styles from "./Register.module.css";
 
-export function Login() {
+const COMPANY_ID = 1;
+
+export function Register() {
   const navigate = useNavigate();
-  const { login } = useAuthStore();
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -18,23 +20,30 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await authService.login({ username, password });
-      login(
-        {
-          username: response.username,
-          email: response.email,
-          fullName: response.fullName,
-          role: response.role.toLowerCase(),
-          companyId: response.companyId,
-        },
-        response.token
-      );
-      navigate("/");
+      await authService.register({
+        username,
+        password,
+        email,
+        fullName,
+        companyId: COMPANY_ID,
+      });
+      navigate("/login", { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Credenciales incorrectas");
+      setError(err instanceof Error ? err.message : "Error al registrar usuario");
     } finally {
       setLoading(false);
     }
@@ -73,12 +82,12 @@ export function Login() {
       <div className={styles.rightPanel}>
         <div className={styles.formCard}>
           <div className={styles.formHeader}>
-            <h2>Bienvenido</h2>
-            <p>Inicie sesión para continuar</p>
+            <h2>Crear Cuenta</h2>
+            <p>Registra un nuevo usuario para HM Software Solutions</p>
           </div>
 
           <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={`${styles.inputGroup} ${focusedField === "username" ? styles.focused : ""} ${error && !username ? styles.error : ""}`}>
+            <div className={`${styles.inputGroup} ${focusedField === "username" ? styles.focused : ""}`}>
               <label htmlFor="username">Usuario</label>
               <div className={styles.inputWrapper}>
                 <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -94,11 +103,52 @@ export function Login() {
                   onBlur={() => setFocusedField(null)}
                   placeholder="usuario"
                   required
+                  minLength={3}
                 />
               </div>
             </div>
 
-            <div className={`${styles.inputGroup} ${focusedField === "password" ? styles.focused : ""} ${error && !password ? styles.error : ""}`}>
+            <div className={`${styles.inputGroup} ${focusedField === "email" ? styles.focused : ""}`}>
+              <label htmlFor="email">Correo electrónico</label>
+              <div className={styles.inputWrapper}>
+                <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="M22 6l-10 7L2 6"/>
+                </svg>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setFocusedField("email")}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder="correo@empresa.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className={`${styles.inputGroup} ${focusedField === "fullName" ? styles.focused : ""}`}>
+              <label htmlFor="fullName">Nombre completo</label>
+              <div className={styles.inputWrapper}>
+                <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  onFocus={() => setFocusedField("fullName")}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder="Juan Pérez"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className={`${styles.inputGroup} ${focusedField === "password" ? styles.focused : ""}`}>
               <label htmlFor="password">Contraseña</label>
               <div className={styles.inputWrapper}>
                 <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -114,6 +164,7 @@ export function Login() {
                   onBlur={() => setFocusedField(null)}
                   placeholder="••••••••"
                   required
+                  minLength={6}
                 />
                 <button
                   type="button"
@@ -136,16 +187,25 @@ export function Login() {
               </div>
             </div>
 
-            <div className={styles.optionsRow}>
-              <label className={styles.checkboxLabel}>
+            <div className={`${styles.inputGroup} ${focusedField === "confirmPassword" ? styles.focused : ""}`}>
+              <label htmlFor="confirmPassword">Confirmar contraseña</label>
+              <div className={styles.inputWrapper}>
+                <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
                 <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
+                  id="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onFocus={() => setFocusedField("confirmPassword")}
+                  onBlur={() => setFocusedField(null)}
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
                 />
-                <span>Recordarme</span>
-              </label>
-              <a href="#" className={styles.forgotLink}>¿Olvidó su contraseña?</a>
+              </div>
             </div>
 
             {error && (
@@ -164,7 +224,7 @@ export function Login() {
                 <span className={styles.loadingSpinner} />
               ) : (
                 <>
-                  <span>Iniciar Sesión</span>
+                  <span>Crear Cuenta</span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="5" y1="12" x2="19" y2="12"/>
                     <polyline points="12 5 19 12 12 19"/>
@@ -174,8 +234,8 @@ export function Login() {
             </button>
           </form>
 
-          <div className={styles.registerLink}>
-            <p>¿No tienes cuenta? <Link to="/register">Crear cuenta</Link></p>
+          <div className={styles.loginLink}>
+            <p>¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link></p>
           </div>
         </div>
       </div>

@@ -15,6 +15,7 @@ import { Reportes } from './pages/Reportes/Reportes';
 import { Configuracion } from './pages/Configuracion/Configuracion';
 import { Soporte } from './pages/Soporte/Soporte';
 import { Login } from './pages/Login/Login';
+import { Register } from './pages/Register/Register';
 import { useAuthStore } from './stores/authStore';
 import { ToastContainer } from './components/UI';
 import './i18n';
@@ -30,6 +31,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/ventas" element={<Ventas />} />
