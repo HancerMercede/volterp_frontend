@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../stores/authStore";
 import {
   userService,
@@ -6,7 +7,7 @@ import {
   type CreateUserRequest,
 } from "../../infrastructure/api/userService";
 import { ROL_LABELS, ROL_COLORS } from "../../domain/constants/roles";
-import { Button, Modal } from "../../components/UI";
+import { Button, Modal, ConfirmModal } from "../../components/UI";
 import styles from "./UserManagement.module.css";
 
 const ROLES = [
@@ -26,12 +27,15 @@ const InitialState = {
 };
 
 export function UserManagement() {
+  const { t } = useTranslation();
   const { token } = useAuthStore();
   const [users, setUsers] = useState<UserDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newUser, setNewUser] = useState<CreateUserRequest>(InitialState);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -97,11 +101,17 @@ export function UserManagement() {
     }
   }
 
-  async function handleDelete(userId: number) {
-    if (!token || !confirm("¿Eliminar este usuario?")) return;
+  function handleDelete(userId: number) {
+    if (!token) return;
+    setDeleteId(userId);
+    setShowDeleteConfirm(true);
+  }
+
+  const confirmDelete = async () => {
+    if (!token || !deleteId) return;
     try {
-      await userService.deleteUser(token, userId);
-      setUsers(users.filter((u) => u.id !== userId));
+      await userService.deleteUser(token, deleteId);
+      setUsers(users.filter((u) => u.id !== deleteId));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error deleting user");
     }
@@ -268,6 +278,19 @@ export function UserManagement() {
           </select>
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message="¿Eliminar este usuario?"
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

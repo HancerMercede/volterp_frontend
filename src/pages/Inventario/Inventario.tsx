@@ -11,6 +11,7 @@ import {
   Pagination,
   SearchInput,
   Modal,
+  ConfirmModal,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
@@ -47,6 +48,8 @@ export function Inventario() {
     descripcion: "",
     isActive: true,
   });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     fetchProductos();
@@ -120,10 +123,15 @@ export function Inventario() {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm(t("inventario.deleteConfirm"))) {
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteId) {
       try {
-        await deleteProducto(id);
+        await deleteProducto(deleteId);
       } catch {
         // Error is handled in store
       }
@@ -357,6 +365,19 @@ export function Inventario() {
       <Table data={paginatedProductos} columns={columns} />
 
       <Pagination pagination={paginationInfo} onPageChange={goToPage} />
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message={t("inventario.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

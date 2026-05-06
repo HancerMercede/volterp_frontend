@@ -20,6 +20,8 @@
     "add": "Agregar",
     "remove": "Quitar",
     "update": "Actualizar",
+    "confirmDeleteTitle": "Confirmar eliminación",
+    "confirmDeleteMessage": "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
     "create": "Crear",
     "status": "Estado",
     "date": "Fecha",
@@ -140,7 +142,9 @@
     "addProductsHint": "Agrega productos del catálogo",
     "completed": "Completada",
     "pending": "Pendiente",
-    "cancelled": "Cancelada"
+    "cancelled": "Cancelada",
+    "deleteConfirm": "¿Eliminar esta venta?",
+    "saleDeleted": "Venta eliminada"
   },
   "compras": {
     "title": "Compras",
@@ -153,7 +157,11 @@
     "purchaseCreated": "Compra creada correctamente",
     "purchaseUpdated": "Compra actualizada correctamente",
     "purchaseDeleted": "Compra eliminada",
-    "searchPurchases": "Buscar compra..."
+    "searchPurchases": "Buscar compra...",
+    "deleteConfirm": "¿Eliminar esta compra?",
+    "pending": "Pendiente",
+    "received": "Recibida",
+    "cancelled": "Cancelada"
   },
   "inventario": {
     "title": "Inventario",
@@ -384,6 +392,7 @@
     "projectDeleted": "Proyecto eliminado",
     "projectCreated": "Proyecto creado correctamente",
     "projectUpdated": "Proyecto actualizado correctamente",
+    "deleteConfirm": "¿Eliminar este proyecto?",
     "deleteConfirm": "¿Eliminar proyecto?"
   },
   "reportes": {

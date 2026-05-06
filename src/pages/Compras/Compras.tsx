@@ -12,6 +12,7 @@ import {
   Pagination,
   SearchInput,
   Modal,
+  ConfirmModal,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
@@ -38,6 +39,8 @@ export function Compras() {
     fecha: new Date().toISOString().split("T")[0],
     estado: "pendiente" as "recibida" | "pendiente" | "cancelada",
   });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const filteredCompras = useMemo(() => {
     return compras.filter(
@@ -90,8 +93,13 @@ export function Compras() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm(t("compras.deleteConfirm"))) {
-      deleteCompra(id);
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteCompra(deleteId);
       addToast(t("compras.purchaseDeleted"), "error");
     }
   };
@@ -258,6 +266,19 @@ export function Compras() {
       <Table data={paginatedCompras} columns={columns} />
 
       <Pagination pagination={paginationInfo} onPageChange={goToPage} />
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message={t("compras.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

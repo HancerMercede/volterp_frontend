@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Button, PageHeader, Pagination } from "../../components/UI";
+import { Button, PageHeader, Pagination, ConfirmModal } from "../../components/UI";
 import { useEmpleadoStore } from "../../stores/empleadoStore";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
@@ -27,6 +27,8 @@ export function RRHH() {
     "todos",
   );
   const [showForm, setShowForm] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { page, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
@@ -91,7 +93,14 @@ export function RRHH() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm(t("rrhh.deleteConfirm"))) deleteEmpleado(id);
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteEmpleado(deleteId);
+    }
   };
 
   const openNewForm = () => {
@@ -145,6 +154,19 @@ export function RRHH() {
         onFieldChange={updateField}
         onStepChange={setCurrentStep}
         onSubmit={submit}
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message={t("rrhh.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
       />
     </div>
   );

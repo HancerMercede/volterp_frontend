@@ -10,6 +10,7 @@ import {
   Pagination,
   SearchInput,
   Modal,
+  ConfirmModal,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
@@ -26,14 +27,16 @@ export function Clientes() {
   const { page, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     nombre: "",
     email: "",
     telefono: "",
     direccion: "",
-    totalCompras: 0,
     empresa: "",
+    ciudad: "",
   });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const filteredClientes = useMemo(() => {
     return clientes.filter(
@@ -92,9 +95,12 @@ export function Clientes() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm(t('clientes.deleteConfirm'))) {
-      deleteCliente(id);
-    }
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) deleteCliente(deleteId);
   };
 
   const columns = [
@@ -230,6 +236,19 @@ export function Clientes() {
       <Table data={paginatedClientes} columns={columns} />
 
       <Pagination pagination={paginationInfo} onPageChange={goToPage} />
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message={t("clientes.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

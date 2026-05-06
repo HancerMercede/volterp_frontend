@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useProveedorStore } from "../../stores/proveedorStore";
-import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput, Modal } from "../../components/UI";
+import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput, Modal, ConfirmModal } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
@@ -23,6 +23,8 @@ export function Proveedores() {
     categoria: "",
     totalOrdenes: 0,
   });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const filteredProveedores = useMemo(() => {
     return proveedores.filter(
@@ -81,9 +83,12 @@ export function Proveedores() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm(t('proveedores.deleteConfirm'))) {
-      deleteProveedor(id);
-    }
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) deleteProveedor(deleteId);
   };
 
   const columns = [
@@ -214,6 +219,19 @@ export function Proveedores() {
           />
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message={t("proveedores.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

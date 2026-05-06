@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProyectoStore } from '../../stores/proyectoStore';
-import { Table, Button, PageHeader, Pagination, SearchInput, Modal } from '../../components/UI';
+import { Table, Button, PageHeader, Pagination, SearchInput, Modal, ConfirmModal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import type { Proyecto } from '../../data/mockData';
@@ -27,6 +27,8 @@ export function Proyectos() {
     fechaFin: '',
     progreso: 0,
   });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const filteredProyectos = useMemo(() => {
     return proyectos.filter(p => {
@@ -86,9 +88,12 @@ export function Proyectos() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm(t('proyectos.deleteConfirm'))) {
-      deleteProyecto(id);
-    }
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) deleteProyecto(deleteId);
   };
 
   const getEstadoBadge = (estado: string) => {
@@ -208,6 +213,19 @@ export function Proyectos() {
           <input type="date" value={formData.fechaFin} onChange={e => setFormData({...formData, fechaFin: e.target.value})} required />
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message={t("proyectos.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

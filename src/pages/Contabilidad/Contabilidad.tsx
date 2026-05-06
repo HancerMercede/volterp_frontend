@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTransaccionStore } from '../../stores/transaccionStore';
-import { Table, Button, PageHeader, Pagination, SearchInput, Modal } from '../../components/UI';
+import { Table, Button, PageHeader, Pagination, SearchInput, Modal, ConfirmModal } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { paginate } from '../../utils/pagination';
 import type { TransaccionContable } from '../../data/mockData';
@@ -25,6 +25,8 @@ export function Contabilidad() {
     categoria: '',
     estado: 'pendiente' as 'conciliada' | 'pendiente',
   });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const filteredTransacciones = useMemo(() => {
     return transacciones.filter(t => {
@@ -72,9 +74,12 @@ export function Contabilidad() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm(t('contabilidad.deleteConfirm'))) {
-      deleteTransaccion(id);
-    }
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) deleteTransaccion(deleteId);
   };
 
   const formatCurrency = (amount: number) => {
@@ -187,6 +192,19 @@ export function Contabilidad() {
           </select>
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message={t("contabilidad.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

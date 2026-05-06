@@ -11,6 +11,7 @@ import {
   ImageCell,
   Pagination,
   SearchInput,
+  ConfirmModal,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
@@ -48,6 +49,8 @@ export function Ventas() {
   );
 
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const categorias = useMemo(() => {
     const cats = [...new Set(productos.map((p) => p.categoria))];
@@ -219,8 +222,13 @@ export function Ventas() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm(t("ventas.deleteConfirm"))) {
-      deleteVenta(id);
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteVenta(deleteId);
       addToast(t("ventas.saleDeleted"), "error");
     }
   };
@@ -571,6 +579,19 @@ export function Ventas() {
       />
 
       <Pagination pagination={paginationInfo} onPageChange={goToPage} />
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message={t("ventas.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

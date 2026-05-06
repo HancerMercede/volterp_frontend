@@ -20,6 +20,8 @@
     "add": "Add",
     "remove": "Remove",
     "update": "Update",
+    "confirmDeleteTitle": "Confirm deletion",
+    "confirmDeleteMessage": "Are you sure you want to delete this item? This action cannot be undone.",
     "create": "Create",
     "status": "Status",
     "date": "Date",
@@ -139,7 +141,9 @@
     "addProductsHint": "Add products from the catalog",
     "completed": "Completed",
     "pending": "Pending",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "deleteConfirm": "Delete this sale?",
+    "saleDeleted": "Sale deleted"
   },
   "compras": {
     "title": "Purchases",
@@ -152,7 +156,11 @@
     "purchaseCreated": "Purchase created successfully",
     "purchaseUpdated": "Purchase updated successfully",
     "purchaseDeleted": "Purchase deleted",
-    "searchPurchases": "Search purchase..."
+    "searchPurchases": "Search purchase...",
+    "deleteConfirm": "Delete this purchase?",
+    "pending": "Pending",
+    "received": "Received",
+    "cancelled": "Cancelled"
   },
   "inventario": {
     "title": "Inventory",
