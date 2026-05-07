@@ -1,7 +1,16 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useProveedorStore } from "../../stores/proveedorStore";
-import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput, Modal, ConfirmModal } from "../../components/UI";
+import {
+  Table,
+  Button,
+  PageHeader,
+  ImageCell,
+  Pagination,
+  SearchInput,
+  Modal,
+  ConfirmModal,
+} from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
@@ -10,11 +19,14 @@ import styles from "./Proveedores.module.css";
 
 export function Proveedores() {
   const { t } = useTranslation();
-  const { proveedores, addProveedor, updateProveedor, deleteProveedor } = useProveedorStore();
+  const { proveedores, addProveedor, updateProveedor, deleteProveedor } =
+    useProveedorStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
+  const { pageNumber, goToPage, getInfo } = usePagination({
+    initialPageSize: ITEMS_PER_PAGE,
+  });
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -36,8 +48,8 @@ export function Proveedores() {
   }, [proveedores, searchTerm]);
 
   const paginatedProveedores = useMemo(() => {
-    return paginate(filteredProveedores, page, ITEMS_PER_PAGE);
-  }, [filteredProveedores, page]);
+    return paginate(filteredProveedores, pageNumber, ITEMS_PER_PAGE);
+  }, [filteredProveedores, pageNumber]);
 
   const paginationInfo = getInfo(filteredProveedores.length);
 
@@ -92,25 +104,28 @@ export function Proveedores() {
   };
 
   const columns = [
+    { key: "id", header: t("common.id") },
     {
       key: "avatar",
-      header: "",
+      header: "proveedor",
       render: (p: Proveedor) => <ImageCell src={p.avatar} name={p.nombre} />,
     },
-    { key: "nombre", header: t('common.name') },
-    { key: "email", header: t('common.email') },
-    { key: "telefono", header: t('common.phone') },
-    { key: "categoria", header: t('common.category') },
+    { key: "email", header: t("common.email") },
+    { key: "telefono", header: t("common.phone") },
+    { key: "categoria", header: t("common.category") },
     {
       key: "totalOrdenes",
-      header: t('proveedores.totalOrders'),
+      header: t("proveedores.totalOrders"),
       render: (p: Proveedor) => p.totalOrdenes.toString(),
     },
   ];
 
   return (
     <div className={styles.container}>
-      <PageHeader title={t('proveedores.title')} subtitle={t('proveedores.subtitle')}>
+      <PageHeader
+        title={t("proveedores.title")}
+        subtitle={t("proveedores.subtitle")}
+      >
         <Button
           onClick={() => {
             resetForm();
@@ -118,15 +133,18 @@ export function Proveedores() {
             setShowForm(true);
           }}
         >
-          + {t('proveedores.newProvider')}
+          + {t("proveedores.newProvider")}
         </Button>
       </PageHeader>
 
       <div className={styles.searchBar}>
         <SearchInput
           value={searchTerm}
-          onChange={(value) => { setSearchTerm(value); goToPage(1); }}
-          placeholder={t('proveedores.searchProvider')}
+          onChange={(value) => {
+            setSearchTerm(value);
+            goToPage(1);
+          }}
+          placeholder={t("proveedores.searchProvider")}
           width="300px"
         />
       </div>
@@ -138,20 +156,21 @@ export function Proveedores() {
         onDelete={handleDelete}
       />
 
-      <Pagination
-        pagination={paginationInfo}
-        onPageChange={goToPage}
-      />
+      <Pagination pagination={paginationInfo} onPageChange={goToPage} />
 
       <Modal
         isOpen={showForm}
         onClose={() => setShowForm(false)}
-        title={editingId ? t('proveedores.editProvider') : t('proveedores.newProvider')}
+        title={
+          editingId
+            ? t("proveedores.editProvider")
+            : t("proveedores.newProvider")
+        }
         onSubmit={handleSubmit}
-        submitLabel={editingId ? t('common.save') : t('common.create')}
+        submitLabel={editingId ? t("common.save") : t("common.create")}
       >
         <div className={styles.formGroup}>
-          <label>{t('common.name')}</label>
+          <label>{t("common.name")}</label>
           <input
             type="text"
             value={formData.nombre}
@@ -162,7 +181,7 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('common.email')}</label>
+          <label>{t("common.email")}</label>
           <input
             type="email"
             value={formData.email}
@@ -173,7 +192,7 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('common.phone')}</label>
+          <label>{t("common.phone")}</label>
           <input
             type="tel"
             value={formData.telefono}
@@ -184,7 +203,7 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('common.address')}</label>
+          <label>{t("common.address")}</label>
           <input
             type="text"
             value={formData.direccion}
@@ -195,7 +214,7 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('common.category')}</label>
+          <label>{t("common.category")}</label>
           <input
             type="text"
             value={formData.categoria}
@@ -206,7 +225,7 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('proveedores.totalOrders')}</label>
+          <label>{t("proveedores.totalOrders")}</label>
           <input
             type="number"
             value={formData.totalOrdenes}

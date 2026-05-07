@@ -28,7 +28,7 @@ export function Compras() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const { page, goToPage, getInfo } = usePagination({
+  const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
   const [formData, setFormData] = useState({
@@ -52,8 +52,8 @@ export function Compras() {
   }, [compras, searchTerm]);
 
   const paginatedCompras = useMemo(() => {
-    return paginate(filteredCompras, page, ITEMS_PER_PAGE);
-  }, [filteredCompras, page]);
+    return paginate(filteredCompras, pageNumber, ITEMS_PER_PAGE);
+  }, [filteredCompras, pageNumber]);
 
   const paginationInfo = getInfo(filteredCompras.length);
 

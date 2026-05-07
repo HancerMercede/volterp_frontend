@@ -16,9 +16,9 @@ import {
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { Venta } from "../../data/mockData";
-import type { Producto } from "../../data/mockData";
+
 import styles from "./Ventas.module.css";
+import type { Producto, Venta } from "../../data/mockData";
 
 interface CarritoItem {
   productoId: string;
@@ -37,7 +37,7 @@ export function Ventas() {
   const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const { page, goToPage, getInfo } = usePagination({
+  const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
 
@@ -247,8 +247,8 @@ export function Ventas() {
   }, [ventas, searchTerm]);
 
   const paginatedVentas = useMemo(() => {
-    return paginate(filteredVentas, page, ITEMS_PER_PAGE);
-  }, [filteredVentas, page]);
+    return paginate(filteredVentas, pageNumber, ITEMS_PER_PAGE);
+  }, [filteredVentas, pageNumber]);
 
   const paginationInfo = getInfo(filteredVentas.length);
 

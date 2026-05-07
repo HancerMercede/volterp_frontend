@@ -1,7 +1,12 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Button, PageHeader, Pagination, ConfirmModal } from "../../components/UI";
+import {
+  Button,
+  PageHeader,
+  Pagination,
+  ConfirmModal,
+} from "../../components/UI";
 import { useEmpleadoStore } from "../../stores/empleadoStore";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
@@ -29,7 +34,7 @@ export function RRHH() {
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const { page, goToPage, getInfo } = usePagination({
+  const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
 
@@ -82,8 +87,8 @@ export function RRHH() {
   }, [empleados, searchTerm, filterEstado]);
 
   const paginatedEmpleados = useMemo(
-    () => paginate(filteredEmpleados, page, ITEMS_PER_PAGE),
-    [filteredEmpleados, page],
+    () => paginate(filteredEmpleados, pageNumber, ITEMS_PER_PAGE),
+    [filteredEmpleados, pageNumber],
   );
   const paginationInfo = getInfo(filteredEmpleados.length);
 
@@ -112,7 +117,10 @@ export function RRHH() {
     <div className={styles.container}>
       <PageHeader title={t("rrhh.title")} subtitle={t("rrhh.subtitle")}>
         <>
-          <Button variant="secondary" onClick={() => navigate("/rrhh/asistencia")}>
+          <Button
+            variant="secondary"
+            onClick={() => navigate("/rrhh/asistencia")}
+          >
             {t("rrhh.viewAttendance")}
           </Button>
           <Button variant="secondary" onClick={() => navigate("/rrhh/nomina")}>

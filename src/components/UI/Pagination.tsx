@@ -1,5 +1,5 @@
-import { getPageNumbers, type PaginationInfo } from '../../utils/pagination';
-import styles from './Pagination.module.css';
+import { getPageNumbers, type PaginationInfo } from "../../utils/pagination";
+import styles from "./Pagination.module.css";
 
 interface PaginationProps {
   pagination: PaginationInfo;
@@ -7,8 +7,9 @@ interface PaginationProps {
 }
 
 export function Pagination({ pagination, onPageChange }: PaginationProps) {
+  console.log(pagination);
   const { page, totalPages, hasPrev, hasNext, total } = pagination;
-  
+
   if (totalPages <= 1) return null;
 
   const pages = getPageNumbers(page, totalPages);
@@ -16,9 +17,10 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
   return (
     <div className={styles.pagination}>
       <div className={styles.info}>
-        Mostrando {((page - 1) * pagination.pageSize) + 1} - {Math.min(page * pagination.pageSize, total)} de {total}
+        Mostrando {(page - 1) * pagination.pageSize + 1} -{" "}
+        {Math.min(page * pagination.pageSize, total)} de {total}
       </div>
-      
+
       <div className={styles.controls}>
         <button
           className={`${styles.btn} ${styles.arrow}`}
@@ -28,7 +30,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
         >
           ««
         </button>
-        
+
         <button
           className={`${styles.btn} ${styles.arrow}`}
           onClick={() => onPageChange(page - 1)}
@@ -38,19 +40,21 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
           «
         </button>
 
-        {pages.map((p: number, idx: number) => (
+        {pages.map((p: number, idx: number) =>
           p === -1 ? (
-            <span key={`dots-${idx}`} className={styles.dots}>...</span>
+            <span key={`dots-${idx}`} className={styles.dots}>
+              ...
+            </span>
           ) : (
             <button
               key={p}
-              className={`${styles.btn} ${p === page ? styles.active : ''}`}
+              className={`${styles.btn} ${p === page ? styles.active : ""}`}
               onClick={() => onPageChange(p)}
             >
               {p}
             </button>
-          )
-        ))}
+          ),
+        )}
 
         <button
           className={`${styles.btn} ${styles.arrow}`}

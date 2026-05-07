@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { Venta } from '../data/mockData';
-import { ventas as initialVentas } from '../data/mockData';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+import { ventas as initialVentas, type Venta } from "../data/mockData";
 
 interface VentaStore {
   ventas: Venta[];
@@ -30,7 +30,7 @@ export const useVentaStore = create<VentaStore>()(
       updateVenta: (id, data) =>
         set((state) => ({
           ventas: state.ventas.map((v) =>
-            v.id === id ? { ...v, ...data } : v
+            v.id === id ? { ...v, ...data } : v,
           ),
         })),
 
@@ -40,7 +40,7 @@ export const useVentaStore = create<VentaStore>()(
         })),
     }),
     {
-      name: 'venta-storage',
-    }
-  )
+      name: "venta-storage",
+    },
+  ),
 );

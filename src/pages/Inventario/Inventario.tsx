@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProductoStore } from "../../stores/productoStore";
 import { useCategoryStore } from "../../stores/categoryStore";
@@ -14,7 +14,6 @@ import {
   ConfirmModal,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
-import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { Producto } from "../../data/mockData";
 import styles from "./Inventario.module.css";
@@ -25,6 +24,7 @@ export function Inventario() {
     productos,
     loading,
     error,
+    totalCount,
     fetchProductos,
     createProducto,
     updateProducto,
@@ -35,7 +35,7 @@ export function Inventario() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStock, setFilterStock] = useState<"all" | "low" | "out">("all");
-  const { page, goToPage, getInfo } = usePagination({
+  const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
   const [formData, setFormData] = useState({
@@ -48,20 +48,21 @@ export function Inventario() {
     descripcion: "",
     isActive: true,
   });
+
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  useEffect(() => {
-    fetchProductos();
-    fetchCategories();
-  }, []);
+  const fetchData = useCallback(() => {
+    fetchProductos(pageNumber, ITEMS_PER_PAGE);
+    fetchCategories(pageNumber, 100);
+  }, [pageNumber, fetchProductos, fetchCategories]);
 
   useEffect(() => {
-    console.log("imagen en formData:", formData.imagen?.substring(0, 50));
-  }, [formData.imagen]);
+    fetchData();
+  }, [fetchData]);
 
   const filteredProductos = useMemo(() => {
-    return productos.filter((p) => {
+    return productos?.filter((p) => {
       const matchesSearch =
         p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.categoria.toLowerCase().includes(searchTerm.toLowerCase());
@@ -73,11 +74,7 @@ export function Inventario() {
     });
   }, [productos, searchTerm, filterStock]);
 
-  const paginatedProductos = useMemo(() => {
-    return paginate(filteredProductos, page, ITEMS_PER_PAGE);
-  }, [filteredProductos, page]);
-
-  const paginationInfo = getInfo(filteredProductos.length);
+  const paginationInfo = getInfo(totalCount);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +137,7 @@ export function Inventario() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    console.log("formData.imagen:", formData.imagen);
+
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -164,6 +161,8 @@ export function Inventario() {
         />
       ),
     },
+    { key: "categoria", header: t("common.category") },
+    { key: "descripcion", header: t("common.description") },
     {
       key: "stock",
       header: t("inventario.stock"),
@@ -282,7 +281,7 @@ export function Inventario() {
             required
           >
             <option value="">-- {t("inventario.selectCategory")} --</option>
-            {categories.map((cat) => (
+            {(categories ?? []).map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
               </option>
@@ -362,7 +361,7 @@ export function Inventario() {
         )}
       </Modal>
 
-      <Table data={paginatedProductos} columns={columns} />
+      <Table data={filteredProductos} columns={columns} />
 
       <Pagination pagination={paginationInfo} onPageChange={goToPage} />
 

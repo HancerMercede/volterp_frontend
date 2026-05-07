@@ -20,20 +20,21 @@ import styles from "./Clientes.module.css";
 
 export function Clientes() {
   const { t } = useTranslation();
-  const { clientes, addCliente, updateCliente, deleteCliente } = useClienteStore();
+  const { clientes, addCliente, updateCliente, deleteCliente } =
+    useClienteStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const { page, goToPage, getInfo } = usePagination({
+  const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     nombre: "",
     email: "",
     telefono: "",
     direccion: "",
+    totalCompras: 0,
     empresa: "",
-    ciudad: "",
   });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -48,8 +49,8 @@ const [formData, setFormData] = useState({
   }, [clientes, searchTerm]);
 
   const paginatedClientes = useMemo(() => {
-    return paginate(filteredClientes, page, ITEMS_PER_PAGE);
-  }, [filteredClientes, page]);
+    return paginate(filteredClientes, pageNumber, ITEMS_PER_PAGE);
+  }, [filteredClientes, pageNumber]);
 
   const paginationInfo = getInfo(filteredClientes.length);
 
@@ -87,7 +88,7 @@ const [formData, setFormData] = useState({
       email: cliente.email,
       telefono: cliente.telefono,
       direccion: cliente.direccion,
-      totalCompras: cliente.totalCompras,
+      totalCompras: cliente.totalCompras ?? 0,
       empresa: cliente.empresa || "",
     });
     setEditingId(cliente.id);
@@ -104,10 +105,10 @@ const [formData, setFormData] = useState({
   };
 
   const columns = [
-    { key: "id", header: t('common.id') },
+    { key: "id", header: t("common.id") },
     {
       key: "nombre",
-      header: t('clientes.client'),
+      header: t("clientes.client"),
       render: (c: Cliente) => (
         <ImageCell
           src={c.avatar}
@@ -117,17 +118,16 @@ const [formData, setFormData] = useState({
         />
       ),
     },
-    { key: "email", header: t('common.email') },
-    { key: "telefono", header: t('common.phone') },
+    { key: "email", header: t("common.email") },
+    { key: "telefono", header: t("common.phone") },
     {
       key: "totalCompras",
-      header: t('clientes.totalPurchases'),
-      render: (c: Cliente) =>
-        `$${c.totalCompras.toLocaleString()}`,
+      header: t("clientes.totalPurchases"),
+      render: (c: Cliente) => `$${c.totalCompras?.toLocaleString()}`,
     },
     {
       key: "actions",
-      header: t('common.actions'),
+      header: t("common.actions"),
       render: (c: Cliente) => (
         <ActionButtons
           onEdit={() => handleEdit(c)}
@@ -139,7 +139,7 @@ const [formData, setFormData] = useState({
 
   return (
     <div>
-      <PageHeader title={t('clientes.title')} subtitle={t('clientes.subtitle')}>
+      <PageHeader title={t("clientes.title")} subtitle={t("clientes.subtitle")}>
         <div className={styles.headerActions}>
           <SearchInput
             value={searchTerm}
@@ -147,7 +147,7 @@ const [formData, setFormData] = useState({
               setSearchTerm(value);
               goToPage(1);
             }}
-            placeholder={t('clientes.searchClient')}
+            placeholder={t("clientes.searchClient")}
             width="240px"
           />
           <Button
@@ -156,7 +156,7 @@ const [formData, setFormData] = useState({
               setShowForm(true);
             }}
           >
-            + {t('clientes.newClient')}
+            + {t("clientes.newClient")}
           </Button>
         </div>
       </PageHeader>
@@ -167,12 +167,12 @@ const [formData, setFormData] = useState({
           setShowForm(false);
           setEditingId(null);
         }}
-        title={editingId ? t('clientes.editClient') : t('clientes.newClient')}
+        title={editingId ? t("clientes.editClient") : t("clientes.newClient")}
         onSubmit={handleSubmit}
-        submitLabel={editingId ? t('common.update') : t('common.create')}
+        submitLabel={editingId ? t("common.update") : t("common.create")}
       >
         <div className={styles.formGroup}>
-          <label>{t('clientes.clientName')}</label>
+          <label>{t("clientes.clientName")}</label>
           <input
             type="text"
             value={formData.nombre}
@@ -183,7 +183,7 @@ const [formData, setFormData] = useState({
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('clientes.clientEmail')}</label>
+          <label>{t("clientes.clientEmail")}</label>
           <input
             type="email"
             value={formData.email}
@@ -194,7 +194,7 @@ const [formData, setFormData] = useState({
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('clientes.clientPhone')}</label>
+          <label>{t("clientes.clientPhone")}</label>
           <input
             type="tel"
             value={formData.telefono}
@@ -206,7 +206,7 @@ const [formData, setFormData] = useState({
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('common.address')}</label>
+          <label>{t("common.address")}</label>
           <input
             type="text"
             value={formData.direccion}
@@ -217,7 +217,7 @@ const [formData, setFormData] = useState({
         </div>
         {!editingId && (
           <div className={styles.formGroup}>
-            <label>{t('clientes.totalPurchases')}</label>
+            <label>{t("clientes.totalPurchases")}</label>
             <input
               type="number"
               min="0"

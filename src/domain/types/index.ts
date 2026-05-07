@@ -18,16 +18,17 @@ export interface Auditoria {
   updatedBy: string;
 }
 
-export interface PaginationInfo {
-  page: number;
-  pageSize: number;
-  totalItems: number;
-  totalPages: number;
-}
-
 export interface ApiResponse<T> {
   data: T;
   success: boolean;
   message?: string;
   errors?: string[];
+}
+
+export interface PagedResult<T> {
+  rowCount: number;
+  pageNumber: number;
+  pageSize: number;
+  pageCount: number;
+  items: T[];
 }

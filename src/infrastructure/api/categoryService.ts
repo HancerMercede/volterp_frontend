@@ -1,5 +1,6 @@
-import { API_CONFIG } from '../api/config';
-import { fetchWithAuthJson } from './fetchWithAuth';
+import { API_CONFIG } from "../api/config";
+import { fetchWithAuthJson } from "./fetchWithAuth";
+import type { PagedResult } from "../../domain/types";
 
 export interface CategoryDto {
   id: number;
@@ -13,28 +14,44 @@ export interface CategoryDto {
 export interface CreateCategoryRequest {
   name: string;
   description: string | null;
-  companyId: number;
 }
 
 export const categoryService = {
-  async getCategories(): Promise<CategoryDto[]> {
-    return fetchWithAuthJson(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}`);
+  async getCategories(
+    page = 1,
+    pageSize = 10,
+  ): Promise<PagedResult<CategoryDto>> {
+    const params = new URLSearchParams({
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}?${params}`,
+    );
   },
 
   async getCategory(id: number): Promise<CategoryDto> {
-    return fetchWithAuthJson(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}/${id}`);
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}/${id}`,
+    );
   },
 
   async createCategory(data: CreateCategoryRequest): Promise<CategoryDto> {
-    return fetchWithAuthJson(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+    );
   },
 
   async deleteCategory(id: number): Promise<void> {
-    return fetchWithAuthJson(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}/${id}`, {
-      method: 'DELETE',
-    });
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}/${id}`,
+      {
+        method: "DELETE",
+      },
+    );
   },
 };

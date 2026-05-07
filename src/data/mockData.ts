@@ -1,17 +1,15 @@
 import type { Empleado } from "../domain/entities/Empleado";
 
 export { type Empleado };
-
-export interface Venta {
+export interface Cliente {
   id: string;
-  cliente: string;
-  clienteId: string;
-  producto: string;
-  productoId: string;
-  cantidad: number;
-  total: number;
-  fecha: string;
-  estado: "completada" | "pendiente" | "cancelada";
+  nombre: string;
+  email: string;
+  telefono: string;
+  direccion: string;
+  totalCompras?: number;
+  avatar: string;
+  empresa?: string;
 }
 
 export interface Compra {
@@ -37,15 +35,16 @@ export interface Producto {
   isActive?: boolean;
 }
 
-export interface Cliente {
+export interface Venta {
   id: string;
-  nombre: string;
-  email: string;
-  telefono: string;
-  direccion: string;
-  totalCompras: number;
-  avatar: string;
-  empresa?: string;
+  cliente: string;
+  clienteId: string;
+  producto: string;
+  productoId: string;
+  cantidad: number;
+  total: number;
+  fecha: string;
+  estado: "completada" | "pendiente" | "cancelada";
 }
 
 export const clientes: Cliente[] = [
