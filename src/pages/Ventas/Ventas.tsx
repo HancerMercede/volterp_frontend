@@ -19,6 +19,7 @@ import { ITEMS_PER_PAGE } from "../../config/pagination";
 
 import styles from "./Ventas.module.css";
 import type { Producto, Venta } from "../../data/mockData";
+import { useFilter } from "../../hooks/useFilter";
 
 interface CarritoItem {
   productoId: string;
@@ -66,16 +67,11 @@ export function Ventas() {
     return top50;
   }, [clientes, selectedCliente]);
 
-  const searchFilteredClientes = useMemo(() => {
-    if (!clienteSearch.trim()) return dropdownClientes;
-    const search = clienteSearch.toLowerCase();
-    return dropdownClientes.filter(
-      (c) =>
-        c.nombre.toLowerCase().includes(search) ||
-        c.email.toLowerCase().includes(search) ||
-        (c.empresa && c.empresa.toLowerCase().includes(search)),
-    );
-  }, [dropdownClientes, clienteSearch]);
+  const searchFilteredClientes = useFilter({
+    data: dropdownClientes,
+    searchTerm,
+    searchFields: (c) => [c.nombre, c.email, c.empresa ?? ""],
+  });
 
   useEffect(() => {
     if (!clienteSearch.trim()) {
@@ -93,16 +89,13 @@ export function Ventas() {
     }
   }, [clienteSearch, clientes, selectedCliente]);
 
-  const filteredProducts = useMemo(() => {
-    return productos.filter((p) => {
-      const matchesSearch = p.nombre
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const matchesCategoria =
-        categoriaFilter === "todos" || p.categoria === categoriaFilter;
-      return matchesSearch && matchesCategoria;
-    });
-  }, [productos, searchTerm, categoriaFilter]);
+  const filteredProducts = useFilter({
+    data: productos,
+    searchTerm,
+    searchFields: (p) => [p.nombre],
+    filter: (p) =>
+      categoriaFilter === "todos" || p.categoria === categoriaFilter,
+  });
 
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 50;
@@ -237,14 +230,11 @@ export function Ventas() {
     setShowForm(true);
   };
 
-  const filteredVentas = useMemo(() => {
-    return ventas.filter(
-      (v) =>
-        v.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        v.producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        v.id.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [ventas, searchTerm]);
+  const filteredVentas = useFilter({
+    data: ventas,
+    searchTerm,
+    searchFields: (v) => [v.cliente, v.producto, v.id],
+  });
 
   const paginatedVentas = useMemo(() => {
     return paginate(filteredVentas, pageNumber, ITEMS_PER_PAGE);
