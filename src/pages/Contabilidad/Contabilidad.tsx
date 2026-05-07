@@ -15,6 +15,7 @@ import { paginate } from "../../utils/pagination";
 import type { TransaccionContable } from "../../data/mockData";
 import styles from "./Contabilidad.module.css";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
+import { useFilter } from "../../hooks/useFilter";
 
 export function Contabilidad() {
   const { t } = useTranslation();
@@ -44,15 +45,12 @@ export function Contabilidad() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const filteredTransacciones = useMemo(() => {
-    return transacciones.filter((t) => {
-      const matchesSearch =
-        t.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.categoria.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesTipo = filterTipo === "todos" || t.tipo === filterTipo;
-      return matchesSearch && matchesTipo;
-    });
-  }, [transacciones, searchTerm, filterTipo]);
+  const filteredTransacciones = useFilter({
+    data: transacciones,
+    searchTerm,
+    searchFields: (t) => [t.descripcion, t.categoria],
+    filter: (t) => filterTipo === "todos" || t.tipo == filterTipo,
+  });
 
   const paginatedTransacciones = useMemo(() => {
     return paginate(filteredTransacciones, pageNumber, ITEMS_PER_PAGE);

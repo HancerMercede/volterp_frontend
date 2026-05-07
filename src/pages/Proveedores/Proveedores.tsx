@@ -16,6 +16,7 @@ import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { Proveedor } from "../../data/mockData";
 import styles from "./Proveedores.module.css";
+import { useFilter } from "../../hooks/useFilter";
 
 export function Proveedores() {
   const { t } = useTranslation();
@@ -38,15 +39,11 @@ export function Proveedores() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const filteredProveedores = useMemo(() => {
-    return proveedores.filter(
-      (p) =>
-        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.categoria.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [proveedores, searchTerm]);
-
+  const filteredProveedores = useFilter({
+    data: proveedores,
+    searchTerm,
+    searchFields: (p) => [p.nombre, p.email, p.categoria],
+  });
   const paginatedProveedores = useMemo(() => {
     return paginate(filteredProveedores, pageNumber, ITEMS_PER_PAGE);
   }, [filteredProveedores, pageNumber]);

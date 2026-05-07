@@ -21,6 +21,7 @@ import { EmpleadoFilters } from "../../components/RRHH/EmpleadoFilters";
 import { EmpleadoTable } from "../../components/RRHH/EmpleadoTable";
 import { EmpleadoFormModal } from "../../components/RRHH/EmpleadoFormModal";
 import styles from "./RRHH.module.css";
+import { useFilter } from "../../hooks/useFilter";
 
 export function RRHH() {
   const { t } = useTranslation();
@@ -74,17 +75,12 @@ export function RRHH() {
     submit,
   } = useEmpleadoForm(handleSubmit);
 
-  const filteredEmpleados = useMemo(() => {
-    return empleados.filter((e) => {
-      const matchesSearch =
-        e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.departamento.toLowerCase().includes(searchTerm.toLowerCase());
-      return (
-        matchesSearch && (filterEstado === "todos" || e.estado === filterEstado)
-      );
-    });
-  }, [empleados, searchTerm, filterEstado]);
+  const filteredEmpleados = useFilter({
+    data: empleados,
+    searchTerm,
+    searchFields: (e) => [e.nombre, e.cargo, e.departamento],
+    filter: (e) => filterEstado === "todos" || e.estado === filterEstado,
+  });
 
   const paginatedEmpleados = useMemo(
     () => paginate(filteredEmpleados, pageNumber, ITEMS_PER_PAGE),

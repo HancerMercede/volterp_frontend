@@ -17,6 +17,7 @@ import { usePagination } from "../../hooks/usePagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { Producto } from "../../data/mockData";
 import styles from "./Inventario.module.css";
+import { useFilter } from "../../hooks/useFilter";
 
 export function Inventario() {
   const { t } = useTranslation();
@@ -61,18 +62,16 @@ export function Inventario() {
     fetchData();
   }, [fetchData]);
 
-  const filteredProductos = useMemo(() => {
-    return productos?.filter((p) => {
-      const matchesSearch =
-        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.categoria.toLowerCase().includes(searchTerm.toLowerCase());
-
-      if (filterStock === "low")
-        return matchesSearch && p.stock > 0 && p.stock < 10;
-      if (filterStock === "out") return matchesSearch && p.stock === 0;
-      return matchesSearch;
-    });
-  }, [productos, searchTerm, filterStock]);
+  const filteredProductos = useFilter({
+    data: productos,
+    searchTerm,
+    searchFields: (p) => [p.nombre, p.categoria],
+    filter: (p) => {
+      if (filterStock === "low") return p.stock > 0 && p.stock < 10;
+      if (filterStock === "out") return p.stock === 0;
+      return true;
+    },
+  });
 
   const paginationInfo = getInfo(totalCount);
 
