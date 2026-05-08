@@ -69,7 +69,7 @@ export function Ventas() {
 
   const searchFilteredClientes = useFilter({
     data: dropdownClientes,
-    searchTerm,
+    searchTerm: clienteSearch,
     searchFields: (c) => [c.nombre, c.email, c.empresa ?? ""],
   });
 
