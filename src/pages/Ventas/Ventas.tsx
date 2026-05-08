@@ -73,21 +73,17 @@ export function Ventas() {
     searchFields: (c) => [c.nombre, c.email, c.empresa ?? ""],
   });
 
-  useEffect(() => {
-    if (!clienteSearch.trim()) {
-      return;
-    }
+  const match = useMemo(() => {
+    if (!clienteSearch.trim()) return null;
+
     const search = clienteSearch.toLowerCase();
-    const match = clientes.find(
+    return clientes.find(
       (c) =>
         c.nombre.toLowerCase().includes(search) ||
         c.email.toLowerCase().includes(search) ||
         (c.empresa && c.empresa.toLowerCase().includes(search)),
     );
-    if (match && match.id !== selectedCliente) {
-      setSelectedCliente(match.id);
-    }
-  }, [clienteSearch, clientes, selectedCliente]);
+  }, [clienteSearch, clientes]);
 
   const filteredProducts = useFilter({
     data: productos,
@@ -484,7 +480,7 @@ export function Ventas() {
                   onChange={(e) => setClienteSearch(e.target.value)}
                 />
                 <select
-                  value={selectedCliente}
+                  value={match?.id || ""}
                   onChange={(e) => {
                     const clienteId = e.target.value;
                     setSelectedCliente(clienteId);
