@@ -7,7 +7,7 @@ import {
   type CreateUserRequest,
 } from "../../infrastructure/api/userService";
 import { ROL_LABELS, ROL_COLORS } from "../../domain/constants/roles";
-import { Button, Modal, ConfirmModal, Pagination } from "../../components/UI";
+import { Button, Modal, ConfirmModal, Pagination, ActionButtons } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import styles from "./UserManagement.module.css";
@@ -195,26 +195,16 @@ export function UserManagement() {
                     </span>
                   </td>
                   <td>
-                    <div className={styles.actions}>
-                      <button
-                        className={styles.iconBtn}
-                        onClick={() =>
-                          handleToggleStatus(user.id, user.isActive)
-                        }
-                        title={user.isActive ? "Desactivar" : "Activar"}
-                      >
-                        {user.isActive ? "⛔" : "✅"}
-                      </button>
-                      {user.role.toLowerCase() !== "admin" && (
-                        <button
-                          className={`${styles.iconBtn} ${styles.deleteBtn}`}
-                          onClick={() => handleDelete(user.id)}
-                          title="Eliminar"
-                        >
-                          🗑️
-                        </button>
-                      )}
-                    </div>
+                    {user.role.toLowerCase() !== "admin" ? (
+                      <ActionButtons
+                        onToggle={() => handleToggleStatus(user.id, user.isActive)}
+                        onDelete={() => handleDelete(user.id)}
+                      />
+                    ) : (
+                      <ActionButtons
+                        onToggle={() => handleToggleStatus(user.id, user.isActive)}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}

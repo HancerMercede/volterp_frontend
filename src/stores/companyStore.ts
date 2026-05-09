@@ -29,6 +29,8 @@ export const useCompanyStore = create<CompanyStore>()(
       totalCount: 0,
       pageCount: 0,
 
+      clearCompanies: () => set({ companies: [], totalCount: 0, pageCount: 0 }),
+
       fetchCompanies: async (pageNumber = 1, pageSize = 10) => {
         const token = useAuthStore.getState().token;
         if (!token) {

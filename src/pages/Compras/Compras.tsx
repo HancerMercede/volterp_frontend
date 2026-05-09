@@ -19,6 +19,7 @@ import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { Compra } from "../../data/mockData";
 import styles from "./Compras.module.css";
+import { useFilter } from "../../hooks/useFilter";
 
 export function Compras() {
   const { t } = useTranslation();
@@ -42,14 +43,11 @@ export function Compras() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const filteredCompras = useMemo(() => {
-    return compras.filter(
-      (c) =>
-        c.proveedor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.id.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [compras, searchTerm]);
+  const filteredCompras = useFilter({
+    data: compras,
+    searchTerm,
+    searchFields: (c) => [c.proveedor, c.producto, c.id],
+  });
 
   const paginatedCompras = useMemo(() => {
     return paginate(filteredCompras, pageNumber, ITEMS_PER_PAGE);

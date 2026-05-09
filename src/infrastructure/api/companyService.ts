@@ -35,9 +35,6 @@ export const companyService = {
       pageNumber: String(pageNumber),
       pageSize: String(pageSize),
     });
-    console.log(
-      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMPANIES}?${params}`,
-    );
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMPANIES}?${params}`,
     );

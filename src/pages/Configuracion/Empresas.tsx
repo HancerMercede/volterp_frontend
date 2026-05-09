@@ -8,6 +8,7 @@ import {
   SearchInput,
   Modal,
   ConfirmModal,
+  ActionButtons,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
@@ -83,13 +84,10 @@ export function Empresas() {
     fetchData();
   }, [fetchData]);
 
-  console.log(pageNumber);
-  console.log(companies);
-
   const filteredCompanies = useFilter({
     data: companies,
     searchTerm,
-    searchFields: (c) => [c.name, c.taxId, c.email],
+    searchFields: (c) => [c.name],
   }).map((c) => ({ ...c, id: String(c.id) }));
 
   const paginationInfo = getInfo(totalCount);
@@ -179,22 +177,10 @@ export function Empresas() {
       key: "actions",
       header: t("empresas.table.headers.actions"),
       render: (company: CompanyTableRow) => (
-        <div className={styles.actions}>
-          <button
-            className={styles.actionBtn}
-            onClick={() => handleEdit(company)}
-            title={t("empresas.actions.edit")}
-          >
-            ✏️
-          </button>
-          <button
-            className={`${styles.actionBtn} ${styles.deleteBtn}`}
-            onClick={() => handleDeleteClick(company.id)}
-            title={t("empresas.actions.delete")}
-          >
-            🗑️
-          </button>
-        </div>
+        <ActionButtons
+          onEdit={() => handleEdit(company)}
+          onDelete={() => handleDeleteClick(company.id)}
+        />
       ),
     },
   ];
