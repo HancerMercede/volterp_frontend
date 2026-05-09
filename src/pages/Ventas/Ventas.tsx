@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useVentaStore } from "../../stores/ventaStore";
 import { useClienteStore } from "../../stores/clienteStore";
@@ -480,7 +480,7 @@ export function Ventas() {
                   onChange={(e) => setClienteSearch(e.target.value)}
                 />
                 <select
-                  value={match?.id || ""}
+                  value={match?.id?.toString() || ""}
                   onChange={(e) => {
                     const clienteId = e.target.value;
                     setSelectedCliente(clienteId);

@@ -4,12 +4,13 @@ import { usePermission } from '../../hooks/usePermission';
 import { PageHeader, Button } from '../../components/UI';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher/LanguageSwitcher';
 import { UserManagement } from '../../components/UserManagement/UserManagement';
+import { Empresas } from './Empresas';
 import styles from './Configuracion.module.css';
 
 export function Configuracion() {
   const { t } = useTranslation();
   const { isAdmin } = usePermission();
-  const [activeTab, setActiveTab] = useState<'general' | 'users'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'users' | 'companies'>('general');
 
   const [empresa, setEmpresa] = useState({
     nombre: 'HM Software Solutions',
@@ -38,10 +39,16 @@ export function Configuracion() {
             General
           </button>
           <button
+            className={`${styles.tab} ${activeTab === 'companies' ? styles.active : ''}`}
+            onClick={() => setActiveTab('companies')}
+          >
+            {t('empresas.title')}
+          </button>
+          <button
             className={`${styles.tab} ${activeTab === 'users' ? styles.active : ''}`}
             onClick={() => setActiveTab('users')}
           >
-            Usuarios
+            {t('configuracion.users')}
           </button>
         </div>
       )}
@@ -141,6 +148,8 @@ export function Configuracion() {
           </div>
         </div>
       )}
+
+      {activeTab === 'companies' && <Empresas />}
 
       {activeTab === 'users' && <UserManagement />}
     </div>

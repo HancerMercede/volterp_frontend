@@ -18,11 +18,11 @@ export interface CreateCategoryRequest {
 
 export const categoryService = {
   async getCategories(
-    page = 1,
-    pageSize = 10,
+    pageNumber: number,
+    pageSize: number,
   ): Promise<PagedResult<CategoryDto>> {
     const params = new URLSearchParams({
-      page: String(page),
+      page: String(pageNumber),
       pageSize: String(pageSize),
     });
     return fetchWithAuthJson(

@@ -1,11 +1,6 @@
 import { API_CONFIG } from '../api/config';
-export interface CreateUserRequest {
-  username: string;
-  password: string;
-  email: string;
-  fullName: string;
-  role: string;
-}
+import { fetchWithAuthJson } from './fetchWithAuth';
+import type { PagedResult } from '../../domain/types';
 
 export interface UserDto {
   id: number;
@@ -17,51 +12,71 @@ export interface UserDto {
   companyId: number;
 }
 
-async function fetchWithAuth(url: string, token: string, options: RequestInit = {}) {
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'An error occurred');
-  }
-  return response.json();
+export interface CreateUserRequest {
+  username: string;
+  password: string;
+  email: string;
+  fullName: string;
+  role: string;
+  companyId?: number;
 }
 
 export const userService = {
-  async getUsers(token: string): Promise<UserDto[]> {
-    return fetchWithAuth(`${API_CONFIG.BASE_URL}/api/users`, token);
+  async getUsers(
+    pageNumber = 1,
+    pageSize = 10
+  ): Promise<PagedResult<UserDto>> {
+    const params = new URLSearchParams({
+      pageNumber: String(pageNumber),
+      pageSize: String(pageSize),
+    });
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}?${params}`
+    );
   },
 
-  async createUser(token: string, data: CreateUserRequest): Promise<UserDto> {
-    return fetchWithAuth(`${API_CONFIG.BASE_URL}/api/users`, token, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+  async getUser(id: number): Promise<UserDto> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${id}`
+    );
   },
 
-  async updateUserRole(token: string, userId: number, role: string): Promise<UserDto> {
-    return fetchWithAuth(`${API_CONFIG.BASE_URL}/api/users/${userId}/role`, token, {
-      method: 'PUT',
-      body: JSON.stringify({ role }),
-    });
+  async createUser(data: CreateUserRequest): Promise<UserDto> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
   },
 
-  async updateUserStatus(token: string, userId: number, isActive: boolean): Promise<UserDto> {
-    return fetchWithAuth(`${API_CONFIG.BASE_URL}/api/users/${userId}/status`, token, {
-      method: 'PUT',
-      body: JSON.stringify({ isActive }),
-    });
+  async updateUserRole(userId: number, role: string): Promise<UserDto> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${userId}/role`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ role }),
+      }
+    );
   },
 
-  async deleteUser(token: string, userId: number): Promise<void> {
-    return fetchWithAuth(`${API_CONFIG.BASE_URL}/api/users/${userId}`, token, {
-      method: 'DELETE',
-    });
+  async updateUserStatus(userId: number, isActive: boolean): Promise<UserDto> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${userId}/status`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ isActive }),
+      }
+    );
+  },
+
+  async deleteUser(userId: number): Promise<void> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${userId}`,
+      {
+        method: 'DELETE',
+      }
+    );
   },
 };

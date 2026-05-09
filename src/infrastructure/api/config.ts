@@ -7,5 +7,7 @@ export const API_CONFIG = {
     },
     PRODUCTS: '/api/products',
     CATEGORIES: '/api/categories',
+    COMPANIES: '/api/companies',
+    USERS: '/api/users',
   },
 };

@@ -42,7 +42,7 @@ export function Login() {
       );
       navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Credenciales incorrectas");
+      setError(err instanceof Error ? err.message : t('auth.invalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -87,8 +87,8 @@ export function Login() {
       <div className={styles.rightPanel}>
         <div className={styles.formCard}>
           <div className={styles.formHeader}>
-            <h2>Bienvenido</h2>
-            <p>Inicie sesión para continuar</p>
+            <h2>{t('auth.welcome')}</h2>
+            <p>{t('auth.loginSubtitle')}</p>
           </div>
 
           {sessionExpired && (
@@ -99,7 +99,7 @@ export function Login() {
             <div
               className={`${styles.inputGroup} ${focusedField === "username" ? styles.focused : ""} ${error && !username ? styles.error : ""}`}
             >
-              <label htmlFor="username">Usuario</label>
+              <label htmlFor="username">{t('auth.username')}</label>
               <div className={styles.inputWrapper}>
                 <svg
                   className={styles.inputIcon}
@@ -118,7 +118,7 @@ export function Login() {
                   onChange={(e) => setUsername(e.target.value)}
                   onFocus={() => setFocusedField("username")}
                   onBlur={() => setFocusedField(null)}
-                  placeholder="usuario"
+                  placeholder={t('auth.username')}
                   required
                 />
               </div>
@@ -127,7 +127,7 @@ export function Login() {
             <div
               className={`${styles.inputGroup} ${focusedField === "password" ? styles.focused : ""} ${error && !password ? styles.error : ""}`}
             >
-              <label htmlFor="password">Contraseña</label>
+              <label htmlFor="password">{t('auth.password')}</label>
               <div className={styles.inputWrapper}>
                 <svg
                   className={styles.inputIcon}
@@ -187,10 +187,10 @@ export function Login() {
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
-                <span>Recordarme</span>
+                <span>{t('auth.rememberMe')}</span>
               </label>
               <a href="#" className={styles.forgotLink}>
-                ¿Olvidó su contraseña?
+                {t('auth.forgotPassword')}
               </a>
             </div>
 
@@ -219,7 +219,7 @@ export function Login() {
                 <span className={styles.loadingSpinner} />
               ) : (
                 <>
-                  <span>Iniciar Sesión</span>
+                  <span>{t('auth.login')}</span>
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"
@@ -236,7 +236,7 @@ export function Login() {
 
           <div className={styles.registerLink}>
             <p>
-              ¿No tienes cuenta? <Link to="/register">Crear cuenta</Link>
+              {t('auth.dontHaveAccount')} <Link to="/register">{t('auth.createAccount')}</Link>
             </p>
           </div>
         </div>

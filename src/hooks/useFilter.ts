@@ -15,9 +15,11 @@ export function useFilter<T>({
 }: UseFilterOptions<T>): T[] {
   return useMemo(() => {
     return (data ?? []).filter((item) => {
-      const matchSearch = searchFields(item).some((field) =>
-        field.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
+      const matchSearch = searchFields(item)
+        .filter(Boolean)
+        .some((field) =>
+          field.toLowerCase().includes(searchTerm.toLowerCase()),
+        );
       return matchSearch && (filter ? filter(item) : true);
     });
   }, [data, searchTerm, filter, searchFields]);

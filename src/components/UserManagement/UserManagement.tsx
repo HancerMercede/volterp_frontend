@@ -7,7 +7,9 @@ import {
   type CreateUserRequest,
 } from "../../infrastructure/api/userService";
 import { ROL_LABELS, ROL_COLORS } from "../../domain/constants/roles";
-import { Button, Modal, ConfirmModal } from "../../components/UI";
+import { Button, Modal, ConfirmModal, Pagination } from "../../components/UI";
+import { usePagination } from "../../hooks/usePagination";
+import { ITEMS_PER_PAGE } from "../../config/pagination";
 import styles from "./UserManagement.module.css";
 
 const ROLES = [
@@ -23,7 +25,7 @@ const InitialState = {
   password: "",
   email: "",
   fullName: "",
-  role: "User",
+  role: "ventas",
 };
 
 export function UserManagement() {
@@ -37,6 +39,12 @@ export function UserManagement() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const { pageNumber, goToPage, getInfo } = usePagination({
+    initialPageSize: ITEMS_PER_PAGE,
+  });
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
+
   useEffect(() => {
     if (!token) return;
 
@@ -44,8 +52,10 @@ export function UserManagement() {
       setLoading(true);
       setError("");
       try {
-        const data = await userService.getUsers(token!);
-        setUsers(data);
+        const data = await userService.getUsers(pageNumber, ITEMS_PER_PAGE);
+        setUsers(data.items);
+        setTotalCount(data.rowCount);
+        setPageCount(data.pageCount);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error loading users");
       } finally {
@@ -53,15 +63,15 @@ export function UserManagement() {
       }
     }
     loadUsers();
-  }, [token]);
+  }, [token, pageNumber]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!token) return;
     try {
-      const created = await userService.createUser(token, {
+      const created = await userService.createUser({
         ...newUser,
-        role: newUser.role === "User" ? "User" : newUser.role,
+        role: newUser.role === "ventas" ? "ventas" : newUser.role,
       });
       setUsers([...users, created]);
       setShowCreateModal(false);
@@ -70,7 +80,7 @@ export function UserManagement() {
         password: "",
         email: "",
         fullName: "",
-        role: "User",
+        role: "ventas",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error creating user");
@@ -80,7 +90,7 @@ export function UserManagement() {
   async function handleRoleChange(userId: number, newRole: string) {
     if (!token) return;
     try {
-      const updated = await userService.updateUserRole(token, userId, newRole);
+      const updated = await userService.updateUserRole(userId, newRole);
       setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error updating role");
@@ -91,9 +101,8 @@ export function UserManagement() {
     if (!token) return;
     try {
       const updated = await userService.updateUserStatus(
-        token,
         userId,
-        !currentStatus,
+        !currentStatus
       );
       setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
@@ -110,12 +119,14 @@ export function UserManagement() {
   const confirmDelete = async () => {
     if (!token || !deleteId) return;
     try {
-      await userService.deleteUser(token, deleteId);
+      await userService.deleteUser(deleteId);
       setUsers(users.filter((u) => u.id !== deleteId));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error deleting user");
     }
   }
+
+  const paginationInfo = getInfo(totalCount);
 
   return (
     <div className={styles.container}>
@@ -209,10 +220,14 @@ export function UserManagement() {
               ))}
             </tbody>
           </table>
-        </div>
-      )}
+</div>
+        )}
 
-      <Modal
+        {pageCount > 1 && (
+          <Pagination pagination={paginationInfo} onPageChange={goToPage} />
+        )}
+
+        <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title="Crear Nuevo Usuario"

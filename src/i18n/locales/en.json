@@ -79,10 +79,12 @@
     "password": "Password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot your password?",
-    "welcomeBack": "Welcome back",
-    "loginSubtitle": "Enter your credentials to access the system",
+    "welcome": "Welcome",
+    "loginSubtitle": "Sign in to continue",
     "invalidCredentials": "Invalid credentials",
-    "sessionExpired": "Your session has expired"
+    "sessionExpired": "Your session has expired",
+    "dontHaveAccount": "Don't have an account?",
+    "createAccount": "Create account"
   },
   "roles": {
     "admin": "Administrator",
@@ -143,7 +145,10 @@
     "pending": "Pending",
     "cancelled": "Cancelled",
     "deleteConfirm": "Delete this sale?",
-    "saleDeleted": "Sale deleted"
+    "saleDeleted": "Sale deleted",
+    "products": "Products",
+    "summary":"Summary",
+    "totalItems":"Total Items"
   },
   "compras": {
     "title": "Purchases",
@@ -416,6 +421,7 @@
   "configuracion": {
     "title": "Settings",
     "subtitle": "Customize the application",
+    "users": "Users",
     "companyData": "Company Data",
     "companyName": "Company Name",
     "companyRNC": "RNC",
@@ -507,5 +513,42 @@
     "to": "to",
     "of": "of",
     "results": "results"
+  },
+  "empresas": {
+    "title": "Companies",
+    "subtitle": "Company management",
+    "form": {
+      "title": "New Company",
+      "titleEdit": "Edit Company",
+      "name": "Name",
+      "taxId": "Tax ID",
+      "legalName": "Legal Name",
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email",
+      "logoUrl": "Logo URL",
+      "isActive": "Active",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "table": {
+      "headers": {
+        "name": "Name",
+        "taxId": "Tax ID",
+        "legalName": "Legal Name",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "add": "New Company"
+    },
+    "confirmDelete": "Are you sure you want to delete this company?"
   }
 }

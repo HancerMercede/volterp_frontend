@@ -7,7 +7,6 @@ interface PaginationProps {
 }
 
 export function Pagination({ pagination, onPageChange }: PaginationProps) {
-  console.log(pagination);
   const { page, totalPages, hasPrev, hasNext, total } = pagination;
 
   if (totalPages <= 1) return null;
