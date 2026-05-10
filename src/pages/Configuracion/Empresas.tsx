@@ -87,7 +87,7 @@ export function Empresas() {
   const filteredCompanies = useFilter({
     data: companies,
     searchTerm,
-    searchFields: (c) => [c.name],
+    searchFields: (c) => [c.name, c.taxId, c.email],
   }).map((c) => ({ ...c, id: String(c.id) }));
 
   const paginationInfo = getInfo(totalCount);
@@ -104,7 +104,9 @@ export function Empresas() {
         phone: formData.phone,
         email: formData.email,
       };
+
       if (editingId) {
+        console.log(editingId);
         await updateCompany(editingId, data);
         setEditingId(null);
       } else {
@@ -123,6 +125,7 @@ export function Empresas() {
   };
 
   const handleEdit = (company: CompanyTableRow) => {
+    console.log(company);
     setEditingId(Number(company.id));
     setFormData({
       name: company.name,

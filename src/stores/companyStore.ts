@@ -9,27 +9,66 @@ import {
 
 interface CompanyStore {
   companies: CompanyDto[];
+  currentCompany: CompanyDto | null;
   loading: boolean;
   error: string | null;
   totalCount: number;
   pageCount: number;
   fetchCompanies: (pageNumber: number, pageSize: number) => Promise<void>;
+  fetchCurrentCompany: (companyId: number) => Promise<void>;
+  updateCurrentCompany: (data: CompanyRequest) => Promise<void>;
   addCompany: (data: CompanyRequest) => Promise<void>;
   updateCompany: (id: number, data: CompanyRequest) => Promise<void>;
   deleteCompany: (id: number) => Promise<void>;
   clearError: () => void;
+  clearCurrentCompany: () => void;
 }
 
 export const useCompanyStore = create<CompanyStore>()(
   persist(
     (set) => ({
       companies: [],
+      currentCompany: null,
       loading: false,
       error: null,
       totalCount: 0,
       pageCount: 0,
 
       clearCompanies: () => set({ companies: [], totalCount: 0, pageCount: 0 }),
+
+      clearCurrentCompany: () => set({ currentCompany: null }),
+
+      fetchCurrentCompany: async (companyId: number) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: "No authenticated" });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const company = await companyService.getCompany(companyId);
+          set({ currentCompany: company, loading: false });
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+        }
+      },
+
+      updateCurrentCompany: async (data: CompanyRequest) => {
+        const token = useAuthStore.getState().token;
+        const currentCompany = useCompanyStore.getState().currentCompany;
+        if (!token || !currentCompany) {
+          set({ error: "No authenticated or no company selected" });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const updated = await companyService.updateCompany(currentCompany.id, data);
+          set({ currentCompany: updated, loading: false });
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+          throw err;
+        }
+      },
 
       fetchCompanies: async (pageNumber = 1, pageSize = 10) => {
         const token = useAuthStore.getState().token;
