@@ -16,7 +16,8 @@ import {
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { Product, CreateProductRequest, UpdateProductRequest } from "../../domain/types";
+import type { Product } from "../../domain/types";
+import type { CreateProductRequest, UpdateProductRequest } from "../../infrastructure/api/types";
 import styles from "./Inventario.module.css";
 import { useFilter } from "../../hooks/useFilter";
 
