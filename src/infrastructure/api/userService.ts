@@ -7,7 +7,7 @@ export interface UserDto {
   username: string;
   email: string;
   fullName: string;
-  role: string;
+  role: string | number;
   isActive: boolean;
   companyId: number;
 }

@@ -6,18 +6,40 @@ import {
   type UserDto,
   type CreateUserRequest,
 } from "../../infrastructure/api/userService";
-import { ROL_LABELS, ROL_COLORS } from "../../domain/constants/roles";
-import { Button, Modal, ConfirmModal, Pagination, ActionButtons } from "../../components/UI";
+import {
+  ROL_LABELS,
+  ROL_COLORS,
+  Rol,
+  normalizeRole,
+} from "../../domain/constants/roles";
+import {
+  Button,
+  Modal,
+  ConfirmModal,
+  Pagination,
+  ActionButtons,
+} from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import styles from "./UserManagement.module.css";
 
-const ROLES = [
-  "admin",
-  "ventas",
-  "inventario",
-  "contabilidad",
-  "rrhh",
+// Basic roles that all admins can assign
+const BASIC_ROLES = [
+  Rol.ADMIN,
+  Rol.VENTAS,
+  Rol.INVENTARIO,
+  Rol.CONTABILIDAD,
+  Rol.RRHH,
+] as const;
+
+// All roles including SuperAdmin (only for SuperAdmin)
+const ALL_ROLES = [
+  Rol.SUPER_ADMIN,
+  Rol.ADMIN,
+  Rol.VENTAS,
+  Rol.INVENTARIO,
+  Rol.CONTABILIDAD,
+  Rol.RRHH,
 ] as const;
 
 const InitialState = {
@@ -30,7 +52,15 @@ const InitialState = {
 
 export function UserManagement() {
   const { t } = useTranslation();
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
+
+  // Get current user role (normalized to lowercase)
+  const currentRole = user?.role?.toLowerCase();
+  console.log(currentRole);
+  const isSuperAdmin = currentRole === Rol.SUPER_ADMIN;
+
+  // SuperAdmin can assign all roles, Admin can only assign basic roles
+  const availableRoles = isSuperAdmin ? ALL_ROLES : BASIC_ROLES;
   const [users, setUsers] = useState<UserDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -102,7 +132,7 @@ export function UserManagement() {
     try {
       const updated = await userService.updateUserStatus(
         userId,
-        !currentStatus
+        !currentStatus,
       );
       setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
@@ -124,7 +154,7 @@ export function UserManagement() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error deleting user");
     }
-  }
+  };
 
   const paginationInfo = getInfo(totalCount);
 
@@ -164,7 +194,7 @@ export function UserManagement() {
                   <td>{user.fullName}</td>
                   <td>
                     <select
-                      value={user.role.toLowerCase()}
+                      value={normalizeRole(user.role)}
                       onChange={(e) =>
                         handleRoleChange(user.id, e.target.value)
                       }
@@ -172,15 +202,15 @@ export function UserManagement() {
                       style={{
                         borderColor:
                           ROL_COLORS[
-                            user.role.toLowerCase() as keyof typeof ROL_COLORS
+                            normalizeRole(user.role) as keyof typeof ROL_COLORS
                           ],
                         color:
                           ROL_COLORS[
-                            user.role.toLowerCase() as keyof typeof ROL_COLORS
+                            normalizeRole(user.role) as keyof typeof ROL_COLORS
                           ],
                       }}
                     >
-                      {ROLES.map((role) => (
+                      {availableRoles.map((role) => (
                         <option key={role} value={role}>
                           {ROL_LABELS[role]}
                         </option>
@@ -195,14 +225,19 @@ export function UserManagement() {
                     </span>
                   </td>
                   <td>
-                    {user.role.toLowerCase() !== "admin" ? (
+                    {normalizeRole(user.role) !== Rol.ADMIN &&
+                    normalizeRole(user.role) !== Rol.SUPER_ADMIN ? (
                       <ActionButtons
-                        onToggle={() => handleToggleStatus(user.id, user.isActive)}
+                        onToggle={() =>
+                          handleToggleStatus(user.id, user.isActive)
+                        }
                         onDelete={() => handleDelete(user.id)}
                       />
                     ) : (
                       <ActionButtons
-                        onToggle={() => handleToggleStatus(user.id, user.isActive)}
+                        onToggle={() =>
+                          handleToggleStatus(user.id, user.isActive)
+                        }
                       />
                     )}
                   </td>
@@ -210,14 +245,14 @@ export function UserManagement() {
               ))}
             </tbody>
           </table>
-</div>
-        )}
+        </div>
+      )}
 
-        {pageCount > 1 && (
-          <Pagination pagination={paginationInfo} onPageChange={goToPage} />
-        )}
+      {pageCount > 1 && (
+        <Pagination pagination={paginationInfo} onPageChange={goToPage} />
+      )}
 
-        <Modal
+      <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title="Crear Nuevo Usuario"
@@ -275,7 +310,7 @@ export function UserManagement() {
             value={newUser.role}
             onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
           >
-            {ROLES.map((role) => (
+            {availableRoles.map((role) => (
               <option key={role} value={role}>
                 {ROL_LABELS[role]}
               </option>
