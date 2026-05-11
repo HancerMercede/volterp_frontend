@@ -16,7 +16,7 @@ import {
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { ProductDto, CreateProductRequest, UpdateProductRequest } from "../../infrastructure/api/types";
+import type { Product, CreateProductRequest, UpdateProductRequest } from "../../domain/types";
 import styles from "./Inventario.module.css";
 import { useFilter } from "../../hooks/useFilter";
 
@@ -126,7 +126,7 @@ export function Inventario() {
     });
   };
 
-  const handleEdit = (producto: ProductDto) => {
+  const handleEdit = (producto: Product) => {
     setFormData({
       name: producto.name,
       category: producto.category,
@@ -173,7 +173,7 @@ export function Inventario() {
     {
       key: "name",
       header: t("common.product"),
-      render: (p: ProductDto) => (
+      render: (p: Product) => (
         <ImageCell
           src={p.imageUrl || ""}
           name={p.name}
@@ -187,7 +187,7 @@ export function Inventario() {
     {
       key: "stock",
       header: t("inventario.stock"),
-      render: (p: ProductDto) => (
+      render: (p: Product) => (
         <span
           className={
             p.stock === 0
@@ -204,12 +204,12 @@ export function Inventario() {
     {
       key: "price",
       header: t("common.price"),
-      render: (p: ProductDto) => `$${p.price.toLocaleString()}`,
+      render: (p: Product) => `$${p.price.toLocaleString()}`,
     },
     {
       key: "actions",
       header: t("common.actions"),
-      render: (p: ProductDto) => (
+      render: (p: Product) => (
         <ActionButtons
           onEdit={() => handleEdit(p)}
           onDelete={() => handleDelete(String(p.id))}
