@@ -20,9 +20,9 @@ export {
 
 // Las ventas ahora vienen del backend - usar saleService / useVentaStore
 
-export const clientes: Cliente[] = [
+export const clientes: Client[] = [
   {
-    id: "CL001",
+    id: 1,
     nombre: "Carlos Mendoza",
     email: "carlos@email.com",
     telefono: "809-123-4567",
@@ -32,7 +32,7 @@ export const clientes: Cliente[] = [
     empresa: "Tech Solutions RD",
   },
   {
-    id: "CL002",
+    id: 2,
     nombre: "María García",
     email: "maria@email.com",
     telefono: "809-234-5678",
@@ -42,7 +42,7 @@ export const clientes: Cliente[] = [
     empresa: "Inversiones García",
   },
   {
-    id: "CL003",
+    id: 3,
     nombre: "Juan López",
     email: "juan@email.com",
     telefono: "809-345-6789",
@@ -52,7 +52,7 @@ export const clientes: Cliente[] = [
     empresa: "López & Asocs",
   },
   {
-    id: "CL004",
+    id: 4,
     nombre: "Ana Torres",
     email: "ana@email.com",
     telefono: "809-456-7890",
@@ -62,7 +62,7 @@ export const clientes: Cliente[] = [
     empresa: "Torres Consultores",
   },
   {
-    id: "CL005",
+    id: 5,
     nombre: "Pedro Ruiz",
     email: "pedro@email.com",
     telefono: "809-567-8901",
@@ -72,7 +72,7 @@ export const clientes: Cliente[] = [
     empresa: "Distribuciones Ruiz",
   },
   {
-    id: "CL006",
+    id: 6,
     nombre: "Laura Díaz",
     email: "laura@email.com",
     telefono: "809-678-9012",
@@ -82,7 +82,7 @@ export const clientes: Cliente[] = [
     empresa: "Diaz Import",
   },
   {
-    id: "CL007",
+    id: 7,
     nombre: "Roberto Sánchez",
     email: "roberto@email.com",
     telefono: "809-789-0123",

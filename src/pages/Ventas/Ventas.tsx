@@ -549,13 +549,14 @@ export function Ventas() {
                   onChange={(e) => setClienteSearch(e.target.value)}
                 />
                 <select
-                  value={match?.id || ""}
+                  value={match?.id?.toString() || ""}
                   onChange={(e) => {
                     const clienteId = e.target.value;
-                    setSelectedCliente(Number(clienteId));
                     if (!clienteId) {
+                      setSelectedCliente(null);
                       setClienteSearch("");
                     } else {
+                      setSelectedCliente(Number(clienteId));
                       const cliente = clientes.find(
                         (c) => c.id === Number(clienteId),
                       );
@@ -565,7 +566,7 @@ export function Ventas() {
                   style={{ marginTop: "8px" }}
                 >
                   <option value="">{t("ventas.selectClient")}</option>
-                  {searchFilteredClientes.map((c) => (
+                  {dropdownClientes.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.nombre} {c.empresa && `(${c.empresa})`}
                     </option>
