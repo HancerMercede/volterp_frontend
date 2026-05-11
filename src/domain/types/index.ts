@@ -101,7 +101,7 @@ export interface Product {
   stock: number;
   price: number;
   proveedor?: string;
-  imageUrl: string;
+  imageUrl: string | null;
   description: string;
   isActive?: boolean;
 }
