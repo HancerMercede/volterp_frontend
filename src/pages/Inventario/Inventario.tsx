@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProductoStore } from "../../stores/productoStore";
 import { useCategoryStore } from "../../stores/categoryStore";
+import { useCompanyStore } from "../../stores/companyStore";
 import {
   Table,
   Button,
@@ -32,6 +33,7 @@ export function Inventario() {
     deleteProducto,
   } = useProductoStore();
   const { categories, fetchCategories } = useCategoryStore();
+  const { currentCompany } = useCompanyStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -99,7 +101,7 @@ export function Inventario() {
           stock: formData.stock,
           price: formData.price,
           categoryId: formData.categoryId,
-          companyId: 1, // TODO: obtener de companyStore
+          companyId: currentCompany?.id || 1,
           imageUrl: formData.imageUrl || null,
         };
         await createProducto(createData);
