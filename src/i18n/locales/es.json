@@ -150,7 +150,11 @@
     "products":"Productos",
     "summary":"Resumen",
     "totalItems":"Total de artículos",
-    "draftWarning":"Advertencia"
+    "draftWarning":"Advertencia",
+    "cartEmptyWarning": "El carrito esta vacío",
+    "clear":"Limpiar",
+    "selectClientWarning":"Seleccione un cliente, por favor.",
+    "NoCompanySelected":"No hay empresa seleccionada"
   },
   "compras": {
     "title": "Compras",

@@ -74,6 +74,7 @@ export interface CreateSaleRequest {
   companyId: number;
   clienteId: number | null;
   clienteName: string | null;
+  status: "Pending" | "Completed";
   total: number;
   notes: string | null;
   items: CreateSaleItemRequest[];
@@ -82,6 +83,7 @@ export interface CreateSaleRequest {
 export interface UpdateSaleRequest {
   clienteId: number | null;
   clienteName: string | null;
+  status: "Pending" | "Completed";
   total: number;
   notes: string | null;
   items: CreateSaleItemRequest[];

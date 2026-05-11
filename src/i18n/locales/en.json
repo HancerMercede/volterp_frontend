@@ -149,7 +149,11 @@
     "products": "Products",
     "summary":"Summary",
     "totalItems":"Total Items",
-    "draftWarning":"Warning"
+    "draftWarning":"Warning",
+    "cartEmptyWarning": "Cart is empty",
+    "clear":"Clear",
+    "selectClientWarning":"Select a client, please.",
+    "NoCompanySelected":"No company selected"
   },
   "compras": {
     "title": "Purchases",

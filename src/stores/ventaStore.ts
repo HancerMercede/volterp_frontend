@@ -16,8 +16,14 @@ interface VentaStore {
   pageCount: number;
 
   fetchVentas: (pageNumber?: number, pageSize?: number) => Promise<void>;
-  fetchVentasPendientes: (pageNumber?: number, pageSize?: number) => Promise<void>;
-  fetchVentasCompletadas: (pageNumber?: number, pageSize?: number) => Promise<void>;
+  fetchVentasPendientes: (
+    pageNumber?: number,
+    pageSize?: number,
+  ) => Promise<void>;
+  fetchVentasCompletadas: (
+    pageNumber?: number,
+    pageSize?: number,
+  ) => Promise<void>;
   createVenta: (data: CreateSaleRequest) => Promise<void>;
   updateVenta: (id: number, data: UpdateSaleRequest) => Promise<void>;
   completeVenta: (id: number) => Promise<void>;
@@ -45,6 +51,7 @@ export const useVentaStore = create<VentaStore>()(
         set({ loading: true, error: null });
         try {
           const result = await saleService.getSales(pageNumber, pageSize);
+          console.log(result.items);
           set({
             ventas: result.items,
             totalCount: result.rowCount,
@@ -64,7 +71,10 @@ export const useVentaStore = create<VentaStore>()(
         }
         set({ loading: true, error: null });
         try {
-          const result = await saleService.getPendingSales(pageNumber, pageSize);
+          const result = await saleService.getPendingSales(
+            pageNumber,
+            pageSize,
+          );
           set({
             ventas: result.items,
             totalCount: result.rowCount,
@@ -130,9 +140,7 @@ export const useVentaStore = create<VentaStore>()(
         try {
           const actualizada = await saleService.updateSale(id, data);
           set((state) => ({
-            ventas: state.ventas.map((v) =>
-              v.id === id ? actualizada : v,
-            ),
+            ventas: state.ventas.map((v) => (v.id === id ? actualizada : v)),
             loading: false,
           }));
         } catch (err) {
@@ -151,9 +159,7 @@ export const useVentaStore = create<VentaStore>()(
         try {
           const completada = await saleService.completeSale(id);
           set((state) => ({
-            ventas: state.ventas.map((v) =>
-              v.id === id ? completada : v,
-            ),
+            ventas: state.ventas.map((v) => (v.id === id ? completada : v)),
             loading: false,
           }));
         } catch (err) {

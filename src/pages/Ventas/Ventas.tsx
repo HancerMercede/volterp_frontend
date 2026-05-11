@@ -20,6 +20,7 @@ import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type {
   CreateSaleRequest,
+  UpdateSaleRequest,
   SaleDto,
 } from "../../infrastructure/api/saleService";
 import type { CartItem, Product } from "../../domain/types";
@@ -30,7 +31,7 @@ import { useFilter } from "../../hooks/useFilter";
 
 export function Ventas() {
   const { t } = useTranslation();
-  const { ventas, fetchVentas, createVenta, deleteVenta, loading } =
+  const { ventas, fetchVentas, createVenta, updateVenta, deleteVenta, loading } =
     useVentaStore();
   const { clientes } = useClienteStore();
   const { productos } = useProductoStore();
@@ -56,6 +57,7 @@ export function Ventas() {
   }, [pageNumber, fetchVentas]);
 
   const [carrito, setCarrito] = useState<CartItem[]>([]);
+  const [editingSaleId, setEditingSaleId] = useState<number | null>(null);
   const [selectedCliente, setSelectedCliente] = useState<number | null>(null);
   const [clienteSearch, setClienteSearch] = useState("");
   const [ventaEstado, setVentaEstado] = useState<"pendiente" | "completada">(
@@ -82,7 +84,7 @@ export function Ventas() {
 
   const searchFilteredClientes = useFilter({
     data: dropdownClientes,
-    searchTerm: clienteSearch,
+    searchTerm,
     searchFields: (c) => [c.nombre, c.email, c.empresa ?? ""],
   });
 
@@ -181,7 +183,10 @@ export function Ventas() {
   };
 
   const completarVenta = async () => {
-    if (!selectedCliente) {
+    // Usar match si existe, sino selectedCliente
+    const clienteElegido = selectedCliente || (match ? match.id : null);
+
+    if (!clienteElegido) {
       addToast(t("ventas.selectClientWarning"), "warning");
       return;
     }
@@ -195,35 +200,48 @@ export function Ventas() {
       return;
     }
 
-    const clienteData = clientes.find((c) => c.id === selectedCliente);
+    const clienteData = clientes.find((c) => c.id === clienteElegido);
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
 
-    const saleData: CreateSaleRequest = {
-      companyId: currentCompany.id,
-      clienteId: selectedCliente ? Number(selectedCliente) : null,
-      clienteName: clienteData?.nombre || null,
-      total,
-      notes: null,
-      items: carrito.map((item) => ({
-        productId: item.productId,
-        productName: item.productName,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        subtotal: item.subtotal,
-      })),
-    };
+    const saleItems = carrito.map((item) => ({
+      productId: item.productId,
+      productName: item.productName,
+      productImageUrl: item.imageUrl || undefined,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      subtotal: item.subtotal,
+    }));
 
     try {
-      await createVenta(saleData);
-      // Si el usuario eligió "completada", la completamos inmediatamente
-      if (ventaEstado === "completada") {
-        // El store ya devuelve la venta creada, pero está en Pending
-        // Necesitaríamos un método para crear y completar directamente
-        // Por ahora, la venta queda como Pending y el cajero la completa después
+      if (editingSaleId) {
+        // Actualizar venta existente
+        const updateData: UpdateSaleRequest = {
+          clienteId: clienteElegido,
+          clienteName: clienteData?.nombre || null,
+          status: ventaEstado === "completada" ? "Completed" : "Pending",
+          total,
+          notes: null,
+          items: saleItems,
+        };
+        await updateVenta(editingSaleId, updateData);
+      } else {
+        // Crear nueva venta
+        const saleData: CreateSaleRequest = {
+          companyId: currentCompany.id,
+          clienteId: clienteElegido,
+          clienteName: clienteData?.nombre || null,
+          status: ventaEstado === "completada" ? "Completed" : "Pending",
+          total,
+          notes: null,
+          items: saleItems,
+        };
+        await createVenta(saleData);
       }
+      
       addToast(t("ventas.saleCompleted"), "success");
       setCarrito([]);
       setSelectedCliente(null);
+      setEditingSaleId(null);
       setVentaEstado("pendiente");
       setShowForm(false);
     } catch (err) {
@@ -232,7 +250,9 @@ export function Ventas() {
   };
 
   const guardarBorrador = async () => {
-    if (!selectedCliente || carrito.length === 0) {
+    const clienteElegido = selectedCliente || (match ? match.id : null);
+    
+    if (!clienteElegido || carrito.length === 0) {
       addToast(t("ventas.draftWarning"), "warning");
       return;
     }
@@ -241,29 +261,48 @@ export function Ventas() {
       return;
     }
 
-    const clienteData = clientes.find((c) => c.id === selectedCliente);
+    const clienteData = clientes.find((c) => c.id === clienteElegido);
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
 
-    const saleData: CreateSaleRequest = {
-      companyId: currentCompany.id,
-      clienteId: selectedCliente ? Number(selectedCliente) : null,
-      clienteName: clienteData?.nombre || null,
-      total,
-      notes: null,
-      items: carrito.map((item) => ({
-        productId: item.productId,
-        productName: item.productName,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        subtotal: item.subtotal,
-      })),
-    };
+    const saleItems = carrito.map((item) => ({
+      productId: item.productId,
+      productName: item.productName,
+      productImageUrl: item.imageUrl || undefined,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      subtotal: item.subtotal,
+    }));
 
     try {
-      await createVenta(saleData);
+      if (editingSaleId) {
+        // Actualizar venta existente
+        const updateData: UpdateSaleRequest = {
+          clienteId: clienteElegido,
+          clienteName: clienteData?.nombre || null,
+          status: "Pending",
+          total,
+          notes: null,
+          items: saleItems,
+        };
+        await updateVenta(editingSaleId, updateData);
+      } else {
+        // Crear nueva venta
+        const saleData: CreateSaleRequest = {
+          companyId: currentCompany.id,
+          clienteId: clienteElegido,
+          clienteName: clienteData?.nombre || null,
+          status: "Pending",
+          total,
+          notes: null,
+          items: saleItems,
+        };
+        await createVenta(saleData);
+      }
+      
       addToast(t("ventas.draftSaved"), "success");
       setCarrito([]);
       setSelectedCliente(null);
+      setEditingSaleId(null);
       setShowForm(false);
     } catch (err) {
       addToast((err as Error).message, "error");
@@ -286,7 +325,29 @@ export function Ventas() {
     }
   };
 
-  const handleEdit = () => {
+  const handleEdit = (venta: SaleDto) => {
+    // Guardar ID de la venta en edición
+    setEditingSaleId(venta.id);
+    
+    // Cargar items al carrito
+    setCarrito(venta.items.map(item => ({
+      productId: item.productId,
+      productName: item.productName,
+      imageUrl: item.productImageUrl || "",
+      unitPrice: item.unitPrice,
+      quantity: item.quantity,
+      subtotal: item.subtotal,
+    })));
+    
+    // Cargar cliente
+    if (venta.clienteId) {
+      setSelectedCliente(venta.clienteId);
+      const cliente = clientes.find(c => c.id === venta.clienteId);
+      if (cliente) setClienteSearch(cliente.nombre);
+    }
+    
+    // Establecer estado
+    setVentaEstado(venta.status === "Completed" ? "completada" : "pendiente");
     setShowForm(true);
   };
 
@@ -332,7 +393,7 @@ export function Ventas() {
         const firstItem = v.items[0];
         return (
           <ImageCell
-            src={""}
+            src={firstItem.productImageUrl || ""}
             name={firstItem.productName}
             subtext={
               v.items.length > 1
@@ -549,17 +610,19 @@ export function Ventas() {
                   onChange={(e) => setClienteSearch(e.target.value)}
                 />
                 <select
-                  value={match?.id?.toString() || ""}
+                  value={
+                    match?.id?.toString() || selectedCliente?.toString() || ""
+                  }
                   onChange={(e) => {
                     const clienteId = e.target.value;
                     if (!clienteId) {
                       setSelectedCliente(null);
                       setClienteSearch("");
                     } else {
-                      setSelectedCliente(Number(clienteId));
                       const cliente = clientes.find(
                         (c) => c.id === Number(clienteId),
                       );
+                      setSelectedCliente(Number(clienteId));
                       if (cliente) setClienteSearch(cliente.nombre);
                     }
                   }}
