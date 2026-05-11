@@ -21,7 +21,7 @@ import type {
   CreateSaleRequest,
   SaleDto,
 } from "../../infrastructure/api/saleService";
-import type { ProductDto, CartItem } from "../../domain/types";
+import type { CartItem, Product } from "../../domain/types";
 
 import styles from "./Ventas.module.css";
 
@@ -121,10 +121,8 @@ export function Ventas() {
     return { subtotal, itbis, total, totalItems };
   }, [carrito]);
 
-  const agregarAlCarrito = (producto: ProductDto) => {
-    const existingItem = carrito.find(
-      (item) => item.productId === producto.id,
-    );
+  const agregarAlCarrito = (producto: Product) => {
+    const existingItem = carrito.find((item) => item.productId === producto.id);
 
     if (existingItem) {
       setCarrito(
@@ -427,9 +425,7 @@ export function Ventas() {
                       subtext={producto.category}
                       type="product"
                     />
-                    <span className={styles.productName}>
-                      {producto.name}
-                    </span>
+                    <span className={styles.productName}>{producto.name}</span>
                     <span className={styles.productPrice}>
                       {formatCurrency(producto.price)}
                     </span>
@@ -493,9 +489,7 @@ export function Ventas() {
                       </div>
                       <div className={styles.cartItemControls}>
                         <button
-                          onClick={() =>
-                            actualizarCantidad(item.productId, -1)
-                          }
+                          onClick={() => actualizarCantidad(item.productId, -1)}
                         >
                           −
                         </button>
