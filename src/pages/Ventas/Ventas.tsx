@@ -549,14 +549,16 @@ export function Ventas() {
                   onChange={(e) => setClienteSearch(e.target.value)}
                 />
                 <select
-                  value={match?.id?.toString() || ""}
+                  value={match?.id || ""}
                   onChange={(e) => {
                     const clienteId = e.target.value;
-                    setSelectedCliente(clienteId);
+                    setSelectedCliente(Number(clienteId));
                     if (!clienteId) {
                       setClienteSearch("");
                     } else {
-                      const cliente = clientes.find((c) => c.id === clienteId);
+                      const cliente = clientes.find(
+                        (c) => c.id === Number(clienteId),
+                      );
                       if (cliente) setClienteSearch(cliente.nombre);
                     }
                   }}

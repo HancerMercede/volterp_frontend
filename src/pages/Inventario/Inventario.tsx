@@ -17,7 +17,10 @@ import {
 import { usePagination } from "../../hooks/usePagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { Product } from "../../domain/types";
-import type { CreateProductRequest, UpdateProductRequest } from "../../infrastructure/api/types";
+import type {
+  CreateProductRequest,
+  UpdateProductRequest,
+} from "../../infrastructure/api/types";
 import styles from "./Inventario.module.css";
 import { useFilter } from "../../hooks/useFilter";
 
@@ -136,7 +139,7 @@ export function Inventario() {
       price: producto.price,
       imageUrl: producto.imageUrl || "",
       description: producto.description || "",
-      isActive: producto.isActive,
+      isActive: producto.isActive ?? true,
     });
     setEditingId(String(producto.id));
     setShowForm(true);
@@ -279,9 +282,7 @@ export function Inventario() {
             className={styles.input}
             type="text"
             value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>
@@ -289,7 +290,7 @@ export function Inventario() {
           <label>{t("common.category")}</label>
           <select
             className={styles.select}
-            value={formData.categoriaId ?? ""}
+            value={formData.categoryId ?? ""}
             onChange={(e) => {
               const val = e.target.value;
               const catId = val ? parseInt(val) : null;
@@ -348,9 +349,9 @@ export function Inventario() {
             accept="image/*"
             onChange={handleImageChange}
           />
-          {formData.imagen && (
+          {formData.imageUrl && (
             <img
-              src={formData.imagen}
+              src={formData.imageUrl}
               alt="Preview"
               style={{ width: "100px", marginTop: "8px" }}
             />
@@ -363,7 +364,7 @@ export function Inventario() {
             type="text"
             value={formData.description}
             onChange={(e) =>
-              setFormData({ ...formData, descripcion: e.target.value })
+              setFormData({ ...formData, description: e.target.value })
             }
           />
         </div>

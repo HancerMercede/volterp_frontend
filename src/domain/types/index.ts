@@ -38,6 +38,9 @@ export interface SaleItemDto {
   id: number;
   productId: number;
   productName: string;
+  productCategory?: string;
+  productCode?: string;
+  productImageUrl?: string;
   quantity: number;
   unitPrice: number;
   subtotal: number;
@@ -59,6 +62,9 @@ export interface SaleDto {
 export interface CreateSaleItemRequest {
   productId: number;
   productName: string;
+  productCategory?: string;
+  productCode?: string;
+  productImageUrl?: string;
   quantity: number;
   unitPrice: number;
   subtotal: number;
@@ -102,7 +108,7 @@ export interface Product {
   price: number;
   proveedor?: string;
   imageUrl: string | null;
-  description: string;
+  description?: string | null;
   isActive?: boolean;
 }
 
