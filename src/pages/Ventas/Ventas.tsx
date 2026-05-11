@@ -566,7 +566,7 @@ export function Ventas() {
                   style={{ marginTop: "8px" }}
                 >
                   <option value="">{t("ventas.selectClient")}</option>
-                  {dropdownClientes.map((c) => (
+                  {searchFilteredClientes.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.nombre} {c.empresa && `(${c.empresa})`}
                     </option>
