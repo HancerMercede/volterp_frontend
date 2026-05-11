@@ -5,6 +5,7 @@ import { useCompraStore } from "../../stores/compraStore";
 import { useProductoStore } from "../../stores/productoStore";
 import { useClienteStore } from "../../stores/clienteStore";
 import { PageHeader } from "../../components/UI";
+import type { SaleDto } from "../../infrastructure/api/saleService";
 import styles from "./Reportes.module.css";
 
 export function Reportes() {
@@ -16,7 +17,7 @@ export function Reportes() {
 
   const totalVentas =
     ventas
-      .filter((v) => v.estado === "completada")
+      .filter((v) => v.status === "Completed")
       .reduce((sum, v) => sum + v.total, 0) ?? 0;
   const totalCompras =
     compras
@@ -28,28 +29,30 @@ export function Reportes() {
   ).length;
 
   const topProductosVendidos = useMemo(() => {
-    const ventasCompletadas = ventas.filter((v) => v.estado === "completada");
+    const ventasCompletadas = ventas.filter((v) => v.status === "Completed");
     const productosMap = new Map<
-      string,
-      { nombre: string; cantidad: number; total: number }
+      number,
+      { name: string; quantity: number; total: number }
     >();
 
-    ventasCompletadas.forEach((v) => {
-      const existente = productosMap.get(v.productoId);
-      if (existente) {
-        existente.cantidad += v.cantidad;
-        existente.total += v.total;
-      } else {
-        productosMap.set(v.productoId, {
-          nombre: v.producto,
-          cantidad: v.cantidad,
-          total: v.total,
-        });
-      }
+    ventasCompletadas.forEach((v: SaleDto) => {
+      v.items.forEach((item) => {
+        const existente = productosMap.get(item.productId);
+        if (existente) {
+          existente.quantity += item.quantity;
+          existente.total += item.subtotal;
+        } else {
+          productosMap.set(item.productId, {
+            name: item.productName,
+            quantity: item.quantity,
+            total: item.subtotal,
+          });
+        }
+      });
     });
 
     return Array.from(productosMap.values())
-      .sort((a, b) => b.cantidad - a.cantidad)
+      .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 10);
   }, [ventas]);
 
@@ -67,9 +70,9 @@ export function Reportes() {
     }
 
     ventas
-      .filter((v) => v.estado === "completada")
-      .forEach((v) => {
-        const key = v.fecha;
+      .filter((v) => v.status === "Completed")
+      .forEach((v: SaleDto) => {
+        const key = v.createdAt.split("T")[0];
         if (ultimos7Dias[key]) {
           ultimos7Dias[key].cantidad += 1;
           ultimos7Dias[key].total += v.total;
@@ -157,8 +160,8 @@ export function Reportes() {
           <tbody>
             {topProductosVendidos.map((p, idx) => (
               <tr key={idx}>
-                <td>{p.nombre}</td>
-                <td>{p.cantidad}</td>
+                <td>{p.name}</td>
+                <td>{p.quantity}</td>
                 <td>${p.total.toLocaleString()}</td>
               </tr>
             ))}
