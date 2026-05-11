@@ -148,7 +148,8 @@
     "saleDeleted": "Sale deleted",
     "products": "Products",
     "summary":"Summary",
-    "totalItems":"Total Items"
+    "totalItems":"Total Items",
+    "draftWarning":"Warning"
   },
   "compras": {
     "title": "Purchases",

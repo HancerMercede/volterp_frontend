@@ -1,6 +1,10 @@
-import { useAuthStore } from '../stores/authStore';
-import { MATRIZ_PERMISOS, type Modulo, type PermisosModulo } from '../domain/constants/permisos';
-import { Rol, Permiso } from '../domain/constants/roles';
+import { useAuthStore } from "../stores/authStore";
+import {
+  MATRIZ_PERMISOS,
+  type Modulo,
+  type PermisosModulo,
+} from "../domain/constants/permisos";
+import { Rol, Permiso } from "../domain/constants/roles";
 
 interface UsePermissionResult {
   hasPermission: (modulo: Modulo, permiso: Permiso) => boolean;
@@ -16,16 +20,19 @@ export function usePermission(): UsePermissionResult {
   const { user } = useAuthStore();
 
   const userRole = user?.role ? (user.role.toLowerCase() as Rol) : null;
-  const isAdmin = userRole === Rol.ADMIN;
+  const isAdmin = userRole === Rol.SUPER_ADMIN;
 
   const hasPermission = (modulo: Modulo, permiso: Permiso): boolean => {
     if (!userRole) return false;
     return MATRIZ_PERMISOS[userRole]?.[modulo]?.[permiso] ?? false;
   };
 
-  const canRead = (modulo: Modulo): boolean => hasPermission(modulo, Permiso.READ);
-  const canWrite = (modulo: Modulo): boolean => hasPermission(modulo, Permiso.WRITE);
-  const canDelete = (modulo: Modulo): boolean => hasPermission(modulo, Permiso.DELETE);
+  const canRead = (modulo: Modulo): boolean =>
+    hasPermission(modulo, Permiso.READ);
+  const canWrite = (modulo: Modulo): boolean =>
+    hasPermission(modulo, Permiso.WRITE);
+  const canDelete = (modulo: Modulo): boolean =>
+    hasPermission(modulo, Permiso.DELETE);
 
   const getModulePermissions = (modulo: Modulo): PermisosModulo | undefined => {
     if (!userRole) return undefined;

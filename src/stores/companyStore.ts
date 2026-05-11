@@ -62,7 +62,10 @@ export const useCompanyStore = create<CompanyStore>()(
         }
         set({ loading: true, error: null });
         try {
-          const updated = await companyService.updateCompany(currentCompany.id, data);
+          const updated = await companyService.updateCompany(
+            currentCompany.id,
+            data,
+          );
           set({ currentCompany: updated, loading: false });
         } catch (err) {
           set({ error: (err as Error).message, loading: false });

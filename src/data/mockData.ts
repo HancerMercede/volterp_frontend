@@ -1,8 +1,22 @@
 import type { Empleado } from "../domain/entities/Empleado";
-import type { Client, Product, Purchase, Vendor, AccountingTransaction, Project } from "../domain/types";
+import type {
+  Client,
+  Product,
+  Purchase,
+  Vendor,
+  AccountingTransaction,
+  Project,
+} from "../domain/types";
 
 export { type Empleado };
-export { type Client as Cliente, type Product as Producto, type Purchase as Compra, type Vendor as Proveedor, type AccountingTransaction as TransaccionContable, type Project as Proyecto };
+export {
+  type Client as Cliente,
+  type Product as Producto,
+  type Purchase as Compra,
+  type Vendor as Proveedor,
+  type AccountingTransaction as TransaccionContable,
+  type Project as Proyecto,
+};
 
 // Las ventas ahora vienen del backend - usar saleService / useVentaStore
 

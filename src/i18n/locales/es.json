@@ -149,7 +149,8 @@
     "saleDeleted": "Venta eliminada",
     "products":"Productos",
     "summary":"Resumen",
-    "totalItems":"Total de artículos"
+    "totalItems":"Total de artículos",
+    "draftWarning":"Advertencia"
   },
   "compras": {
     "title": "Compras",

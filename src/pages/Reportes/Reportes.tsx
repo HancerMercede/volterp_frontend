@@ -19,10 +19,12 @@ export function Reportes() {
     ventas
       .filter((v) => v.status === "Completed")
       .reduce((sum, v) => sum + v.total, 0) ?? 0;
+
   const totalCompras =
     compras
       .filter((c) => c.estado === "recibida")
       .reduce((sum, c) => sum + c.total, 0) ?? 0;
+
   const productosSinStock = productos.filter((p) => p.stock === 0).length;
   const productosStockBajo = productos.filter(
     (p) => p.stock > 0 && p.stock < 10,

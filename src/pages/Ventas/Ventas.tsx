@@ -4,6 +4,7 @@ import { useVentaStore } from "../../stores/ventaStore";
 import { useClienteStore } from "../../stores/clienteStore";
 import { useProductoStore } from "../../stores/productoStore";
 import { useCompanyStore } from "../../stores/companyStore";
+import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
 import {
   Table,
@@ -33,13 +34,21 @@ export function Ventas() {
     useVentaStore();
   const { clientes } = useClienteStore();
   const { productos } = useProductoStore();
-  const { currentCompany } = useCompanyStore();
+  const { currentCompany, fetchCurrentCompany } = useCompanyStore();
+  const { user } = useAuthStore();
   const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
+
+  // Cargar empresa del usuario
+  useEffect(() => {
+    if (!currentCompany && user?.companyId) {
+      fetchCurrentCompany(user.companyId);
+    }
+  }, [currentCompany, user, fetchCurrentCompany]);
 
   // Cargar ventas del backend al montar
   useEffect(() => {
@@ -92,9 +101,9 @@ export function Ventas() {
   const filteredProducts = useFilter({
     data: productos,
     searchTerm,
-    searchFields: (p) => [p.nombre],
+    searchFields: (p) => [p.name],
     filter: (p) =>
-      categoriaFilter === "todos" || p.categoria === categoriaFilter,
+      categoriaFilter === "todos" || p.category === categoriaFilter,
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -181,6 +190,7 @@ export function Ventas() {
       return;
     }
     if (!currentCompany) {
+      console.log(currentCompany);
       addToast("No hay empresa seleccionada", "error");
       return;
     }
@@ -318,8 +328,8 @@ export function Ventas() {
       key: "producto",
       header: t("ventas.product"),
       render: (v: SaleDto) => {
+        if (!v.items?.length) return "-";
         const firstItem = v.items[0];
-        if (!firstItem) return "-";
         return (
           <ImageCell
             src={""}
