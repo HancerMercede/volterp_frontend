@@ -1,51 +1,10 @@
 import type { Empleado } from "../domain/entities/Empleado";
+import type { Client, Product, Purchase, Vendor, AccountingTransaction, Project } from "../domain/types";
 
 export { type Empleado };
-export interface Cliente {
-  id: string;
-  nombre: string;
-  email: string;
-  telefono: string;
-  direccion: string;
-  totalCompras?: number;
-  avatar: string;
-  empresa?: string;
-}
+export { type Client as Cliente, type Product as Producto, type Purchase as Compra, type Vendor as Proveedor, type AccountingTransaction as TransaccionContable, type Project as Proyecto };
 
-export interface Compra {
-  id: string;
-  proveedor: string;
-  producto: string;
-  cantidad: number;
-  total: number;
-  fecha: string;
-  estado: "recibida" | "pendiente" | "cancelada";
-}
-
-export interface Producto {
-  id: string;
-  nombre: string;
-  categoria: string;
-  categoriaId?: number | null;
-  stock: number;
-  precio: number;
-  proveedor?: string;
-  imagen: string;
-  descripcion: string;
-  isActive?: boolean;
-}
-
-export interface Venta {
-  id: string;
-  cliente: string;
-  clienteId: string;
-  producto: string;
-  productoId: string;
-  cantidad: number;
-  total: number;
-  fecha: string;
-  estado: "completada" | "pendiente" | "cancelada";
-}
+// Las ventas ahora vienen del backend - usar saleService / useVentaStore
 
 export const clientes: Cliente[] = [
   {
@@ -838,86 +797,6 @@ export const productos: Producto[] = [
   },
 ];
 
-export const ventas: Venta[] = [
-  {
-    id: "V001",
-    cliente: "Carlos Mendoza",
-    clienteId: "CL001",
-    producto: "Laptop HP Pavilion 15",
-    productoId: "P001",
-    cantidad: 1,
-    total: 45990,
-    fecha: "2026-04-28",
-    estado: "completada",
-  },
-  {
-    id: "V002",
-    cliente: "María García",
-    clienteId: "CL002",
-    producto: "Mouse Logitech MX Master 3",
-    productoId: "P002",
-    cantidad: 2,
-    total: 9000,
-    fecha: "2026-04-28",
-    estado: "completada",
-  },
-  {
-    id: "V003",
-    cliente: "Juan López",
-    clienteId: "CL003",
-    producto: 'Monitor Samsung 27" 4K',
-    productoId: "P003",
-    cantidad: 1,
-    total: 28900,
-    fecha: "2026-04-27",
-    estado: "pendiente",
-  },
-  {
-    id: "V004",
-    cliente: "Ana Torres",
-    clienteId: "CL004",
-    producto: "Teclado Mecánico Corsair K70",
-    productoId: "P004",
-    cantidad: 1,
-    total: 8900,
-    fecha: "2026-04-27",
-    estado: "completada",
-  },
-  {
-    id: "V005",
-    cliente: "Pedro Ruiz",
-    clienteId: "CL005",
-    producto: "Auriculares Sony WH-1000XM4",
-    productoId: "P005",
-    cantidad: 3,
-    total: 47970,
-    fecha: "2026-04-26",
-    estado: "cancelada",
-  },
-  {
-    id: "V006",
-    cliente: "Carlos Mendoza",
-    clienteId: "CL001",
-    producto: "Webcam Logitech C920",
-    productoId: "P006",
-    cantidad: 1,
-    total: 4500,
-    fecha: "2026-04-25",
-    estado: "completada",
-  },
-  {
-    id: "V007",
-    cliente: "Laura Díaz",
-    clienteId: "CL006",
-    producto: "Impresora HP LaserJet Pro",
-    productoId: "P009",
-    cantidad: 1,
-    total: 8900,
-    fecha: "2026-04-24",
-    estado: "completada",
-  },
-];
-
 export const compras: Compra[] = [
   {
     id: "C001",
@@ -1024,17 +903,6 @@ export const recordatorios = [
     fecha: "2026-05-05",
   },
 ];
-
-export interface Proveedor {
-  id: string;
-  nombre: string;
-  email: string;
-  telefono: string;
-  direccion: string;
-  categoria: string;
-  totalOrdenes: number;
-  avatar: string;
-}
 
 export interface TransaccionContable {
   id: string;

@@ -103,7 +103,7 @@ export function Compras() {
   };
 
   const getProductoByName = (nombre: string) =>
-    productos.find((p) => p.nombre === nombre);
+    productos.find((p) => p.name === nombre);
 
   const columns = [
     { key: "id", header: t("common.id") },
@@ -115,7 +115,7 @@ export function Compras() {
         const producto = getProductoByName(c.producto);
         return producto ? (
           <ImageCell
-            src={producto.imagen}
+            src={producto.imageUrl || ""}
             name={c.producto}
             subtext={`x${c.cantidad}`}
             type="product"

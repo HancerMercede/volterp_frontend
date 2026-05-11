@@ -9,5 +9,6 @@ export const API_CONFIG = {
     CATEGORIES: '/api/categories',
     COMPANIES: '/api/companies',
     USERS: '/api/users',
+    SALES: '/api/sales',
   },
 };

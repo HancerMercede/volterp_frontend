@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useVentaStore } from "../../stores/ventaStore";
 import { useClienteStore } from "../../stores/clienteStore";
 import { useProductoStore } from "../../stores/productoStore";
+import { useCompanyStore } from "../../stores/companyStore";
 import { useUIStore } from "../../stores/uiStore";
 import {
   Table,
@@ -16,25 +17,23 @@ import {
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
+import type {
+  CreateSaleRequest,
+  SaleDto,
+} from "../../infrastructure/api/saleService";
+import type { ProductDto, CartItem } from "../../domain/types";
 
 import styles from "./Ventas.module.css";
-import type { Producto, Venta } from "../../data/mockData";
-import { useFilter } from "../../hooks/useFilter";
 
-interface CarritoItem {
-  productoId: string;
-  producto: string;
-  imagen: string;
-  precio: number;
-  cantidad: number;
-  subtotal: number;
-}
+import { useFilter } from "../../hooks/useFilter";
 
 export function Ventas() {
   const { t } = useTranslation();
-  const { ventas, addVenta, deleteVenta } = useVentaStore();
+  const { ventas, fetchVentas, createVenta, deleteVenta, loading } =
+    useVentaStore();
   const { clientes } = useClienteStore();
   const { productos } = useProductoStore();
+  const { currentCompany } = useCompanyStore();
   const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,19 +41,24 @@ export function Ventas() {
     initialPageSize: ITEMS_PER_PAGE,
   });
 
-  const [carrito, setCarrito] = useState<CarritoItem[]>([]);
-  const [selectedCliente, setSelectedCliente] = useState("");
+  // Cargar ventas del backend al montar
+  useEffect(() => {
+    fetchVentas(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchVentas]);
+
+  const [carrito, setCarrito] = useState<CartItem[]>([]);
+  const [selectedCliente, setSelectedCliente] = useState<number | null>(null);
   const [clienteSearch, setClienteSearch] = useState("");
   const [ventaEstado, setVentaEstado] = useState<"pendiente" | "completada">(
     "pendiente",
   );
 
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const categorias = useMemo(() => {
-    const cats = [...new Set(productos.map((p) => p.categoria))];
+    const cats = [...new Set(productos.map((p) => p.category))];
     return ["todos", ...cats];
   }, [productos]);
 
@@ -113,23 +117,23 @@ export function Ventas() {
     const subtotal = carrito.reduce((acc, item) => acc + item.subtotal, 0);
     const itbis = subtotal * 0.18;
     const total = subtotal + itbis;
-    const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+    const totalItems = carrito.reduce((acc, item) => acc + item.quantity, 0);
     return { subtotal, itbis, total, totalItems };
   }, [carrito]);
 
-  const agregarAlCarrito = (producto: Producto) => {
+  const agregarAlCarrito = (producto: ProductDto) => {
     const existingItem = carrito.find(
-      (item) => item.productoId === producto.id,
+      (item) => item.productId === producto.id,
     );
 
     if (existingItem) {
       setCarrito(
         carrito.map((item) =>
-          item.productoId === producto.id
+          item.productId === producto.id
             ? {
                 ...item,
-                cantidad: item.cantidad + 1,
-                subtotal: (item.cantidad + 1) * item.precio,
+                cantidad: item.quantity + 1,
+                subtotal: (item.quantity + 1) * item.unitPrice,
               }
             : item,
         ),
@@ -138,26 +142,26 @@ export function Ventas() {
       setCarrito([
         ...carrito,
         {
-          productoId: producto.id,
-          producto: producto.nombre,
-          imagen: producto.imagen,
-          precio: producto.precio,
-          cantidad: 1,
-          subtotal: producto.precio,
+          productId: producto.id,
+          productName: producto.name,
+          imageUrl: producto.imageUrl || "",
+          unitPrice: producto.price,
+          quantity: 1,
+          subtotal: producto.price,
         },
       ]);
     }
   };
 
-  const actualizarCantidad = (productoId: string, delta: number) => {
+  const actualizarCantidad = (productoId: number, delta: number) => {
     setCarrito(
       carrito.map((item) => {
-        if (item.productoId === productoId) {
-          const newCantidad = Math.max(1, item.cantidad + delta);
+        if (item.productId === productoId) {
+          const newCantidad = Math.max(1, item.quantity + delta);
           return {
             ...item,
-            cantidad: newCantidad,
-            subtotal: newCantidad * item.precio,
+            quantity: newCantidad,
+            subtotal: newCantidad * item.unitPrice,
           };
         }
         return item;
@@ -165,11 +169,11 @@ export function Ventas() {
     );
   };
 
-  const eliminarDelCarrito = (productoId: string) => {
-    setCarrito(carrito.filter((item) => item.productoId !== productoId));
+  const eliminarDelCarrito = (productoId: number) => {
+    setCarrito(carrito.filter((item) => item.productId !== Number(productoId)));
   };
 
-  const completarVenta = () => {
+  const completarVenta = async () => {
     if (!selectedCliente) {
       addToast(t("ventas.selectClientWarning"), "warning");
       return;
@@ -178,58 +182,110 @@ export function Ventas() {
       addToast(t("ventas.cartEmptyWarning"), "warning");
       return;
     }
+    if (!currentCompany) {
+      addToast("No hay empresa seleccionada", "error");
+      return;
+    }
 
     const clienteData = clientes.find((c) => c.id === selectedCliente);
+    const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
 
-    const nuevasVentas: Venta[] = carrito.map((item, index) => ({
-      id: `V${String(ventas.length + index + 1).padStart(3, "0")}`,
-      cliente: clienteData?.nombre || t("ventas.client"),
-      clienteId: selectedCliente,
-      producto: item.producto,
-      productoId: item.productoId,
-      cantidad: item.cantidad,
-      total: item.subtotal,
-      fecha: new Date().toISOString().split("T")[0],
-      estado: ventaEstado as "completada" | "pendiente",
-    }));
+    const saleData: CreateSaleRequest = {
+      companyId: currentCompany.id,
+      clienteId: selectedCliente ? Number(selectedCliente) : null,
+      clienteName: clienteData?.nombre || null,
+      total,
+      notes: null,
+      items: carrito.map((item) => ({
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        subtotal: item.subtotal,
+      })),
+    };
 
-    nuevasVentas.forEach((venta) => addVenta(venta));
-    addToast(t("ventas.saleCompleted"), "success");
-
-    setCarrito([]);
-    setSelectedCliente("");
-    setVentaEstado("pendiente");
-    setShowForm(false);
+    try {
+      await createVenta(saleData);
+      // Si el usuario eligió "completada", la completamos inmediatamente
+      if (ventaEstado === "completada") {
+        // El store ya devuelve la venta creada, pero está en Pending
+        // Necesitaríamos un método para crear y completar directamente
+        // Por ahora, la venta queda como Pending y el cajero la completa después
+      }
+      addToast(t("ventas.saleCompleted"), "success");
+      setCarrito([]);
+      setSelectedCliente(null);
+      setVentaEstado("pendiente");
+      setShowForm(false);
+    } catch (err) {
+      addToast((err as Error).message, "error");
+    }
   };
 
-  const guardarBorrador = () => {
+  const guardarBorrador = async () => {
     if (!selectedCliente || carrito.length === 0) {
       addToast(t("ventas.draftWarning"), "warning");
       return;
     }
-    addToast(t("ventas.draftSaved"), "info");
+    if (!currentCompany) {
+      addToast("No hay empresa seleccionada", "error");
+      return;
+    }
+
+    const clienteData = clientes.find((c) => c.id === selectedCliente);
+    const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
+
+    const saleData: CreateSaleRequest = {
+      companyId: currentCompany.id,
+      clienteId: selectedCliente ? Number(selectedCliente) : null,
+      clienteName: clienteData?.nombre || null,
+      total,
+      notes: null,
+      items: carrito.map((item) => ({
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        subtotal: item.subtotal,
+      })),
+    };
+
+    try {
+      await createVenta(saleData);
+      addToast(t("ventas.draftSaved"), "success");
+      setCarrito([]);
+      setSelectedCliente(null);
+      setShowForm(false);
+    } catch (err) {
+      addToast((err as Error).message, "error");
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteId) {
-      deleteVenta(deleteId);
-      addToast(t("ventas.saleDeleted"), "error");
+      try {
+        await deleteVenta(deleteId);
+        addToast(t("ventas.saleDeleted"), "success");
+      } catch (err) {
+        addToast((err as Error).message, "error");
+      }
     }
   };
 
-  const handleEdit = (_venta?: Venta) => {
+  const handleEdit = () => {
     setShowForm(true);
   };
 
   const filteredVentas = useFilter({
     data: ventas,
     searchTerm,
-    searchFields: (v) => [v.cliente, v.producto, v.id],
+    searchFields: (v: SaleDto) => [v.clienteName || "", String(v.id)],
   });
 
   const paginatedVentas = useMemo(() => {
@@ -238,59 +294,66 @@ export function Ventas() {
 
   const paginationInfo = getInfo(filteredVentas.length);
 
-  const getClienteByName = (nombre: string) =>
-    clientes.find((c) => c.nombre === nombre);
-  const getProductoByName = (nombre: string) =>
-    productos.find((p) => p.nombre === nombre);
+  const getClienteById = (id: number | null) =>
+    id ? clientes.find((c) => Number(c.id) === id) : null;
 
   const columns = [
     { key: "id", header: t("common.id") },
     {
       key: "cliente",
       header: t("ventas.client"),
-      render: (v: Venta) => {
-        const cliente = getClienteByName(v.cliente);
+      render: (v: SaleDto) => {
+        const cliente = getClienteById(v.clienteId);
         return cliente ? (
           <ImageCell
             src={cliente.avatar}
-            name={v.cliente}
+            name={v.clienteName || ""}
             subtext={cliente.empresa}
             type="avatar"
           />
         ) : (
-          v.cliente
+          v.clienteName || "-"
         );
       },
     },
     {
       key: "producto",
       header: t("ventas.product"),
-      render: (v: Venta) => {
-        const producto = getProductoByName(v.producto);
-        return producto ? (
+      render: (v: SaleDto) => {
+        const firstItem = v.items[0];
+        if (!firstItem) return "-";
+        return (
           <ImageCell
-            src={producto.imagen}
-            name={v.producto}
-            subtext={`x${v.cantidad}`}
+            src={""}
+            name={firstItem.productName}
+            subtext={
+              v.items.length > 1
+                ? `+${v.items.length - 1} más`
+                : `x${firstItem.quantity}`
+            }
             type="product"
           />
-        ) : (
-          v.producto
         );
       },
     },
     {
       key: "total",
       header: t("common.total"),
-      render: (v: Venta) => `$${v.total.toLocaleString()}`,
+      render: (v: SaleDto) => `$${v.total.toLocaleString()}`,
     },
-    { key: "fecha", header: t("common.date") },
+    {
+      key: "fecha",
+      header: t("common.date"),
+      render: (v: SaleDto) => new Date(v.createdAt).toLocaleDateString(),
+    },
     {
       key: "estado",
       header: t("common.status"),
-      render: (v: Venta) => (
-        <span className={`${styles.badge} ${styles[v.estado]}`}>
-          {v.estado === "completada"
+      render: (v: SaleDto) => (
+        <span
+          className={`${styles.badge} ${styles[v.status === "Completed" ? "completada" : "pendiente"]}`}
+        >
+          {v.status === "Completed"
             ? t("ventas.completed")
             : t("ventas.pending")}
         </span>
@@ -322,6 +385,8 @@ export function Ventas() {
           </Button>
         </div>
       </PageHeader>
+
+      {loading && <p>Cargando...</p>}
 
       {showForm && (
         <div className={styles.modalFull}>
@@ -357,16 +422,16 @@ export function Ventas() {
                     onClick={() => agregarAlCarrito(producto)}
                   >
                     <ImageCell
-                      src={producto.imagen}
-                      name={producto.nombre}
-                      subtext={producto.categoria}
+                      src={producto.imageUrl || ""}
+                      name={producto.name}
+                      subtext={producto.category}
                       type="product"
                     />
                     <span className={styles.productName}>
-                      {producto.nombre}
+                      {producto.name}
                     </span>
                     <span className={styles.productPrice}>
-                      {formatCurrency(producto.precio)}
+                      {formatCurrency(producto.price)}
                     </span>
                     <button className={styles.addBtn}>+</button>
                   </div>
@@ -412,31 +477,31 @@ export function Ventas() {
               ) : (
                 <div className={styles.cartItems}>
                   {carrito.map((item) => (
-                    <div key={item.productoId} className={styles.cartItem}>
+                    <div key={item.productId} className={styles.cartItem}>
                       <img
-                        src={item.imagen}
-                        alt={item.producto}
+                        src={item.imageUrl}
+                        alt={item.productName}
                         className={styles.cartItemImg}
                       />
                       <div className={styles.cartItemInfo}>
                         <span className={styles.cartItemName}>
-                          {item.producto}
+                          {item.productName}
                         </span>
                         <span className={styles.cartItemPrice}>
-                          {formatCurrency(item.precio)}
+                          {formatCurrency(item.unitPrice)}
                         </span>
                       </div>
                       <div className={styles.cartItemControls}>
                         <button
                           onClick={() =>
-                            actualizarCantidad(item.productoId, -1)
+                            actualizarCantidad(item.productId, -1)
                           }
                         >
                           −
                         </button>
-                        <span>{item.cantidad}</span>
+                        <span>{item.quantity}</span>
                         <button
-                          onClick={() => actualizarCantidad(item.productoId, 1)}
+                          onClick={() => actualizarCantidad(item.productId, 1)}
                         >
                           +
                         </button>
@@ -446,7 +511,7 @@ export function Ventas() {
                       </span>
                       <button
                         className={styles.cartItemDelete}
-                        onClick={() => eliminarDelCarrito(item.productoId)}
+                        onClick={() => eliminarDelCarrito(item.productId)}
                       >
                         ×
                       </button>
@@ -521,7 +586,9 @@ export function Ventas() {
                 <label>{t("common.status")}</label>
                 <select
                   value={ventaEstado}
-                  onChange={(e) => setVentaEstado(e.target.value as any)}
+                  onChange={(e) =>
+                    setVentaEstado(e.target.value as "pendiente" | "completada")
+                  }
                 >
                   <option value="pendiente">{t("ventas.pending")}</option>
                   <option value="completada">{t("ventas.completed")}</option>

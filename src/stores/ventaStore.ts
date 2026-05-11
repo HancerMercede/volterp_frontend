@@ -1,46 +1,190 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-import { ventas as initialVentas, type Venta } from "../data/mockData";
+import { useAuthStore } from "./authStore";
+import {
+  saleService,
+  type SaleDto,
+  type CreateSaleRequest,
+  type UpdateSaleRequest,
+} from "../infrastructure/api/saleService";
 
 interface VentaStore {
-  ventas: Venta[];
+  ventas: SaleDto[];
   loading: boolean;
   error: string | null;
-  setVentas: (ventas: Venta[]) => void;
-  addVenta: (venta: Venta) => void;
-  updateVenta: (id: string, data: Partial<Venta>) => void;
-  deleteVenta: (id: string) => void;
+  totalCount: number;
+  pageCount: number;
+
+  fetchVentas: (pageNumber?: number, pageSize?: number) => Promise<void>;
+  fetchVentasPendientes: (pageNumber?: number, pageSize?: number) => Promise<void>;
+  fetchVentasCompletadas: (pageNumber?: number, pageSize?: number) => Promise<void>;
+  createVenta: (data: CreateSaleRequest) => Promise<void>;
+  updateVenta: (id: number, data: UpdateSaleRequest) => Promise<void>;
+  completeVenta: (id: number) => Promise<void>;
+  deleteVenta: (id: number) => Promise<void>;
+  clearError: () => void;
 }
 
 export const useVentaStore = create<VentaStore>()(
   persist(
     (set) => ({
-      ventas: initialVentas,
+      ventas: [],
       loading: false,
       error: null,
+      totalCount: 0,
+      pageCount: 0,
 
-      setVentas: (ventas) => set({ ventas }),
+      clearError: () => set({ error: null }),
 
-      addVenta: (venta) =>
-        set((state) => ({
-          ventas: [...state.ventas, venta],
-        })),
+      fetchVentas: async (pageNumber = 1, pageSize = 10) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: "No autenticado" });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const result = await saleService.getSales(pageNumber, pageSize);
+          set({
+            ventas: result.items,
+            totalCount: result.rowCount,
+            pageCount: result.pageCount,
+            loading: false,
+          });
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+        }
+      },
 
-      updateVenta: (id, data) =>
-        set((state) => ({
-          ventas: state.ventas.map((v) =>
-            v.id === id ? { ...v, ...data } : v,
-          ),
-        })),
+      fetchVentasPendientes: async (pageNumber = 1, pageSize = 10) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: "No autenticado" });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const result = await saleService.getPendingSales(pageNumber, pageSize);
+          set({
+            ventas: result.items,
+            totalCount: result.rowCount,
+            pageCount: result.pageCount,
+            loading: false,
+          });
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+        }
+      },
 
-      deleteVenta: (id) =>
-        set((state) => ({
-          ventas: state.ventas.filter((v) => v.id !== id),
-        })),
+      fetchVentasCompletadas: async (pageNumber = 1, pageSize = 10) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: "No autenticado" });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const result = await saleService.getSalesByStatus(
+            "Completed",
+            pageNumber,
+            pageSize,
+          );
+          set({
+            ventas: result.items,
+            totalCount: result.rowCount,
+            pageCount: result.pageCount,
+            loading: false,
+          });
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+        }
+      },
+
+      createVenta: async (data: CreateSaleRequest) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: "No autenticado" });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const nuevaVenta = await saleService.createSale(data);
+          set((state) => ({
+            ventas: [nuevaVenta, ...state.ventas],
+            totalCount: state.totalCount + 1,
+            loading: false,
+          }));
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+          throw err;
+        }
+      },
+
+      updateVenta: async (id: number, data: UpdateSaleRequest) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: "No autenticado" });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const actualizada = await saleService.updateSale(id, data);
+          set((state) => ({
+            ventas: state.ventas.map((v) =>
+              v.id === id ? actualizada : v,
+            ),
+            loading: false,
+          }));
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+          throw err;
+        }
+      },
+
+      completeVenta: async (id: number) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: "No autenticado" });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const completada = await saleService.completeSale(id);
+          set((state) => ({
+            ventas: state.ventas.map((v) =>
+              v.id === id ? completada : v,
+            ),
+            loading: false,
+          }));
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+          throw err;
+        }
+      },
+
+      deleteVenta: async (id: number) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: "No autenticado" });
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          await saleService.deleteSale(id);
+          set((state) => ({
+            ventas: state.ventas.filter((v) => v.id !== id),
+            totalCount: state.totalCount - 1,
+            loading: false,
+          }));
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+          throw err;
+        }
+      },
     }),
     {
       name: "venta-storage",
+      partialize: (state) => ({ ventas: state.ventas }),
     },
   ),
 );

@@ -15,7 +15,7 @@ import {
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { Producto } from "../../data/mockData";
+import type { ProductDto, CreateProductRequest, UpdateProductRequest } from "../../infrastructure/api/types";
 import styles from "./Inventario.module.css";
 import { useFilter } from "../../hooks/useFilter";
 
@@ -40,13 +40,13 @@ export function Inventario() {
     initialPageSize: ITEMS_PER_PAGE,
   });
   const [formData, setFormData] = useState({
-    nombre: "",
-    categoria: "",
-    categoriaId: null as number | null,
+    name: "",
+    category: "",
+    categoryId: null as number | null,
     stock: 0,
-    precio: 0,
-    imagen: "",
-    descripcion: "",
+    price: 0,
+    imageUrl: "",
+    description: "",
     isActive: true,
   });
 
@@ -65,7 +65,7 @@ export function Inventario() {
   const filteredProductos = useFilter({
     data: productos,
     searchTerm,
-    searchFields: (p) => [p.nombre, p.categoria],
+    searchFields: (p) => [p.name, p.category],
     filter: (p) => {
       if (filterStock === "low") return p.stock > 0 && p.stock < 10;
       if (filterStock === "out") return p.stock === 0;
@@ -79,10 +79,30 @@ export function Inventario() {
     e.preventDefault();
     try {
       if (editingId) {
-        await updateProducto(editingId, formData);
+        const updateData: UpdateProductRequest = {
+          name: formData.name,
+          category: formData.category,
+          description: formData.description || null,
+          stock: formData.stock,
+          price: formData.price,
+          categoryId: formData.categoryId,
+          isActive: formData.isActive,
+          imageUrl: formData.imageUrl || null,
+        };
+        await updateProducto(Number(editingId), updateData);
         setEditingId(null);
       } else {
-        await createProducto(formData);
+        const createData: CreateProductRequest = {
+          name: formData.name,
+          category: formData.category,
+          description: formData.description || null,
+          stock: formData.stock,
+          price: formData.price,
+          categoryId: formData.categoryId,
+          companyId: 1, // TODO: obtener de companyStore
+          imageUrl: formData.imageUrl || null,
+        };
+        await createProducto(createData);
       }
       setShowForm(false);
       resetForm();
@@ -93,29 +113,29 @@ export function Inventario() {
 
   const resetForm = () => {
     setFormData({
-      nombre: "",
-      categoria: "",
-      categoriaId: null,
+      name: "",
+      category: "",
+      categoryId: null,
       stock: 0,
-      precio: 0,
-      imagen: "",
-      descripcion: "",
+      price: 0,
+      imageUrl: "",
+      description: "",
       isActive: true,
     });
   };
 
-  const handleEdit = (producto: Producto) => {
+  const handleEdit = (producto: ProductDto) => {
     setFormData({
-      nombre: producto.nombre,
-      categoria: producto.categoria,
-      categoriaId: producto.categoriaId ?? null,
+      name: producto.name,
+      category: producto.category,
+      categoryId: producto.categoryId ?? null,
       stock: producto.stock,
-      precio: producto.precio,
-      imagen: producto.imagen,
-      descripcion: producto.descripcion,
-      isActive: producto.isActive ?? true,
+      price: producto.price,
+      imageUrl: producto.imageUrl || "",
+      description: producto.description || "",
+      isActive: producto.isActive,
     });
-    setEditingId(producto.id);
+    setEditingId(String(producto.id));
     setShowForm(true);
   };
 
@@ -127,7 +147,7 @@ export function Inventario() {
   const confirmDelete = async () => {
     if (deleteId) {
       try {
-        await deleteProducto(deleteId);
+        await deleteProducto(Number(deleteId));
       } catch {
         // Error is handled in store
       }
@@ -140,7 +160,7 @@ export function Inventario() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, imagen: reader.result as string }));
+        setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
@@ -149,23 +169,23 @@ export function Inventario() {
   const columns = [
     { key: "id", header: t("common.id") },
     {
-      key: "nombre",
+      key: "name",
       header: t("common.product"),
-      render: (p: Producto) => (
+      render: (p: ProductDto) => (
         <ImageCell
-          src={p.imagen}
-          name={p.nombre}
-          subtext={p.categoria}
+          src={p.imageUrl || ""}
+          name={p.name}
+          subtext={p.category}
           type="product"
         />
       ),
     },
-    { key: "categoria", header: t("common.category") },
-    { key: "descripcion", header: t("common.description") },
+    { key: "category", header: t("common.category") },
+    { key: "description", header: t("common.description") },
     {
       key: "stock",
       header: t("inventario.stock"),
-      render: (p: Producto) => (
+      render: (p: ProductDto) => (
         <span
           className={
             p.stock === 0
@@ -180,17 +200,17 @@ export function Inventario() {
       ),
     },
     {
-      key: "precio",
+      key: "price",
       header: t("common.price"),
-      render: (p: Producto) => `$${p.precio.toLocaleString()}`,
+      render: (p: ProductDto) => `$${p.price.toLocaleString()}`,
     },
     {
       key: "actions",
       header: t("common.actions"),
-      render: (p: Producto) => (
+      render: (p: ProductDto) => (
         <ActionButtons
           onEdit={() => handleEdit(p)}
-          onDelete={() => handleDelete(p.id)}
+          onDelete={() => handleDelete(String(p.id))}
         />
       ),
     },
@@ -255,9 +275,9 @@ export function Inventario() {
           <input
             className={styles.input}
             type="text"
-            value={formData.nombre}
+            value={formData.name}
             onChange={(e) =>
-              setFormData({ ...formData, nombre: e.target.value })
+              setFormData({ ...formData, name: e.target.value })
             }
             required
           />
@@ -273,8 +293,8 @@ export function Inventario() {
               const cat = categories.find((c) => c.id === catId);
               setFormData({
                 ...formData,
-                categoriaId: catId,
-                categoria: cat?.name || "",
+                categoryId: catId,
+                category: cat?.name || "",
               });
             }}
             required
@@ -307,11 +327,11 @@ export function Inventario() {
             type="number"
             min="0"
             step="0.01"
-            value={formData.precio}
+            value={formData.price}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                precio: parseFloat(e.target.value) || 0,
+                price: parseFloat(e.target.value) || 0,
               })
             }
             required
@@ -338,7 +358,7 @@ export function Inventario() {
           <input
             className={styles.input}
             type="text"
-            value={formData.descripcion}
+            value={formData.description}
             onChange={(e) =>
               setFormData({ ...formData, descripcion: e.target.value })
             }
