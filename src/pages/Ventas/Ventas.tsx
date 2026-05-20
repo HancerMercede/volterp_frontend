@@ -11,6 +11,7 @@ import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { SaleDto } from "../../domain/types";
 import { VentasList } from "./components/VentasList";
 import { NuevaVenta } from "./components/NuevaVenta";
+import { VentaDetail } from "./components/VentaDetail";
 import styles from "./Ventas.module.css";
 
 export function Ventas() {
@@ -23,6 +24,7 @@ export function Ventas() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingSaleId, setEditingSaleId] = useState<number | null>(null);
+  const [viewingSaleId, setViewingSaleId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -37,7 +39,18 @@ export function Ventas() {
     fetchVentas(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchVentas]);
 
-  const handleVentaClick = (venta: SaleDto) => { setEditingSaleId(venta.id); setShowForm(true); };
+  const handleVentaClick = (venta: SaleDto) => {
+    if (venta.status === "Completed") {
+      // Venta completada: solo ver, no editar
+      addToast(t("ventas.completedViewOnly"), "info");
+      setViewingSaleId(venta.id);
+    } else {
+      // Venta pendiente: editar
+      setEditingSaleId(venta.id);
+      setShowForm(true);
+    }
+  };
+
   const handleDelete = (id: number) => { setDeleteId(id); setShowDeleteConfirm(true); };
 
   const confirmDelete = async () => {
@@ -52,13 +65,26 @@ export function Ventas() {
   const handleFormSave = () => { setShowForm(false); setEditingSaleId(null); fetchVentas(pageNumber, ITEMS_PER_PAGE); };
   const handleFormCancel = () => { setShowForm(false); setEditingSaleId(null); };
 
+  // Get sale being viewed for VentaDetail
+  const viewingVenta = viewingSaleId ? ventas.find((v) => v.id === viewingSaleId) : null;
+  const viewingCliente = viewingVenta?.clienteId
+    ? clientes.find((c) => c.id === viewingVenta.clienteId) ?? null
+    : null;
+
   return (
     <div>
       <PageHeader title={t("ventas.title")} subtitle={t("ventas.subtitle")}>
         <div className={styles.headerActions}><Button onClick={handleNewVenta}>+ {t("ventas.newSale")}</Button></div>
       </PageHeader>
-      {loading && <p>Cargando...</p>}
+      {loading && <p>{t("common.loading")}</p>}
       {showForm && <NuevaVenta key={editingSaleId ?? "new"} editingSaleId={editingSaleId} onSave={handleFormSave} onCancel={handleFormCancel} />}
+      {viewingVenta && (
+        <VentaDetail
+          venta={viewingVenta}
+          cliente={viewingCliente}
+          onClose={() => setViewingSaleId(null)}
+        />
+      )}
       <VentasList ventas={ventas} clientes={clientes} onVentaClick={handleVentaClick} onDelete={handleDelete}
         searchTerm={searchTerm} onSearchChange={setSearchTerm} pageNumber={pageNumber} onPageChange={goToPage} />
       <ConfirmModal isOpen={showDeleteConfirm} onConfirm={confirmDelete} onCancel={() => { setShowDeleteConfirm(false); setDeleteId(null); }}

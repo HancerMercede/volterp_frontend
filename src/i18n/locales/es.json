@@ -154,7 +154,13 @@
     "cartEmptyWarning": "El carrito esta vacío",
     "clear":"Limpiar",
     "selectClientWarning":"Seleccione un cliente, por favor.",
-    "NoCompanySelected":"No hay empresa seleccionada"
+    "NoCompanySelected":"No hay empresa seleccionada",
+    "saleDetail":"Detalle de Venta",
+    "items":"Productos",
+    "unitPrice":"Precio Unit.",
+    "createdAt":"Creado",
+    "updatedAt":"Actualizado",
+    "completedViewOnly":"Venta completada — solo vista"
   },
   "compras": {
     "title": "Compras",

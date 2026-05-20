@@ -1,0 +1,198 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--color-background, #fff);
+  border-radius: 8px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  position: relative;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.closeBtn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--color-text-muted, #6b7280);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.closeBtn:hover {
+  background: var(--color-hover, #f3f4f6);
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.badge.pendiente {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.badge.completada {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.body {
+  padding: 20px;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.section h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 10px 0;
+}
+
+.clientInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.clientName {
+  font-weight: 600;
+  margin: 0 0 2px 0;
+}
+
+.clientEmail {
+  color: var(--color-text-muted, #6b7280);
+  margin: 0 0 2px 0;
+  font-size: 14px;
+}
+
+.clientEmpresa {
+  color: var(--color-text-muted, #6b7280);
+  margin: 0;
+  font-size: 14px;
+}
+
+.itemsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.itemsTable th {
+  text-align: left;
+  padding: 8px 12px;
+  background: var(--color-hover, #f3f4f6);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--color-text-muted, #6b7280);
+  text-transform: uppercase;
+}
+
+.itemsTable td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.productCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.productImg {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 280px;
+  margin-left: auto;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.totalFinal {
+  font-weight: 700;
+  font-size: 16px;
+  padding-top: 8px;
+  border-top: 2px solid var(--color-border, #e5e7eb);
+  margin-top: 4px;
+}
+
+.notes {
+  background: var(--color-hover, #f3f4f6);
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.timestamps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  display: flex;
+  justify-content: flex-end;
+}

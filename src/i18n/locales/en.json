@@ -153,7 +153,13 @@
     "cartEmptyWarning": "Cart is empty",
     "clear":"Clear",
     "selectClientWarning":"Select a client, please.",
-    "NoCompanySelected":"No company selected"
+    "NoCompanySelected":"No company selected",
+    "saleDetail":"Sale Detail",
+    "items":"Items",
+    "unitPrice":"Unit Price",
+    "createdAt":"Created",
+    "updatedAt":"Updated",
+    "completedViewOnly":"Completed sale — view only"
   },
   "compras": {
     "title": "Purchases",
