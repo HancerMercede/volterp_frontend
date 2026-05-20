@@ -10,7 +10,6 @@ interface Props {
 }
 
 const formatCurrency = (amount: number) => `$${amount.toLocaleString()}`;
-const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString();
 const formatDateTime = (dateStr: string) => new Date(dateStr).toLocaleString();
 
 export function VentaDetail({ venta, cliente, onClose }: Props) {
