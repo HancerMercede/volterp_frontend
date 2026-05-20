@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useClienteStore } from "../../../stores/clienteStore";
 import { useProductoStore } from "../../../stores/productoStore";
@@ -26,40 +26,24 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
   const { currentCompany } = useCompanyStore();
   const { addToast } = useUIStore();
 
-  const [carrito, setCarrito] = useState<CartItem[]>([]);
-  const [selectedCliente, setSelectedCliente] = useState<number | null>(null);
-  const [clienteSearch, setClienteSearch] = useState("");
-  const [ventaEstado, setVentaEstado] = useState<"pendiente" | "completada">("pendiente");
+  // Derive editing data from store (ventas loaded by parent before this component mounts via key-remount pattern)
+  const editingVenta = useMemo(() => editingSaleId ? ventas.find((v) => v.id === editingSaleId) : null, [editingSaleId, ventas]);
+  const editingCliente = useMemo(() => editingVenta?.clienteId ? clientes.find((c) => c.id === editingVenta.clienteId) : null, [editingVenta, clientes]);
+
+  // Local form state — key remount pattern ensures fresh state on editingSaleId change
+  const [carrito, setCarrito] = useState<CartItem[]>(editingVenta ? editingVenta.items.map((item) => ({
+    productId: item.productId,
+    productName: item.productName,
+    imageUrl: item.productImageUrl || "",
+    unitPrice: item.unitPrice,
+    quantity: item.quantity,
+    subtotal: item.subtotal,
+  })) : []);
+  const [selectedCliente, setSelectedCliente] = useState<number | null>(editingVenta?.clienteId ?? null);
+  const [clienteSearch, setClienteSearch] = useState(editingCliente?.nombre ?? "");
+  const [ventaEstado, setVentaEstado] = useState<"pendiente" | "completada">(editingVenta?.status === "Completed" ? "completada" : "pendiente");
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
   const [productSearch, setProductSearch] = useState("");
-
-  // Load existing venta data when editing
-  useEffect(() => {
-    if (editingSaleId) {
-      const venta = ventas.find((v) => v.id === editingSaleId);
-      if (venta) {
-        setCarrito(venta.items.map((item) => ({
-          productId: item.productId,
-          productName: item.productName,
-          imageUrl: item.productImageUrl || "",
-          unitPrice: item.unitPrice,
-          quantity: item.quantity,
-          subtotal: item.subtotal,
-        })));
-        if (venta.clienteId) {
-          setSelectedCliente(venta.clienteId);
-          const cliente = clientes.find((c) => c.id === venta.clienteId);
-          if (cliente) setClienteSearch(cliente.nombre);
-        }
-        setVentaEstado(venta.status === "Completed" ? "completada" : "pendiente");
-      }
-    } else {
-      setCarrito([]);
-      setSelectedCliente(null);
-      setClienteSearch("");
-      setVentaEstado("pendiente");
-    }
-  }, [editingSaleId, ventas, clientes]);
 
   const match = useMemo(() => {
     if (!clienteSearch.trim()) return null;

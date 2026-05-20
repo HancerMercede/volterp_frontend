@@ -58,7 +58,7 @@ export function Ventas() {
         <div className={styles.headerActions}><Button onClick={handleNewVenta}>+ {t("ventas.newSale")}</Button></div>
       </PageHeader>
       {loading && <p>Cargando...</p>}
-      {showForm && <NuevaVenta editingSaleId={editingSaleId} onSave={handleFormSave} onCancel={handleFormCancel} />}
+      {showForm && <NuevaVenta key={editingSaleId ?? "new"} editingSaleId={editingSaleId} onSave={handleFormSave} onCancel={handleFormCancel} />}
       <VentasList ventas={ventas} clientes={clientes} onVentaClick={handleVentaClick} onDelete={handleDelete}
         searchTerm={searchTerm} onSearchChange={setSearchTerm} pageNumber={pageNumber} onPageChange={goToPage} />
       <ConfirmModal isOpen={showDeleteConfirm} onConfirm={confirmDelete} onCancel={() => { setShowDeleteConfirm(false); setDeleteId(null); }}
