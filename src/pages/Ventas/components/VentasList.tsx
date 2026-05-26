@@ -1,6 +1,11 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Table, ImageCell, Pagination, SearchInput } from "../../../components/UI";
+import {
+  Table,
+  ImageCell,
+  Pagination,
+  SearchInput,
+} from "../../../components/UI";
 import { paginate } from "../../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../../config/pagination";
 import { useFilter } from "../../../hooks/useFilter";
@@ -51,7 +56,12 @@ export function VentasList({
       render: (v: SaleDto) => {
         const cliente = getClienteById(v.clienteId);
         return cliente ? (
-          <ImageCell src={cliente.avatar} name={v.clienteName || ""} subtext={cliente.empresa} type="avatar" />
+          <ImageCell
+            src={cliente.avatar}
+            name={v.clienteName || ""}
+            subtext={cliente.empresa}
+            type="avatar"
+          />
         ) : (
           v.clienteName || "-"
         );
@@ -67,20 +77,36 @@ export function VentasList({
           <ImageCell
             src={firstItem.productImageUrl || ""}
             name={firstItem.productName}
-            subtext={v.items.length > 1 ? `+${v.items.length - 1} más` : `x${firstItem.quantity}`}
+            subtext={
+              v.items.length > 1
+                ? `+${v.items.length - 1} más`
+                : `x${firstItem.quantity}`
+            }
             type="product"
           />
         );
       },
     },
-    { key: "total", header: t("common.total"), render: (v: SaleDto) => `$${v.total.toLocaleString()}` },
-    { key: "fecha", header: t("common.date"), render: (v: SaleDto) => new Date(v.createdAt).toLocaleDateString() },
+    {
+      key: "total",
+      header: t("common.total"),
+      render: (v: SaleDto) => `$${v.total.toLocaleString()}`,
+    },
+    {
+      key: "fecha",
+      header: t("common.date"),
+      render: (v: SaleDto) => new Date(v.createdAt).toLocaleDateString(),
+    },
     {
       key: "estado",
       header: t("common.status"),
       render: (v: SaleDto) => (
-        <span className={`${styles.badge} ${styles[v.status === "Completed" ? "completada" : "pendiente"]}`}>
-          {v.status === "Completed" ? t("ventas.completed") : t("ventas.pending")}
+        <span
+          className={`${styles.badge} ${styles[v.status === "Completed" ? "completada" : "pendiente"]}`}
+        >
+          {v.status === "Completed"
+            ? t("ventas.completed")
+            : t("ventas.pending")}
         </span>
       ),
     },
@@ -88,17 +114,24 @@ export function VentasList({
 
   return (
     <div>
-      <SearchInput
-        value={searchTerm}
-        onChange={(value) => {
-          onSearchChange(value);
-          onPageChange(1);
-        }}
-        placeholder={t("ventas.searchSales")}
-        width="240px"
-      />
+      <div className={styles.SearchBar}>
+        <SearchInput
+          value={searchTerm}
+          onChange={(value) => {
+            onSearchChange(value);
+            onPageChange(1);
+          }}
+          placeholder={t("ventas.searchSales")}
+          width="240px"
+        />
+      </div>
 
-      <Table data={paginatedVentas} columns={columns} onEdit={onVentaClick} onDelete={onDelete} />
+      <Table
+        data={paginatedVentas}
+        columns={columns}
+        onEdit={onVentaClick}
+        onDelete={onDelete}
+      />
 
       <Pagination
         pagination={{
@@ -106,7 +139,8 @@ export function VentasList({
           page: pageNumber,
           pageSize: ITEMS_PER_PAGE,
           totalPages: Math.ceil(filteredVentas.length / ITEMS_PER_PAGE),
-          hasNext: pageNumber < Math.ceil(filteredVentas.length / ITEMS_PER_PAGE),
+          hasNext:
+            pageNumber < Math.ceil(filteredVentas.length / ITEMS_PER_PAGE),
           hasPrev: pageNumber > 1,
         }}
         onPageChange={onPageChange}
