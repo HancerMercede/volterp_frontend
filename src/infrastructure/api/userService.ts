@@ -1,25 +1,6 @@
 import { API_CONFIG } from '../api/config';
 import { fetchWithAuthJson } from './fetchWithAuth';
-import type { PagedResult } from '../../domain/types';
-
-export interface UserDto {
-  id: number;
-  username: string;
-  email: string;
-  fullName: string;
-  role: string | number;
-  isActive: boolean;
-  companyId: number;
-}
-
-export interface CreateUserRequest {
-  username: string;
-  password: string;
-  email: string;
-  fullName: string;
-  role: string;
-  companyId?: number;
-}
+import type { PagedResult, UserDto, CreateUserRequest } from '../../domain/types';
 
 export const userService = {
   async getUsers(

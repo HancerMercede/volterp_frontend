@@ -10,5 +10,9 @@ export const API_CONFIG = {
     COMPANIES: '/api/companies',
     USERS: '/api/users',
     SALES: '/api/sales',
+    SUPPLIERS: '/api/suppliers',
+    PURCHASES: '/api/purchases',
+    EMPLOYEES: '/api/employees',
+    ACCOUNTING_TRANSACTIONS: '/api/accounting-transactions',
   },
 };
