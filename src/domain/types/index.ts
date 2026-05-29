@@ -89,17 +89,29 @@ export interface UpdateSaleRequest {
   items: CreateSaleItemRequest[];
 }
 
-// Domain types - centralizados en ingles
-export interface Client {
+// ========================
+// Client DTOs (from backend)
+// ========================
+export interface ClientDto {
   id: number;
-  nombre: string;
+  name: string;
   email: string;
-  telefono: string;
-  direccion: string;
+  phone: string;
+  address: string;
+  isActive: boolean;
+  createdAt: string | null;
+  updatedAt: string | null;
+  // Campos extra para la UI
   totalCompras?: number;
-  avatar: string;
+  avatar?: string;
   empresa?: string;
 }
+
+// Cliente - mismo tipo para UI y API
+export type Client = ClientDto;
+
+// Request para create/update (todos los campos opcionales)
+export type ClientRequest = Partial<ClientDto>;
 
 export interface Product {
   id: number;
