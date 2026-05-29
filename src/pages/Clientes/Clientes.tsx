@@ -106,7 +106,7 @@ export function Clientes() {
       phone: cliente.phone,
       address: cliente.address,
       isActive: cliente.isActive,
-      imageUrl: (cliente as any).imageUrl || "",
+      imageUrl: cliente.imageUrl || "",
     });
     setEditingId(cliente.id);
     setShowForm(true);
@@ -128,7 +128,9 @@ export function Clientes() {
       header: t("clientes.client"),
       render: (c: Client) => (
         <ImageCell
-          src={(c as any).imageUrl || c.avatar || `https://i.pravatar.cc/150?img=${c.id}`}
+          src={
+            c.imageUrl || c.avatar || `https://i.pravatar.cc/150?img=${c.id}`
+          }
           name={c.name}
           subtext={c.empresa}
           type="avatar"
@@ -236,11 +238,7 @@ export function Clientes() {
         </div>
         <div className={styles.formGroup}>
           <label>{t("common.image")}</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-          />
+          <input type="file" accept="image/*" onChange={handleImageChange} />
           {formData.imageUrl && (
             <img
               src={formData.imageUrl}

@@ -8,7 +8,6 @@ interface ClienteStore {
   error: string | null;
   totalCount: number;
   pageCount: number;
-
   fetchClientes: (pageNumber?: number, pageSize?: number) => Promise<void>;
   getClienteById: (id: number) => Promise<Client | null>;
   addCliente: (cliente: ClientRequest) => Promise<Client>;
@@ -62,7 +61,7 @@ export const useClienteStore = create<ClienteStore>((set) => ({
   addCliente: async (cliente: ClientRequest) => {
     set({ loading: true, error: null });
     try {
-      const newClient = await clientService.createClient(cliente as any);
+      const newClient = await clientService.createClient(cliente);
       set((state) => ({
         clientes: [...state.clientes, newClient],
         totalCount: state.totalCount + 1,

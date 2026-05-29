@@ -32,7 +32,7 @@ export function Contabilidad() {
     fetchTransacciones();
   }, [fetchTransacciones]);
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTipo, setFilterTipo] = useState<"todos" | "ingreso" | "egreso">(
     "todos",

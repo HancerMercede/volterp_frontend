@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { purchaseService } from '../infrastructure/api/purchaseService';
-import type { PurchaseDto, CreatePurchaseRequest } from '../domain/types';
+import { create } from "zustand";
+import { purchaseService } from "../infrastructure/api/purchaseService";
+import type { PurchaseDto, CreatePurchaseRequest } from "../domain/types";
 
 interface CompraStore {
   compras: PurchaseDto[];
@@ -8,11 +8,14 @@ interface CompraStore {
   error: string | null;
   totalCount: number;
   pageCount: number;
-  
+
   fetchCompras: (pageNumber?: number, pageSize?: number) => Promise<void>;
   getCompraById: (id: number) => Promise<PurchaseDto | null>;
   addCompra: (compra: CreatePurchaseRequest) => Promise<PurchaseDto>;
-  updateCompra: (id: number, data: Partial<PurchaseDto>) => Promise<PurchaseDto>;
+  updateCompra: (
+    id: number,
+    data: Partial<PurchaseDto>,
+  ) => Promise<PurchaseDto>;
   deleteCompra: (id: number) => Promise<void>;
   setError: (error: string | null) => void;
 }
@@ -35,9 +38,10 @@ export const useCompraStore = create<CompraStore>((set) => ({
         loading: false,
       });
     } catch (error) {
-      set({ 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch purchases' 
+      set({
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to fetch purchases",
       });
     }
   },
@@ -49,18 +53,19 @@ export const useCompraStore = create<CompraStore>((set) => ({
       set({ loading: false });
       return purchase;
     } catch (error) {
-      set({ 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch purchase' 
+      set({
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to fetch purchase",
       });
       return null;
     }
   },
 
-  addCompra: async (compra: CreatePurchaseRequest) => {
+  addCompra: async (compra) => {
     set({ loading: true, error: null });
     try {
-      const newPurchase = await purchaseService.createPurchase(compra as any);
+      const newPurchase = await purchaseService.createPurchase(compra);
       set((state) => ({
         compras: [...state.compras, newPurchase],
         totalCount: state.totalCount + 1,
@@ -68,29 +73,31 @@ export const useCompraStore = create<CompraStore>((set) => ({
       }));
       return newPurchase;
     } catch (error) {
-      set({ 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to create purchase' 
+      set({
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to create purchase",
       });
       throw error;
     }
   },
 
-  updateCompra: async (id: number, data: Partial<PurchaseDto>) => {
+  updateCompra: async (id: number, data) => {
     set({ loading: true, error: null });
     try {
       const updatedPurchase = await purchaseService.updatePurchase(id, data);
       set((state) => ({
         compras: state.compras.map((c) =>
-          c.id === id ? { ...c, ...updatedPurchase } : c
+          c.id === id ? { ...c, ...updatedPurchase } : c,
         ),
         loading: false,
       }));
       return updatedPurchase;
     } catch (error) {
-      set({ 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to update purchase' 
+      set({
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to update purchase",
       });
       throw error;
     }
@@ -106,9 +113,10 @@ export const useCompraStore = create<CompraStore>((set) => ({
         loading: false,
       }));
     } catch (error) {
-      set({ 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to delete purchase' 
+      set({
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to delete purchase",
       });
       throw error;
     }

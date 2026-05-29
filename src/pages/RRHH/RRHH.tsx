@@ -45,7 +45,7 @@ export function RRHH() {
 
   const handleSubmit = (
     formData: EmpleadoFormData,
-    editingId: string | null,
+    editingId: number | null,
   ) => {
     const now = new Date().toISOString();
     if (editingId) {

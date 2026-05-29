@@ -39,7 +39,7 @@ export function Inventario() {
   const { categories, fetchCategories } = useCategoryStore();
   const { currentCompany } = useCompanyStore();
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStock, setFilterStock] = useState<"all" | "low" | "out">("all");
   const { pageNumber, goToPage, getInfo } = usePagination({
@@ -95,7 +95,7 @@ export function Inventario() {
           isActive: formData.isActive,
           imageUrl: formData.imageUrl || null,
         };
-        await updateProducto(Number(editingId), updateData);
+        await updateProducto(editingId, updateData);
         setEditingId(null);
       } else {
         const createData: CreateProductRequest = {

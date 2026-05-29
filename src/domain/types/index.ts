@@ -102,7 +102,6 @@ export interface ClientDto {
   imageUrl?: string | null;
   createdAt: string | null;
   updatedAt: string | null;
-  // Campos extra para la UI
   totalCompras?: number;
   avatar?: string;
   empresa?: string;
@@ -111,7 +110,6 @@ export interface ClientDto {
 // Cliente - mismo tipo para UI y API
 export type Client = ClientDto;
 
-// Request para create/update (todos los campos opcionales)
 export type ClientRequest = Partial<ClientDto>;
 
 export interface Product {
@@ -176,9 +174,7 @@ export interface CartItem {
   subtotal: number;
 }
 
-// ========================
 // Supplier DTOs (from backend)
-// ========================
 export interface SupplierDto {
   id: number;
   name: string;
@@ -193,13 +189,14 @@ export interface SupplierDto {
 }
 
 // Create = DTO sin id ni auditoría
-export type CreateSupplierRequest = Omit<SupplierDto, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreateSupplierRequest = Omit<
+  SupplierDto,
+  "id" | "createdAt" | "updatedAt"
+>;
 // Update = parcial del DTO
 export type UpdateSupplierRequest = Partial<SupplierDto>;
 
-// ========================
 // Purchase DTOs (from backend)
-// ========================
 export interface PurchaseItemDto {
   id: number;
   productId: number | null;
@@ -222,12 +219,9 @@ export interface PurchaseDto {
   items: PurchaseItemDto[];
 }
 
-export type CreatePurchaseRequest = Omit<PurchaseDto, 'id' | 'createdAt' | 'updatedAt'>;
-export type UpdatePurchaseRequest = Partial<PurchaseDto>;
+export type PurchaseRequest = Partial<PurchaseDto>;
 
-// ========================
 // Employee DTOs (from backend)
-// ========================
 export interface EmployeeDto {
   id: number;
   firstName: string;
@@ -249,12 +243,13 @@ export interface EmployeeDto {
   updatedAt: string | null;
 }
 
-export type CreateEmployeeRequest = Omit<EmployeeDto, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreateEmployeeRequest = Omit<
+  EmployeeDto,
+  "id" | "createdAt" | "updatedAt"
+>;
 export type UpdateEmployeeRequest = Partial<EmployeeDto>;
 
-// ========================
 // Accounting Transaction DTOs (from backend)
-// ========================
 export interface AccountingTransactionDto {
   id: number;
   description: string;
@@ -269,12 +264,14 @@ export interface AccountingTransactionDto {
   updatedAt: string | null;
 }
 
-export type CreateAccountingTransactionRequest = Omit<AccountingTransactionDto, 'id' | 'createdAt' | 'updatedAt'>;
-export type UpdateAccountingTransactionRequest = Partial<AccountingTransactionDto>;
+export type CreateAccountingTransactionRequest = Omit<
+  AccountingTransactionDto,
+  "id" | "createdAt" | "updatedAt"
+>;
+export type UpdateAccountingTransactionRequest =
+  Partial<AccountingTransactionDto>;
 
-// ========================
 // Company DTOs (from backend)
-// ========================
 export interface CompanyDto {
   id: number;
   name: string;
@@ -289,12 +286,13 @@ export interface CompanyDto {
   updatedAt?: string;
 }
 
-export type CreateCompanyRequest = Omit<CompanyDto, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreateCompanyRequest = Omit<
+  CompanyDto,
+  "id" | "createdAt" | "updatedAt"
+>;
 export type UpdateCompanyRequest = Partial<CompanyDto>;
 
-// ========================
 // Category DTOs (from backend)
-// ========================
 export interface CategoryDto {
   id: number;
   name: string;
@@ -304,12 +302,13 @@ export interface CategoryDto {
   createdAt: string;
 }
 
-export type CreateCategoryRequest = Omit<CategoryDto, 'id' | 'companyId' | 'isActive' | 'createdAt'>;
+export type CreateCategoryRequest = Omit<
+  CategoryDto,
+  "id" | "companyId" | "isActive" | "createdAt"
+>;
 export type UpdateCategoryRequest = Partial<CategoryDto>;
 
-// ========================
 // User DTOs (from backend)
-// ========================
 export interface UserDto {
   id: number;
   username: string;
