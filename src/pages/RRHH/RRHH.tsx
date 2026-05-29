@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -25,8 +25,12 @@ import { useFilter } from "../../hooks/useFilter";
 
 export function RRHH() {
   const { t } = useTranslation();
-  const { empleados, addEmpleado, updateEmpleado, deleteEmpleado } =
+  const { empleados, totalCount, fetchEmpleados, addEmpleado, updateEmpleado, deleteEmpleado } =
     useEmpleadoStore();
+
+  useEffect(() => {
+    fetchEmpleados();
+  }, [fetchEmpleados]);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState<"todos" | EstadoEmpleado>(
@@ -86,7 +90,7 @@ export function RRHH() {
     () => paginate(filteredEmpleados, pageNumber, ITEMS_PER_PAGE),
     [filteredEmpleados, pageNumber],
   );
-  const paginationInfo = getInfo(filteredEmpleados.length);
+  const paginationInfo = getInfo(totalCount);
 
   const handleEdit = (empleado: Empleado) => {
     startEdit(empleado);

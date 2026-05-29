@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTransaccionStore } from "../../stores/transaccionStore";
 import {
@@ -21,10 +21,16 @@ export function Contabilidad() {
   const { t } = useTranslation();
   const {
     transacciones,
+    totalCount,
+    fetchTransacciones,
     addTransaccion,
     updateTransaccion,
     deleteTransaccion,
   } = useTransaccionStore();
+
+  useEffect(() => {
+    fetchTransacciones();
+  }, [fetchTransacciones]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,7 +62,7 @@ export function Contabilidad() {
     return paginate(filteredTransacciones, pageNumber, ITEMS_PER_PAGE);
   }, [filteredTransacciones, pageNumber]);
 
-  const paginationInfo = getInfo(filteredTransacciones.length);
+  const paginationInfo = getInfo(totalCount);
 
   const totalIngresos = transacciones
     .filter((t) => t.tipo === "ingreso")

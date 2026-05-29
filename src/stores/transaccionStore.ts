@@ -6,11 +6,8 @@ interface TransaccionStore {
   transacciones: AccountingTransactionDto[];
   loading: boolean;
   error: string | null;
-  pagination: {
-    pageNumber: number;
-    pageSize: number;
-    totalCount: number;
-  };
+  totalCount: number;
+  pageCount: number;
   
   fetchTransacciones: (pageNumber?: number, pageSize?: number) => Promise<void>;
   getTransaccionById: (id: number) => Promise<AccountingTransactionDto | null>;
@@ -24,11 +21,8 @@ export const useTransaccionStore = create<TransaccionStore>((set) => ({
   transacciones: [],
   loading: false,
   error: null,
-  pagination: {
-    pageNumber: 1,
-    pageSize: 10,
-    totalCount: 0,
-  },
+  totalCount: 0,
+  pageCount: 0,
 
   fetchTransacciones: async (pageNumber = 1, pageSize = 10) => {
     set({ loading: true, error: null });
@@ -36,11 +30,8 @@ export const useTransaccionStore = create<TransaccionStore>((set) => ({
       const result = await accountingTransactionService.getTransactions(pageNumber, pageSize);
       set({
         transacciones: result.items,
-        pagination: {
-          pageNumber: result.pageNumber,
-          pageSize: result.pageSize,
-          totalCount: result.rowCount,
-        },
+        totalCount: result.rowCount,
+        pageCount: result.pageCount,
         loading: false,
       });
     } catch (error) {
@@ -72,10 +63,7 @@ export const useTransaccionStore = create<TransaccionStore>((set) => ({
       const newTransaction = await accountingTransactionService.createTransaction(transaccion as any);
       set((state) => ({
         transacciones: [...state.transacciones, newTransaction],
-        pagination: {
-          ...state.pagination,
-          totalCount: state.pagination.totalCount + 1,
-        },
+        totalCount: state.totalCount + 1,
         loading: false,
       }));
       return newTransaction;
@@ -114,10 +102,7 @@ export const useTransaccionStore = create<TransaccionStore>((set) => ({
       await accountingTransactionService.deleteTransaction(id);
       set((state) => ({
         transacciones: state.transacciones.filter((t) => t.id !== id),
-        pagination: {
-          ...state.pagination,
-          totalCount: state.pagination.totalCount - 1,
-        },
+        totalCount: state.totalCount - 1,
         loading: false,
       }));
     } catch (error) {

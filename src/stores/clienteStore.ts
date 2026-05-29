@@ -6,11 +6,8 @@ interface ClienteStore {
   clientes: Client[];
   loading: boolean;
   error: string | null;
-  pagination: {
-    pageNumber: number;
-    pageSize: number;
-    totalCount: number;
-  };
+  totalCount: number;
+  pageCount: number;
 
   fetchClientes: (pageNumber?: number, pageSize?: number) => Promise<void>;
   getClienteById: (id: number) => Promise<Client | null>;
@@ -24,11 +21,8 @@ export const useClienteStore = create<ClienteStore>((set) => ({
   clientes: [],
   loading: false,
   error: null,
-  pagination: {
-    pageNumber: 1,
-    pageSize: 10,
-    totalCount: 0,
-  },
+  totalCount: 0,
+  pageCount: 0,
 
   fetchClientes: async (pageNumber = 1, pageSize = 10) => {
     set({ loading: true, error: null });
@@ -36,11 +30,8 @@ export const useClienteStore = create<ClienteStore>((set) => ({
       const result = await clientService.getClients(pageNumber, pageSize);
       set({
         clientes: result.items,
-        pagination: {
-          pageNumber: result.pageNumber,
-          pageSize: result.pageSize,
-          totalCount: result.rowCount,
-        },
+        totalCount: result.rowCount,
+        pageCount: result.pageCount,
         loading: false,
       });
     } catch (error) {
@@ -74,10 +65,7 @@ export const useClienteStore = create<ClienteStore>((set) => ({
       const newClient = await clientService.createClient(cliente as any);
       set((state) => ({
         clientes: [...state.clientes, newClient],
-        pagination: {
-          ...state.pagination,
-          totalCount: state.pagination.totalCount + 1,
-        },
+        totalCount: state.totalCount + 1,
         loading: false,
       }));
       return newClient;
@@ -118,10 +106,7 @@ export const useClienteStore = create<ClienteStore>((set) => ({
       await clientService.deleteClient(id);
       set((state) => ({
         clientes: state.clientes.filter((c) => c.id !== id),
-        pagination: {
-          ...state.pagination,
-          totalCount: state.pagination.totalCount - 1,
-        },
+        totalCount: state.totalCount - 1,
         loading: false,
       }));
     } catch (error) {

@@ -6,11 +6,8 @@ interface EmpleadoStore {
   empleados: EmployeeDto[];
   loading: boolean;
   error: string | null;
-  pagination: {
-    pageNumber: number;
-    pageSize: number;
-    totalCount: number;
-  };
+  totalCount: number;
+  pageCount: number;
   
   fetchEmpleados: (pageNumber?: number, pageSize?: number) => Promise<void>;
   getEmpleadoById: (id: number) => Promise<EmployeeDto | null>;
@@ -24,11 +21,8 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
   empleados: [],
   loading: false,
   error: null,
-  pagination: {
-    pageNumber: 1,
-    pageSize: 10,
-    totalCount: 0,
-  },
+  totalCount: 0,
+  pageCount: 0,
 
   fetchEmpleados: async (pageNumber = 1, pageSize = 10) => {
     set({ loading: true, error: null });
@@ -36,11 +30,8 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
       const result = await employeeService.getEmployees(pageNumber, pageSize);
       set({
         empleados: result.items,
-        pagination: {
-          pageNumber: result.pageNumber,
-          pageSize: result.pageSize,
-          totalCount: result.rowCount,
-        },
+        totalCount: result.rowCount,
+        pageCount: result.pageCount,
         loading: false,
       });
     } catch (error) {
@@ -72,10 +63,7 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
       const newEmployee = await employeeService.createEmployee(empleado as any);
       set((state) => ({
         empleados: [...state.empleados, newEmployee],
-        pagination: {
-          ...state.pagination,
-          totalCount: state.pagination.totalCount + 1,
-        },
+        totalCount: state.totalCount + 1,
         loading: false,
       }));
       return newEmployee;
@@ -114,10 +102,7 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
       await employeeService.deleteEmployee(id);
       set((state) => ({
         empleados: state.empleados.filter((e) => e.id !== id),
-        pagination: {
-          ...state.pagination,
-          totalCount: state.pagination.totalCount - 1,
-        },
+        totalCount: state.totalCount - 1,
         loading: false,
       }));
     } catch (error) {

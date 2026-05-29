@@ -99,6 +99,7 @@ export interface ClientDto {
   phone: string;
   address: string;
   isActive: boolean;
+  imageUrl?: string | null;
   createdAt: string | null;
   updatedAt: string | null;
   // Campos extra para la UI

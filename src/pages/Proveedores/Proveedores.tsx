@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useProveedorStore } from "../../stores/proveedorStore";
 import {
@@ -40,9 +40,9 @@ export function Proveedores() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Fetch proveedores on mount
-  useMemo(() => {
+  useEffect(() => {
     fetchProveedores(1, ITEMS_PER_PAGE);
-  }, []);
+  }, [fetchProveedores]);
 
   const filteredProveedores = useFilter({
     data: proveedores,

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useClienteStore } from "../../stores/clienteStore";
 import {
@@ -21,20 +21,34 @@ import { useFilter } from "../../hooks/useFilter";
 
 export function Clientes() {
   const { t } = useTranslation();
-  const { clientes, addCliente, updateCliente, deleteCliente } =
-    useClienteStore();
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const {
+    clientes,
+    totalCount,
+    fetchClientes,
+    addCliente,
+    updateCliente,
+    deleteCliente,
+  } = useClienteStore();
+
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
+
+  useEffect(() => {
+    fetchClientes(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchClientes]);
+
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [formData, setFormData] = useState<ClientRequest>({
     name: "",
     email: "",
     phone: "",
     address: "",
     isActive: true,
+    imageUrl: "",
   });
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -49,7 +63,18 @@ export function Clientes() {
     return paginate(filteredClientes, pageNumber, ITEMS_PER_PAGE);
   }, [filteredClientes, pageNumber]);
 
-  const paginationInfo = getInfo(filteredClientes.length);
+  const paginationInfo = getInfo(totalCount);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +95,7 @@ export function Clientes() {
       phone: "",
       address: "",
       isActive: true,
+      imageUrl: "",
     });
   };
 
@@ -80,6 +106,7 @@ export function Clientes() {
       phone: cliente.phone,
       address: cliente.address,
       isActive: cliente.isActive,
+      imageUrl: (cliente as any).imageUrl || "",
     });
     setEditingId(cliente.id);
     setShowForm(true);
@@ -101,7 +128,7 @@ export function Clientes() {
       header: t("clientes.client"),
       render: (c: Client) => (
         <ImageCell
-          src={c.avatar || `https://i.pravatar.cc/150?img=${c.id}`}
+          src={(c as any).imageUrl || c.avatar || `https://i.pravatar.cc/150?img=${c.id}`}
           name={c.name}
           subtext={c.empresa}
           type="avatar"
@@ -206,6 +233,21 @@ export function Clientes() {
               setFormData({ ...formData, address: e.target.value })
             }
           />
+        </div>
+        <div className={styles.formGroup}>
+          <label>{t("common.image")}</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          {formData.imageUrl && (
+            <img
+              src={formData.imageUrl}
+              alt="Preview"
+              style={{ width: "80px", marginTop: "8px", borderRadius: "4px" }}
+            />
+          )}
         </div>
       </Modal>
 

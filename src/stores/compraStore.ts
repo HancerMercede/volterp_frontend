@@ -6,11 +6,8 @@ interface CompraStore {
   compras: PurchaseDto[];
   loading: boolean;
   error: string | null;
-  pagination: {
-    pageNumber: number;
-    pageSize: number;
-    totalCount: number;
-  };
+  totalCount: number;
+  pageCount: number;
   
   fetchCompras: (pageNumber?: number, pageSize?: number) => Promise<void>;
   getCompraById: (id: number) => Promise<PurchaseDto | null>;
@@ -24,11 +21,8 @@ export const useCompraStore = create<CompraStore>((set) => ({
   compras: [],
   loading: false,
   error: null,
-  pagination: {
-    pageNumber: 1,
-    pageSize: 10,
-    totalCount: 0,
-  },
+  totalCount: 0,
+  pageCount: 0,
 
   fetchCompras: async (pageNumber = 1, pageSize = 10) => {
     set({ loading: true, error: null });
@@ -36,11 +30,8 @@ export const useCompraStore = create<CompraStore>((set) => ({
       const result = await purchaseService.getPurchases(pageNumber, pageSize);
       set({
         compras: result.items,
-        pagination: {
-          pageNumber: result.pageNumber,
-          pageSize: result.pageSize,
-          totalCount: result.rowCount,
-        },
+        totalCount: result.rowCount,
+        pageCount: result.pageCount,
         loading: false,
       });
     } catch (error) {
@@ -72,10 +63,7 @@ export const useCompraStore = create<CompraStore>((set) => ({
       const newPurchase = await purchaseService.createPurchase(compra as any);
       set((state) => ({
         compras: [...state.compras, newPurchase],
-        pagination: {
-          ...state.pagination,
-          totalCount: state.pagination.totalCount + 1,
-        },
+        totalCount: state.totalCount + 1,
         loading: false,
       }));
       return newPurchase;
@@ -114,10 +102,7 @@ export const useCompraStore = create<CompraStore>((set) => ({
       await purchaseService.deletePurchase(id);
       set((state) => ({
         compras: state.compras.filter((c) => c.id !== id),
-        pagination: {
-          ...state.pagination,
-          totalCount: state.pagination.totalCount - 1,
-        },
+        totalCount: state.totalCount - 1,
         loading: false,
       }));
     } catch (error) {

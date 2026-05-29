@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useCompraStore } from "../../stores/compraStore";
 import { useProductoStore } from "../../stores/productoStore";
@@ -23,7 +23,7 @@ import { useFilter } from "../../hooks/useFilter";
 
 export function Compras() {
   const { t } = useTranslation();
-  const { compras, addCompra, updateCompra, deleteCompra } = useCompraStore();
+  const { compras, totalCount, fetchCompras, addCompra, updateCompra, deleteCompra } = useCompraStore();
   const { productos } = useProductoStore();
   const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
@@ -43,6 +43,10 @@ export function Compras() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  useEffect(() => {
+    fetchCompras();
+  }, [fetchCompras]);
+
   const filteredCompras = useFilter({
     data: compras,
     searchTerm,
@@ -53,7 +57,7 @@ export function Compras() {
     return paginate(filteredCompras, pageNumber, ITEMS_PER_PAGE);
   }, [filteredCompras, pageNumber]);
 
-  const paginationInfo = getInfo(filteredCompras.length);
+  const paginationInfo = getInfo(totalCount);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
