@@ -2,8 +2,8 @@ import { API_CONFIG } from "../api/config";
 import { fetchWithAuthJson } from "./fetchWithAuth";
 import type { 
   PagedResult, 
-  AccountingTransactionDto, 
-  CreateAccountingTransactionRequest 
+  AccountingTransactionDto,
+  AccountingTransactionRequest 
 } from "../../domain/types";
 
 export const accountingTransactionService = {
@@ -26,7 +26,7 @@ export const accountingTransactionService = {
     );
   },
 
-  async createTransaction(data: CreateAccountingTransactionRequest): Promise<AccountingTransactionDto> {
+  async createTransaction(data: AccountingTransactionRequest): Promise<AccountingTransactionDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ACCOUNTING_TRANSACTIONS}`,
       {
@@ -36,7 +36,7 @@ export const accountingTransactionService = {
     );
   },
 
-  async updateTransaction(id: number, data: Partial<AccountingTransactionDto>): Promise<AccountingTransactionDto> {
+  async updateTransaction(id: number, data: AccountingTransactionRequest): Promise<AccountingTransactionDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ACCOUNTING_TRANSACTIONS}/${id}`,
       {

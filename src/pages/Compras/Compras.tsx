@@ -70,7 +70,7 @@ export function Compras() {
         total: formData.total ?? 0,
         notes: formData.notes ?? null,
         items: [],
-      } as CreatePurchaseRequest);
+      } as PurchaseRequest);
       addToast(t("compras.purchaseCreated"), "success");
     }
     setShowForm(false);
@@ -208,7 +208,10 @@ export function Compras() {
           <select
             value={formData.status ?? "Pending"}
             onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value as "Pending" | "Completed" | "Cancelled" })
+              setFormData({
+                ...formData,
+                status: e.target.value as "Pending" | "Completed" | "Cancelled",
+              })
             }
           >
             <option value="Pending">{t("pending")}</option>

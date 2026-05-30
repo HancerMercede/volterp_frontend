@@ -26,7 +26,7 @@ export const clientService = {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CLIENTS}`,
       {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(client),
       },
     );
@@ -36,7 +36,7 @@ export const clientService = {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CLIENTS}/${id}`,
       {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify(client),
       },
     );
@@ -45,7 +45,7 @@ export const clientService = {
   async deleteClient(id: number): Promise<void> {
     await fetchWithAuth(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CLIENTS}/${id}`,
-      { method: 'DELETE' },
+      { method: "DELETE" },
     );
   },
 };

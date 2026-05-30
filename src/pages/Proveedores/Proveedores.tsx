@@ -20,14 +20,20 @@ import { useFilter } from "../../hooks/useFilter";
 
 export function Proveedores() {
   const { t } = useTranslation();
-  const { proveedores, addProveedor, updateProveedor, deleteProveedor, fetchProveedores } =
-    useProveedorStore();
+  const {
+    proveedores,
+    addProveedor,
+    updateProveedor,
+    deleteProveedor,
+    fetchProveedores,
+  } = useProveedorStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -36,19 +42,20 @@ export function Proveedores() {
     category: "",
     contactPerson: "",
   });
+
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Fetch proveedores on mount
   useEffect(() => {
-    fetchProveedores(1, ITEMS_PER_PAGE);
-  }, [fetchProveedores]);
+    fetchProveedores(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchProveedores]);
 
   const filteredProveedores = useFilter({
     data: proveedores,
     searchTerm,
     searchFields: (p) => [p.name, p.email, p.category],
   });
+
   const paginatedProveedores = useMemo(() => {
     return paginate(filteredProveedores, pageNumber, ITEMS_PER_PAGE);
   }, [filteredProveedores, pageNumber]);
@@ -166,9 +173,7 @@ export function Proveedores() {
           <input
             type="text"
             value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>

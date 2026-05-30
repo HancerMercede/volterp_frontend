@@ -264,12 +264,7 @@ export interface AccountingTransactionDto {
   updatedAt: string | null;
 }
 
-export type CreateAccountingTransactionRequest = Omit<
-  AccountingTransactionDto,
-  "id" | "createdAt" | "updatedAt"
->;
-export type UpdateAccountingTransactionRequest =
-  Partial<AccountingTransactionDto>;
+export type AccountingTransactionRequest = Partial<AccountingTransactionDto>;
 
 // Company DTOs (from backend)
 export interface CompanyDto {

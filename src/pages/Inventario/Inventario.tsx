@@ -141,7 +141,7 @@ export function Inventario() {
       description: producto.description || "",
       isActive: producto.isActive ?? true,
     });
-    setEditingId(String(producto.id));
+    setEditingId(producto.id);
     setShowForm(true);
   };
 

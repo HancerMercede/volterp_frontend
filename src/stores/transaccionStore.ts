@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { accountingTransactionService } from '../infrastructure/api/accountingTransactionService';
-import type { AccountingTransactionDto, CreateAccountingTransactionRequest } from '../domain/types';
+import type { AccountingTransactionDto, AccountingTransactionRequest } from '../domain/types';
 
 interface TransaccionStore {
   transacciones: AccountingTransactionDto[];
@@ -11,8 +11,8 @@ interface TransaccionStore {
   
   fetchTransacciones: (pageNumber?: number, pageSize?: number) => Promise<void>;
   getTransaccionById: (id: number) => Promise<AccountingTransactionDto | null>;
-  addTransaccion: (transaccion: CreateAccountingTransactionRequest) => Promise<AccountingTransactionDto>;
-  updateTransaccion: (id: number, data: Partial<AccountingTransactionDto>) => Promise<AccountingTransactionDto>;
+  addTransaccion: (transaccion: AccountingTransactionRequest) => Promise<AccountingTransactionDto>;
+  updateTransaccion: (id: number, data: AccountingTransactionRequest) => Promise<AccountingTransactionDto>;
   deleteTransaccion: (id: number) => Promise<void>;
   setError: (error: string | null) => void;
 }
@@ -57,10 +57,10 @@ export const useTransaccionStore = create<TransaccionStore>((set) => ({
     }
   },
 
-  addTransaccion: async (transaccion: CreateAccountingTransactionRequest) => {
+  addTransaccion: async (transaccion: AccountingTransactionRequest) => {
     set({ loading: true, error: null });
     try {
-      const newTransaction = await accountingTransactionService.createTransaction(transaccion as any);
+      const newTransaction = await accountingTransactionService.createTransaction(transaccion);
       set((state) => ({
         transacciones: [...state.transacciones, newTransaction],
         totalCount: state.totalCount + 1,
@@ -76,7 +76,7 @@ export const useTransaccionStore = create<TransaccionStore>((set) => ({
     }
   },
 
-  updateTransaccion: async (id: number, data: Partial<AccountingTransactionDto>) => {
+  updateTransaccion: async (id: number, data: AccountingTransactionRequest) => {
     set({ loading: true, error: null });
     try {
       const updatedTransaction = await accountingTransactionService.updateTransaction(id, data);
