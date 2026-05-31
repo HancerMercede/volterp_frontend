@@ -1,41 +1,64 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useProveedorStore } from "../../stores/proveedorStore";
-import { Table, Button, PageHeader, ImageCell, Pagination, SearchInput, Modal } from "../../components/UI";
+import {
+  Table,
+  Button,
+  PageHeader,
+  ImageCell,
+  Pagination,
+  SearchInput,
+  Modal,
+  ConfirmModal,
+} from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { Proveedor } from "../../data/mockData";
+import type { SupplierDto } from "../../domain/types";
 import styles from "./Proveedores.module.css";
+import { useFilter } from "../../hooks/useFilter";
 
 export function Proveedores() {
   const { t } = useTranslation();
-  const { proveedores, addProveedor, updateProveedor, deleteProveedor } = useProveedorStore();
+  const {
+    proveedores,
+    addProveedor,
+    updateProveedor,
+    deleteProveedor,
+    fetchProveedores,
+  } = useProveedorStore();
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const { page, goToPage, getInfo } = usePagination({ initialPageSize: ITEMS_PER_PAGE });
-  const [formData, setFormData] = useState({
-    nombre: "",
-    email: "",
-    telefono: "",
-    direccion: "",
-    categoria: "",
-    totalOrdenes: 0,
+  const { pageNumber, goToPage, getInfo } = usePagination({
+    initialPageSize: ITEMS_PER_PAGE,
   });
 
-  const filteredProveedores = useMemo(() => {
-    return proveedores.filter(
-      (p) =>
-        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.categoria.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [proveedores, searchTerm]);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    category: "",
+    contactPerson: "",
+  });
+
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  useEffect(() => {
+    fetchProveedores(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchProveedores]);
+
+  const filteredProveedores = useFilter({
+    data: proveedores,
+    searchTerm,
+    searchFields: (p) => [p.name, p.email, p.category],
+  });
 
   const paginatedProveedores = useMemo(() => {
-    return paginate(filteredProveedores, page, ITEMS_PER_PAGE);
-  }, [filteredProveedores, page]);
+    return paginate(filteredProveedores, pageNumber, ITEMS_PER_PAGE);
+  }, [filteredProveedores, pageNumber]);
 
   const paginationInfo = getInfo(filteredProveedores.length);
 
@@ -45,12 +68,7 @@ export function Proveedores() {
       updateProveedor(editingId, formData);
       setEditingId(null);
     } else {
-      const newProveedor = {
-        ...formData,
-        id: `PRV${String(proveedores.length + 1).padStart(3, "0")}`,
-        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
-      };
-      addProveedor(newProveedor);
+      addProveedor({ ...formData, isActive: true });
     }
     setShowForm(false);
     resetForm();
@@ -58,54 +76,55 @@ export function Proveedores() {
 
   const resetForm = () => {
     setFormData({
-      nombre: "",
+      name: "",
       email: "",
-      telefono: "",
-      direccion: "",
-      categoria: "",
-      totalOrdenes: 0,
+      phone: "",
+      address: "",
+      category: "",
+      contactPerson: "",
     });
   };
 
-  const handleEdit = (proveedor: Proveedor) => {
+  const handleEdit = (proveedor: SupplierDto) => {
     setFormData({
-      nombre: proveedor.nombre,
+      name: proveedor.name,
       email: proveedor.email,
-      telefono: proveedor.telefono,
-      direccion: proveedor.direccion,
-      categoria: proveedor.categoria,
-      totalOrdenes: proveedor.totalOrdenes,
+      phone: proveedor.phone,
+      address: proveedor.address,
+      category: proveedor.category,
+      contactPerson: proveedor.contactPerson,
     });
     setEditingId(proveedor.id);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm(t('proveedores.deleteConfirm'))) {
-      deleteProveedor(id);
-    }
+  const handleDelete = (id: number) => {
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) deleteProveedor(deleteId);
   };
 
   const columns = [
+    { key: "id", header: t("common.id") },
     {
-      key: "avatar",
-      header: "",
-      render: (p: Proveedor) => <ImageCell src={p.avatar} name={p.nombre} />,
+      key: "name",
+      header: "proveedor",
+      render: (p: SupplierDto) => <ImageCell src="" name={p.name} />,
     },
-    { key: "nombre", header: t('common.name') },
-    { key: "email", header: t('common.email') },
-    { key: "telefono", header: t('common.phone') },
-    { key: "categoria", header: t('common.category') },
-    {
-      key: "totalOrdenes",
-      header: t('proveedores.totalOrders'),
-      render: (p: Proveedor) => p.totalOrdenes.toString(),
-    },
+    { key: "email", header: t("common.email") },
+    { key: "phone", header: t("common.phone") },
+    { key: "category", header: t("common.category") },
   ];
 
   return (
     <div className={styles.container}>
-      <PageHeader title={t('proveedores.title')} subtitle={t('proveedores.subtitle')}>
+      <PageHeader
+        title={t("proveedores.title")}
+        subtitle={t("proveedores.subtitle")}
+      >
         <Button
           onClick={() => {
             resetForm();
@@ -113,15 +132,18 @@ export function Proveedores() {
             setShowForm(true);
           }}
         >
-          + {t('proveedores.newProvider')}
+          + {t("proveedores.newProvider")}
         </Button>
       </PageHeader>
 
       <div className={styles.searchBar}>
         <SearchInput
           value={searchTerm}
-          onChange={(value) => { setSearchTerm(value); goToPage(1); }}
-          placeholder={t('proveedores.searchProvider')}
+          onChange={(value) => {
+            setSearchTerm(value);
+            goToPage(1);
+          }}
+          placeholder={t("proveedores.searchProvider")}
           width="300px"
         />
       </div>
@@ -133,31 +155,30 @@ export function Proveedores() {
         onDelete={handleDelete}
       />
 
-      <Pagination
-        pagination={paginationInfo}
-        onPageChange={goToPage}
-      />
+      <Pagination pagination={paginationInfo} onPageChange={goToPage} />
 
       <Modal
         isOpen={showForm}
         onClose={() => setShowForm(false)}
-        title={editingId ? t('proveedores.editProvider') : t('proveedores.newProvider')}
+        title={
+          editingId
+            ? t("proveedores.editProvider")
+            : t("proveedores.newProvider")
+        }
         onSubmit={handleSubmit}
-        submitLabel={editingId ? t('common.save') : t('common.create')}
+        submitLabel={editingId ? t("common.save") : t("common.create")}
       >
         <div className={styles.formGroup}>
-          <label>{t('common.name')}</label>
+          <label>{t("common.name")}</label>
           <input
             type="text"
-            value={formData.nombre}
-            onChange={(e) =>
-              setFormData({ ...formData, nombre: e.target.value })
-            }
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('common.email')}</label>
+          <label>{t("common.email")}</label>
           <input
             type="email"
             value={formData.email}
@@ -168,52 +189,62 @@ export function Proveedores() {
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('common.phone')}</label>
+          <label>{t("common.phone")}</label>
           <input
             type="tel"
-            value={formData.telefono}
+            value={formData.phone}
             onChange={(e) =>
-              setFormData({ ...formData, telefono: e.target.value })
+              setFormData({ ...formData, phone: e.target.value })
             }
             required
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('common.address')}</label>
+          <label>{t("common.address")}</label>
           <input
             type="text"
-            value={formData.direccion}
+            value={formData.address}
             onChange={(e) =>
-              setFormData({ ...formData, direccion: e.target.value })
+              setFormData({ ...formData, address: e.target.value })
             }
             required
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('common.category')}</label>
+          <label>{t("common.category")}</label>
           <input
             type="text"
-            value={formData.categoria}
+            value={formData.category}
             onChange={(e) =>
-              setFormData({ ...formData, categoria: e.target.value })
+              setFormData({ ...formData, category: e.target.value })
             }
             required
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t('proveedores.totalOrders')}</label>
+          <label>Contacto</label>
           <input
-            type="number"
-            value={formData.totalOrdenes}
+            type="text"
+            value={formData.contactPerson}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                totalOrdenes: Number(e.target.value),
-              })
+              setFormData({ ...formData, contactPerson: e.target.value })
             }
           />
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message={t("proveedores.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

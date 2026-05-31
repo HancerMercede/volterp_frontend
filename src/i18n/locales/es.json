@@ -20,6 +20,8 @@
     "add": "Agregar",
     "remove": "Quitar",
     "update": "Actualizar",
+    "confirmDeleteTitle": "Confirmar eliminación",
+    "confirmDeleteMessage": "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
     "create": "Crear",
     "status": "Estado",
     "date": "Fecha",
@@ -78,10 +80,12 @@
     "password": "Contraseña",
     "rememberMe": "Recordarme",
     "forgotPassword": "¿Olvidaste tu contraseña?",
-    "welcomeBack": "Bienvenido de nuevo",
-    "loginSubtitle": "Ingresa tus credenciales para acceder al sistema",
-    "invalidCredentials": "Credenciales inválidas",
-    "sessionExpired": "Tu sesión ha expirado"
+    "welcome": "Bienvenido",
+    "loginSubtitle": "Inicie sesión para continuar",
+    "invalidCredentials": "Credenciales incorrectas",
+    "sessionExpired": "Tu sesión ha expirado",
+    "dontHaveAccount": "¿No tienes cuenta?",
+    "createAccount": "Crear cuenta"
   },
   "roles": {
     "admin": "Administrador",
@@ -137,7 +141,26 @@
     "orderPending": "Pendiente",
     "saleDate": "Fecha de Venta",
     "selectCategory": "Todas las categorías",
-    "addProductsHint": "Agrega productos del catálogo"
+    "addProductsHint": "Agrega productos del catálogo",
+    "completed": "Completada",
+    "pending": "Pendiente",
+    "cancelled": "Cancelada",
+    "deleteConfirm": "¿Eliminar esta venta?",
+    "saleDeleted": "Venta eliminada",
+    "products":"Productos",
+    "summary":"Resumen",
+    "totalItems":"Total de artículos",
+    "draftWarning":"Advertencia",
+    "cartEmptyWarning": "El carrito esta vacío",
+    "clear":"Limpiar",
+    "selectClientWarning":"Seleccione un cliente, por favor.",
+    "NoCompanySelected":"No hay empresa seleccionada",
+    "saleDetail":"Detalle de Venta",
+    "items":"Productos",
+    "unitPrice":"Precio Unit.",
+    "createdAt":"Creado",
+    "updatedAt":"Actualizado",
+    "completedViewOnly":"Venta completada — solo vista"
   },
   "compras": {
     "title": "Compras",
@@ -149,7 +172,12 @@
     "purchaseDate": "Fecha de Compra",
     "purchaseCreated": "Compra creada correctamente",
     "purchaseUpdated": "Compra actualizada correctamente",
-    "purchaseDeleted": "Compra eliminada"
+    "purchaseDeleted": "Compra eliminada",
+    "searchPurchases": "Buscar compra...",
+    "deleteConfirm": "¿Eliminar esta compra?",
+    "pending": "Pendiente",
+    "received": "Recibida",
+    "cancelled": "Cancelada"
   },
   "inventario": {
     "title": "Inventario",
@@ -380,6 +408,7 @@
     "projectDeleted": "Proyecto eliminado",
     "projectCreated": "Proyecto creado correctamente",
     "projectUpdated": "Proyecto actualizado correctamente",
+    "deleteConfirm": "¿Eliminar este proyecto?",
     "deleteConfirm": "¿Eliminar proyecto?"
   },
   "reportes": {
@@ -410,6 +439,7 @@
   "configuracion": {
     "title": "Configuración",
     "subtitle": "Personaliza la aplicación",
+    "users": "Usuarios",
     "companyData": "Datos de la Empresa",
     "companyName": "Nombre de la Empresa",
     "companyRNC": "RNC",
@@ -501,5 +531,42 @@
     "to": "a",
     "of": "de",
     "results": "resultados"
+  },
+  "empresas": {
+    "title": "Empresas",
+    "subtitle": "Gestión de empresas",
+    "form": {
+      "title": "Nueva Empresa",
+      "titleEdit": "Editar Empresa",
+      "name": "Nombre",
+      "taxId": "RNC",
+      "legalName": "Razón Social",
+      "address": "Dirección",
+      "phone": "Teléfono",
+      "email": "Email",
+      "logoUrl": "URL del Logo",
+      "isActive": "Activo",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "table": {
+      "headers": {
+        "name": "Nombre",
+        "taxId": "RNC",
+        "legalName": "Razón Social",
+        "status": "Estado",
+        "actions": "Acciones"
+      }
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "add": "Nueva Empresa"
+    },
+    "confirmDelete": "¿Está seguro de eliminar esta empresa?"
   }
 }

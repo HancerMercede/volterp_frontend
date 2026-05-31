@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getTokenExpiry } from '../utils/jwt';
 
 export interface User {
   username: string;
@@ -12,6 +13,7 @@ export interface User {
 interface AuthStore {
   user: User | null;
   token: string | null;
+  expiresAt: number | null;
   isAuthenticated: boolean;
   login: (user: User, token: string) => void;
   logout: () => void;
@@ -22,14 +24,16 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       user: null,
       token: null,
+      expiresAt: null,
       isAuthenticated: false,
 
       login: (userData: User, token: string) => {
-        set({ user: userData, token, isAuthenticated: true });
+        const expiresAt = getTokenExpiry(token);
+        set({ user: userData, token, expiresAt, isAuthenticated: true });
       },
 
       logout: () => {
-        set({ user: null, token: null, isAuthenticated: false });
+        set({ user: null, token: null, expiresAt: null, isAuthenticated: false });
       },
     }),
     {

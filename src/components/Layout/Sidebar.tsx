@@ -81,7 +81,9 @@ export function Sidebar() {
           />
           <div className={styles.userInfo}>
             <p className={styles.userName}>
-              {getFirstName(user?.fullName) || user?.username || t("auth.username")}
+              {getFirstName(user?.fullName) ||
+                user?.username ||
+                t("auth.username")}
             </p>
             <span className={styles.userRole}>
               {user?.role

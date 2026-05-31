@@ -19,6 +19,16 @@
   flex-shrink: 0;
 }
 
+.toggle {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.toggle:hover {
+  background: #FDE68A;
+  transform: scale(1.05);
+}
+
 .edit {
   background: #ECFDF5;
   color: #059669;

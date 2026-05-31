@@ -1,0 +1,102 @@
+.panel {
+  background: var(--glass-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 300px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1400px) {
+  .panel {
+    width: 280px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .panel {
+    width: 260px;
+  }
+}
+
+@media (max-width: 992px) {
+  .panel {
+    width: 100%;
+  }
+}
+
+.panel h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.totals {
+  background: var(--background);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 8px 0;
+  color: var(--text-secondary);
+}
+
+.totalFinal {
+  border-top: 2px solid var(--border);
+  margin-top: 8px;
+  padding-top: 12px;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGroup label {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.formGroup input,
+.formGroup select {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  font-size: 14px;
+  transition: var(--transition);
+  width: 100%;
+  font-family: var(--font-body);
+  background: var(--surface);
+}
+
+.formGroup input:disabled {
+  background: var(--background);
+  color: var(--text-muted);
+}
+
+.formGroup select:focus,
+.formGroup input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
+}
+
+.completeBtn {
+  width: 100%;
+  padding: 14px !important;
+  font-size: 16px !important;
+}

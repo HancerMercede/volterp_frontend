@@ -1,20 +1,45 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../stores/authStore";
 import {
   userService,
   type UserDto,
   type CreateUserRequest,
 } from "../../infrastructure/api/userService";
-import { ROL_LABELS, ROL_COLORS } from "../../domain/constants/roles";
-import { Button, Modal } from "../../components/UI";
+import {
+  ROL_LABELS,
+  ROL_COLORS,
+  Rol,
+  normalizeRole,
+} from "../../domain/constants/roles";
+import {
+  Button,
+  Modal,
+  ConfirmModal,
+  Pagination,
+  ActionButtons,
+} from "../../components/UI";
+import { usePagination } from "../../hooks/usePagination";
+import { ITEMS_PER_PAGE } from "../../config/pagination";
 import styles from "./UserManagement.module.css";
 
-const ROLES = [
-  "admin",
-  "ventas",
-  "inventario",
-  "contabilidad",
-  "rrhh",
+// Basic roles that all admins can assign
+const BASIC_ROLES = [
+  Rol.ADMIN,
+  Rol.VENTAS,
+  Rol.INVENTARIO,
+  Rol.CONTABILIDAD,
+  Rol.RRHH,
+] as const;
+
+// All roles including SuperAdmin (only for SuperAdmin)
+const ALL_ROLES = [
+  Rol.SUPER_ADMIN,
+  Rol.ADMIN,
+  Rol.VENTAS,
+  Rol.INVENTARIO,
+  Rol.CONTABILIDAD,
+  Rol.RRHH,
 ] as const;
 
 const InitialState = {
@@ -22,16 +47,33 @@ const InitialState = {
   password: "",
   email: "",
   fullName: "",
-  role: "User",
+  role: "ventas",
 };
 
 export function UserManagement() {
-  const { token } = useAuthStore();
+  const { t } = useTranslation();
+  const { token, user } = useAuthStore();
+
+  // Get current user role (normalized to lowercase)
+  const currentRole = user?.role?.toLowerCase();
+  console.log(currentRole);
+  const isSuperAdmin = currentRole === Rol.SUPER_ADMIN;
+
+  // SuperAdmin can assign all roles, Admin can only assign basic roles
+  const availableRoles = isSuperAdmin ? ALL_ROLES : BASIC_ROLES;
   const [users, setUsers] = useState<UserDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newUser, setNewUser] = useState<CreateUserRequest>(InitialState);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const { pageNumber, goToPage, getInfo } = usePagination({
+    initialPageSize: ITEMS_PER_PAGE,
+  });
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     if (!token) return;
@@ -40,8 +82,10 @@ export function UserManagement() {
       setLoading(true);
       setError("");
       try {
-        const data = await userService.getUsers(token!);
-        setUsers(data);
+        const data = await userService.getUsers(pageNumber, ITEMS_PER_PAGE);
+        setUsers(data.items);
+        setTotalCount(data.rowCount);
+        setPageCount(data.pageCount);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error loading users");
       } finally {
@@ -49,15 +93,15 @@ export function UserManagement() {
       }
     }
     loadUsers();
-  }, [token]);
+  }, [token, pageNumber]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!token) return;
     try {
-      const created = await userService.createUser(token, {
+      const created = await userService.createUser({
         ...newUser,
-        role: newUser.role === "User" ? "User" : newUser.role,
+        role: newUser.role === "ventas" ? "ventas" : newUser.role,
       });
       setUsers([...users, created]);
       setShowCreateModal(false);
@@ -66,7 +110,7 @@ export function UserManagement() {
         password: "",
         email: "",
         fullName: "",
-        role: "User",
+        role: "ventas",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error creating user");
@@ -76,7 +120,7 @@ export function UserManagement() {
   async function handleRoleChange(userId: number, newRole: string) {
     if (!token) return;
     try {
-      const updated = await userService.updateUserRole(token, userId, newRole);
+      const updated = await userService.updateUserRole(userId, newRole);
       setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error updating role");
@@ -87,7 +131,6 @@ export function UserManagement() {
     if (!token) return;
     try {
       const updated = await userService.updateUserStatus(
-        token,
         userId,
         !currentStatus,
       );
@@ -97,15 +140,23 @@ export function UserManagement() {
     }
   }
 
-  async function handleDelete(userId: number) {
-    if (!token || !confirm("¿Eliminar este usuario?")) return;
+  function handleDelete(userId: number) {
+    if (!token) return;
+    setDeleteId(userId);
+    setShowDeleteConfirm(true);
+  }
+
+  const confirmDelete = async () => {
+    if (!token || !deleteId) return;
     try {
-      await userService.deleteUser(token, userId);
-      setUsers(users.filter((u) => u.id !== userId));
+      await userService.deleteUser(deleteId);
+      setUsers(users.filter((u) => u.id !== deleteId));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error deleting user");
     }
-  }
+  };
+
+  const paginationInfo = getInfo(totalCount);
 
   return (
     <div className={styles.container}>
@@ -143,7 +194,7 @@ export function UserManagement() {
                   <td>{user.fullName}</td>
                   <td>
                     <select
-                      value={user.role.toLowerCase()}
+                      value={normalizeRole(user.role)}
                       onChange={(e) =>
                         handleRoleChange(user.id, e.target.value)
                       }
@@ -151,15 +202,15 @@ export function UserManagement() {
                       style={{
                         borderColor:
                           ROL_COLORS[
-                            user.role.toLowerCase() as keyof typeof ROL_COLORS
+                            normalizeRole(user.role) as keyof typeof ROL_COLORS
                           ],
                         color:
                           ROL_COLORS[
-                            user.role.toLowerCase() as keyof typeof ROL_COLORS
+                            normalizeRole(user.role) as keyof typeof ROL_COLORS
                           ],
                       }}
                     >
-                      {ROLES.map((role) => (
+                      {availableRoles.map((role) => (
                         <option key={role} value={role}>
                           {ROL_LABELS[role]}
                         </option>
@@ -174,32 +225,31 @@ export function UserManagement() {
                     </span>
                   </td>
                   <td>
-                    <div className={styles.actions}>
-                      <button
-                        className={styles.iconBtn}
-                        onClick={() =>
+                    {normalizeRole(user.role) !== Rol.ADMIN &&
+                    normalizeRole(user.role) !== Rol.SUPER_ADMIN ? (
+                      <ActionButtons
+                        onToggle={() =>
                           handleToggleStatus(user.id, user.isActive)
                         }
-                        title={user.isActive ? "Desactivar" : "Activar"}
-                      >
-                        {user.isActive ? "⛔" : "✅"}
-                      </button>
-                      {user.role.toLowerCase() !== "admin" && (
-                        <button
-                          className={`${styles.iconBtn} ${styles.deleteBtn}`}
-                          onClick={() => handleDelete(user.id)}
-                          title="Eliminar"
-                        >
-                          🗑️
-                        </button>
-                      )}
-                    </div>
+                        onDelete={() => handleDelete(user.id)}
+                      />
+                    ) : (
+                      <ActionButtons
+                        onToggle={() =>
+                          handleToggleStatus(user.id, user.isActive)
+                        }
+                      />
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {pageCount > 1 && (
+        <Pagination pagination={paginationInfo} onPageChange={goToPage} />
       )}
 
       <Modal
@@ -260,7 +310,7 @@ export function UserManagement() {
             value={newUser.role}
             onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
           >
-            {ROLES.map((role) => (
+            {availableRoles.map((role) => (
               <option key={role} value={role}>
                 {ROL_LABELS[role]}
               </option>
@@ -268,6 +318,19 @@ export function UserManagement() {
           </select>
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message="¿Eliminar este usuario?"
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

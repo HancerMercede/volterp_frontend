@@ -1,0 +1,55 @@
+.modalFull {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--background);
+  z-index: 1000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.posContainer {
+  display: flex;
+  height: 100%;
+  gap: 16px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.posContainer > * {
+  overflow: hidden;
+}
+
+.summarySide {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 300px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1400px) {
+  .summarySide {
+    width: 280px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .summarySide {
+    width: 260px;
+  }
+}
+
+@media (max-width: 992px) {
+  .posContainer {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .summarySide {
+    width: 100%;
+  }
+}

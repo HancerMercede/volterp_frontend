@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProductoStore } from "../../stores/productoStore";
 import { useCategoryStore } from "../../stores/categoryStore";
+import { useCompanyStore } from "../../stores/companyStore";
 import {
   Table,
   Button,
@@ -11,12 +12,17 @@ import {
   Pagination,
   SearchInput,
   Modal,
+  ConfirmModal,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
-import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { Producto } from "../../data/mockData";
+import type { Product } from "../../domain/types";
+import type {
+  CreateProductRequest,
+  UpdateProductRequest,
+} from "../../infrastructure/api/types";
 import styles from "./Inventario.module.css";
+import { useFilter } from "../../hooks/useFilter";
 
 export function Inventario() {
   const { t } = useTranslation();
@@ -24,66 +30,85 @@ export function Inventario() {
     productos,
     loading,
     error,
+    totalCount,
     fetchProductos,
     createProducto,
     updateProducto,
     deleteProducto,
   } = useProductoStore();
   const { categories, fetchCategories } = useCategoryStore();
+  const { currentCompany } = useCompanyStore();
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStock, setFilterStock] = useState<"all" | "low" | "out">("all");
-  const { page, goToPage, getInfo } = usePagination({
+  const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
   const [formData, setFormData] = useState({
-    nombre: "",
-    categoria: "",
-    categoriaId: null as number | null,
+    name: "",
+    category: "",
+    categoryId: null as number | null,
     stock: 0,
-    precio: 0,
-    imagen: "",
-    descripcion: "",
+    price: 0,
+    imageUrl: "",
+    description: "",
     isActive: true,
   });
 
-  useEffect(() => {
-    fetchProductos();
-    fetchCategories();
-  }, []);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const fetchData = useCallback(() => {
+    fetchProductos(pageNumber, ITEMS_PER_PAGE);
+    fetchCategories(pageNumber, 100);
+  }, [pageNumber, fetchProductos, fetchCategories]);
 
   useEffect(() => {
-    console.log("imagen en formData:", formData.imagen?.substring(0, 50));
-  }, [formData.imagen]);
+    fetchData();
+  }, [fetchData]);
 
-  const filteredProductos = useMemo(() => {
-    return productos.filter((p) => {
-      const matchesSearch =
-        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.categoria.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredProductos = useFilter({
+    data: productos,
+    searchTerm,
+    searchFields: (p) => [p.name, p.category],
+    filter: (p) => {
+      if (filterStock === "low") return p.stock > 0 && p.stock < 10;
+      if (filterStock === "out") return p.stock === 0;
+      return true;
+    },
+  });
 
-      if (filterStock === "low")
-        return matchesSearch && p.stock > 0 && p.stock < 10;
-      if (filterStock === "out") return matchesSearch && p.stock === 0;
-      return matchesSearch;
-    });
-  }, [productos, searchTerm, filterStock]);
-
-  const paginatedProductos = useMemo(() => {
-    return paginate(filteredProductos, page, ITEMS_PER_PAGE);
-  }, [filteredProductos, page]);
-
-  const paginationInfo = getInfo(filteredProductos.length);
+  const paginationInfo = getInfo(totalCount);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (editingId) {
-        await updateProducto(editingId, formData);
+        const updateData: UpdateProductRequest = {
+          name: formData.name,
+          category: formData.category,
+          description: formData.description || null,
+          stock: formData.stock,
+          price: formData.price,
+          categoryId: formData.categoryId,
+          isActive: formData.isActive,
+          imageUrl: formData.imageUrl || null,
+        };
+        await updateProducto(editingId, updateData);
         setEditingId(null);
       } else {
-        await createProducto(formData);
+        const createData: CreateProductRequest = {
+          name: formData.name,
+          category: formData.category,
+          description: formData.description || null,
+          stock: formData.stock,
+          price: formData.price,
+          categoryId: formData.categoryId,
+          companyId: currentCompany?.id || 1,
+          imageUrl: formData.imageUrl || null,
+        };
+        await createProducto(createData);
       }
       setShowForm(false);
       resetForm();
@@ -94,36 +119,41 @@ export function Inventario() {
 
   const resetForm = () => {
     setFormData({
-      nombre: "",
-      categoria: "",
-      categoriaId: null,
+      name: "",
+      category: "",
+      categoryId: null,
       stock: 0,
-      precio: 0,
-      imagen: "",
-      descripcion: "",
+      price: 0,
+      imageUrl: "",
+      description: "",
       isActive: true,
     });
   };
 
-  const handleEdit = (producto: Producto) => {
+  const handleEdit = (producto: Product) => {
     setFormData({
-      nombre: producto.nombre,
-      categoria: producto.categoria,
-      categoriaId: producto.categoriaId ?? null,
+      name: producto.name,
+      category: producto.category,
+      categoryId: producto.categoryId ?? null,
       stock: producto.stock,
-      precio: producto.precio,
-      imagen: producto.imagen,
-      descripcion: producto.descripcion,
+      price: producto.price,
+      imageUrl: producto.imageUrl || "",
+      description: producto.description || "",
       isActive: producto.isActive ?? true,
     });
     setEditingId(producto.id);
     setShowForm(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm(t("inventario.deleteConfirm"))) {
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteId) {
       try {
-        await deleteProducto(id);
+        await deleteProducto(Number(deleteId));
       } catch {
         // Error is handled in store
       }
@@ -132,11 +162,11 @@ export function Inventario() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    console.log("formData.imagen:", formData.imagen);
+
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, imagen: reader.result as string }));
+        setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
@@ -145,21 +175,23 @@ export function Inventario() {
   const columns = [
     { key: "id", header: t("common.id") },
     {
-      key: "nombre",
+      key: "name",
       header: t("common.product"),
-      render: (p: Producto) => (
+      render: (p: Product) => (
         <ImageCell
-          src={p.imagen}
-          name={p.nombre}
-          subtext={p.categoria}
+          src={p.imageUrl || ""}
+          name={p.name}
+          subtext={p.category}
           type="product"
         />
       ),
     },
+    { key: "category", header: t("common.category") },
+    { key: "description", header: t("common.description") },
     {
       key: "stock",
       header: t("inventario.stock"),
-      render: (p: Producto) => (
+      render: (p: Product) => (
         <span
           className={
             p.stock === 0
@@ -174,17 +206,17 @@ export function Inventario() {
       ),
     },
     {
-      key: "precio",
+      key: "price",
       header: t("common.price"),
-      render: (p: Producto) => `$${p.precio.toLocaleString()}`,
+      render: (p: Product) => `$${p.price.toLocaleString()}`,
     },
     {
       key: "actions",
       header: t("common.actions"),
-      render: (p: Producto) => (
+      render: (p: Product) => (
         <ActionButtons
           onEdit={() => handleEdit(p)}
-          onDelete={() => handleDelete(p.id)}
+          onDelete={() => handleDelete(String(p.id))}
         />
       ),
     },
@@ -249,10 +281,8 @@ export function Inventario() {
           <input
             className={styles.input}
             type="text"
-            value={formData.nombre}
-            onChange={(e) =>
-              setFormData({ ...formData, nombre: e.target.value })
-            }
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>
@@ -260,21 +290,21 @@ export function Inventario() {
           <label>{t("common.category")}</label>
           <select
             className={styles.select}
-            value={formData.categoriaId ?? ""}
+            value={formData.categoryId ?? ""}
             onChange={(e) => {
               const val = e.target.value;
               const catId = val ? parseInt(val) : null;
               const cat = categories.find((c) => c.id === catId);
               setFormData({
                 ...formData,
-                categoriaId: catId,
-                categoria: cat?.name || "",
+                categoryId: catId,
+                category: cat?.name || "",
               });
             }}
             required
           >
             <option value="">-- {t("inventario.selectCategory")} --</option>
-            {categories.map((cat) => (
+            {(categories ?? []).map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
               </option>
@@ -301,11 +331,11 @@ export function Inventario() {
             type="number"
             min="0"
             step="0.01"
-            value={formData.precio}
+            value={formData.price}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                precio: parseFloat(e.target.value) || 0,
+                price: parseFloat(e.target.value) || 0,
               })
             }
             required
@@ -319,9 +349,9 @@ export function Inventario() {
             accept="image/*"
             onChange={handleImageChange}
           />
-          {formData.imagen && (
+          {formData.imageUrl && (
             <img
-              src={formData.imagen}
+              src={formData.imageUrl}
               alt="Preview"
               style={{ width: "100px", marginTop: "8px" }}
             />
@@ -332,9 +362,9 @@ export function Inventario() {
           <input
             className={styles.input}
             type="text"
-            value={formData.descripcion}
+            value={formData.description}
             onChange={(e) =>
-              setFormData({ ...formData, descripcion: e.target.value })
+              setFormData({ ...formData, description: e.target.value })
             }
           />
         </div>
@@ -354,9 +384,22 @@ export function Inventario() {
         )}
       </Modal>
 
-      <Table data={paginatedProductos} columns={columns} />
+      <Table data={filteredProductos} columns={columns} />
 
       <Pagination pagination={paginationInfo} onPageChange={goToPage} />
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setDeleteId(null);
+        }}
+        title={t("common.confirmDeleteTitle")}
+        message={t("inventario.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+      />
     </div>
   );
 }

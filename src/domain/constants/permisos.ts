@@ -18,6 +18,19 @@ export type PermisosModulo = Record<Permiso, boolean>;
 export type MatrizPermisos = Record<Rol, Record<Modulo, PermisosModulo>>;
 
 export const MATRIZ_PERMISOS: MatrizPermisos = {
+  [Rol.SUPER_ADMIN]: {
+    dashboard: { read: true, write: true, delete: true },
+    ventas: { read: true, write: true, delete: true },
+    compras: { read: true, write: true, delete: true },
+    inventario: { read: true, write: true, delete: true },
+    clientes: { read: true, write: true, delete: true },
+    proveedores: { read: true, write: true, delete: true },
+    contabilidad: { read: true, write: true, delete: true },
+    rrhh: { read: true, write: true, delete: true },
+    proyectos: { read: true, write: true, delete: true },
+    reportes: { read: true, write: true, delete: true },
+    configuracion: { read: true, write: true, delete: true },
+  },
   [Rol.ADMIN]: {
     dashboard: { read: true, write: true, delete: true },
     ventas: { read: true, write: true, delete: true },

@@ -1,56 +1,26 @@
-import type { Empleado } from "../domain/entities/Empleado";
+import type {
+  Client,
+  Product,
+  Purchase,
+  Vendor,
+  AccountingTransaction,
+  Project,
+} from "../domain/types";
 
-export { type Empleado };
+export {
+  type Client as Cliente,
+  type Product as Producto,
+  type Purchase as Compra,
+  type Vendor as Proveedor,
+  type AccountingTransaction as TransaccionContable,
+  type Project as Proyecto,
+};
 
-export interface Venta {
-  id: string;
-  cliente: string;
-  clienteId: string;
-  producto: string;
-  productoId: string;
-  cantidad: number;
-  total: number;
-  fecha: string;
-  estado: "completada" | "pendiente" | "cancelada";
-}
+// Las ventas ahora vienen del backend - usar saleService / useVentaStore
 
-export interface Compra {
-  id: string;
-  proveedor: string;
-  producto: string;
-  cantidad: number;
-  total: number;
-  fecha: string;
-  estado: "recibida" | "pendiente" | "cancelada";
-}
-
-export interface Producto {
-  id: string;
-  nombre: string;
-  categoria: string;
-  categoriaId?: number | null;
-  stock: number;
-  precio: number;
-  proveedor?: string;
-  imagen: string;
-  descripcion: string;
-  isActive?: boolean;
-}
-
-export interface Cliente {
-  id: string;
-  nombre: string;
-  email: string;
-  telefono: string;
-  direccion: string;
-  totalCompras: number;
-  avatar: string;
-  empresa?: string;
-}
-
-export const clientes: Cliente[] = [
+export const clientes: Client[] = [
   {
-    id: "CL001",
+    id: 1,
     nombre: "Carlos Mendoza",
     email: "carlos@email.com",
     telefono: "809-123-4567",
@@ -60,7 +30,7 @@ export const clientes: Cliente[] = [
     empresa: "Tech Solutions RD",
   },
   {
-    id: "CL002",
+    id: 2,
     nombre: "María García",
     email: "maria@email.com",
     telefono: "809-234-5678",
@@ -70,7 +40,7 @@ export const clientes: Cliente[] = [
     empresa: "Inversiones García",
   },
   {
-    id: "CL003",
+    id: 3,
     nombre: "Juan López",
     email: "juan@email.com",
     telefono: "809-345-6789",
@@ -80,7 +50,7 @@ export const clientes: Cliente[] = [
     empresa: "López & Asocs",
   },
   {
-    id: "CL004",
+    id: 4,
     nombre: "Ana Torres",
     email: "ana@email.com",
     telefono: "809-456-7890",
@@ -90,7 +60,7 @@ export const clientes: Cliente[] = [
     empresa: "Torres Consultores",
   },
   {
-    id: "CL005",
+    id: 5,
     nombre: "Pedro Ruiz",
     email: "pedro@email.com",
     telefono: "809-567-8901",
@@ -100,7 +70,7 @@ export const clientes: Cliente[] = [
     empresa: "Distribuciones Ruiz",
   },
   {
-    id: "CL006",
+    id: 6,
     nombre: "Laura Díaz",
     email: "laura@email.com",
     telefono: "809-678-9012",
@@ -110,7 +80,7 @@ export const clientes: Cliente[] = [
     empresa: "Diaz Import",
   },
   {
-    id: "CL007",
+    id: 7,
     nombre: "Roberto Sánchez",
     email: "roberto@email.com",
     telefono: "809-789-0123",
@@ -839,86 +809,6 @@ export const productos: Producto[] = [
   },
 ];
 
-export const ventas: Venta[] = [
-  {
-    id: "V001",
-    cliente: "Carlos Mendoza",
-    clienteId: "CL001",
-    producto: "Laptop HP Pavilion 15",
-    productoId: "P001",
-    cantidad: 1,
-    total: 45990,
-    fecha: "2026-04-28",
-    estado: "completada",
-  },
-  {
-    id: "V002",
-    cliente: "María García",
-    clienteId: "CL002",
-    producto: "Mouse Logitech MX Master 3",
-    productoId: "P002",
-    cantidad: 2,
-    total: 9000,
-    fecha: "2026-04-28",
-    estado: "completada",
-  },
-  {
-    id: "V003",
-    cliente: "Juan López",
-    clienteId: "CL003",
-    producto: 'Monitor Samsung 27" 4K',
-    productoId: "P003",
-    cantidad: 1,
-    total: 28900,
-    fecha: "2026-04-27",
-    estado: "pendiente",
-  },
-  {
-    id: "V004",
-    cliente: "Ana Torres",
-    clienteId: "CL004",
-    producto: "Teclado Mecánico Corsair K70",
-    productoId: "P004",
-    cantidad: 1,
-    total: 8900,
-    fecha: "2026-04-27",
-    estado: "completada",
-  },
-  {
-    id: "V005",
-    cliente: "Pedro Ruiz",
-    clienteId: "CL005",
-    producto: "Auriculares Sony WH-1000XM4",
-    productoId: "P005",
-    cantidad: 3,
-    total: 47970,
-    fecha: "2026-04-26",
-    estado: "cancelada",
-  },
-  {
-    id: "V006",
-    cliente: "Carlos Mendoza",
-    clienteId: "CL001",
-    producto: "Webcam Logitech C920",
-    productoId: "P006",
-    cantidad: 1,
-    total: 4500,
-    fecha: "2026-04-25",
-    estado: "completada",
-  },
-  {
-    id: "V007",
-    cliente: "Laura Díaz",
-    clienteId: "CL006",
-    producto: "Impresora HP LaserJet Pro",
-    productoId: "P009",
-    cantidad: 1,
-    total: 8900,
-    fecha: "2026-04-24",
-    estado: "completada",
-  },
-];
-
 export const compras: Compra[] = [
   {
     id: "C001",
@@ -1025,17 +915,6 @@ export const recordatorios = [
     fecha: "2026-05-05",
   },
 ];
-
-export interface Proveedor {
-  id: string;
-  nombre: string;
-  email: string;
-  telefono: string;
-  direccion: string;
-  categoria: string;
-  totalOrdenes: number;
-  avatar: string;
-}
 
 export interface TransaccionContable {
   id: string;
@@ -1168,292 +1047,6 @@ export const transaccionesContables: TransaccionContable[] = [
     estado: "conciliada",
   },
 ];
-
-export const empleados: Empleado[] = [
-  {
-    id: "EMP001",
-    avatar: "https://i.pravatar.cc/150?img=47",
-    estado: "activo",
-    nombre: "Laura Martínez",
-    informacionPersonal: {
-      cedula: "001-1234567-8",
-      fechaNacimiento: "1990-05-15",
-      genero: "F",
-      estadoCivil: "casado",
-    },
-    emailLaboral: "laura.martinez@volterp.com",
-    emailPersonal: "laura_martinez86@gmail.com",
-    telefonoLaboral: "809-555-0101",
-    telefonoPersonal: "809-777-0001",
-    direccion: "Av. Winston Churchill 1234, Torre Empresarial",
-    ciudad: "Santo Domingo",
-    contactoEmergencia: {
-      nombre: "José Martínez",
-      telefono: "809-777-0102",
-      relacion: "Esposo",
-    },
-    informacionFiscal: {
-      afp: "AFP Reservas",
-      afpNumero: "1002345678",
-      ars: "ARS Humano",
-      arsNumero: "2003456789",
-      nss: "123456789012",
-    },
-    cargo: "Gerente de Ventas",
-    departamento: "Ventas",
-    jefeDirectoId: null,
-    tipoContrato: "indefinido",
-    fechaIngreso: "2023-01-15",
-    fechaAntiguedad: "2023-01-15",
-    horarioLaboral: "L-V 8:00 AM - 5:00 PM",
-    ubicacion: "Santo Domingo - Oficina Principal",
-    salarioBase: 85000,
-    periodicidadPago: "quincenal",
-    cuentaBancaria: {
-      banco: "Banco Popular Dominicano",
-      numeroCuenta: "XXXX-XXXX-5678",
-      tipoCuenta: "corriente",
-    },
-    createdAt: "2023-01-15T08:00:00Z",
-    updatedAt: "2026-04-28T14:30:00Z",
-  },
-  {
-    id: "EMP002",
-    avatar: "https://i.pravatar.cc/150?img=68",
-    estado: "activo",
-    nombre: "Miguel Torres",
-    informacionPersonal: {
-      cedula: "002-2345678-9",
-      fechaNacimiento: "1995-08-22",
-      genero: "M",
-      estadoCivil: "soltero",
-    },
-    emailLaboral: "miguel.torres@volterp.com",
-    emailPersonal: "mtorres.dev@gmail.com",
-    telefonoLaboral: "809-555-0103",
-    telefonoPersonal: "809-777-0002",
-    direccion: "Calle Sanchez 456, Santiago",
-    ciudad: "Santiago",
-    contactoEmergencia: {
-      nombre: "María Torres",
-      telefono: "809-777-0104",
-      relacion: "Madre",
-    },
-    informacionFiscal: {
-      afp: "AFPPopular",
-      afpNumero: "1003456789",
-      ars: "ARS Senasa",
-      arsNumero: "2004567890",
-      nss: "234567890123",
-    },
-    cargo: "Desarrollador FullStack Senior",
-    departamento: "Tecnología",
-    jefeDirectoId: "EMP001",
-    tipoContrato: "indefinido",
-    fechaIngreso: "2023-03-20",
-    fechaAntiguedad: "2023-03-20",
-    horarioLaboral: "L-V 9:00 AM - 6:00 PM",
-    ubicacion: "Santo Domingo - Oficina Principal",
-    salarioBase: 95000,
-    periodicidadPago: "quincenal",
-    cuentaBancaria: {
-      banco: "Banco BDI",
-      numeroCuenta: "XXXX-XXXX-6789",
-      tipoCuenta: "ahorro",
-    },
-    createdAt: "2023-03-20T09:00:00Z",
-    updatedAt: "2026-04-25T10:15:00Z",
-  },
-  {
-    id: "EMP003",
-    avatar: "https://i.pravatar.cc/150?img=45",
-    estado: "activo",
-    nombre: "Sandra Peña",
-    informacionPersonal: {
-      cedula: "003-3456789-0",
-      fechaNacimiento: "1988-03-10",
-      genero: "F",
-      estadoCivil: "casado",
-    },
-    emailLaboral: "sandra.pena@volterp.com",
-    emailPersonal: "sandra.pena88@hotmail.com",
-    telefonoLaboral: "809-555-0105",
-    telefonoPersonal: "809-777-0003",
-    direccion: "Av. 27 de Febrero 890, Ensanche ozama",
-    ciudad: "Santo Domingo",
-    contactoEmergencia: {
-      nombre: "Roberto Peña",
-      telefono: "809-777-0106",
-      relacion: "Esposo",
-    },
-    informacionFiscal: {
-      afp: "AFP Reservas",
-      afpNumero: "1004567890",
-      ars: "ARS Humano",
-      arsNumero: "2005678901",
-      nss: "345678901234",
-    },
-    cargo: "Contadora Senior",
-    departamento: "Contabilidad",
-    jefeDirectoId: null,
-    tipoContrato: "indefinido",
-    fechaIngreso: "2022-08-10",
-    fechaAntiguedad: "2022-08-10",
-    horarioLaboral: "L-V 8:00 AM - 4:00 PM",
-    ubicacion: "Santo Domingo - Oficina Principal",
-    salarioBase: 75000,
-    periodicidadPago: "quincenal",
-    cuentaBancaria: {
-      banco: "Banco de la Nación",
-      numeroCuenta: "XXXX-XXXX-7890",
-      tipoCuenta: "corriente",
-    },
-    createdAt: "2022-08-10T08:00:00Z",
-    updatedAt: "2026-04-20T16:45:00Z",
-  },
-  {
-    id: "EMP004",
-    avatar: "https://i.pravatar.cc/150?img=53",
-    estado: "activo",
-    nombre: "Carlos Ruiz",
-    informacionPersonal: {
-      cedula: "004-4567890-1",
-      fechaNacimiento: "1992-11-30",
-      genero: "M",
-      estadoCivil: "soltero",
-    },
-    emailLaboral: "carlos.ruiz@volterp.com",
-    emailPersonal: "cruiz.hr@gmail.com",
-    telefonoLaboral: "809-555-0107",
-    telefonoPersonal: "809-777-0004",
-    direccion: "Calle Principal 234, La Romana",
-    ciudad: "La Romana",
-    contactoEmergencia: {
-      nombre: "Ana Ruiz",
-      telefono: "809-777-0108",
-      relacion: "Hermana",
-    },
-    informacionFiscal: {
-      afp: "AFP Senasa",
-      afpNumero: "1005678901",
-      ars: "ARS Senasa",
-      arsNumero: "2006789012",
-      nss: "456789012345",
-    },
-    cargo: "Analista de Recursos Humanos",
-    departamento: "Recursos Humanos",
-    jefeDirectoId: null,
-    tipoContrato: "indefinido",
-    fechaIngreso: "2024-02-01",
-    fechaAntiguedad: "2024-02-01",
-    horarioLaboral: "L-V 8:00 AM - 5:00 PM",
-    ubicacion: "Santo Domingo - Oficina Principal",
-    salarioBase: 65000,
-    periodicidadPago: "quincenal",
-    cuentaBancaria: {
-      banco: "Banco Popular Dominicano",
-      numeroCuenta: "XXXX-XXXX-8901",
-      tipoCuenta: "ahorro",
-    },
-    createdAt: "2024-02-01T08:00:00Z",
-    updatedAt: "2026-04-30T09:00:00Z",
-  },
-  {
-    id: "EMP005",
-    avatar: "https://i.pravatar.cc/150?img=44",
-    estado: "inactivo",
-    nombre: "Ana López",
-    informacionPersonal: {
-      cedula: "005-5678901-2",
-      fechaNacimiento: "1997-07-25",
-      genero: "F",
-      estadoCivil: "divorciado",
-    },
-    emailLaboral: "ana.lopez@volterp.com",
-    emailPersonal: "analopez.correo@gmail.com",
-    telefonoLaboral: "809-555-0109",
-    telefonoPersonal: "809-777-0005",
-    direccion: "Av. Luperon 567, San Cristóbal",
-    ciudad: "San Cristóbal",
-    contactoEmergencia: {
-      nombre: "Pedro López",
-      telefono: "809-777-0110",
-      relacion: "Padre",
-    },
-    informacionFiscal: {
-      afp: "AFP Popular",
-      afpNumero: "1006789012",
-      ars: "ARS Humano",
-      arsNumero: "2007890123",
-      nss: "567890123456",
-    },
-    cargo: "Asistente de Dirección",
-    departamento: "Administración",
-    jefeDirectoId: "EMP001",
-    tipoContrato: "temporal",
-    fechaIngreso: "2024-06-15",
-    fechaAntiguedad: "2025-06-15",
-    horarioLaboral: "L-V 9:00 AM - 6:00 PM",
-    ubicacion: "Santo Domingo - Oficina Principal",
-    salarioBase: 45000,
-    periodicidadPago: "mensual",
-    cuentaBancaria: {
-      banco: "Banco BDI",
-      numeroCuenta: "XXXX-XXXX-9012",
-      tipoCuenta: "corriente",
-    },
-    createdAt: "2024-06-15T09:00:00Z",
-    updatedAt: "2025-12-20T17:00:00Z",
-  },
-  {
-    id: "EMP006",
-    avatar: "https://i.pravatar.cc/150?img=59",
-    estado: "vacaciones",
-    nombre: "Pedro Hernández",
-    informacionPersonal: {
-      cedula: "006-6789012-3",
-      fechaNacimiento: "1991-04-18",
-      genero: "M",
-      estadoCivil: "casado",
-    },
-    emailLaboral: "pedro.hernandez@volterp.com",
-    emailPersonal: "phernandez.pedro@gmail.com",
-    telefonoLaboral: "809-555-0111",
-    telefonoPersonal: "809-777-0006",
-    direccion: "Calle San Martin 789, San Pedro de Macorís",
-    ciudad: "San Pedro de Macorís",
-    contactoEmergencia: {
-      nombre: "Carmen Hernández",
-      telefono: "809-777-0112",
-      relacion: "Esposa",
-    },
-    informacionFiscal: {
-      afp: "AFP Reservas",
-      afpNumero: "1007890123",
-      ars: "ARS Humano",
-      arsNumero: "2008901234",
-      nss: "678901234567",
-    },
-    cargo: "Especialista de Marketing",
-    departamento: "Ventas",
-    jefeDirectoId: "EMP001",
-    tipoContrato: "indefinido",
-    fechaIngreso: "2023-06-01",
-    fechaAntiguedad: "2023-06-01",
-    horarioLaboral: "L-V 8:00 AM - 5:00 PM",
-    ubicacion: "Santo Domingo - Oficina Principal",
-    salarioBase: 70000,
-    periodicidadPago: "quincenal",
-    cuentaBancaria: {
-      banco: "Banco de la Nación",
-      numeroCuenta: "XXXX-XXXX-0123",
-      tipoCuenta: "ahorro",
-    },
-    createdAt: "2023-06-01T08:00:00Z",
-    updatedAt: "2026-05-01T10:00:00Z",
-  },
-];
-
 export const proyectos: Proyecto[] = [
   {
     id: "PRY001",

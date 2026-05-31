@@ -1,0 +1,54 @@
+schema: spec-driven
+
+context: |
+  erp-mvp — React 19 + TypeScript 6 frontend for Volterp ERP.
+  Stack: React 19.2.5, TypeScript 6, Vite 8, Zustand 5 (state), Vitest 4.1.5 (tests),
+  @testing-library/react (component tests), ESLint flat config.
+  Test pattern: AAA (Arrange-Act-Assert), descriptive test names.
+  Existing tests: stores (auth, cliente, dashboard, language, asistencia, ui, chat),
+  components (LanguageSwitcher, Pagination), utils (pagination).
+  No E2E suite yet.
+
+strict_tdd: true    # Vitest runner present and configured — Strict TDD enabled
+
+testing:
+  backend:
+    runner: null
+    unit: false
+    integration: false
+    e2e: false
+    coverage: false
+    note: "Backend is .NET — see Volterp openspec"
+  frontend:
+    runner: vitest
+    command: "yarn test"
+    framework: vitest 4.1.5
+    unit: true
+    integration: true      # @testing-library/react (DOM + userEvent)
+    e2e: false             # No playwright/cypress detected
+    coverage: true
+    coverage_command: "yarn test:coverage"
+
+rules:
+  proposal:
+    - Scope to single feature or refactor per change
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Keep componentPresentational pattern in mind
+    - Document Zustand store slices clearly
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    - Follow container/presentational pattern for React components
+    - No useEffect without verifying react.dev/learn/You-Might-Not-Need-An-Effect
+    tdd: true
+    test_command: "yarn test"
+  verify:
+    test_command: "yarn test"
+    build_command: "yarn build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas

@@ -3,14 +3,27 @@ import styles from './ActionButtons.module.css';
 interface ActionButtonsProps {
   onEdit?: () => void;
   onDelete?: () => void;
+  onToggle?: () => void;
 }
 
-export function ActionButtons({ onEdit, onDelete }: ActionButtonsProps) {
+export function ActionButtons({ onEdit, onDelete, onToggle }: ActionButtonsProps) {
   return (
     <div className={styles.actions}>
+      {onToggle && (
+        <button
+          className={`${styles.btn} ${styles.toggle}`}
+          onClick={onToggle}
+          title="Activar/Desactivar"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+            <line x1="12" y1="2" x2="12" y2="12" />
+          </svg>
+        </button>
+      )}
       {onEdit && (
-        <button 
-          className={`${styles.btn} ${styles.edit}`} 
+        <button
+          className={`${styles.btn} ${styles.edit}`}
           onClick={onEdit}
           title="Editar"
         >
@@ -21,8 +34,8 @@ export function ActionButtons({ onEdit, onDelete }: ActionButtonsProps) {
         </button>
       )}
       {onDelete && (
-        <button 
-          className={`${styles.btn} ${styles.delete}`} 
+        <button
+          className={`${styles.btn} ${styles.delete}`}
           onClick={onDelete}
           title="Eliminar"
         >

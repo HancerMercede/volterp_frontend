@@ -12,10 +12,10 @@ interface TableProps<T> {
   data: T[];
   columns: Column<T>[];
   onEdit?: (item: T) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (id: number) => void;
 }
 
-export function Table<T extends { id: string }>({ data, columns, onEdit, onDelete }: TableProps<T>) {
+export function Table<T extends { id: number }>({ data, columns, onEdit, onDelete }: TableProps<T>) {
   return (
     <div className={styles.tableContainer}>
       <table className={styles.table}>

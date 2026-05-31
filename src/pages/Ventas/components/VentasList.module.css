@@ -1,0 +1,21 @@
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.completada {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.pendiente {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.SearchBar {
+  margin-bottom: 24px;
+}
