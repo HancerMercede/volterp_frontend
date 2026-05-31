@@ -33,7 +33,7 @@ export function ClienteSelector({
   const searchFilteredClientes = useFilter({
     data: dropdownClientes,
     searchTerm: searchValue,
-    searchFields: (c) => [c.nombre, c.email, c.empresa ?? ""],
+    searchFields: (c) => [c.name, c.email],
   });
 
   const match = useMemo(() => {
@@ -41,9 +41,8 @@ export function ClienteSelector({
     const search = searchValue.toLowerCase();
     return clientes.find(
       (c) =>
-        c.nombre.toLowerCase().includes(search) ||
-        c.email.toLowerCase().includes(search) ||
-        (c.empresa && c.empresa.toLowerCase().includes(search)),
+        c.name.toLowerCase().includes(search) ||
+        c.email.toLowerCase().includes(search),
     );
   }, [searchValue, clientes]);
 
@@ -55,7 +54,7 @@ export function ClienteSelector({
       const clienteId = Number(value);
       onClienteSelect(clienteId);
       const cliente = clientes.find((c) => c.id === clienteId);
-      if (cliente) onSearchChange(cliente.nombre);
+      if (cliente) onSearchChange(cliente.name);
     }
   };
 
@@ -66,7 +65,7 @@ export function ClienteSelector({
   const handleBlur = () => {
     if (match && !selectedClienteId) {
       onClienteSelect(match.id);
-      onSearchChange(match.nombre);
+      onSearchChange(match.name);
     }
   };
 
@@ -93,7 +92,7 @@ export function ClienteSelector({
           <option value="">{t("ventas.selectClient")}</option>
           {searchFilteredClientes.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.nombre} {c.empresa && `(${c.empresa})`}
+              {c.name} {c.email && `(${c.email})`}
             </option>
           ))}
         </select>

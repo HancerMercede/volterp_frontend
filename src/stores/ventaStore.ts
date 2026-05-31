@@ -1,12 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useAuthStore } from "./authStore";
-import {
-  saleService,
-  type SaleDto,
-  type CreateSaleRequest,
-  type UpdateSaleRequest,
-} from "../infrastructure/api/saleService";
+import { saleService } from "../infrastructure/api/saleService";
+import type { SaleDto, CreateSaleRequest, UpdateSaleRequest } from "../domain/types";
 
 interface VentaStore {
   ventas: SaleDto[];

@@ -1,35 +1,28 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button, PageHeader, SearchInput } from "../../components/UI";
 import { useEmpleadoStore } from "../../stores/empleadoStore";
 import { NominaCalculator } from "../../components/RRHH/NominaCalculator";
-import type { Empleado } from "../../domain/entities/Empleado";
+import type { EmployeeDto } from "../../domain/types";
 import styles from "./Nomina.module.css";
+import { useFilter } from "../../hooks/useFilter";
 
 export function Nomina() {
   const { t } = useTranslation();
   const { empleados } = useEmpleadoStore();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedEmpleado, setSelectedEmpleado] = useState<Empleado | null>(
+  const [selectedEmpleado, setSelectedEmpleado] = useState<EmployeeDto | null>(
     null,
   );
 
-  const empleadosActivos = useMemo(
-    () => empleados.filter((e) => e.estado === "activo"),
-    [empleados],
-  );
-
-  const filteredEmpleados = useMemo(() => {
-    if (!searchTerm) return empleadosActivos.slice(0, 10);
-    return empleadosActivos.filter(
-      (e) =>
-        e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.cargo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.departamento.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [empleadosActivos, searchTerm]);
+  const filteredEmpleados = useFilter({
+    data: empleados,
+    searchTerm,
+    searchFields: (e) => [e.firstName, e.lastName, e.position, e.department],
+    filter: (e) => e.status === "Active",
+  });
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("es-DO", {
@@ -65,13 +58,17 @@ export function Nomina() {
                 onClick={() => setSelectedEmpleado(emp)}
               >
                 <img
-                  src={emp.avatar}
-                  alt={emp.nombre}
+                  src={
+                    emp.imageUrl ?? `https://i.pravatar.cc/150?img=${emp.id}`
+                  }
+                  alt={`${emp.firstName} ${emp.lastName}`}
                   className={styles.avatar}
                 />
                 <div className={styles.empleadoInfo}>
-                  <span className={styles.nombre}>{emp.nombre}</span>
-                  <span className={styles.cargo}>{emp.cargo}</span>
+                  <span className={styles.nombre}>
+                    {emp.firstName} {emp.lastName}
+                  </span>
+                  <span className={styles.cargo}>{emp.position}</span>
                 </div>
               </button>
             ))}
@@ -83,37 +80,38 @@ export function Nomina() {
             <>
               <div className={styles.empleadoHeader}>
                 <img
-                  src={selectedEmpleado.avatar}
-                  alt={selectedEmpleado.nombre}
+                  src={
+                    selectedEmpleado.imageUrl ??
+                    `https://i.pravatar.cc/150?img=${selectedEmpleado.id}`
+                  }
+                  alt={`${selectedEmpleado.firstName} ${selectedEmpleado.lastName}`}
                   className={styles.avatarLarge}
                 />
                 <div>
-                  <h2>{selectedEmpleado.nombre}</h2>
+                  <h2>
+                    {selectedEmpleado.firstName} {selectedEmpleado.lastName}
+                  </h2>
                   <p>
-                    {selectedEmpleado.cargo} - {selectedEmpleado.departamento}
+                    {selectedEmpleado.position} - {selectedEmpleado.department}
                   </p>
                   <p className={styles.salario}>
                     {t("nomina.baseSalary")}:{" "}
-                    {formatCurrency(selectedEmpleado.salarioBase)}
+                    {formatCurrency(selectedEmpleado.salary)}
                   </p>
                 </div>
               </div>
 
-              <NominaCalculator salarioBase={selectedEmpleado.salarioBase} />
+              <NominaCalculator salarioBase={selectedEmpleado.salary} />
 
               <div className={styles.infoBox}>
                 <h4>{t("nomina.paymentInfo")}</h4>
                 <p>
-                  <strong>{t("nomina.periodicity")}:</strong>{" "}
-                  {selectedEmpleado.periodicidadPago}
-                </p>
-                <p>
                   <strong>{t("nomina.bank")}:</strong>{" "}
-                  {selectedEmpleado.cuentaBancaria.banco}
+                  {selectedEmpleado.bank ?? "—"}
                 </p>
                 <p>
                   <strong>{t("nomina.account")}:</strong>{" "}
-                  {selectedEmpleado.cuentaBancaria.numeroCuenta}
+                  {selectedEmpleado.accountNumber ?? "—"}
                 </p>
               </div>
             </>

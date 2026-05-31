@@ -1,10 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useAuthStore } from "./authStore";
-import {
-  categoryService,
-  type CategoryDto,
-} from "../infrastructure/api/categoryService";
+import { categoryService } from "../infrastructure/api/categoryService";
+import type { CategoryDto } from "../domain/types";
 
 interface CategoryStore {
   categories: CategoryDto[];

@@ -7,9 +7,6 @@ import type {
   UpdateSaleRequest,
 } from "../../domain/types";
 
-// Re-exportar tipos para uso directo
-export type { SaleDto, CreateSaleRequest, UpdateSaleRequest } from "../../domain/types";
-
 export const saleService = {
   async getSales(
     pageNumber: number = 1,

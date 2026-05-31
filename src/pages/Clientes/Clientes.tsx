@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useClienteStore } from "../../stores/clienteStore";
 import {
@@ -15,44 +15,66 @@ import {
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { Cliente } from "../../data/mockData";
+import type { Client, ClientRequest } from "../../domain/types";
 import styles from "./Clientes.module.css";
+import { useFilter } from "../../hooks/useFilter";
 
 export function Clientes() {
   const { t } = useTranslation();
-  const { clientes, addCliente, updateCliente, deleteCliente } =
-    useClienteStore();
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const {
+    clientes,
+    totalCount,
+    fetchClientes,
+    addCliente,
+    updateCliente,
+    deleteCliente,
+  } = useClienteStore();
+
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-  const [formData, setFormData] = useState({
-    nombre: "",
+
+  useEffect(() => {
+    fetchClientes(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchClientes]);
+
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [formData, setFormData] = useState<ClientRequest>({
+    name: "",
     email: "",
-    telefono: "",
-    direccion: "",
-    totalCompras: 0,
-    empresa: "",
+    phone: "",
+    address: "",
+    isActive: true,
+    imageUrl: "",
   });
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const filteredClientes = useMemo(() => {
-    return clientes.filter(
-      (c) =>
-        c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.telefono.includes(searchTerm),
-    );
-  }, [clientes, searchTerm]);
+  const filteredClientes = useFilter({
+    data: clientes,
+    searchTerm,
+    searchFields: (c) => [c.name, c.email, c.phone],
+  });
 
   const paginatedClientes = useMemo(() => {
     return paginate(filteredClientes, pageNumber, ITEMS_PER_PAGE);
   }, [filteredClientes, pageNumber]);
 
-  const paginationInfo = getInfo(filteredClientes.length);
+  const paginationInfo = getInfo(totalCount);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,12 +82,7 @@ export function Clientes() {
       updateCliente(editingId, formData);
       setEditingId(null);
     } else {
-      const newCliente: Cliente = {
-        ...formData,
-        id: `CL${String(clientes.length + 1).padStart(3, "0")}`,
-        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
-      };
-      addCliente(newCliente);
+      addCliente(formData);
     }
     setShowForm(false);
     resetForm();
@@ -73,29 +90,29 @@ export function Clientes() {
 
   const resetForm = () => {
     setFormData({
-      nombre: "",
+      name: "",
       email: "",
-      telefono: "",
-      direccion: "",
-      totalCompras: 0,
-      empresa: "",
+      phone: "",
+      address: "",
+      isActive: true,
+      imageUrl: "",
     });
   };
 
-  const handleEdit = (cliente: Cliente) => {
+  const handleEdit = (cliente: Client) => {
     setFormData({
-      nombre: cliente.nombre,
+      name: cliente.name,
       email: cliente.email,
-      telefono: cliente.telefono,
-      direccion: cliente.direccion,
-      totalCompras: cliente.totalCompras ?? 0,
-      empresa: cliente.empresa || "",
+      phone: cliente.phone,
+      address: cliente.address,
+      isActive: cliente.isActive,
+      imageUrl: cliente.imageUrl || "",
     });
     setEditingId(cliente.id);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };
@@ -107,28 +124,34 @@ export function Clientes() {
   const columns = [
     { key: "id", header: t("common.id") },
     {
-      key: "nombre",
+      key: "name",
       header: t("clientes.client"),
-      render: (c: Cliente) => (
+      render: (c: Client) => (
         <ImageCell
-          src={c.avatar}
-          name={c.nombre}
+          src={
+            c.imageUrl || c.avatar || `https://i.pravatar.cc/150?img=${c.id}`
+          }
+          name={c.name}
           subtext={c.empresa}
           type="avatar"
         />
       ),
     },
     { key: "email", header: t("common.email") },
-    { key: "telefono", header: t("common.phone") },
+    { key: "phone", header: t("common.phone") },
     {
-      key: "totalCompras",
-      header: t("clientes.totalPurchases"),
-      render: (c: Cliente) => `$${c.totalCompras?.toLocaleString()}`,
+      key: "isActive",
+      header: t("common.status"),
+      render: (c: Client) => (
+        <span style={{ color: c.isActive ? "green" : "red" }}>
+          {c.isActive ? t("common.active") : t("common.inactive")}
+        </span>
+      ),
     },
     {
       key: "actions",
       header: t("common.actions"),
-      render: (c: Cliente) => (
+      render: (c: Client) => (
         <ActionButtons
           onEdit={() => handleEdit(c)}
           onDelete={() => handleDelete(c.id)}
@@ -175,10 +198,8 @@ export function Clientes() {
           <label>{t("clientes.clientName")}</label>
           <input
             type="text"
-            value={formData.nombre}
-            onChange={(e) =>
-              setFormData({ ...formData, nombre: e.target.value })
-            }
+            value={formData.name || ""}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>
@@ -186,7 +207,7 @@ export function Clientes() {
           <label>{t("clientes.clientEmail")}</label>
           <input
             type="email"
-            value={formData.email}
+            value={formData.email || ""}
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
@@ -197,9 +218,9 @@ export function Clientes() {
           <label>{t("clientes.clientPhone")}</label>
           <input
             type="tel"
-            value={formData.telefono}
+            value={formData.phone || ""}
             onChange={(e) =>
-              setFormData({ ...formData, telefono: e.target.value })
+              setFormData({ ...formData, phone: e.target.value })
             }
             placeholder="809-XXX-XXXX"
             required
@@ -209,28 +230,23 @@ export function Clientes() {
           <label>{t("common.address")}</label>
           <input
             type="text"
-            value={formData.direccion}
+            value={formData.address || ""}
             onChange={(e) =>
-              setFormData({ ...formData, direccion: e.target.value })
+              setFormData({ ...formData, address: e.target.value })
             }
           />
         </div>
-        {!editingId && (
-          <div className={styles.formGroup}>
-            <label>{t("clientes.totalPurchases")}</label>
-            <input
-              type="number"
-              min="0"
-              value={formData.totalCompras}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  totalCompras: parseInt(e.target.value),
-                })
-              }
+        <div className={styles.formGroup}>
+          <label>{t("common.image")}</label>
+          <input type="file" accept="image/*" onChange={handleImageChange} />
+          {formData.imageUrl && (
+            <img
+              src={formData.imageUrl}
+              alt="Preview"
+              style={{ width: "80px", marginTop: "8px", borderRadius: "4px" }}
             />
-          </div>
-        )}
+          )}
+        </div>
       </Modal>
 
       <Table data={paginatedClientes} columns={columns} />

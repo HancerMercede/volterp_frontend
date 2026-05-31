@@ -1,64 +1,38 @@
 import { useState, useCallback } from "react";
-import type { Empleado, EstadoEmpleado } from "../../domain/entities/Empleado";
-
-export interface EmpleadoFormData {
-  nombre: string;
-  informacionPersonal: {
-    cedula: string;
-    fechaNacimiento: string;
-    genero: "M" | "F" | "Otro";
-    estadoCivil: "soltero" | "casado" | "divorciado" | "viudo";
-  };
-  emailLaboral: string;
-  emailPersonal: string;
-  telefonoLaboral: string;
-  telefonoPersonal: string;
-  direccion: string;
-  ciudad: string;
-  contactoEmergencia: { nombre: string; telefono: string; relacion: string };
-  informacionFiscal: { afp: string; afpNumero: string; ars: string; arsNumero: string; nss: string };
-  cargo: string;
-  departamento: string;
-  tipoContrato: "indefinido" | "temporal" | "por_proyecto" | "suplencia";
-  fechaIngreso: string;
-  salarioBase: number;
-  estado: EstadoEmpleado;
-  cuentaBancaria: { banco: string; numeroCuenta: string; tipoCuenta: "ahorro" | "corriente" };
-}
+import type { EmployeeDto, EmployeeRequest } from "../../domain/types";
 
 export const FORM_STEPS = [
   { id: 1, title: "Datos Personales" },
-  { id: 2, title: "Contacto" },
-  { id: 3, title: "Emergencia" },
-  { id: 4, title: "Fiscal" },
-  { id: 5, title: "Laboral" },
-  { id: 6, title: "Bancario" },
+  { id: 2, title: "Información Laboral" },
+  { id: 3, title: "Datos de Pago" },
 ] as const;
 
-export function getInitialFormData(): EmpleadoFormData {
+export function getInitialFormData(): EmployeeRequest {
   return {
-    nombre: "",
-    informacionPersonal: { cedula: "", fechaNacimiento: "", genero: "M", estadoCivil: "soltero" },
-    emailLaboral: "",
-    emailPersonal: "",
-    telefonoLaboral: "",
-    telefonoPersonal: "",
-    direccion: "",
-    ciudad: "",
-    contactoEmergencia: { nombre: "", telefono: "", relacion: "" },
-    informacionFiscal: { afp: "", afpNumero: "", ars: "", arsNumero: "", nss: "" },
-    cargo: "",
-    departamento: "",
-    tipoContrato: "indefinido",
-    fechaIngreso: "",
-    salarioBase: 0,
-    estado: "activo",
-    cuentaBancaria: { banco: "", numeroCuenta: "", tipoCuenta: "corriente" },
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    position: "",
+    department: "",
+    hireDate: "",
+    salary: 0,
+    status: "Active",
+    workSchedule: "",
+    afp: null,
+    ars: null,
+    nss: null,
+    bank: null,
+    accountNumber: null,
+    imageUrl: null,
   };
 }
 
-export function useEmpleadoForm(onSubmit: (data: EmpleadoFormData, id: string | null) => void) {
-  const [formData, setFormData] = useState<EmpleadoFormData>(getInitialFormData());
+export function useEmpleadoForm(
+  onSubmit: (data: EmployeeRequest, id: number | null) => void,
+) {
+  const [formData, setFormData] =
+    useState<EmployeeRequest>(getInitialFormData());
   const [currentStep, setCurrentStep] = useState(1);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -82,35 +56,37 @@ export function useEmpleadoForm(onSubmit: (data: EmpleadoFormData, id: string | 
     setEditingId(null);
   }, []);
 
-  const startEdit = useCallback((empleado: Empleado) => {
+  const startEdit = useCallback((empleado: EmployeeDto) => {
     setFormData({
-      nombre: empleado.nombre,
-      informacionPersonal: { ...empleado.informacionPersonal },
-      emailLaboral: empleado.emailLaboral,
-      emailPersonal: empleado.emailPersonal,
-      telefonoLaboral: empleado.telefonoLaboral,
-      telefonoPersonal: empleado.telefonoPersonal,
-      direccion: empleado.direccion,
-      ciudad: empleado.ciudad,
-      contactoEmergencia: { ...empleado.contactoEmergencia },
-      informacionFiscal: { ...empleado.informacionFiscal },
-      cargo: empleado.cargo,
-      departamento: empleado.departamento,
-      tipoContrato: empleado.tipoContrato,
-      fechaIngreso: empleado.fechaIngreso,
-      salarioBase: empleado.salarioBase,
-      estado: empleado.estado,
-      cuentaBancaria: { ...empleado.cuentaBancaria },
+      firstName: empleado.firstName,
+      lastName: empleado.lastName,
+      email: empleado.email,
+      phone: empleado.phone,
+      position: empleado.position,
+      department: empleado.department,
+      hireDate: empleado.hireDate,
+      salary: empleado.salary,
+      status: empleado.status,
+      workSchedule: empleado.workSchedule,
+      afp: empleado.afp,
+      ars: empleado.ars,
+      nss: empleado.nss,
+      bank: empleado.bank,
+      accountNumber: empleado.accountNumber,
+      imageUrl: empleado.imageUrl ?? null,
     });
-    setEditingId(empleado.id);
+    setEditingId(String(empleado.id));
     setCurrentStep(1);
   }, []);
 
-  const submit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData, editingId);
-    reset();
-  }, [formData, editingId, onSubmit, reset]);
+  const submit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      onSubmit(formData, editingId);
+      reset();
+    },
+    [formData, editingId, onSubmit, reset],
+  );
 
   return {
     formData,

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTransaccionStore } from "../../stores/transaccionStore";
 import {
@@ -12,7 +12,10 @@ import {
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
-import type { TransaccionContable } from "../../data/mockData";
+import type {
+  AccountingTransactionDto,
+  AccountingTransactionRequest,
+} from "../../domain/types";
 import styles from "./Contabilidad.module.css";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import { useFilter } from "../../hooks/useFilter";
@@ -21,49 +24,55 @@ export function Contabilidad() {
   const { t } = useTranslation();
   const {
     transacciones,
+    totalCount,
+    fetchTransacciones,
     addTransaccion,
     updateTransaccion,
     deleteTransaccion,
   } = useTransaccionStore();
+
+  useEffect(() => {
+    fetchTransacciones();
+  }, [fetchTransacciones]);
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterTipo, setFilterTipo] = useState<"todos" | "ingreso" | "egreso">(
+  const [filterTipo, setFilterTipo] = useState<"todos" | "Income" | "Expense">(
     "todos",
   );
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-  const [formData, setFormData] = useState({
-    descripcion: "",
-    tipo: "ingreso" as "ingreso" | "egreso",
-    monto: 0,
-    fecha: "",
-    categoria: "",
-    estado: "pendiente" as "conciliada" | "pendiente",
+  const [formData, setFormData] = useState<AccountingTransactionRequest>({
+    description: "",
+    type: "Income",
+    amount: 0,
+    date: "",
+    category: "",
+    status: "Pending",
   });
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const filteredTransacciones = useFilter({
     data: transacciones,
     searchTerm,
-    searchFields: (t) => [t.descripcion, t.categoria],
-    filter: (t) => filterTipo === "todos" || t.tipo == filterTipo,
+    searchFields: (t) => [t.description, t.category],
+    filter: (t) => filterTipo === "todos" || t.type == filterTipo,
   });
 
   const paginatedTransacciones = useMemo(() => {
     return paginate(filteredTransacciones, pageNumber, ITEMS_PER_PAGE);
   }, [filteredTransacciones, pageNumber]);
 
-  const paginationInfo = getInfo(filteredTransacciones.length);
+  const paginationInfo = getInfo(totalCount);
 
   const totalIngresos = transacciones
-    .filter((t) => t.tipo === "ingreso")
-    .reduce((acc, t) => acc + t.monto, 0);
+    .filter((t) => t.type === "Income")
+    .reduce((acc, t) => acc + t.amount, 0);
   const totalEgresos = transacciones
-    .filter((t) => t.tipo === "egreso")
-    .reduce((acc, t) => acc + t.monto, 0);
+    .filter((t) => t.type === "Expense")
+    .reduce((acc, t) => acc + t.amount, 0);
   const balance = totalIngresos - totalEgresos;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -72,11 +81,7 @@ export function Contabilidad() {
       updateTransaccion(editingId, formData);
       setEditingId(null);
     } else {
-      const newTransaccion: TransaccionContable = {
-        ...formData,
-        id: `CNT${String(transacciones.length + 1).padStart(3, "0")}`,
-      };
-      addTransaccion(newTransaccion);
+      addTransaccion(formData);
     }
     setShowForm(false);
     resetForm();
@@ -84,29 +89,29 @@ export function Contabilidad() {
 
   const resetForm = () => {
     setFormData({
-      descripcion: "",
-      tipo: "ingreso",
-      monto: 0,
-      fecha: "",
-      categoria: "",
-      estado: "pendiente",
+      description: "",
+      type: "Income",
+      amount: 0,
+      date: "",
+      category: "",
+      status: "Pending",
     });
   };
 
-  const handleEdit = (t: TransaccionContable) => {
+  const handleEdit = (t: AccountingTransactionDto) => {
     setFormData({
-      descripcion: t.descripcion,
-      tipo: t.tipo,
-      monto: t.monto,
-      fecha: t.fecha,
-      categoria: t.categoria,
-      estado: t.estado,
+      description: t.description,
+      type: t.type,
+      amount: t.amount,
+      date: t.date,
+      category: t.category,
+      status: t.status,
     });
     setEditingId(t.id);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };
@@ -125,15 +130,19 @@ export function Contabilidad() {
 
   const columns = [
     { key: "id", header: t("common.id") },
-    { key: "descripcion", header: t("common.description") },
+    {
+      key: "descripcion",
+      header: t("common.description"),
+      render: (tr: AccountingTransactionDto) => tr.description,
+    },
     {
       key: "tipo",
       header: t("common.type"),
-      render: (tr: TransaccionContable) => (
+      render: (tr: AccountingTransactionDto) => (
         <span
-          className={`${styles.badge} ${tr.tipo === "ingreso" ? styles.ingreso : styles.egreso}`}
+          className={`${styles.badge} ${tr.type === "Income" ? styles.ingreso : styles.egreso}`}
         >
-          {tr.tipo === "ingreso"
+          {tr.type === "Income"
             ? t("contabilidad.income")
             : t("contabilidad.expense")}
         </span>
@@ -142,25 +151,33 @@ export function Contabilidad() {
     {
       key: "monto",
       header: t("common.amount"),
-      render: (tr: TransaccionContable) => (
+      render: (tr: AccountingTransactionDto) => (
         <span
-          className={tr.tipo === "ingreso" ? styles.positivo : styles.negativo}
+          className={tr.type === "Income" ? styles.positivo : styles.negativo}
         >
-          {tr.tipo === "ingreso" ? "+" : "-"}
-          {formatCurrency(tr.monto)}
+          {tr.type === "Income" ? "+" : "-"}
+          {formatCurrency(tr.amount)}
         </span>
       ),
     },
-    { key: "categoria", header: t("common.category") },
-    { key: "fecha", header: t("common.date") },
+    {
+      key: "categoria",
+      header: t("common.category"),
+      render: (tr: AccountingTransactionDto) => tr.category,
+    },
+    {
+      key: "fecha",
+      header: t("common.date"),
+      render: (tr: AccountingTransactionDto) => tr.date,
+    },
     {
       key: "estado",
       header: t("common.status"),
-      render: (tr: TransaccionContable) => (
+      render: (tr: AccountingTransactionDto) => (
         <span
-          className={`${styles.badge} ${tr.estado === "conciliada" ? styles.conciliada : styles.pendiente}`}
+          className={`${styles.badge} ${tr.status === "Reconciled" ? styles.conciliada : styles.pendiente}`}
         >
-          {tr.estado === "conciliada"
+          {tr.status === "Reconciled"
             ? t("contabilidad.reconciled")
             : t("contabilidad.pending")}
         </span>
@@ -227,8 +244,8 @@ export function Contabilidad() {
           className={styles.select}
         >
           <option value="todos">{t("contabilidad.filterAll")}</option>
-          <option value="ingreso">{t("contabilidad.income")}</option>
-          <option value="egreso">{t("contabilidad.expenses")}</option>
+          <option value="Income">{t("contabilidad.income")}</option>
+          <option value="Expense">{t("contabilidad.expenses")}</option>
         </select>
       </div>
 
@@ -256,9 +273,9 @@ export function Contabilidad() {
           <label>{t("common.description")}</label>
           <input
             type="text"
-            value={formData.descripcion}
+            value={formData.description}
             onChange={(e) =>
-              setFormData({ ...formData, descripcion: e.target.value })
+              setFormData({ ...formData, description: e.target.value })
             }
             required
           />
@@ -266,25 +283,25 @@ export function Contabilidad() {
         <div className="formGroup">
           <label>{t("common.type")}</label>
           <select
-            value={formData.tipo}
+            value={formData.type}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                tipo: e.target.value as "ingreso" | "egreso",
+                type: e.target.value as "Income" | "Expense",
               })
             }
           >
-            <option value="ingreso">{t("contabilidad.income")}</option>
-            <option value="egreso">{t("contabilidad.expenses")}</option>
+            <option value="Income">{t("contabilidad.income")}</option>
+            <option value="Expense">{t("contabilidad.expenses")}</option>
           </select>
         </div>
         <div className="formGroup">
           <label>{t("common.amount")}</label>
           <input
             type="number"
-            value={formData.monto}
+            value={formData.amount}
             onChange={(e) =>
-              setFormData({ ...formData, monto: Number(e.target.value) })
+              setFormData({ ...formData, amount: Number(e.target.value) })
             }
             required
           />
@@ -293,10 +310,8 @@ export function Contabilidad() {
           <label>{t("common.date")}</label>
           <input
             type="date"
-            value={formData.fecha}
-            onChange={(e) =>
-              setFormData({ ...formData, fecha: e.target.value })
-            }
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
             required
           />
         </div>
@@ -304,9 +319,9 @@ export function Contabilidad() {
           <label>{t("common.category")}</label>
           <input
             type="text"
-            value={formData.categoria}
+            value={formData.category}
             onChange={(e) =>
-              setFormData({ ...formData, categoria: e.target.value })
+              setFormData({ ...formData, category: e.target.value })
             }
             required
           />
@@ -314,16 +329,16 @@ export function Contabilidad() {
         <div className="formGroup">
           <label>{t("common.status")}</label>
           <select
-            value={formData.estado}
+            value={formData.status}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                estado: e.target.value as "conciliada" | "pendiente",
+                status: e.target.value as "Reconciled" | "Pending",
               })
             }
           >
-            <option value="pendiente">{t("contabilidad.pending")}</option>
-            <option value="conciliada">{t("contabilidad.reconciled")}</option>
+            <option value="Pending">{t("contabilidad.pending")}</option>
+            <option value="Reconciled">{t("contabilidad.reconciled")}</option>
           </select>
         </div>
       </Modal>

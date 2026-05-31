@@ -1,17 +1,12 @@
-import type { Empleado } from "../../domain/entities/Empleado";
+import { useEmpleadoStore } from "../../stores/empleadoStore";
 import styles from "./EmpleadoStats.module.css";
 
-interface Props {
-  empleados: Empleado[];
-}
-
-export function EmpleadoStats({ empleados }: Props) {
-  const activos = empleados.filter((e) => e.estado === "activo").length;
-  const enVacaciones = empleados.filter((e) => e.estado === "vacaciones").length;
-  const enLicencia = empleados.filter((e) => e.estado === "licencia").length;
+export function EmpleadoStats() {
+  const { empleados } = useEmpleadoStore();
+  const activos = empleados.filter((e) => e.status === "Active").length;
   const totalSalarios = empleados
-    .filter((e) => e.estado === "activo")
-    .reduce((acc, e) => acc + e.salarioBase, 0);
+    .filter((e) => e.status === "Active")
+    .reduce((acc, e) => acc + e.salary, 0);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP", minimumFractionDigits: 0 }).format(amount);
@@ -29,14 +24,6 @@ export function EmpleadoStats({ empleados }: Props) {
       <div className={styles.card}>
         <span className={styles.label}>Nómina Mensual</span>
         <span className={styles.value}>{formatCurrency(totalSalarios)}</span>
-      </div>
-      <div className={styles.card}>
-        <span className={styles.label}>En Vacaciones</span>
-        <span className={`${styles.value} ${styles.vacaciones}`}>{enVacaciones}</span>
-      </div>
-      <div className={styles.card}>
-        <span className={styles.label}>En Licencia</span>
-        <span className={`${styles.value} ${styles.licencia}`}>{enLicencia}</span>
       </div>
     </div>
   );

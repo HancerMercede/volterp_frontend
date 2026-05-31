@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -11,11 +11,8 @@ import { useEmpleadoStore } from "../../stores/empleadoStore";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import {
-  useEmpleadoForm,
-  type EmpleadoFormData,
-} from "../../application/hooks/useEmpleadoForm";
-import type { Empleado, EstadoEmpleado } from "../../domain/entities/Empleado";
+import { useEmpleadoForm } from "../../application/hooks/useEmpleadoForm";
+import type { EmployeeDto, EmployeeRequest } from "../../domain/types";
 import { EmpleadoStats } from "../../components/RRHH/EmpleadoStats";
 import { EmpleadoFilters } from "../../components/RRHH/EmpleadoFilters";
 import { EmpleadoTable } from "../../components/RRHH/EmpleadoTable";
@@ -25,41 +22,36 @@ import { useFilter } from "../../hooks/useFilter";
 
 export function RRHH() {
   const { t } = useTranslation();
-  const { empleados, addEmpleado, updateEmpleado, deleteEmpleado } =
-    useEmpleadoStore();
+  const {
+    empleados,
+    totalCount,
+    fetchEmpleados,
+    addEmpleado,
+    updateEmpleado,
+    deleteEmpleado,
+  } = useEmpleadoStore();
+
+  useEffect(() => {
+    fetchEmpleados();
+  }, [fetchEmpleados]);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterEstado, setFilterEstado] = useState<"todos" | EstadoEmpleado>(
-    "todos",
-  );
+  const [filterEstado, setFilterEstado] = useState<"todos" | string>("todos");
   const [showForm, setShowForm] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
 
   const handleSubmit = (
-    formData: EmpleadoFormData,
-    editingId: string | null,
+    formData: EmployeeRequest,
+    editingId: number | null,
   ) => {
-    const now = new Date().toISOString();
     if (editingId) {
-      updateEmpleado(editingId, { ...formData, updatedAt: now });
+      updateEmpleado(editingId, formData);
     } else {
-      const newEmpleado: Empleado = {
-        ...formData,
-        id: `EMP${String(empleados.length + 1).padStart(3, "0")}`,
-        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
-        fechaAntiguedad: formData.fechaIngreso,
-        horarioLaboral: "L-V 8:00 AM - 5:00 PM",
-        ubicacion: "Santo Domingo - Oficina Principal",
-        periodicidadPago: "quincenal",
-        jefeDirectoId: null,
-        createdAt: now,
-        updatedAt: now,
-      };
-      addEmpleado(newEmpleado);
+      addEmpleado(formData);
     }
     setShowForm(false);
   };
@@ -78,22 +70,34 @@ export function RRHH() {
   const filteredEmpleados = useFilter({
     data: empleados,
     searchTerm,
-    searchFields: (e) => [e.nombre, e.cargo, e.departamento],
-    filter: (e) => filterEstado === "todos" || e.estado === filterEstado,
+    searchFields: (e: EmployeeDto) => [
+      e.firstName,
+      e.lastName,
+      e.position,
+      e.department,
+    ],
+    filter: (e: EmployeeDto) => {
+      if (filterEstado === "todos") return true;
+      const estadoMap: Record<string, string> = {
+        activo: "Active",
+        inactivo: "Inactive",
+      };
+      return e.status === estadoMap[filterEstado as string];
+    },
   });
 
   const paginatedEmpleados = useMemo(
     () => paginate(filteredEmpleados, pageNumber, ITEMS_PER_PAGE),
     [filteredEmpleados, pageNumber],
   );
-  const paginationInfo = getInfo(filteredEmpleados.length);
+  const paginationInfo = getInfo(totalCount);
 
-  const handleEdit = (empleado: Empleado) => {
+  const handleEdit = (empleado: EmployeeDto) => {
     startEdit(empleado);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };
@@ -126,7 +130,7 @@ export function RRHH() {
         </>
       </PageHeader>
 
-      <EmpleadoStats empleados={empleados} />
+      <EmpleadoStats />
 
       <EmpleadoFilters
         searchTerm={searchTerm}

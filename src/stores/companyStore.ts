@@ -1,11 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useAuthStore } from "./authStore";
-import {
-  companyService,
-  type CompanyDto,
-  type CompanyRequest,
-} from "../infrastructure/api/companyService";
+import { companyService } from "../infrastructure/api/companyService";
+import type { CompanyDto, CreateCompanyRequest } from "../domain/types";
 
 interface CompanyStore {
   companies: CompanyDto[];
@@ -16,9 +13,9 @@ interface CompanyStore {
   pageCount: number;
   fetchCompanies: (pageNumber: number, pageSize: number) => Promise<void>;
   fetchCurrentCompany: (companyId: number) => Promise<void>;
-  updateCurrentCompany: (data: CompanyRequest) => Promise<void>;
-  addCompany: (data: CompanyRequest) => Promise<void>;
-  updateCompany: (id: number, data: CompanyRequest) => Promise<void>;
+  updateCurrentCompany: (data: CreateCompanyRequest) => Promise<void>;
+  addCompany: (data: CreateCompanyRequest) => Promise<void>;
+  updateCompany: (id: number, data: CreateCompanyRequest) => Promise<void>;
   deleteCompany: (id: number) => Promise<void>;
   clearError: () => void;
   clearCurrentCompany: () => void;
@@ -53,7 +50,7 @@ export const useCompanyStore = create<CompanyStore>()(
         }
       },
 
-      updateCurrentCompany: async (data: CompanyRequest) => {
+      updateCurrentCompany: async (data: CreateCompanyRequest) => {
         const token = useAuthStore.getState().token;
         const currentCompany = useCompanyStore.getState().currentCompany;
         if (!token || !currentCompany) {
@@ -96,7 +93,7 @@ export const useCompanyStore = create<CompanyStore>()(
         }
       },
 
-      addCompany: async (data: CompanyRequest) => {
+      addCompany: async (data: CreateCompanyRequest) => {
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No authenticated" });
@@ -116,7 +113,7 @@ export const useCompanyStore = create<CompanyStore>()(
         }
       },
 
-      updateCompany: async (id: number, data: CompanyRequest) => {
+      updateCompany: async (id: number, data: CreateCompanyRequest) => {
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No authenticated" });

@@ -1,30 +1,6 @@
 import { API_CONFIG } from "../api/config";
 import { fetchWithAuthJson } from "./fetchWithAuth";
-import type { PagedResult } from "../../domain/types";
-
-export interface CompanyDto {
-  id: number;
-  name: string;
-  taxId: string;
-  logoUrl: string | null;
-  isActive: boolean;
-  address: string;
-  legalName: string;
-  phone: string;
-  email: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface CompanyRequest {
-  name: string;
-  taxId: string;
-  logoUrl: string | null;
-  address: string;
-  legalName: string;
-  phone: string;
-  email: string;
-}
+import type { PagedResult, CompanyDto, CreateCompanyRequest } from "../../domain/types";
 
 export const companyService = {
   async getCompanies(
@@ -46,7 +22,7 @@ export const companyService = {
     );
   },
 
-  async createCompany(data: CompanyRequest): Promise<CompanyDto> {
+  async createCompany(data: CreateCompanyRequest): Promise<CompanyDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMPANIES}`,
       {
@@ -56,7 +32,7 @@ export const companyService = {
     );
   },
 
-  async updateCompany(id: number, data: CompanyRequest): Promise<CompanyDto> {
+  async updateCompany(id: number, data: Partial<CompanyDto>): Promise<CompanyDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMPANIES}/${id}`,
       {

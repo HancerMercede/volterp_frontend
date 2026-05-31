@@ -1,25 +1,36 @@
 .sidebar {
   width: var(--sidebar-width, 260px);
-  background: linear-gradient(180deg, #1F2937 0%, #111827 100%);
+  background: linear-gradient(180deg, #1e3a5f 0%, #0f172a 50%, #020617 100%);
   color: white;
   display: flex;
   flex-direction: column;
   padding: 24px 16px;
   flex-shrink: 0;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15), 0 0 40px rgba(59, 130, 246, 0.08);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   overflow: hidden;
 }
 
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(250, 204, 21, 0.4), transparent);
+}
+
 .logo {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 900;
   margin-bottom: 32px;
   padding: 0 12px;
   display: flex;
   align-items: center;
   gap: 12px;
   letter-spacing: -0.5px;
+  filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.4));
 }
 
 .logoIcon {
@@ -30,7 +41,7 @@
 }
 
 .logoText {
-  background: linear-gradient(135deg, #FACC15 0%, #FDE68A 50%, #FACC15 100%);
+  background: linear-gradient(135deg, #FACC15 0%, #FDE68A 40%, #FACC15 60%, #FDE68A 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

@@ -1,46 +1,118 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { TransaccionContable } from '../data/mockData';
-import { transaccionesContables as initialTransacciones } from '../data/mockData';
+import { accountingTransactionService } from '../infrastructure/api/accountingTransactionService';
+import type { AccountingTransactionDto, AccountingTransactionRequest } from '../domain/types';
 
 interface TransaccionStore {
-  transacciones: TransaccionContable[];
+  transacciones: AccountingTransactionDto[];
   loading: boolean;
   error: string | null;
-  setTransacciones: (transacciones: TransaccionContable[]) => void;
-  addTransaccion: (transaccion: TransaccionContable) => void;
-  updateTransaccion: (id: string, data: Partial<TransaccionContable>) => void;
-  deleteTransaccion: (id: string) => void;
+  totalCount: number;
+  pageCount: number;
+  
+  fetchTransacciones: (pageNumber?: number, pageSize?: number) => Promise<void>;
+  getTransaccionById: (id: number) => Promise<AccountingTransactionDto | null>;
+  addTransaccion: (transaccion: AccountingTransactionRequest) => Promise<AccountingTransactionDto>;
+  updateTransaccion: (id: number, data: AccountingTransactionRequest) => Promise<AccountingTransactionDto>;
+  deleteTransaccion: (id: number) => Promise<void>;
+  setError: (error: string | null) => void;
 }
 
-export const useTransaccionStore = create<TransaccionStore>()(
-  persist(
-    (set) => ({
-      transacciones: initialTransacciones,
-      loading: false,
-      error: null,
+export const useTransaccionStore = create<TransaccionStore>((set) => ({
+  transacciones: [],
+  loading: false,
+  error: null,
+  totalCount: 0,
+  pageCount: 0,
 
-      setTransacciones: (transacciones) => set({ transacciones }),
-
-      addTransaccion: (transaccion) =>
-        set((state) => ({
-          transacciones: [...state.transacciones, transaccion],
-        })),
-
-      updateTransaccion: (id, data) =>
-        set((state) => ({
-          transacciones: state.transacciones.map((t) =>
-            t.id === id ? { ...t, ...data } : t
-          ),
-        })),
-
-      deleteTransaccion: (id) =>
-        set((state) => ({
-          transacciones: state.transacciones.filter((t) => t.id !== id),
-        })),
-    }),
-    {
-      name: 'transaccion-storage',
+  fetchTransacciones: async (pageNumber = 1, pageSize = 10) => {
+    set({ loading: true, error: null });
+    try {
+      const result = await accountingTransactionService.getTransactions(pageNumber, pageSize);
+      set({
+        transacciones: result.items,
+        totalCount: result.rowCount,
+        pageCount: result.pageCount,
+        loading: false,
+      });
+    } catch (error) {
+      set({ 
+        loading: false, 
+        error: error instanceof Error ? error.message : 'Failed to fetch transactions' 
+      });
     }
-  )
-);
+  },
+
+  getTransaccionById: async (id: number) => {
+    set({ loading: true, error: null });
+    try {
+      const transaction = await accountingTransactionService.getTransaction(id);
+      set({ loading: false });
+      return transaction;
+    } catch (error) {
+      set({ 
+        loading: false, 
+        error: error instanceof Error ? error.message : 'Failed to fetch transaction' 
+      });
+      return null;
+    }
+  },
+
+  addTransaccion: async (transaccion: AccountingTransactionRequest) => {
+    set({ loading: true, error: null });
+    try {
+      const newTransaction = await accountingTransactionService.createTransaction(transaccion);
+      set((state) => ({
+        transacciones: [...state.transacciones, newTransaction],
+        totalCount: state.totalCount + 1,
+        loading: false,
+      }));
+      return newTransaction;
+    } catch (error) {
+      set({ 
+        loading: false, 
+        error: error instanceof Error ? error.message : 'Failed to create transaction' 
+      });
+      throw error;
+    }
+  },
+
+  updateTransaccion: async (id: number, data: AccountingTransactionRequest) => {
+    set({ loading: true, error: null });
+    try {
+      const updatedTransaction = await accountingTransactionService.updateTransaction(id, data);
+      set((state) => ({
+        transacciones: state.transacciones.map((t) =>
+          t.id === id ? { ...t, ...updatedTransaction } : t
+        ),
+        loading: false,
+      }));
+      return updatedTransaction;
+    } catch (error) {
+      set({ 
+        loading: false, 
+        error: error instanceof Error ? error.message : 'Failed to update transaction' 
+      });
+      throw error;
+    }
+  },
+
+  deleteTransaccion: async (id: number) => {
+    set({ loading: true, error: null });
+    try {
+      await accountingTransactionService.deleteTransaction(id);
+      set((state) => ({
+        transacciones: state.transacciones.filter((t) => t.id !== id),
+        totalCount: state.totalCount - 1,
+        loading: false,
+      }));
+    } catch (error) {
+      set({ 
+        loading: false, 
+        error: error instanceof Error ? error.message : 'Failed to delete transaction' 
+      });
+      throw error;
+    }
+  },
+
+  setError: (error: string | null) => set({ error }),
+}));

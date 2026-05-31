@@ -40,7 +40,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     subtotal: item.subtotal,
   })) : []);
   const [selectedCliente, setSelectedCliente] = useState<number | null>(editingVenta?.clienteId ?? null);
-  const [clienteSearch, setClienteSearch] = useState(editingCliente?.nombre ?? "");
+  const [clienteSearch, setClienteSearch] = useState(editingCliente?.name ?? "");
   const [ventaEstado, setVentaEstado] = useState<"pendiente" | "completada">(editingVenta?.status === "Completed" ? "completada" : "pendiente");
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
   const [productSearch, setProductSearch] = useState("");
@@ -49,7 +49,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     if (!clienteSearch.trim()) return null;
     const search = clienteSearch.toLowerCase();
     return clientes.find((c) =>
-      c.nombre.toLowerCase().includes(search) || c.email.toLowerCase().includes(search) || (c.empresa && c.empresa.toLowerCase().includes(search))
+      c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search)
     );
   }, [clienteSearch, clientes]);
 
@@ -83,9 +83,9 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
     try {
       if (editingSaleId) {
-        await updateVenta(editingSaleId, { clienteId: clienteElegido, clienteName: clienteData?.nombre || null, status, total, notes: null, items: buildSaleItems() } as UpdateSaleRequest);
+        await updateVenta(editingSaleId, { clienteId: clienteElegido, clienteName: clienteData?.name || null, status, total, notes: null, items: buildSaleItems() } as UpdateSaleRequest);
       } else {
-        await createVenta({ companyId: currentCompany.id, clienteId: clienteElegido, clienteName: clienteData?.nombre || null, status, total, notes: null, items: buildSaleItems() } as CreateSaleRequest);
+        await createVenta({ companyId: currentCompany.id, clienteId: clienteElegido, clienteName: clienteData?.name || null, status, total, notes: null, items: buildSaleItems() } as CreateSaleRequest);
       }
       addToast(status === "Completed" ? t("ventas.saleCompleted") : t("ventas.draftSaved"), "success");
       onSave();

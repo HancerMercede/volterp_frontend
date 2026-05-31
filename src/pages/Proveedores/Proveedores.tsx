@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useProveedorStore } from "../../stores/proveedorStore";
 import {
@@ -14,36 +14,48 @@ import {
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { Proveedor } from "../../data/mockData";
+import type { SupplierDto } from "../../domain/types";
 import styles from "./Proveedores.module.css";
 import { useFilter } from "../../hooks/useFilter";
 
 export function Proveedores() {
   const { t } = useTranslation();
-  const { proveedores, addProveedor, updateProveedor, deleteProveedor } =
-    useProveedorStore();
+  const {
+    proveedores,
+    addProveedor,
+    updateProveedor,
+    deleteProveedor,
+    fetchProveedores,
+  } = useProveedorStore();
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
+
   const [formData, setFormData] = useState({
-    nombre: "",
+    name: "",
     email: "",
-    telefono: "",
-    direccion: "",
-    categoria: "",
-    totalOrdenes: 0,
+    phone: "",
+    address: "",
+    category: "",
+    contactPerson: "",
   });
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  useEffect(() => {
+    fetchProveedores(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchProveedores]);
 
   const filteredProveedores = useFilter({
     data: proveedores,
     searchTerm,
-    searchFields: (p) => [p.nombre, p.email, p.categoria],
+    searchFields: (p) => [p.name, p.email, p.category],
   });
+
   const paginatedProveedores = useMemo(() => {
     return paginate(filteredProveedores, pageNumber, ITEMS_PER_PAGE);
   }, [filteredProveedores, pageNumber]);
@@ -56,12 +68,7 @@ export function Proveedores() {
       updateProveedor(editingId, formData);
       setEditingId(null);
     } else {
-      const newProveedor = {
-        ...formData,
-        id: `PRV${String(proveedores.length + 1).padStart(3, "0")}`,
-        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
-      };
-      addProveedor(newProveedor);
+      addProveedor({ ...formData, isActive: true });
     }
     setShowForm(false);
     resetForm();
@@ -69,29 +76,29 @@ export function Proveedores() {
 
   const resetForm = () => {
     setFormData({
-      nombre: "",
+      name: "",
       email: "",
-      telefono: "",
-      direccion: "",
-      categoria: "",
-      totalOrdenes: 0,
+      phone: "",
+      address: "",
+      category: "",
+      contactPerson: "",
     });
   };
 
-  const handleEdit = (proveedor: Proveedor) => {
+  const handleEdit = (proveedor: SupplierDto) => {
     setFormData({
-      nombre: proveedor.nombre,
+      name: proveedor.name,
       email: proveedor.email,
-      telefono: proveedor.telefono,
-      direccion: proveedor.direccion,
-      categoria: proveedor.categoria,
-      totalOrdenes: proveedor.totalOrdenes,
+      phone: proveedor.phone,
+      address: proveedor.address,
+      category: proveedor.category,
+      contactPerson: proveedor.contactPerson,
     });
     setEditingId(proveedor.id);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };
@@ -103,18 +110,13 @@ export function Proveedores() {
   const columns = [
     { key: "id", header: t("common.id") },
     {
-      key: "avatar",
+      key: "name",
       header: "proveedor",
-      render: (p: Proveedor) => <ImageCell src={p.avatar} name={p.nombre} />,
+      render: (p: SupplierDto) => <ImageCell src="" name={p.name} />,
     },
     { key: "email", header: t("common.email") },
-    { key: "telefono", header: t("common.phone") },
-    { key: "categoria", header: t("common.category") },
-    {
-      key: "totalOrdenes",
-      header: t("proveedores.totalOrders"),
-      render: (p: Proveedor) => p.totalOrdenes.toString(),
-    },
+    { key: "phone", header: t("common.phone") },
+    { key: "category", header: t("common.category") },
   ];
 
   return (
@@ -170,10 +172,8 @@ export function Proveedores() {
           <label>{t("common.name")}</label>
           <input
             type="text"
-            value={formData.nombre}
-            onChange={(e) =>
-              setFormData({ ...formData, nombre: e.target.value })
-            }
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>
@@ -192,9 +192,9 @@ export function Proveedores() {
           <label>{t("common.phone")}</label>
           <input
             type="tel"
-            value={formData.telefono}
+            value={formData.phone}
             onChange={(e) =>
-              setFormData({ ...formData, telefono: e.target.value })
+              setFormData({ ...formData, phone: e.target.value })
             }
             required
           />
@@ -203,9 +203,9 @@ export function Proveedores() {
           <label>{t("common.address")}</label>
           <input
             type="text"
-            value={formData.direccion}
+            value={formData.address}
             onChange={(e) =>
-              setFormData({ ...formData, direccion: e.target.value })
+              setFormData({ ...formData, address: e.target.value })
             }
             required
           />
@@ -214,23 +214,20 @@ export function Proveedores() {
           <label>{t("common.category")}</label>
           <input
             type="text"
-            value={formData.categoria}
+            value={formData.category}
             onChange={(e) =>
-              setFormData({ ...formData, categoria: e.target.value })
+              setFormData({ ...formData, category: e.target.value })
             }
             required
           />
         </div>
         <div className={styles.formGroup}>
-          <label>{t("proveedores.totalOrders")}</label>
+          <label>Contacto</label>
           <input
-            type="number"
-            value={formData.totalOrdenes}
+            type="text"
+            value={formData.contactPerson}
             onChange={(e) =>
-              setFormData({
-                ...formData,
-                totalOrdenes: Number(e.target.value),
-              })
+              setFormData({ ...formData, contactPerson: e.target.value })
             }
           />
         </div>

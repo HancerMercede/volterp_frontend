@@ -1,20 +1,6 @@
 import { API_CONFIG } from "../api/config";
 import { fetchWithAuthJson } from "./fetchWithAuth";
-import type { PagedResult } from "../../domain/types";
-
-export interface CategoryDto {
-  id: number;
-  name: string;
-  description: string | null;
-  companyId: number;
-  isActive: boolean;
-  createdAt: string;
-}
-
-export interface CreateCategoryRequest {
-  name: string;
-  description: string | null;
-}
+import type { PagedResult, CategoryDto, CreateCategoryRequest } from "../../domain/types";
 
 export const categoryService = {
   async getCategories(
