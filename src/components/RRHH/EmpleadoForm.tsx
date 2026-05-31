@@ -76,14 +76,37 @@ export function EmpleadoForm({
               onChange={(e) => onFieldChange("phone", e.target.value)}
             />
           </div>
-          <div className={styles.field}>
-            <label>Foto URL</label>
+          <div className={styles.field} style={{ gridColumn: "span 2" }}>
+            <label>Foto</label>
             <input
-              type="url"
-              value={formData.imageUrl ?? ""}
-              onChange={(e) => onFieldChange("imageUrl", e.target.value || null)}
-              placeholder="https://..."
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (ev) =>
+                    onFieldChange("imageUrl", ev.target?.result as string);
+                  reader.readAsDataURL(file);
+                }
+              }}
             />
+            {formData.imageUrl && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                <img
+                  src={formData.imageUrl}
+                  alt="Preview"
+                  style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => onFieldChange("imageUrl", null)}
+                  style={{ background: "none", border: "none", color: "#EF4444", cursor: "pointer", fontSize: 12, textDecoration: "underline" }}
+                >
+                  Eliminar
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
