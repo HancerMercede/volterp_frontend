@@ -9,12 +9,12 @@ import {
 import { paginate } from "../../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../../config/pagination";
 import { useFilter } from "../../../hooks/useFilter";
-import type { SaleDto, Client } from "../../../domain/types";
+import { useClienteStore } from "../../../stores/clienteStore";
+import type { SaleDto } from "../../../domain/types";
 import styles from "./VentasList.module.css";
 
 interface Props {
   ventas: SaleDto[];
-  clientes: Client[];
   onVentaClick: (venta: SaleDto) => void;
   onDelete: (id: number) => void;
   searchTerm: string;
@@ -25,7 +25,6 @@ interface Props {
 
 export function VentasList({
   ventas,
-  clientes,
   onVentaClick,
   onDelete,
   searchTerm,
@@ -34,6 +33,7 @@ export function VentasList({
   onPageChange,
 }: Props) {
   const { t } = useTranslation();
+  const { clientes } = useClienteStore();
 
   const filteredVentas = useFilter({
     data: ventas,
@@ -57,7 +57,11 @@ export function VentasList({
         const cliente = getClienteById(v.clienteId);
         return cliente ? (
           <ImageCell
-            src={cliente.avatar}
+            src={
+              cliente.imageUrl ||
+              cliente.avatar ||
+              `https://i.pravatar.cc/150?img=${cliente.id}`
+            }
             name={v.clienteName || ""}
             subtext={cliente.empresa}
             type="avatar"

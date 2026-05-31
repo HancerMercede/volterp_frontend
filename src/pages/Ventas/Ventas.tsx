@@ -17,7 +17,7 @@ import styles from "./Ventas.module.css";
 export function Ventas() {
   const { t } = useTranslation();
   const { ventas, fetchVentas, deleteVenta, loading } = useVentaStore();
-  const { clientes } = useClienteStore();
+  const { fetchClientes } = useClienteStore();
   const { currentCompany, fetchCurrentCompany } = useCompanyStore();
   const { user } = useAuthStore();
   const { addToast } = useUIStore();
@@ -40,6 +40,10 @@ export function Ventas() {
   useEffect(() => {
     fetchVentas(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchVentas]);
+
+  useEffect(() => {
+    fetchClientes(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchClientes]);
 
   const handleVentaClick = (venta: SaleDto) => {
     if (venta.status === "Completed") {
@@ -87,10 +91,6 @@ export function Ventas() {
     ? ventas.find((v) => v.id === viewingSaleId)
     : null;
 
-  const viewingCliente = viewingVenta?.clienteId
-    ? (clientes.find((c) => c.id === viewingVenta.clienteId) ?? null)
-    : null;
-
   return (
     <div>
       <PageHeader title={t("ventas.title")} subtitle={t("ventas.subtitle")}>
@@ -110,13 +110,12 @@ export function Ventas() {
       {viewingVenta && (
         <VentaDetail
           venta={viewingVenta}
-          cliente={viewingCliente}
+          clienteId={viewingVenta.clienteId ?? null}
           onClose={() => setViewingSaleId(null)}
         />
       )}
       <VentasList
         ventas={ventas}
-        clientes={clientes}
         onVentaClick={handleVentaClick}
         onDelete={handleDelete}
         searchTerm={searchTerm}
