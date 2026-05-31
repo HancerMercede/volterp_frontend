@@ -107,7 +107,9 @@ describe('useCompanyStore', () => {
     it('sets error on failure', async () => {
       mockCompanyService.getCompany.mockRejectedValue(new Error('Not found'));
 
-      await expect(useCompanyStore.getState().fetchCurrentCompany(999)).rejects.toThrow('Not found');
+      await useCompanyStore.getState().fetchCurrentCompany(999);
+
+      expect(useCompanyStore.getState().error).toBe('Not found');
     });
   });
 
