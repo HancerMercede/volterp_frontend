@@ -1,11 +1,11 @@
 import { Modal } from "../../components/UI";
 import { EmpleadoForm } from "./EmpleadoForm";
-import type { EmpleadoFormData } from "../../application/hooks/useEmpleadoForm";
+import type { EmployeeRequest } from "../../domain/types";
 
 interface Props {
   isOpen: boolean;
   editingId: string | null;
-  formData: EmpleadoFormData;
+  formData: EmployeeRequest;
   currentStep: number;
   onClose: () => void;
   onFieldChange: (path: string, value: unknown) => void;

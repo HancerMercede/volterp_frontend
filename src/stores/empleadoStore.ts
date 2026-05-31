@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { employeeService } from '../infrastructure/api/employeeService';
-import type { EmployeeDto, CreateEmployeeRequest } from '../domain/types';
+import { create } from "zustand";
+import { employeeService } from "../infrastructure/api/employeeService";
+import type { EmployeeDto, EmployeeRequest } from "../domain/types";
 
 interface EmpleadoStore {
   empleados: EmployeeDto[];
@@ -8,11 +8,14 @@ interface EmpleadoStore {
   error: string | null;
   totalCount: number;
   pageCount: number;
-  
+
   fetchEmpleados: (pageNumber?: number, pageSize?: number) => Promise<void>;
   getEmpleadoById: (id: number) => Promise<EmployeeDto | null>;
-  addEmpleado: (empleado: CreateEmployeeRequest) => Promise<EmployeeDto>;
-  updateEmpleado: (id: number, data: Partial<EmployeeDto>) => Promise<EmployeeDto>;
+  addEmpleado: (empleado: EmployeeRequest) => Promise<EmployeeDto>;
+  updateEmpleado: (
+    id: number,
+    data: Partial<EmployeeDto>,
+  ) => Promise<EmployeeDto>;
   deleteEmpleado: (id: number) => Promise<void>;
   setError: (error: string | null) => void;
 }
@@ -35,9 +38,10 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
         loading: false,
       });
     } catch (error) {
-      set({ 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch employees' 
+      set({
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to fetch employees",
       });
     }
   },
@@ -49,18 +53,19 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
       set({ loading: false });
       return employee;
     } catch (error) {
-      set({ 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch employee' 
+      set({
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to fetch employee",
       });
       return null;
     }
   },
 
-  addEmpleado: async (empleado: CreateEmployeeRequest) => {
+  addEmpleado: async (empleado: EmployeeRequest) => {
     set({ loading: true, error: null });
     try {
-      const newEmployee = await employeeService.createEmployee(empleado as any);
+      const newEmployee = await employeeService.createEmployee(empleado);
       set((state) => ({
         empleados: [...state.empleados, newEmployee],
         totalCount: state.totalCount + 1,
@@ -68,9 +73,10 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
       }));
       return newEmployee;
     } catch (error) {
-      set({ 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to create employee' 
+      set({
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to create employee",
       });
       throw error;
     }
@@ -82,15 +88,16 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
       const updatedEmployee = await employeeService.updateEmployee(id, data);
       set((state) => ({
         empleados: state.empleados.map((e) =>
-          e.id === id ? { ...e, ...updatedEmployee } : e
+          e.id === id ? { ...e, ...updatedEmployee } : e,
         ),
         loading: false,
       }));
       return updatedEmployee;
     } catch (error) {
-      set({ 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to update employee' 
+      set({
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to update employee",
       });
       throw error;
     }
@@ -106,9 +113,10 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
         loading: false,
       }));
     } catch (error) {
-      set({ 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to delete employee' 
+      set({
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to delete employee",
       });
       throw error;
     }

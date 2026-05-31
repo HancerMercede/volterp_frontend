@@ -239,15 +239,12 @@ export interface EmployeeDto {
   nss: string | null;
   bank: string | null;
   accountNumber: string | null;
+  imageUrl?: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 }
 
-export type CreateEmployeeRequest = Omit<
-  EmployeeDto,
-  "id" | "createdAt" | "updatedAt"
->;
-export type UpdateEmployeeRequest = Partial<EmployeeDto>;
+export type EmployeeRequest = Partial<EmployeeDto>;
 
 // Accounting Transaction DTOs (from backend)
 export interface AccountingTransactionDto {
