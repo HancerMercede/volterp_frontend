@@ -9,7 +9,11 @@ export function EmpleadoStats() {
     .reduce((acc, e) => acc + e.salary, 0);
 
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP", minimumFractionDigits: 0 }).format(amount);
+    new Intl.NumberFormat("es-DO", {
+      style: "currency",
+      currency: "DOP",
+      minimumFractionDigits: 0,
+    }).format(amount);
 
   return (
     <div className={styles.grid}>
