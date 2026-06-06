@@ -1,73 +1,131 @@
-# React + TypeScript + Vite
+# Volterp ERP — Frontend (erp-mvp)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ERP frontend built with React 19, TypeScript 6, and Vite. Consumes the [Volterp Backend API](https://github.com/HancerMercede/volterp_backend).
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 19 |
+| Language | TypeScript 6 |
+| Bundler | Vite 8 |
+| State Management | Zustand 5 |
+| Routing | React Router 7 |
+| i18n | i18next + react-i18next |
+| Charts | Recharts |
+| Testing | Vitest 4, @testing-library/react |
+| HTTP | Native fetch (custom wrapper) |
 
-## React Compiler
+## Architecture
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── domain/          — Types, constants, domain logic
+│   ├── types/       — DTOs and shared type definitions
+│   ├── constants/   — Roles, permissions, enums
+│   ├── entities/    — Domain entity definitions
+│   └── dashboard/   — Dashboard data and helpers
+├── infrastructure/  — API services, repository abstractions
+│   └── api/         — fetchWithAuth wrapper + per-resource services
+├── stores/          — Zustand stores (one per domain entity)
+├── components/      — Reusable UI components (container/presentational)
+├── pages/           — Route-level page components
+├── hooks/           — Custom React hooks
+├── i18n/            — Internationalization translations
+├── config/          — App configuration (pagination, etc.)
+├── utils/           — Shared utilities (JWT helpers, etc.)
+├── styles/          — Global styles
+├── data/            — Static/mock data
+└── test/            — Test utilities and setup
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### State Management
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Each domain entity has a dedicated Zustand store in `src/stores/`. Stores handle API calls, loading state, and optimistic updates.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+**Stores:** `authStore`, `clienteStore`, `proveedorStore`, `productoStore`, `ventaStore`, `compraStore`, `empleadoStore`, `categoryStore`, `companyStore`, `transaccionStore`, `dashboardStore`, `uiStore`, `languageStore`, `asistenciaStore`, `chatStore`, `proyectoStore`
+
+### Data Flow
+
 ```
+Pages → Stores (Zustand) → API Services → fetchWithAuth → Backend API
+                              ↕
+                        Domain Types (DTOs)
+```
+
+### Pages
+
+| Route | Page |
+|-------|------|
+| `/login` | Login / Register |
+| `/dashboard` | Dashboard with metrics and charts |
+| `/ventas` | Sales management |
+| `/compras` | Purchases management |
+| `/inventario` | Inventory / Products |
+| `/clientes` | Clients |
+| `/proveedores` | Suppliers |
+| `/rrhh` | Employees (HR) |
+| `/contabilidad` | Accounting transactions |
+| `/proyectos` | Projects |
+| `/reportes` | Reports |
+| `/configuracion` | Settings / Company config |
+| `/soporte` | Support / Chat |
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- Yarn
+
+### Setup
+
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/HancerMercede/erp-mvp.git
+   cd erp-mvp
+   ```
+
+2. Install dependencies:
+   ```bash
+   yarn install
+   ```
+
+3. Configure the environment in `.env`:
+   ```env
+   VITE_API_URL=http://localhost:5000/api
+   ```
+
+4. Start the dev server:
+   ```bash
+   yarn dev
+   ```
+
+### Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `yarn dev` | Start development server |
+| `yarn build` | Type-check and build for production |
+| `yarn preview` | Preview production build |
+| `yarn test` | Run tests (Vitest) |
+| `yarn test:watch` | Run tests in watch mode |
+| `yarn test:coverage` | Run tests with coverage report |
+| `yarn lint` | Run ESLint |
+
+## Testing
+
+Uses Vitest with Testing Library. Tests follow AAA (Arrange-Act-Assert) pattern.
+
+```bash
+# Run all tests
+yarn test
+
+# With coverage
+yarn test:coverage
+```
+
+## Related
+
+- [Backend API (volterp_backend)](https://github.com/HancerMercede/volterp_backend) — .NET 10 Clean Architecture API
+- [MapFlow](https://github.com/HancerMercede/MapFlow) — DTO mapping library used by the backend

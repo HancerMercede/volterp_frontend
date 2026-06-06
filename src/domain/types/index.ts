@@ -183,6 +183,7 @@ export interface SupplierDto {
   address: string;
   category: string;
   contactPerson: string;
+  imageUrl?: string | null;
   isActive: boolean;
   createdAt: string | null;
   updatedAt: string | null;

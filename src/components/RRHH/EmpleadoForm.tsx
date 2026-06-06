@@ -3,6 +3,17 @@ import { FORM_STEPS } from "../../application/hooks/useEmpleadoForm";
 import type { EmployeeRequest } from "../../domain/types";
 import styles from "./EmpleadoForm.module.css";
 
+const SCHEDULE_PRESETS = [
+  "Lunes a Viernes 9:00 AM - 6:00 PM",
+  "Lunes a Viernes 8:00 AM - 5:00 PM",
+  "Lunes a Sábado 9:00 AM - 6:00 PM",
+  "Lunes a Sábado 8:00 AM - 5:00 PM",
+  "Horario Rotativo / Turnos",
+] as const;
+
+const isCustomSchedule = (v: string | null | undefined) =>
+  !!v && v !== "otro" && !(SCHEDULE_PRESETS as readonly string[]).includes(v);
+
 interface Props {
   formData: EmployeeRequest;
   currentStep: number;
@@ -21,7 +32,14 @@ export function EmpleadoForm({
   onSubmit,
 }: Props) {
   return (
-    <form onSubmit={onSubmit}>
+    <form
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (currentStep !== FORM_STEPS.length) return;
+        onSubmit(e);
+      }}
+    >
       <div className={styles.stepIndicator}>
         {FORM_STEPS.map((step) => (
           <button
@@ -76,14 +94,56 @@ export function EmpleadoForm({
               onChange={(e) => onFieldChange("phone", e.target.value)}
             />
           </div>
-          <div className={styles.field}>
-            <label>Foto URL</label>
+          <div className={styles.field} style={{ gridColumn: "span 2" }}>
+            <label>Foto</label>
             <input
-              type="url"
-              value={formData.imageUrl ?? ""}
-              onChange={(e) => onFieldChange("imageUrl", e.target.value || null)}
-              placeholder="https://..."
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (ev) =>
+                    onFieldChange("imageUrl", ev.target?.result as string);
+                  reader.readAsDataURL(file);
+                }
+              }}
             />
+            {formData.imageUrl && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginTop: 4,
+                }}
+              >
+                <img
+                  src={formData.imageUrl}
+                  alt="Preview"
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => onFieldChange("imageUrl", null)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#EF4444",
+                    cursor: "pointer",
+                    fontSize: 12,
+                    textDecoration: "underline",
+                  }}
+                >
+                  Eliminar
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -129,12 +189,36 @@ export function EmpleadoForm({
           </div>
           <div className={styles.field}>
             <label>Horario Laboral</label>
-            <input
-              type="text"
-              value={formData.workSchedule ?? ""}
+            <select
+              value={
+                isCustomSchedule(formData.workSchedule)
+                  ? "otro"
+                  : formData.workSchedule || ""
+              }
               onChange={(e) => onFieldChange("workSchedule", e.target.value)}
-              placeholder="Lunes a Viernes 9:00 - 18:00"
-            />
+            >
+              <option value="">Seleccionar horario</option>
+              {SCHEDULE_PRESETS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+              <option value="otro">Otro</option>
+            </select>
+            {(isCustomSchedule(formData.workSchedule) ||
+              formData.workSchedule === "otro") && (
+              <input
+                type="text"
+                value={
+                  formData.workSchedule === "otro"
+                    ? ""
+                    : (formData.workSchedule ?? "")
+                }
+                onChange={(e) => onFieldChange("workSchedule", e.target.value)}
+                placeholder="Especificar horario..."
+                style={{ marginTop: 4 }}
+              />
+            )}
           </div>
         </div>
       )}
@@ -192,7 +276,9 @@ export function EmpleadoForm({
               onChange={(e) => onFieldChange("bank", e.target.value || null)}
             >
               <option value="">Seleccionar Banco</option>
-              <option value="Banco Popular Dominicano">Banco Popular Dominicano</option>
+              <option value="Banco Popular Dominicano">
+                Banco Popular Dominicano
+              </option>
               <option value="Banco de la Nación">Banco de la Nación</option>
               <option value="Banco BDI">Banco BDI</option>
               <option value="Banco Scotiabank">Banco Scotiabank</option>
@@ -203,7 +289,9 @@ export function EmpleadoForm({
             <input
               type="text"
               value={formData.accountNumber ?? ""}
-              onChange={(e) => onFieldChange("accountNumber", e.target.value || null)}
+              onChange={(e) =>
+                onFieldChange("accountNumber", e.target.value || null)
+              }
               placeholder="XXXX-XXXX-XXXX"
             />
           </div>
@@ -212,19 +300,31 @@ export function EmpleadoForm({
 
       <div className={styles.actions}>
         {currentStep > 1 && (
-          <Button type="button" onClick={() => onStepChange(currentStep - 1)} variant="secondary">
+          <Button
+            type="button"
+            onClick={() => onStepChange(currentStep - 1)}
+            variant="secondary"
+          >
             Anterior
           </Button>
         )}
-        {currentStep < FORM_STEPS.length ? (
-          <Button type="button" onClick={() => onStepChange(currentStep + 1)}>
-            Siguiente
-          </Button>
-        ) : (
-          <Button type="submit">
-            {editingId ? "Guardar Cambios" : "Crear Empleado"}
-          </Button>
-        )}
+        <Button
+          type="button"
+          onClick={() => onStepChange(currentStep + 1)}
+          style={{
+            display: currentStep < FORM_STEPS.length ? undefined : "none",
+          }}
+        >
+          Siguiente
+        </Button>
+        <Button
+          type="submit"
+          style={{
+            display: currentStep === FORM_STEPS.length ? undefined : "none",
+          }}
+        >
+          {editingId ? "Guardar Cambios" : "Crear Empleado"}
+        </Button>
       </div>
     </form>
   );

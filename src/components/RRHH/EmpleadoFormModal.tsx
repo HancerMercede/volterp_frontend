@@ -28,8 +28,6 @@ export function EmpleadoFormModal({
       isOpen={isOpen}
       onClose={onClose}
       title={editingId ? "Editar Empleado" : "Nuevo Empleado"}
-      onSubmit={onSubmit}
-      submitLabel={editingId ? "Guardar" : "Crear"}
     >
       <EmpleadoForm
         formData={formData}

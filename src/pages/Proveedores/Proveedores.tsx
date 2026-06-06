@@ -41,6 +41,7 @@ export function Proveedores() {
     address: "",
     category: "",
     contactPerson: "",
+    imageUrl: "",
   });
 
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -62,6 +63,17 @@ export function Proveedores() {
 
   const paginationInfo = getInfo(filteredProveedores.length);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
@@ -82,6 +94,7 @@ export function Proveedores() {
       address: "",
       category: "",
       contactPerson: "",
+      imageUrl: "",
     });
   };
 
@@ -93,6 +106,7 @@ export function Proveedores() {
       address: proveedor.address,
       category: proveedor.category,
       contactPerson: proveedor.contactPerson,
+      imageUrl: proveedor.imageUrl || "",
     });
     setEditingId(proveedor.id);
     setShowForm(true);
@@ -112,7 +126,12 @@ export function Proveedores() {
     {
       key: "name",
       header: "proveedor",
-      render: (p: SupplierDto) => <ImageCell src="" name={p.name} />,
+      render: (p: SupplierDto) => (
+        <ImageCell
+          src={p.imageUrl || `https://i.pravatar.cc/150?img=${p.id}`}
+          name={p.name}
+        />
+      ),
     },
     { key: "email", header: t("common.email") },
     { key: "phone", header: t("common.phone") },
@@ -230,6 +249,17 @@ export function Proveedores() {
               setFormData({ ...formData, contactPerson: e.target.value })
             }
           />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Imagen</label>
+          <input type="file" accept="image/*" onChange={handleImageChange} />
+          {formData.imageUrl && (
+            <img
+              src={formData.imageUrl}
+              alt="Preview"
+              style={{ width: "80px", marginTop: "8px", borderRadius: "4px" }}
+            />
+          )}
         </div>
       </Modal>
 
