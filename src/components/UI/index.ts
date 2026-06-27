@@ -8,3 +8,4 @@ export { ActionButtons } from './ActionButtons';
 export { SearchInput } from './SearchInput';
 export { Modal } from './Modal';
 export { ConfirmModal } from './ConfirmModal';
+export { DynamicFormFields } from './DynamicFormFields';

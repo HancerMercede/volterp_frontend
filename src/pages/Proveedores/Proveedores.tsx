@@ -10,11 +10,13 @@ import {
   SearchInput,
   Modal,
   ConfirmModal,
+  DynamicFormFields,
 } from "../../components/UI";
+import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { SupplierDto } from "../../domain/types";
+import type { SupplierDto, SupplierRequest } from "../../domain/types";
 import styles from "./Proveedores.module.css";
 import { useFilter } from "../../hooks/useFilter";
 
@@ -28,20 +30,9 @@ export function Proveedores() {
     fetchProveedores,
   } = useProveedorStore();
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
-  });
-
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    category: "",
-    contactPerson: "",
-    imageUrl: "",
   });
 
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -50,6 +41,59 @@ export function Proveedores() {
   useEffect(() => {
     fetchProveedores(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchProveedores]);
+
+  const PROVEEDOR_FIELDS: FormField[] = useMemo(
+    () => [
+      { name: "name", label: t("common.name"), type: "text", required: true },
+      {
+        name: "email",
+        label: t("common.email"),
+        type: "email",
+        required: true,
+      },
+      { name: "phone", label: t("common.phone"), type: "tel", required: true },
+      {
+        name: "address",
+        label: t("common.address"),
+        type: "text",
+        required: true,
+      },
+      {
+        name: "category",
+        label: t("common.category"),
+        type: "text",
+        required: true,
+      },
+      { name: "contactPerson", label: "Contacto", type: "text" },
+      {
+        name: "imageUrl",
+        label: t("common.image"),
+        type: "file",
+        accept: "image/*",
+      },
+    ],
+    [t],
+  );
+
+  const form = useCrudForm({
+    fields: PROVEEDOR_FIELDS,
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      category: "",
+      contactPerson: "",
+      imageUrl: "",
+    },
+    onCreate: (data) =>
+      addProveedor({ ...data, isActive: true } as SupplierRequest),
+    onUpdate: (id, data) => updateProveedor(id, data as SupplierRequest),
+    onSuccess: () => {
+      setShowForm(false);
+      fetchProveedores(pageNumber, ITEMS_PER_PAGE);
+    },
+  });
 
   const filteredProveedores = useFilter({
     data: proveedores,
@@ -63,52 +107,8 @@ export function Proveedores() {
 
   const paginationInfo = getInfo(filteredProveedores.length);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingId) {
-      updateProveedor(editingId, formData);
-      setEditingId(null);
-    } else {
-      addProveedor({ ...formData, isActive: true });
-    }
-    setShowForm(false);
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      category: "",
-      contactPerson: "",
-      imageUrl: "",
-    });
-  };
-
   const handleEdit = (proveedor: SupplierDto) => {
-    setFormData({
-      name: proveedor.name,
-      email: proveedor.email,
-      phone: proveedor.phone,
-      address: proveedor.address,
-      category: proveedor.category,
-      contactPerson: proveedor.contactPerson,
-      imageUrl: proveedor.imageUrl || "",
-    });
-    setEditingId(proveedor.id);
+    form.handleEdit(proveedor, proveedor.id);
     setShowForm(true);
   };
 
@@ -125,7 +125,7 @@ export function Proveedores() {
     { key: "id", header: t("common.id") },
     {
       key: "name",
-      header: "proveedor",
+      header: t("proveedores.supplier"),
       render: (p: SupplierDto) => (
         <ImageCell
           src={p.imageUrl || `https://i.pravatar.cc/150?img=${p.id}`}
@@ -146,8 +146,7 @@ export function Proveedores() {
       >
         <Button
           onClick={() => {
-            resetForm();
-            setEditingId(null);
+            form.reset();
             setShowForm(true);
           }}
         >
@@ -178,89 +177,25 @@ export function Proveedores() {
 
       <Modal
         isOpen={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={() => {
+          setShowForm(false);
+          form.reset();
+        }}
         title={
-          editingId
+          form.editingId
             ? t("proveedores.editProvider")
             : t("proveedores.newProvider")
         }
-        onSubmit={handleSubmit}
-        submitLabel={editingId ? t("common.save") : t("common.create")}
+        onSubmit={form.handleSubmit}
+        submitLabel={form.editingId ? t("common.save") : t("common.create")}
       >
-        <div className={styles.formGroup}>
-          <label>{t("common.name")}</label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("common.email")}</label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("common.phone")}</label>
-          <input
-            type="tel"
-            value={formData.phone}
-            onChange={(e) =>
-              setFormData({ ...formData, phone: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("common.address")}</label>
-          <input
-            type="text"
-            value={formData.address}
-            onChange={(e) =>
-              setFormData({ ...formData, address: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("common.category")}</label>
-          <input
-            type="text"
-            value={formData.category}
-            onChange={(e) =>
-              setFormData({ ...formData, category: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>Contacto</label>
-          <input
-            type="text"
-            value={formData.contactPerson}
-            onChange={(e) =>
-              setFormData({ ...formData, contactPerson: e.target.value })
-            }
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>Imagen</label>
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-          {formData.imageUrl && (
-            <img
-              src={formData.imageUrl}
-              alt="Preview"
-              style={{ width: "80px", marginTop: "8px", borderRadius: "4px" }}
-            />
-          )}
-        </div>
+        <DynamicFormFields
+          fields={PROVEEDOR_FIELDS}
+          values={form.values}
+          errors={form.errors}
+          editingId={form.editingId}
+          onChange={form.setFieldValue}
+        />
       </Modal>
 
       <ConfirmModal

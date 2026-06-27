@@ -230,7 +230,8 @@
     "providerCreated": "Supplier created successfully",
     "providerUpdated": "Supplier updated successfully",
     "searchProvider": "Search suppliers...",
-    "deleteConfirm": "Delete this supplier?"
+    "deleteConfirm": "Delete this supplier?",
+    "supplier":"Supplier"
   },
   "contabilidad": {
     "title": "Accounting",
@@ -503,6 +504,12 @@
     "lastPage": "Last page",
     "previousPage": "Previous page",
     "nextPage": "Next page"
+  },
+  "fileUpload": {
+    "dropzoneText": "Click to select image",
+    "dropzoneHint": "or drag and drop — PNG, JPG",
+    "removeTitle": "Remove image",
+    "fallbackName": "Image"
   },
   "validation": {
     "required": "This field is required",

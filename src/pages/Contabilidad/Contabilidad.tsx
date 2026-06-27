@@ -9,7 +9,9 @@ import {
   SearchInput,
   Modal,
   ConfirmModal,
+  DynamicFormFields,
 } from "../../components/UI";
+import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import type {
@@ -35,7 +37,6 @@ export function Contabilidad() {
     fetchTransacciones();
   }, [fetchTransacciones]);
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTipo, setFilterTipo] = useState<"todos" | "Income" | "Expense">(
     "todos",
@@ -43,16 +44,37 @@ export function Contabilidad() {
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-  const [formData, setFormData] = useState<AccountingTransactionRequest>({
-    description: "",
-    type: "Income",
-    amount: 0,
-    date: "",
-    category: "",
-    status: "Pending",
-  });
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const TRANSACCION_FIELDS: FormField[] = useMemo(
+    () => [
+      { name: "description", label: t("common.description"), type: "text", required: true },
+      { name: "type", label: t("common.type"), type: "select", required: true, options: [
+        { value: "Income", label: t("contabilidad.income") },
+        { value: "Expense", label: t("contabilidad.expenses") },
+      ]},
+      { name: "amount", label: t("common.amount"), type: "number", required: true },
+      { name: "date", label: t("common.date"), type: "date", required: true },
+      { name: "category", label: t("common.category"), type: "text", required: true },
+      { name: "status", label: t("common.status"), type: "select", required: true, options: [
+        { value: "Pending", label: t("contabilidad.pending") },
+        { value: "Reconciled", label: t("contabilidad.reconciled") },
+      ]},
+    ],
+    [t],
+  );
+
+  const form = useCrudForm({
+    fields: TRANSACCION_FIELDS,
+    defaultValues: { description: "", type: "Income", amount: 0, date: "", category: "", status: "Pending" },
+    onCreate: (data) => addTransaccion(data as AccountingTransactionRequest),
+    onUpdate: (id, data) => updateTransaccion(id, data as AccountingTransactionRequest),
+    onSuccess: () => {
+      setShowForm(false);
+      fetchTransacciones();
+    },
+  });
 
   const filteredTransacciones = useFilter({
     data: transacciones,
@@ -75,39 +97,8 @@ export function Contabilidad() {
     .reduce((acc, t) => acc + t.amount, 0);
   const balance = totalIngresos - totalEgresos;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingId) {
-      updateTransaccion(editingId, formData);
-      setEditingId(null);
-    } else {
-      addTransaccion(formData);
-    }
-    setShowForm(false);
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      description: "",
-      type: "Income",
-      amount: 0,
-      date: "",
-      category: "",
-      status: "Pending",
-    });
-  };
-
   const handleEdit = (t: AccountingTransactionDto) => {
-    setFormData({
-      description: t.description,
-      type: t.type,
-      amount: t.amount,
-      date: t.date,
-      category: t.category,
-      status: t.status,
-    });
-    setEditingId(t.id);
+    form.handleEdit(t, t.id);
     setShowForm(true);
   };
 
@@ -193,8 +184,7 @@ export function Contabilidad() {
       >
         <Button
           onClick={() => {
-            resetForm();
-            setEditingId(null);
+            form.reset();
             setShowForm(true);
           }}
         >
@@ -260,87 +250,21 @@ export function Contabilidad() {
 
       <Modal
         isOpen={showForm}
-        onClose={() => setShowForm(false)}
-        title={
-          editingId
-            ? t("contabilidad.editTransaction")
-            : t("contabilidad.newTransaction")
-        }
-        onSubmit={handleSubmit}
-        submitLabel={editingId ? t("common.save") : t("common.create")}
+        onClose={() => {
+          setShowForm(false);
+          form.reset();
+        }}
+        title={form.editingId ? t("contabilidad.editTransaction") : t("contabilidad.newTransaction")}
+        onSubmit={form.handleSubmit}
+        submitLabel={form.editingId ? t("common.save") : t("common.create")}
       >
-        <div className="formGroup">
-          <label>{t("common.description")}</label>
-          <input
-            type="text"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label>{t("common.type")}</label>
-          <select
-            value={formData.type}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                type: e.target.value as "Income" | "Expense",
-              })
-            }
-          >
-            <option value="Income">{t("contabilidad.income")}</option>
-            <option value="Expense">{t("contabilidad.expenses")}</option>
-          </select>
-        </div>
-        <div className="formGroup">
-          <label>{t("common.amount")}</label>
-          <input
-            type="number"
-            value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: Number(e.target.value) })
-            }
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label>{t("common.date")}</label>
-          <input
-            type="date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label>{t("common.category")}</label>
-          <input
-            type="text"
-            value={formData.category}
-            onChange={(e) =>
-              setFormData({ ...formData, category: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label>{t("common.status")}</label>
-          <select
-            value={formData.status}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                status: e.target.value as "Reconciled" | "Pending",
-              })
-            }
-          >
-            <option value="Pending">{t("contabilidad.pending")}</option>
-            <option value="Reconciled">{t("contabilidad.reconciled")}</option>
-          </select>
-        </div>
+        <DynamicFormFields
+          fields={TRANSACCION_FIELDS}
+          values={form.values}
+          errors={form.errors}
+          editingId={form.editingId}
+          onChange={form.setFieldValue}
+        />
       </Modal>
 
       <ConfirmModal

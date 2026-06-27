@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { purchaseService } from "../infrastructure/api/purchaseService";
-import type { PurchaseDto, CreatePurchaseRequest } from "../domain/types";
+import type { PurchaseDto, PurchaseRequest } from "../domain/types";
 
 interface CompraStore {
   compras: PurchaseDto[];
@@ -11,7 +11,7 @@ interface CompraStore {
 
   fetchCompras: (pageNumber?: number, pageSize?: number) => Promise<void>;
   getCompraById: (id: number) => Promise<PurchaseDto | null>;
-  addCompra: (compra: CreatePurchaseRequest) => Promise<PurchaseDto>;
+  addCompra: (compra: PurchaseRequest) => Promise<PurchaseDto>;
   updateCompra: (
     id: number,
     data: Partial<PurchaseDto>,

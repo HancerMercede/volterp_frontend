@@ -3,7 +3,7 @@ import { fetchWithAuthJson } from "./fetchWithAuth";
 import type { 
   PagedResult, 
   SupplierDto, 
-  CreateSupplierRequest 
+  SupplierRequest 
 } from "../../domain/types";
 
 export const supplierService = {
@@ -26,7 +26,7 @@ export const supplierService = {
     );
   },
 
-  async createSupplier(data: CreateSupplierRequest): Promise<SupplierDto> {
+  async createSupplier(data: SupplierRequest): Promise<SupplierDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SUPPLIERS}`,
       {

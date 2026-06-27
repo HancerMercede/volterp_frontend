@@ -237,7 +237,8 @@
     "providerCreated": "Proveedor creado correctamente",
     "providerUpdated": "Proveedor actualizado correctamente",
     "searchProvider": "Buscar proveedores...",
-    "deleteConfirm": "¿Eliminar proveedor?"
+    "deleteConfirm": "¿Eliminar proveedor?",
+    "supplier":"Proveedor"
   },
   "contabilidad": {
     "title": "Contabilidad",
@@ -510,6 +511,12 @@
     "lastPage": "Última página",
     "previousPage": "Página anterior",
     "nextPage": "Página siguiente"
+  },
+  "fileUpload": {
+    "dropzoneText": "Click para seleccionar imagen",
+    "dropzoneHint": "o arrastrá y soltá — PNG, JPG",
+    "removeTitle": "Eliminar imagen",
+    "fallbackName": "Imagen"
   },
   "validation": {
     "required": "Este campo es requerido",

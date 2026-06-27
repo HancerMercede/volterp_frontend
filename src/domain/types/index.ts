@@ -189,13 +189,8 @@ export interface SupplierDto {
   updatedAt: string | null;
 }
 
-// Create = DTO sin id ni auditoría
-export type CreateSupplierRequest = Omit<
-  SupplierDto,
-  "id" | "createdAt" | "updatedAt"
->;
-// Update = parcial del DTO
-export type UpdateSupplierRequest = Partial<SupplierDto>;
+// Supplier request — Partial cubre create (viene completo del form) y update
+export type SupplierRequest = Partial<SupplierDto>;
 
 // Purchase DTOs (from backend)
 export interface PurchaseItemDto {
@@ -279,11 +274,7 @@ export interface CompanyDto {
   updatedAt?: string;
 }
 
-export type CreateCompanyRequest = Omit<
-  CompanyDto,
-  "id" | "createdAt" | "updatedAt"
->;
-export type UpdateCompanyRequest = Partial<CompanyDto>;
+export type CompanyRequest = Partial<CompanyDto>;
 
 // Category DTOs (from backend)
 export interface CategoryDto {
@@ -295,11 +286,7 @@ export interface CategoryDto {
   createdAt: string;
 }
 
-export type CreateCategoryRequest = Omit<
-  CategoryDto,
-  "id" | "companyId" | "isActive" | "createdAt"
->;
-export type UpdateCategoryRequest = Partial<CategoryDto>;
+export type CategoryRequest = Partial<CategoryDto>;
 
 // User DTOs (from backend)
 export interface UserDto {

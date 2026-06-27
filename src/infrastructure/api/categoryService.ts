@@ -1,6 +1,6 @@
 import { API_CONFIG } from "../api/config";
 import { fetchWithAuthJson } from "./fetchWithAuth";
-import type { PagedResult, CategoryDto, CreateCategoryRequest } from "../../domain/types";
+import type { PagedResult, CategoryDto, CategoryRequest } from "../../domain/types";
 
 export const categoryService = {
   async getCategories(
@@ -22,7 +22,7 @@ export const categoryService = {
     );
   },
 
-  async createCategory(data: CreateCategoryRequest): Promise<CategoryDto> {
+  async createCategory(data: CategoryRequest): Promise<CategoryDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}`,
       {

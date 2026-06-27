@@ -1,6 +1,6 @@
 import { API_CONFIG } from "../api/config";
 import { fetchWithAuthJson } from "./fetchWithAuth";
-import type { PagedResult, CompanyDto, CreateCompanyRequest } from "../../domain/types";
+import type { PagedResult, CompanyDto, CompanyRequest } from "../../domain/types";
 
 export const companyService = {
   async getCompanies(
@@ -22,7 +22,7 @@ export const companyService = {
     );
   },
 
-  async createCompany(data: CreateCompanyRequest): Promise<CompanyDto> {
+  async createCompany(data: CompanyRequest): Promise<CompanyDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMPANIES}`,
       {

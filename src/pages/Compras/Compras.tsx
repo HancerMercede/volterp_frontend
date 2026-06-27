@@ -11,7 +11,9 @@ import {
   SearchInput,
   Modal,
   ConfirmModal,
+  DynamicFormFields,
 } from "../../components/UI";
+import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
@@ -31,18 +33,46 @@ export function Compras() {
   } = useCompraStore();
   const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-  const [formData, setFormData] = useState<PurchaseRequest>({});
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     fetchCompras();
   }, [fetchCompras]);
+
+  const COMPRA_FIELDS: FormField[] = useMemo(
+    () => [
+      { name: "supplierName", label: t("compras.supplier"), type: "text", required: true },
+      { name: "total", label: t("common.total"), type: "number", required: true },
+      { name: "status", label: t("common.status"), type: "select", required: true, options: [
+        { value: "Pending", label: t("pending") },
+        { value: "Completed", label: t("completed") },
+        { value: "Cancelled", label: t("cancelled") },
+      ]},
+    ],
+    [t],
+  );
+
+  const form = useCrudForm({
+    fields: COMPRA_FIELDS,
+    defaultValues: { supplierName: "", total: 0, status: "Pending" },
+    onCreate: (data) => {
+      addToast(t("compras.purchaseCreated"), "success");
+      return addCompra({ supplierId: null, items: [], ...data } as any);
+    },
+    onUpdate: (id, data) => {
+      addToast(t("compras.purchaseUpdated"), "success");
+      return updateCompra(id, data);
+    },
+    onSuccess: () => {
+      setShowForm(false);
+      fetchCompras();
+    },
+  });
 
   const filteredCompras = useFilter({
     data: compras,
@@ -56,44 +86,8 @@ export function Compras() {
 
   const paginationInfo = getInfo(totalCount);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingId) {
-      updateCompra(editingId, formData);
-      setEditingId(null);
-      addToast(t("compras.purchaseUpdated"), "success");
-    } else {
-      addCompra({
-        supplierId: null,
-        supplierName: formData.supplierName ?? "",
-        status: formData.status ?? "Pending",
-        total: formData.total ?? 0,
-        notes: formData.notes ?? null,
-        items: [],
-      } as PurchaseRequest);
-      addToast(t("compras.purchaseCreated"), "success");
-    }
-    setShowForm(false);
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setFormData({
-      supplierName: undefined,
-      status: "Pending",
-      total: 0,
-      notes: undefined,
-    });
-  };
-
   const handleEdit = (compra: PurchaseDto) => {
-    setFormData({
-      supplierName: compra.supplierName,
-      status: compra.status,
-      total: compra.total,
-      notes: compra.notes,
-    });
-    setEditingId(compra.id);
+    form.handleEdit(compra, compra.id);
     setShowForm(true);
   };
 
@@ -162,7 +156,7 @@ export function Compras() {
           />
           <Button
             onClick={() => {
-              resetForm();
+              form.reset();
               setShowForm(true);
             }}
           >
@@ -175,50 +169,19 @@ export function Compras() {
         isOpen={showForm}
         onClose={() => {
           setShowForm(false);
-          setEditingId(null);
+          form.reset();
         }}
-        title={editingId ? t("compras.editPurchase") : t("compras.newPurchase")}
-        onSubmit={handleSubmit}
-        submitLabel={editingId ? t("common.update") : t("common.create")}
+        title={form.editingId ? t("compras.editPurchase") : t("compras.newPurchase")}
+        onSubmit={form.handleSubmit}
+        submitLabel={form.editingId ? t("common.update") : t("common.create")}
       >
-        <div className={styles.formGroup}>
-          <label>{t("compras.supplier")}</label>
-          <input
-            type="text"
-            value={formData.supplierName ?? ""}
-            onChange={(e) =>
-              setFormData({ ...formData, supplierName: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("common.total")}</label>
-          <input
-            type="number"
-            value={formData.total ?? 0}
-            onChange={(e) =>
-              setFormData({ ...formData, total: parseInt(e.target.value) })
-            }
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("common.status")}</label>
-          <select
-            value={formData.status ?? "Pending"}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                status: e.target.value as "Pending" | "Completed" | "Cancelled",
-              })
-            }
-          >
-            <option value="Pending">{t("pending")}</option>
-            <option value="Completed">{t("completed")}</option>
-            <option value="Cancelled">{t("cancelled")}</option>
-          </select>
-        </div>
+        <DynamicFormFields
+          fields={COMPRA_FIELDS}
+          values={form.values}
+          errors={form.errors}
+          editingId={form.editingId}
+          onChange={form.setFieldValue}
+        />
       </Modal>
 
       <Table data={paginatedCompras} columns={columns} />
