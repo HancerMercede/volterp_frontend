@@ -112,18 +112,25 @@ export type Client = ClientDto;
 
 export type ClientRequest = Partial<ClientDto>;
 
-export interface Product {
+export interface ProductDto {
   id: number;
   name: string;
   category: string;
-  categoryId?: number | null;
-  stock: number;
+  description: string | null;
   price: number;
-  proveedor?: string;
+  stock: number;
+  categoryId: number | null;
+  categoryName: string | null;
+  companyId: number;
+  isActive: boolean;
   imageUrl: string | null;
-  description?: string | null;
-  isActive?: boolean;
+  createdAt: string;
+  updatedAt: string | null;
 }
+
+export type Product = ProductDto;
+
+export type ProductRequest = Partial<ProductDto>;
 
 export interface Purchase {
   id: number;

@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { useProductoStore } from "../../stores/productoStore";
 import { useCategoryStore } from "../../stores/categoryStore";
 import { useCompanyStore } from "../../stores/companyStore";
@@ -13,14 +14,11 @@ import {
   SearchInput,
   Modal,
   ConfirmModal,
+  DynamicFormFields,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { Product } from "../../domain/types";
-import type {
-  CreateProductRequest,
-  UpdateProductRequest,
-} from "../../infrastructure/api/types";
+import type { ProductDto } from "../../domain/types";
 import styles from "./Inventario.module.css";
 import { useFilter } from "../../hooks/useFilter";
 
@@ -39,21 +37,10 @@ export function Inventario() {
   const { categories, fetchCategories } = useCategoryStore();
   const { currentCompany } = useCompanyStore();
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStock, setFilterStock] = useState<"all" | "low" | "out">("all");
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
-  });
-  const [formData, setFormData] = useState({
-    name: "",
-    category: "",
-    categoryId: null as number | null,
-    stock: 0,
-    price: 0,
-    imageUrl: "",
-    description: "",
-    isActive: true,
   });
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -68,6 +55,123 @@ export function Inventario() {
     fetchData();
   }, [fetchData]);
 
+  const fields: FormField[] = useMemo(
+    () => [
+      { name: "name", label: t("common.name"), type: "text", required: true },
+      {
+        name: "categoryId",
+        label: t("common.category"),
+        type: "select",
+        required: true,
+        options: categories.map((c) => ({
+          value: String(c.id),
+          label: c.name,
+        })),
+      },
+      {
+        name: "stock",
+        label: t("inventario.stock"),
+        type: "number",
+        min: 0,
+        required: true,
+      },
+      {
+        name: "price",
+        label: t("common.price"),
+        type: "number",
+        min: 0,
+        step: 0.01,
+        required: true,
+      },
+      {
+        name: "imageUrl",
+        label: t("common.image"),
+        type: "file",
+        accept: "image/*",
+      },
+      {
+        name: "description",
+        label: t("common.description"),
+        type: "text",
+      },
+      {
+        name: "isActive",
+        label: t("inventario.active"),
+        type: "checkbox",
+        showOnEdit: true,
+      },
+    ],
+    [t, categories],
+  );
+
+  const form = useCrudForm({
+    fields,
+    defaultValues: {
+      name: "",
+      categoryId: "",
+      stock: 0,
+      price: 0,
+      imageUrl: "",
+      description: "",
+      isActive: true,
+    },
+    onCreate: async (data) => {
+      const catId = data.categoryId ? parseInt(data.categoryId) : null;
+      const cat = categories.find((c) => c.id === catId);
+      await createProducto({
+        name: data.name,
+        category: cat?.name || "",
+        description: data.description || null,
+        stock: data.stock,
+        price: data.price,
+        categoryId: catId,
+        companyId: currentCompany?.id || 1,
+        imageUrl: data.imageUrl || null,
+      });
+    },
+    onUpdate: async (id, data) => {
+      const catId = data.categoryId ? parseInt(data.categoryId) : null;
+      const cat = categories.find((c) => c.id === catId);
+      await updateProducto(id, {
+        name: data.name,
+        category: cat?.name || "",
+        description: data.description || null,
+        stock: data.stock,
+        price: data.price,
+        categoryId: catId,
+        isActive: data.isActive,
+        imageUrl: data.imageUrl || null,
+      });
+    },
+    onSuccess: () => {
+      setShowForm(false);
+    },
+    mapEntityToForm: (entity) => ({
+      name: (entity.name as string) ?? "",
+      categoryId: entity.categoryId != null ? String(entity.categoryId) : "",
+      stock: (entity.stock as number) ?? 0,
+      price: (entity.price as number) ?? 0,
+      imageUrl: (entity.imageUrl as string) ?? "",
+      description: (entity.description as string) ?? "",
+      isActive: (entity.isActive as boolean) ?? true,
+    }),
+  });
+
+  // Intercept category select to also update the category name string
+  const handleFieldChange = useCallback(
+    (name: string, value: unknown) => {
+      if (name === "categoryId") {
+        const catId = value ? parseInt(value as string) : null;
+        const cat = categories.find((c) => c.id === catId);
+        form.setFieldValue("categoryId", value);
+        form.setFieldValue("category", cat?.name ?? "");
+      } else {
+        form.setFieldValue(name, value);
+      }
+    },
+    [categories, form.setFieldValue],
+  );
+
   const filteredProductos = useFilter({
     data: productos,
     searchTerm,
@@ -81,72 +185,13 @@ export function Inventario() {
 
   const paginationInfo = getInfo(totalCount);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingId) {
-        const updateData: UpdateProductRequest = {
-          name: formData.name,
-          category: formData.category,
-          description: formData.description || null,
-          stock: formData.stock,
-          price: formData.price,
-          categoryId: formData.categoryId,
-          isActive: formData.isActive,
-          imageUrl: formData.imageUrl || null,
-        };
-        await updateProducto(editingId, updateData);
-        setEditingId(null);
-      } else {
-        const createData: CreateProductRequest = {
-          name: formData.name,
-          category: formData.category,
-          description: formData.description || null,
-          stock: formData.stock,
-          price: formData.price,
-          categoryId: formData.categoryId,
-          companyId: currentCompany?.id || 1,
-          imageUrl: formData.imageUrl || null,
-        };
-        await createProducto(createData);
-      }
-      setShowForm(false);
-      resetForm();
-    } catch {
-      // Error is handled in store
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      category: "",
-      categoryId: null,
-      stock: 0,
-      price: 0,
-      imageUrl: "",
-      description: "",
-      isActive: true,
-    });
-  };
-
-  const handleEdit = (producto: Product) => {
-    setFormData({
-      name: producto.name,
-      category: producto.category,
-      categoryId: producto.categoryId ?? null,
-      stock: producto.stock,
-      price: producto.price,
-      imageUrl: producto.imageUrl || "",
-      description: producto.description || "",
-      isActive: producto.isActive ?? true,
-    });
-    setEditingId(producto.id);
+  const handleEdit = (producto: ProductDto) => {
+    form.handleEdit(producto, producto.id);
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
+  const handleDelete = (id: number) => {
+    setDeleteId(String(id));
     setShowDeleteConfirm(true);
   };
 
@@ -157,18 +202,8 @@ export function Inventario() {
       } catch {
         // Error is handled in store
       }
-    }
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      setShowDeleteConfirm(false);
+      setDeleteId(null);
     }
   };
 
@@ -177,7 +212,7 @@ export function Inventario() {
     {
       key: "name",
       header: t("common.product"),
-      render: (p: Product) => (
+      render: (p: ProductDto) => (
         <ImageCell
           src={p.imageUrl || ""}
           name={p.name}
@@ -191,7 +226,7 @@ export function Inventario() {
     {
       key: "stock",
       header: t("inventario.stock"),
-      render: (p: Product) => (
+      render: (p: ProductDto) => (
         <span
           className={
             p.stock === 0
@@ -208,15 +243,15 @@ export function Inventario() {
     {
       key: "price",
       header: t("common.price"),
-      render: (p: Product) => `$${p.price.toLocaleString()}`,
+      render: (p: ProductDto) => `$${p.price.toLocaleString()}`,
     },
     {
       key: "actions",
       header: t("common.actions"),
-      render: (p: Product) => (
+      render: (p: ProductDto) => (
         <ActionButtons
           onEdit={() => handleEdit(p)}
-          onDelete={() => handleDelete(String(p.id))}
+          onDelete={() => handleDelete(p.id)}
         />
       ),
     },
@@ -252,7 +287,7 @@ export function Inventario() {
           </select>
           <Button
             onClick={() => {
-              resetForm();
+              form.reset();
               setShowForm(true);
             }}
           >
@@ -268,120 +303,23 @@ export function Inventario() {
         isOpen={showForm}
         onClose={() => {
           setShowForm(false);
-          setEditingId(null);
+          form.reset();
         }}
         title={
-          editingId ? t("inventario.editProduct") : t("inventario.newProduct")
+          form.editingId
+            ? t("inventario.editProduct")
+            : t("inventario.newProduct")
         }
-        onSubmit={handleSubmit}
-        submitLabel={editingId ? t("common.update") : t("common.create")}
+        onSubmit={form.handleSubmit}
+        submitLabel={form.editingId ? t("common.update") : t("common.create")}
       >
-        <div className={styles.formGroup}>
-          <label>{t("common.name")}</label>
-          <input
-            className={styles.input}
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("common.category")}</label>
-          <select
-            className={styles.select}
-            value={formData.categoryId ?? ""}
-            onChange={(e) => {
-              const val = e.target.value;
-              const catId = val ? parseInt(val) : null;
-              const cat = categories.find((c) => c.id === catId);
-              setFormData({
-                ...formData,
-                categoryId: catId,
-                category: cat?.name || "",
-              });
-            }}
-            required
-          >
-            <option value="">-- {t("inventario.selectCategory")} --</option>
-            {(categories ?? []).map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("inventario.stock")}</label>
-          <input
-            className={styles.input}
-            type="number"
-            min="0"
-            value={formData.stock}
-            onChange={(e) =>
-              setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })
-            }
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("common.price")}</label>
-          <input
-            className={styles.input}
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.price}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                price: parseFloat(e.target.value) || 0,
-              })
-            }
-            required
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("common.image")}</label>
-          <input
-            className={styles.input}
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-          />
-          {formData.imageUrl && (
-            <img
-              src={formData.imageUrl}
-              alt="Preview"
-              style={{ width: "100px", marginTop: "8px" }}
-            />
-          )}
-        </div>
-        <div className={styles.formGroup}>
-          <label>{t("common.description")}</label>
-          <input
-            className={styles.input}
-            type="text"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-          />
-        </div>
-        {editingId && (
-          <div className={styles.formGroup}>
-            <label>
-              <input
-                type="checkbox"
-                checked={formData.isActive}
-                onChange={(e) =>
-                  setFormData({ ...formData, isActive: e.target.checked })
-                }
-              />{" "}
-              {t("inventario.active")}
-            </label>
-          </div>
-        )}
+        <DynamicFormFields
+          fields={fields}
+          values={form.values}
+          errors={form.errors}
+          editingId={form.editingId}
+          onChange={handleFieldChange}
+        />
       </Modal>
 
       <Table data={filteredProductos} columns={columns} />

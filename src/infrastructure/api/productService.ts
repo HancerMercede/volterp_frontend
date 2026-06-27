@@ -1,9 +1,5 @@
 import { API_CONFIG } from "../api/config";
-import type {
-  ProductDto,
-  CreateProductRequest,
-  UpdateProductRequest,
-} from "../api/types";
+import type { ProductDto, ProductRequest } from "../../domain/types";
 import type { PagedResult } from "../../domain/types";
 import { fetchWithAuthJson } from "./fetchWithAuth";
 
@@ -27,7 +23,7 @@ export const productService = {
     );
   },
 
-  async createProduct(data: CreateProductRequest): Promise<ProductDto> {
+  async createProduct(data: ProductRequest): Promise<ProductDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTS}`,
       {
@@ -39,7 +35,7 @@ export const productService = {
 
   async updateProduct(
     id: number,
-    data: UpdateProductRequest,
+    data: ProductRequest,
   ): Promise<ProductDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTS}/${id}`,

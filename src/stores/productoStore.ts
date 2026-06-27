@@ -2,11 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useAuthStore } from "./authStore";
 import { productService } from "../infrastructure/api/productService";
-import type {
-  ProductDto,
-  CreateProductRequest,
-  UpdateProductRequest,
-} from "../infrastructure/api/types";
+import type { ProductDto, ProductRequest } from "../domain/types";
 
 interface ProductoStore {
   productos: ProductDto[];
@@ -15,8 +11,8 @@ interface ProductoStore {
   totalCount: number;
   pageCount: number;
   fetchProductos: (pageNumber: number, pageSize: number) => Promise<void>;
-  createProducto: (data: CreateProductRequest) => Promise<void>;
-  updateProducto: (id: number, data: UpdateProductRequest) => Promise<void>;
+  createProducto: (data: ProductRequest) => Promise<void>;
+  updateProducto: (id: number, data: ProductRequest) => Promise<void>;
   deleteProducto: (id: number) => Promise<void>;
   clearError: () => void;
 }
