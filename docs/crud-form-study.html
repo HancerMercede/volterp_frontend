@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --accent-primary:  #6366f1;
+  --accent-secondary: #8b5cf6;
+  --bg-dark:         #0f0c29;
+  --bg-surface:      #f1f5f9;
+  --text-primary:    #1e293b;
+  --text-light:      #e2e8f0;
+  --text-muted:      #94a3b8;
+  --border:          #cbd5e1;
+  --border-radius:   8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 10pt;
+  line-height: 1.55;
+  width: 210mm;
+  color: var(--text-primary);
+}
+
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  page-break-after: always;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* ── Cover ── */
+.page-cover {
+  background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-dark) 40%, color-mix(in srgb, var(--bg-dark) 70%, var(--accent-primary)) 100%);
+  color: var(--text-light);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 65px 55px 50px;
+  position: relative;
+  overflow: hidden;
+}
+.page-cover::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -15%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-primary) 25%, transparent) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.cover-tag {
+  display: inline-block;
+  background: color-mix(in srgb, var(--accent-primary) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 60%, transparent);
+  color: var(--text-light);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 8pt;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-bottom: 24px;
+  width: fit-content;
+}
+.cover-title {
+  font-size: 30pt;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+.cover-title span {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.cover-sub {
+  font-size: 11pt;
+  color: var(--text-muted);
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+  max-width: 80%;
+}
+.cover-meta {
+  margin-top: auto;
+  padding-top: 40px;
+  font-size: 8.5pt;
+  color: var(--text-muted);
+  display: flex;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Content pages ── */
+.page-content {
+  padding: 40px 45px 30px;
+}
+
+h2 {
+  font-size: 14pt;
+  font-weight: 700;
+  color: var(--bg-dark);
+  margin-bottom: 16px;
+  page-break-after: avoid;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+h2 .h2-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--accent-primary);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 11pt;
+  flex-shrink: 0;
+}
+h3 {
+  font-size: 11pt;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 14px 0 8px;
+  page-break-after: avoid;
+}
+h4 {
+  font-size: 9.5pt;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 10px 0 6px;
+}
+
+p, li {
+  font-size: 9.5pt;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+p { margin-bottom: 8px; }
+
+ul, ol { padding-left: 18px; margin-bottom: 8px; }
+li { margin-bottom: 3px; }
+
+/* ── code block ── */
+pre {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 7.2pt;
+  line-height: 1.45;
+  padding: 10px 13px;
+  border-radius: 7px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  page-break-inside: avoid;
+  margin: 8px 0;
+  border-left: 3px solid var(--accent-primary);
+}
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8pt;
+  background: var(--bg-surface);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--accent-primary);
+}
+pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* ── syntax highlight (basic) ── */
+.kw { color: #cba6f7; }
+.ty { color: #89b4fa; }
+.fn { color: #a6e3a1; }
+.str { color: #a6e3a1; }
+.cm { color: #6c7086; font-style: italic; }
+.dg { color: #fab387; }
+.op { color: #89dceb; }
+.pr { color: #f38ba8; }
+
+/* ── card grid ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+  page-break-inside: avoid;
+}
+.card {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--border-radius);
+  padding: 11px 14px;
+  border-left: 4px solid var(--accent-primary);
+  break-inside: avoid;
+}
+.card h4 {
+  margin: 0 0 5px;
+  font-size: 9pt;
+}
+.card p, .card li {
+  font-size: 8pt;
+  line-height: 1.5;
+}
+
+/* ── table ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+  page-break-inside: avoid;
+  margin: 10px 0;
+}
+thead th {
+  background: var(--bg-dark);
+  color: var(--text-light);
+  padding: 7px 11px;
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  text-align: left;
+}
+tbody td {
+  padding: 6px 11px;
+  border-bottom: 1px solid var(--border);
+  font-size: 8pt;
+}
+tbody tr:nth-child(even) { background: var(--bg-surface); }
+
+/* ── flow steps ── */
+.flow {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--border-radius);
+  padding: 14px;
+  margin: 10px 0;
+  page-break-inside: avoid;
+}
+.fs {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  padding: 6px 10px;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+.fs .n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: var(--accent-primary);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 7pt;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.fs .c {
+  font-size: 8pt;
+  line-height: 1.5;
+}
+.fs .c strong { color: var(--accent-primary); }
+
+/* ── exec summary ── */
+.exec-summary {
+  background: linear-gradient(135deg, var(--bg-surface) 0%, color-mix(in srgb, var(--accent-primary) 10%, var(--bg-surface)) 100%);
+  border: 2px solid var(--accent-primary);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  page-break-inside: avoid;
+}
+.exec-summary h3 {
+  margin-top: 0;
+  color: var(--accent-primary);
+}
+
+/* ── entity/model ── */
+.entity {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin: 8px 0;
+  page-break-inside: avoid;
+}
+.entity .eh {
+  background: var(--bg-dark);
+  color: var(--text-light);
+  padding: 7px 12px;
+  font-weight: 600;
+  font-size: 8.5pt;
+  font-family: 'JetBrains Mono', monospace;
+}
+.entity .eb { padding: 8px 12px; }
+.erow {
+  display: flex;
+  justify-content: space-between;
+  padding: 2.5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 8pt;
+  font-family: 'JetBrains Mono', monospace;
+}
+.erow:last-child { border-bottom: none; }
+.erow .ek { color: var(--accent-primary); font-weight: 500; }
+.erow .et { color: var(--text-muted); font-size: 7.5pt; }
+.erow .ed { color: var(--text-primary); font-size: 7.5pt; max-width: 50%; text-align: right; }
+
+/* ── highlight box ── */
+.highlight {
+  background: #fefce8;
+  border: 1.5px solid #facc15;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 8px 0;
+  page-break-inside: avoid;
+  font-size: 8.5pt;
+}
+.highlight strong { color: #a16207; }
+
+/* ── info box ── */
+.info {
+  background: #eff6ff;
+  border: 1.5px solid #93c5fd;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 8px 0;
+  page-break-inside: avoid;
+  font-size: 8.5pt;
+}
+.info strong { color: #2563eb; }
+
+/* ── diagram ── */
+.diagram {
+  background: var(--bg-dark);
+  color: var(--text-light);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7pt;
+  line-height: 1.5;
+  padding: 12px 14px;
+  border-radius: 7px;
+  margin: 10px 0;
+  page-break-inside: avoid;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+/* ── spacing helpers ── */
+.avoid-break { page-break-inside: avoid; }
+.avoid-after { page-break-after: avoid; }
+.force-before { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════ PAGE 1: COVER ════ -->
+<div class="page page-cover">
+  <div class="cover-tag">ARQUITECTURA FRONTEND · VOLTERP ERP</div>
+  <h1 class="cover-title">
+    <span>useCrudForm</span><br>
+    + DynamicFormFields
+  </h1>
+  <p class="cover-sub">
+    Estudio completo del sistema de formularios genéricos CRUD.<br>
+    Arquitectura, tipos, validación, renderizado y flujo de datos.
+  </p>
+  <div class="cover-meta">
+    <span>📄 v1.0 · Junio 2026</span>
+    <span>⚡ 0 dependencias externas de formularios</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ PAGE 2: ARQUITECTURA ════ -->
+<div class="page page-content">
+  <h2><span class="h2-num">1</span> Arquitectura General</h2>
+
+  <div class="exec-summary">
+    <h3>🎯 Concepto central</h3>
+    <p>
+      <strong>useCrudForm</strong> es un hook genérico que centraliza todo el estado y la lógica
+      de formularios CRUD (valores, errores, submit, edición). <strong>DynamicFormFields</strong>
+      es un componente puro que recibe ese estado y renderiza los campos según la configuración
+      declarativa <code>FormField[]</code>. Juntos eliminan el boilerplate repetido en las 7
+      páginas CRUD del sistema.
+    </p>
+  </div>
+
+  <h3>Separación de responsabilidades</h3>
+  <table>
+    <thead><tr><th>Capa</th><th>Responsabilidad</th><th>Archivo</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Hook</strong></td><td>Estado del formulario, validación, submit, edición, reseteo</td><td><code>useCrudForm.ts</code></td></tr>
+      <tr><td><strong>Componente</strong></td><td>Renderizado de campos según <code>FormField.type</code></td><td><code>DynamicFormFields.tsx</code></td></tr>
+      <tr><td><strong>Página</strong></td><td>Configura los fields, conecta stores, orquesta modales</td><td><code>Clientes.tsx</code> (ejemplo)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Flujo de datos</h3>
+  <div class="diagram">
+  ╔══════════════════════════════════════════════════════╗
+  ║                    Página (Clientes.tsx)             ║
+  ║                                                      ║
+  ║  define FormField[] ────────────────────┐            ║
+  ║  llama useCrudForm({ fields, ... }) ───┐│            ║
+  ║  conecta &lt;DynamicFormFields /&gt;     ↓↓            ║
+  ║                                                      ║
+  ║  ┌───────────────────────────────────────────┐       ║
+  ║  │ &lt;Modal onSubmit={form.handleSubmit}&gt;     │       ║
+  ║  │  &lt;DynamicFormFields                      │       ║
+  ║  │    fields={CLIENTE_FIELDS}                │       ║
+  ║  │    values={form.values}                   │       ║
+  ║  │    errors={form.errors}                   │       ║
+  ║  │    editingId={form.editingId}             │       ║
+  ║  │    onChange={form.setFieldValue}          │       ║
+ ║  │  /&gt;                                      │       ║
+  ║  │ &lt;/Modal&gt;                                │       ║
+  ║  └───────────────────────────────────────────┘       ║
+  ╚══════════════════════════════════════════════════════╝
+          │                          ▲
+          │ onSubmit                 │ setFieldValue
+          ▼                          │
+  ╔═══════════════════════════╗      │
+  ║     useCrudForm hook      ║──────┘
+  ║                           ║
+  ║  values → estado interno  ║
+  ║  errors → validación      ║
+  ║  handleSubmit → API call   ║
+  ╚═══════════════════════════╝</div>
+
+  <div class="highlight">
+    <strong>💡 Clave:</strong> El hook NO renderiza nada. El componente NO tiene estado de formulario.
+    La página solo configura y orquesta. Cada uno hace una cosa y la hace bien.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ PAGE 3: TYPES ════ -->
+<div class="page page-content">
+  <h2><span class="h2-num">2</span> Sistema de Tipos</h2>
+
+  <p>
+    Todo arranca con tres interfaces que forman el contrato público del hook.
+    Son genéricas (<code>&lt;T extends Record&lt;string, unknown&gt;&gt;</code>) para
+    adaptarse a cualquier entidad del dominio.
+  </p>
+
+  <h3>FormField — la configuración declarativa</h3>
+  <pre><span class="cm">// Cada objeto = un campo del formulario</span>
+<span class="kw">export interface</span> <span class="ty">FormField</span> {
+  <span class="pr">name</span>: <span class="ty">string</span>;              <span class="cm">// key en el objeto values</span>
+  <span class="pr">label</span>: <span class="ty">string</span>;             <span class="cm">// texto visible</span>
+  <span class="pr">type</span>: <span class="str">"text"</span> | <span class="str">"email"</span> | <span class="str">"tel"</span> | <span class="str">"number"</span>
+       | <span class="str">"select"</span> | <span class="str">"date"</span> | <span class="str">"file"</span>
+       | <span class="str">"checkbox"</span> | <span class="str">"url"</span>;
+
+  <span class="pr">required</span>?: <span class="ty">boolean</span>;         <span class="cm">// valida que no esté vacío</span>
+  <span class="pr">placeholder</span>?: <span class="ty">string</span>;
+
+  <span class="cm">// Para &lt;select&gt;</span>
+  <span class="pr">options</span>?: { <span class="pr">value</span>: <span class="ty">string</span>; <span class="pr">label</span>: <span class="ty">string</span> }[];
+
+  <span class="cm">// Visibilidad contextual</span>
+  <span class="pr">showOnEdit</span>?: <span class="ty">boolean</span>;   <span class="cm">// solo en edición (ej: isActive)</span>
+  <span class="pr">showOnCreate</span>?: <span class="ty">boolean</span>; <span class="cm">// solo en creación</span>
+
+  <span class="cm">// Passthrough a &lt;input&gt; + validación JS</span>
+  <span class="pr">min</span>?: <span class="ty">number</span>;
+  <span class="pr">max</span>?: <span class="ty">number</span>;
+  <span class="pr">minLength</span>?: <span class="ty">number</span>;
+  <span class="pr">maxLength</span>?: <span class="ty">number</span>;
+  <span class="pr">step</span>?: <span class="ty">number</span>;
+
+  <span class="cm">// Para type: "file" — default "image/*"</span>
+  <span class="pr">accept</span>?: <span class="ty">string</span>;
+
+  <span class="cm">// Validador custom: recibe (value, allValues)</span>
+  <span class="pr">validate</span>?: <span class="ty">ValidateFn</span>;
+}</pre>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>🎭 Discriminación por type</h4>
+      <p><code>type</code> es un <strong>string literal union</strong> de 9 valores. Cada valor dispara un renderer distinto en <code>DynamicFormFields</code> y un validador diferente en el hook. TypeScript fuerza a cubrir todos los casos.</p>
+    </div>
+    <div class="card">
+      <h4>🧩 Visibilidad contextual</h4>
+      <p><code>showOnEdit</code> / <code>showOnCreate</code> permiten que el mismo array de fields tenga comportamiento distinto según el modo. Ej: <code>isActive</code> solo tiene sentido al editar.</p>
+    </div>
+    <div class="card">
+      <h4>🔌 Passthrough + validación dual</h4>
+      <p>Props como <code>min</code>/<code>max</code> son <strong>tanto</strong> atributos HTML (<code>&lt;input min={x}&gt;</code>) como parámetros de validación JS. Como <code>handleSubmit</code> hace <code>e.preventDefault()</code>, la validación nativa del browser no corre → necesitamos la JS.</p>
+    </div>
+    <div class="card">
+      <h4>🔧 validate custom</h4>
+      <p>Función que recibe el valor y todos los valores del form. Permite validaciones complejas: confirmar password, rangos cruzados, etc. Siempre se ejecuta al final de la pipeline.</p>
+    </div>
+  </div>
+
+  <div class="force-before"></div>
+  <h3>CrudFormConfig — la configuración del hook</h3>
+  <pre><span class="kw">export interface</span> <span class="ty">CrudFormConfig</span>&lt;<span class="ty">T</span> <span class="kw">extends</span> <span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="pr">unknown</span>&gt;&gt; {
+  <span class="pr">fields</span>: <span class="ty">FormField</span>[];           <span class="cm">// definición declarativa</span>
+  <span class="pr">defaultValues</span>: <span class="ty">T</span>;              <span class="cm">// valores iniciales + template</span>
+  <span class="pr">onCreate</span>: (<span class="pr">data</span>: <span class="ty">T</span>) =&gt; <span class="ty">Promise</span>&lt;<span class="pr">unknown</span>&gt;;  <span class="cm">// POST</span>
+  <span class="pr">onUpdate</span>: (<span class="pr">id</span>: <span class="ty">number</span>, <span class="pr">data</span>: <span class="ty">T</span>) =&gt; <span class="ty">Promise</span>&lt;<span class="pr">unknown</span>&gt;;  <span class="cm">// PUT</span>
+  <span class="pr">onSuccess</span>?: () =&gt; <span class="pr">void</span>;         <span class="cm">// callback post-submit exitoso</span>
+  <span class="pr">mapEntityToForm</span>?: (<span class="pr">entity</span>: <span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="pr">unknown</span>&gt;) =&gt; <span class="ty">T</span>;
+}</pre>
+
+  <div class="info">
+    <strong>📌 <code>defaultValues</code> tiene doble propósito:</strong> (1) valores iniciales del formulario, (2) template para <code>pickKeys()</code> — cuando se edita, solo se extraen del objeto fuente las keys que existen en <code>defaultValues</code>. Esto evita que propiedades extrañas de la entidad contaminen el form.
+  </div>
+
+  <h3>CrudFormReturn — lo que el hook expone</h3>
+  <pre><span class="kw">export interface</span> <span class="ty">CrudFormReturn</span>&lt;<span class="ty">T</span>&gt; {
+  <span class="pr">values</span>: <span class="ty">T</span>;                                   <span class="cm">// estado actual del form</span>
+  <span class="pr">errors</span>: <span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="ty">string</span>&gt;;           <span class="cm">// { fieldName: mensaje }</span>
+  <span class="pr">isSubmitting</span>: <span class="ty">boolean</span>;                     <span class="cm">// loading state</span>
+  <span class="pr">submitError</span>: <span class="ty">string</span> | <span class="pr">null</span>;               <span class="cm">// error del API call</span>
+  <span class="pr">editingId</span>: <span class="ty">number</span> | <span class="pr">null</span>;                  <span class="cm">// null = create, number = update</span>
+  <span class="pr">setFieldValue</span>: (<span class="pr">name</span>: <span class="ty">string</span>, <span class="pr">value</span>: <span class="pr">unknown</span>) =&gt; <span class="pr">void</span>;
+  <span class="pr">handleSubmit</span>: (<span class="pr">e</span>: <span class="ty">React</span>.<span class="ty">FormEvent</span>) =&gt; <span class="ty">Promise</span>&lt;<span class="pr">void</span>&gt;;
+  <span class="pr">handleEdit</span>: (<span class="pr">entity</span>: <span class="ty">object</span>, <span class="pr">id</span>: <span class="ty">number</span>) =&gt; <span class="pr">void</span>;
+  <span class="pr">reset</span>: () =&gt; <span class="pr">void</span>;
+}</pre>
+</div>
+
+<!-- ════════════════════════════════════════════ PAGE 4: HOOK ANATOMY ════ -->
+<div class="page page-content">
+  <h2><span class="h2-num">3</span> Anatomía del Hook</h2>
+
+  <h3>Estado interno</h3>
+  <pre><span class="kw">const</span> [<span class="pr">values</span>,      <span class="pr">setValues</span>]      = <span class="fn">useState</span>&lt;<span class="ty">T</span>&gt;(<span class="pr">{ ...defaultValues }</span>);
+<span class="kw">const</span> [<span class="pr">errors</span>,      <span class="pr">setErrors</span>]      = <span class="fn">useState</span>&lt;<span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="ty">string</span>&gt;&gt;(<span class="pr">{}</span>);
+<span class="kw">const</span> [<span class="pr">isSubmitting</span>, <span class="pr">setIsSubmitting</span>] = <span class="fn">useState</span>(<span class="kc">false</span>);
+<span class="kw">const</span> [<span class="pr">submitError</span>,  <span class="pr">setSubmitError</span>]  = <span class="fn">useState</span>&lt;<span class="ty">string</span> | <span class="kc">null</span>&gt;(<span class="kc">null</span>);
+<span class="kw">const</span> [<span class="pr">editingId</span>,   <span class="pr">setEditingId</span>]   = <span class="fn">useState</span>&lt;<span class="ty">number</span> | <span class="kc">null</span>&gt;(<span class="kc">null</span>);</pre>
+
+  <table>
+    <thead><tr><th>Estado</th><th>Tipo</th><th>Función</th></tr></thead>
+    <tbody>
+      <tr><td><code>values</code></td><td><code>T</code></td><td>Objeto plano con los valores del formulario. Se muta por campo via <code>setFieldValue</code>.</td></tr>
+      <tr><td><code>errors</code></td><td><code>Record&lt;string, string&gt;</code></td><td>Mapa <code>fieldName → mensaje</code>. Se limpia por campo al editar.</td></tr>
+      <tr><td><code>isSubmitting</code></td><td><code>boolean</code></td><td>Indica si hay una operación asíncrona en curso. Deshabilita botones.</td></tr>
+      <tr><td><code>submitError</code></td><td><code>string | null</code></td><td>Error capturado del catch del API call. Se limpia al tocar cualquier campo.</td></tr>
+      <tr><td><code>editingId</code></td><td><code>number | null</code></td><td><code>null</code> = modo creación; <code>number</code> = modo edición (ID de la entidad).</td></tr>
+    </tbody>
+  </table>
+
+  <h3>setFieldValue</h3>
+  <pre><span class="kw">const</span> <span class="pr">setFieldValue</span> = <span class="fn">useCallback</span>((<span class="pr">name</span>: <span class="ty">string</span>, <span class="pr">value</span>: <span class="pr">unknown</span>) =&gt; {
+  <span class="fn">setValues</span>((<span class="pr">prev</span>) =&gt; (<span class="pr">{ ...prev, [name]: value }</span>));
+  <span class="fn">setErrors</span>((<span class="pr">prev</span>) =&gt; {
+    <span class="kw">if</span> (!(<span class="pr">name</span> <span class="kw">in</span> <span class="pr">prev</span>)) <span class="kw">return</span> <span class="pr">prev</span>;         <span class="cm">// no había error → no crear objeto nuevo</span>
+    <span class="kw">const</span> <span class="pr">next</span> = <span class="pr">{ ...prev }</span>;
+    <span class="kw">delete</span> <span class="pr">next[name]</span>;                         <span class="cm">// limpia el error de ese campo</span>
+    <span class="kw">return</span> <span class="pr">next</span>;
+  });
+  <span class="fn">setSubmitError</span>(<span class="kc">null</span>);                          <span class="cm">// el usuario ya está corrigiendo</span>
+}, []);</pre>
+
+  <div class="highlight">
+    <strong>🔑 Optimización:</strong> <code>setErrors</code> solo crea un nuevo objeto si el campo tenía error. Si no había error, retorna el mismo objeto (React no re-renderiza si la referencia no cambia).
+  </div>
+
+  <h3>handleEdit</h3>
+  <pre><span class="kw">const</span> <span class="pr">handleEdit</span> = <span class="fn">useCallback</span>(
+  (<span class="pr">entity</span>: <span class="ty">object</span>, <span class="pr">id</span>: <span class="ty">number</span>) =&gt; {
+    <span class="kw">const</span> <span class="pr">dict</span> = <span class="pr">entity</span> <span class="kw">as</span> <span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="pr">unknown</span>&gt;;
+    <span class="kw">const</span> <span class="pr">mapped</span> = <span class="pr">mapEntityToForm</span>
+      ? <span class="pr">mapEntityToForm</span>(<span class="pr">dict</span>)
+      : <span class="fn">pickKeys</span>(<span class="pr">defaultValues</span>, <span class="pr">dict</span>);
+    <span class="fn">setValues</span>(<span class="pr">mapped</span>);
+    <span class="fn">setEditingId</span>(<span class="pr">id</span>);
+    <span class="fn">setErrors</span>(<span class="pr">{}</span>);
+    <span class="fn">setSubmitError</span>(<span class="kc">null</span>);    <span class="cm">// estado limpio para editar</span>
+  },
+  [<span class="pr">defaultValues</span>, <span class="pr">mapEntityToForm</span>],
+);</pre>
+
+  <div class="info">
+    <strong>📌 <code>pickKeys()</code> — Mapper por defecto:</strong> Toma la entidad fuente y extrae solo las keys que existen en <code>defaultValues</code>. Esto permite que una entidad con 20 propiedades solo cargue en el form las 5 que definen los fields. El mapper custom (<code>mapEntityToForm</code>) permite transformaciones: fechas, enum→string, etc.
+  </div>
+
+  <div class="force-before"></div>
+  <h3>handleSubmit — el ciclo completo</h3>
+  <pre><span class="kw">const</span> <span class="pr">handleSubmit</span> = <span class="fn">useCallback</span>(
+  <span class="kw">async</span> (<span class="pr">e</span>: <span class="ty">React</span>.<span class="ty">FormEvent</span>) =&gt; {
+    <span class="pr">e</span>.<span class="fn">preventDefault</span>();                          <span class="cm">// ❌ mata validación nativa</span>
+
+    <span class="kw">const</span> <span class="pr">validationErrors</span> = <span class="fn">validateForm</span>(<span class="pr">fields</span>, <span class="pr">values</span>);
+    <span class="kw">if</span> (<span class="fn">Object</span>.<span class="fn">keys</span>(<span class="pr">validationErrors</span>).<span class="pr">length</span> &gt; <span class="dg">0</span>) {
+      <span class="fn">setErrors</span>(<span class="pr">validationErrors</span>);               <span class="cm">// muestra errores</span>
+      <span class="kw">return</span>;                                       <span class="cm">// corta aquí</span>
+    }
+
+    <span class="fn">setIsSubmitting</span>(<span class="kc">true</span>);
+    <span class="fn">setSubmitError</span>(<span class="kc">null</span>);
+
+    <span class="kw">try</span> {
+      <span class="kw">if</span> (<span class="pr">editingId</span> !== <span class="kc">null</span>) {
+        <span class="kw">await</span> <span class="fn">onUpdate</span>(<span class="pr">editingId</span>, <span class="pr">values</span>);           <span class="cm">// PUT</span>
+      } <span class="kw">else</span> {
+        <span class="kw">await</span> <span class="fn">onCreate</span>(<span class="pr">values</span>);                        <span class="cm">// POST</span>
+      }
+      <span class="fn">reset</span>();                                        <span class="cm">// limpia todo</span>
+      <span class="pr">onSuccess</span>?.();                                 <span class="cm">"> callback</span>
+    } <span class="kw">catch</span> (<span class="pr">err</span>) {
+      <span class="fn">setSubmitError</span>(<span class="pr">err</span> <span class="kw">instanceof</span> <span class="ty">Error</span>
+        ? <span class="pr">err</span>.<span class="pr">message</span>
+        : <span class="str">"Error al guardar"</span>);
+    } <span class="kw">finally</span> {
+      <span class="fn">setIsSubmitting</span>(<span class="kc">false</span>);
+    }
+  },
+  [<span class="pr">fields</span>, <span class="pr">values</span>, <span class="pr">defaultValues</span>, <span class="pr">onCreate</span>, <span class="pr">onUpdate</span>, <span class="pr">onSuccess</span>],
+);</pre>
+
+  <div class="highlight">
+    <strong>⚠️ e.preventDefault() valida invisible:</strong> Al prevenir el submit nativo del browser, también prevenimos <code>checkValidity()</code> del HTML5. Por eso toda la validación (min, max, step, email, etc.) se implementa en JavaScript. El hook es 100% responsable de la validación.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ PAGE 5: VALIDACIÓN ════ -->
+<div class="page page-content">
+  <h2><span class="h2-num">4</span> Sistema de Validación</h2>
+
+  <p>
+    El sistema de validación usa un patrón de <strong>validator dispatch por tipo</strong>
+    con una pipeline de 4 capas. Cada capa puede retornar un error o <code>undefined</code>
+    (sigue con la siguiente).
+  </p>
+
+  <div class="exec-summary">
+    <h3>🔬 Pattern Matching simulado</h3>
+    <p>TypeScript no tiene <code>match</code> como Rust. La alternativa es un mapa <code>Partial&lt;Record&lt;FormField["type"], Validator&gt;&gt;</code> donde la key es el discriminante y el valor es la función validadora. Se resuelve con <code>typeValidators[field.type]?.(...)</code>.</p>
+  </div>
+
+  <h3>Pipeline de validación</h3>
+  <div class="flow">
+    <div class="fs"><span class="n">1</span><span class="c"><strong>Required</strong> — Si <code>field.required</code> y el valor está vacío → error. Corta aquí.</span></div>
+    <div class="fs"><span class="n">2</span><span class="c"><strong>Type validator</strong> — Busca <code>typeValidators[field.type]</code>, lo ejecuta. Si hay error, corta.</span></div>
+    <div class="fs"><span class="n">3</span><span class="c"><strong>String constraints</strong> — Si el valor es string, verifica <code>minLength</code> / <code>maxLength</code>.</span></div>
+    <div class="fs"><span class="n">4</span><span class="c"><strong>Custom validator</strong> — Ejecuta <code>field.validate?.(value, values)</code>.</span></div>
+  </div>
+
+  <h3>typeValidators — el mapa de dispatch</h3>
+  <pre><span class="kw">type</span> <span class="ty">Validator</span> = (
+  <span class="pr">field</span>: <span class="ty">FormField</span>,
+  <span class="pr">value</span>: <span class="pr">unknown</span>,
+  <span class="pr">values</span>: <span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="pr">unknown</span>&gt;
+) =&gt; <span class="ty">string</span> | <span class="pr">undefined</span>;
+
+<span class="kw">const</span> <span class="pr">typeValidators</span>: <span class="ty">Partial</span>&lt;<span class="ty">Record</span>&lt;<span class="ty">FormField</span>[<span class="str">"type"</span>], <span class="ty">Validator</span>&gt;&gt; = {
+  <span class="cm">// ── Email ──</span>
+  <span class="pr">email</span>: (<span class="pr">f</span>, <span class="pr">v</span>) =&gt;
+    <span class="kw">typeof</span> <span class="pr">v</span> === <span class="str">"string"</span> &amp;&amp; <span class="pr">v</span> &amp;&amp; !<span class="pr">/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)</span>
+      ? <span class="str">"Email inválido"</span>
+      : <span class="pr">undefined</span>,
+
+  <span class="cm">// ── Number (min, max, step) ──</span>
+  <span class="pr">number</span>: (<span class="pr">f</span>, <span class="pr">v</span>) =&gt; {
+    <span class="kw">if</span> (<span class="kw">typeof</span> <span class="pr">v</span> !== <span class="str">"number"</span> || <span class="fn">isNaN</span>(<span class="pr">v</span>)) <span class="kw">return</span>;
+    <span class="kw">if</span> (<span class="pr">f</span>.<span class="pr">min</span> !== <span class="kc">undefined</span> &amp;&amp; <span class="pr">v</span> &lt; <span class="pr">f</span>.<span class="pr">min</span>)
+      <span class="kw">return</span> <span class="str">`${f.label} debe ser mayor o igual a ${f.min}`</span>;
+    <span class="kw">if</span> (<span class="pr">f</span>.<span class="pr">max</span> !== <span class="kc">undefined</span> &amp;&amp; <span class="pr">v</span> &gt; <span class="pr">f</span>.<span class="pr">max</span>)
+      <span class="kw">return</span> <span class="str">`${f.label} debe ser menor o igual a ${f.max}`</span>;
+    <span class="kw">if</span> (<span class="pr">f</span>.<span class="pr">step</span> !== <span class="kc">undefined</span> &amp;&amp; <span class="pr">f</span>.<span class="pr">step</span> &gt; <span class="dg">0</span>) {
+      <span class="kw">const</span> <span class="pr">diff</span> = <span class="fn">Math</span>.<span class="fn">abs</span>((<span class="pr">v</span> - (<span class="pr">f</span>.<span class="pr">min</span> ?? <span class="dg">0</span>)) % <span class="pr">f</span>.<span class="pr">step</span>);
+      <span class="kw">if</span> (<span class="pr">diff</span> &gt; <span class="dg">1e-8</span>)
+        <span class="kw">return</span> <span class="str">`${f.label} debe ser múltiplo de ${f.step}`</span>;
+    }
+  },
+
+  <span class="cm">// ── File (MIME type validation) ──</span>
+  <span class="pr">file</span>: (<span class="pr">f</span>, <span class="pr">v</span>) =&gt; {
+    <span class="kw">if</span> (<span class="kw">typeof</span> <span class="pr">v</span> !== <span class="str">"string"</span> || !<span class="pr">v</span>.<span class="fn">startsWith</span>(<span class="str">"data:"</span>)
+      || !<span class="pr">f</span>.<span class="pr">accept</span> || <span class="pr">f</span>.<span class="pr">accept</span> === <span class="str">"*"</span>) <span class="kw">return</span>;
+    <span class="kw">const</span> <span class="pr">mime</span> = <span class="pr">v</span>.<span class="fn">split</span>(<span class="str">";"</span>)[<span class="dg">0</span>].<span class="fn">split</span>(<span class="str">":"</span>)[<span class="dg">1</span>];
+    <span class="kw">const</span> <span class="pr">ok</span> = <span class="pr">f</span>.<span class="pr">accept</span>.<span class="fn">split</span>(<span class="str">","</span>).<span class="fn">map</span>((<span class="pr">a</span>) =&gt; <span class="pr">a</span>.<span class="fn">trim</span>()).<span class="fn">some</span>((<span class="pr">a</span>) =&gt;
+      <span class="pr">a</span>.<span class="fn">endsWith</span>(<span class="str">"/*"</span>)
+        ? <span class="pr">mime</span>.<span class="fn">startsWith</span>(<span class="pr">a</span>.<span class="fn">replace</span>(<span class="str">"/*"</span>, <span class="str">""</span>))
+        : <span class="pr">a</span> === <span class="pr">mime</span>
+    );
+    <span class="kw">if</span> (!<span class="pr">ok</span>) <span class="kw">return</span> <span class="str">`Formato de archivo no válido. Permitidos: ${f.accept}`</span>;
+  },
+};</pre>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>🎯 Partial&lt;Record&lt;...&gt;&gt;</h4>
+      <p>No todos los tipos necesitan validador (<code>text</code>, <code>tel</code>, <code>date</code>, <code>checkbox</code>, <code>url</code> no tienen entrada en el mapa). <code>Partial</code> permite keys opcionales y <code>?.</code> al invocar.</p>
+    </div>
+    <div class="card">
+      <h4>📐 Validación de step con floats</h4>
+      <p><code>(v - base) % step</code> puede dar <code>0.000000001</code> por precisión de floats. El epsilon <code>1e-8</code> tolera esos errores mínimos sin falsos positivos.</p>
+    </div>
+    <div class="card">
+      <h4>🖼️ File accept desde data URL</h4>
+      <p>El FileReader convierte la imagen a base64: <code>data:image/png;base64,...</code>. Extraemos el MIME (<code>image/png</code>) y lo comparamos contra <code>accept</code>. Solo valida si el valor es data URL (no URLs existentes en edición).</p>
+    </div>
+    <div class="card">
+      <h4>🔗 validateForm</h4>
+      <p>Itera el array de fields ejecutando <code>validateField</code>uno por uno y recolecta errores en un <code>Record&lt;fieldName, message&gt;</code>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ PAGE 6: DYNAMIC FORMFIELDS ════ -->
+<div class="page page-content">
+  <h2><span class="h2-num">5</span> DynamicFormFields — Renderizado</h2>
+
+  <p>
+    Componente puro y <strong>no-controlado visualmente</strong>: recibe <code>values</code> y <code>onChange</code> del hook,
+    nunca tiene estado interno de formulario. Solo <code>FileField</code> tiene estado local
+    (nombre de archivo, drag state) porque es UI efímera que no persiste.
+  </p>
+
+  <h3>Props</h3>
+  <pre><span class="kw">interface</span> <span class="ty">Props</span> {
+  <span class="pr">fields</span>: <span class="ty">FormField</span>[];           <span class="cm">// definición de campos</span>
+  <span class="pr">values</span>: <span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="pr">unknown</span>&gt;;  <span class="cm">// del hook</span>
+  <span class="pr">errors</span>: <span class="ty">Record</span>&lt;<span class="ty">string</span>, <span class="ty">string</span>&gt;;  <span class="cm">// del hook</span>
+  <span class="pr">editingId</span>: <span class="ty">number</span> | <span class="kc">null</span>;       <span class="cm">"> modo create/edit</span>
+  <span class="pr">onChange</span>: (<span class="pr">name</span>: <span class="ty">string</span>, <span class="pr">value</span>: <span class="pr">unknown</span>) =&gt; <span class="pr">void</span>;  <span class="cm">// setFieldValue</span>
+}</pre>
+
+  <h3>Estructura de renderizado</h3>
+  <pre><span class="kw">export function</span> <span class="fn">DynamicFormFields</span>(<span class="pr">props</span>: <span class="ty">Props</span>) {
+  <span class="kw">return</span> (
+    &lt;<span class="fn">div</span> className={<span class="pr">styles.fields</span>}&gt;
+      {<span class="pr">props.fields</span>.<span class="fn">map</span>((<span class="pr">field</span>) =&gt; {
+        <span class="cm">// Filtro de visibilidad</span>
+        <span class="kw">if</span> (<span class="pr">field</span>.<span class="pr">showOnEdit</span> &amp;&amp; <span class="pr">editingId</span> === <span class="kc">null</span>) <span class="kw">return null</span>;
+        <span class="kw">if</span> (<span class="pr">field</span>.<span class="pr">showOnCreate</span> &amp;&amp; <span class="pr">editingId</span> !== <span class="kc">null</span>) <span class="kw">return null</span>;
+
+        <span class="kw">return</span> (
+          &lt;<span class="fn">FieldRenderer</span>
+            <span class="pr">field</span>={<span class="pr">field</span>}
+            <span class="pr">value</span>={<span class="pr">values</span>[<span class="pr">field</span>.<span class="pr">name</span>]}
+            <span class="pr">error</span>={<span class="pr">errors</span>[<span class="pr">field</span>.<span class="pr">name</span>]}
+            <span class="pr">onChange</span>={<span class="pr">onChange</span>}
+          /&gt;
+        );
+      })}
+    &lt;/<span class="fn">div</span>&gt;
+  );
+}</pre>
+
+  <h3>FieldRenderer — dispatch por tipo</h3>
+  <p>
+    El renderer usa <strong>early returns</strong> con <code>if (field.type === "select")</code>.
+    Esto es equivalente al patrón match de otros lenguajes — cada tipo retorna su JSX y corta.
+    El orden importa: <code>select</code>, <code>checkbox</code> y <code>file</code> se manejan
+    antes que el default input genérico.
+  </p>
+
+  <div class="flow">
+    <div class="fs"><span class="n">1</span><span class="c"><strong>select</strong> → <code>&lt;select&gt;</code> con <code>options</code> y placeholder default <em>"Seleccionar {label}"</em></span></div>
+    <div class="fs"><span class="n">2</span><span class="c"><strong>checkbox</strong> → <code>&lt;input type="checkbox"&gt;</code> con <code>checked={Boolean(value)}</code></span></div>
+    <div class="fs"><span class="n">3</span><span class="c"><strong>file</strong> → <code>&lt;FileField&gt;</code> con drop zone, preview, drag &amp; drop</span></div>
+    <div class="fs"><span class="n">4</span><span class="c"><strong>number</strong> → <code>&lt;input type="number"&gt;</code> con parse especial (int vs float según step)</span></div>
+    <div class="fs"><span class="n">5</span><span class="c"><strong>default</strong> → <code>&lt;input type={field.type}&gt;</code> para text, email, tel, date, url</span></div>
+  </div>
+
+  <div class="highlight">
+    <strong>🔧 Number parsing:</strong> Cuando <code>step &lt; 1</code> (decimales), usa <code>parseFloat(e.target.value) || 0</code>. Caso contrario, <code>parseInt(...) || 0</code>. Esto evita que <code>""</code> o <code>"e"</code> se conviertan en <code>NaN</code>.
+  </div>
+
+  <div class="force-before"></div>
+
+  <h3>FileField — drop zone con preview</h3>
+  <pre><span class="kw">const</span> [<span class="pr">fileName</span>, <span class="pr">setFileName</span>] = <span class="fn">useState</span>&lt;<span class="ty">string</span> | <span class="kc">null</span>&gt;(<span class="kc">null</span>);
+<span class="kw">const</span> [<span class="pr">fileSize</span>, <span class="pr">setFileSize</span>] = <span class="fn">useState</span>&lt;<span class="ty">string</span> | <span class="kc">null</span>&gt;(<span class="kc">null</span>);
+<span class="kw">const</span> [<span class="pr">dragging</span>, <span class="pr">setDragging</span>] = <span class="fn">useState</span>(<span class="kc">false</span>);</pre>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>📁 processFile</h4>
+      <p>Toma un <code>File</code>, guarda nombre y tamaño, usa <code>FileReader.readAsDataURL()</code> para convertir a base64, y llama <code>onChange(field.name, dataUrl)</code>. El valor en el form es la cadena base64 completa.</p>
+    </div>
+    <div class="card">
+      <h4>🎯 Drag & Drop nativo</h4>
+      <p>Maneja <code>onDragOver</code>, <code>onDragLeave</code>, <code>onDrop</code>. No requiere librerías externas. El <code>dragging</code> state se usa solo para CSS visual.</p>
+    </div>
+    <div class="card">
+      <h4>🖼️ Preview condicional</h4>
+      <p>Si <code>value</code> existe (data URL o URL), muestra una card con imagen, nombre y botón de eliminar. Si no, muestra la zona de drop.</p>
+    </div>
+    <div class="card">
+      <h4>🗑️ Remove seguro</h4>
+      <p><code>handleRemove</code> setea el valor a <code>null</code> y limpia el <code>&lt;input type="file"&gt;</code> via ref para permitir reseleccionar el mismo archivo.</p>
+    </div>
+  </div>
+
+  <h3>Estados visuales del FileField</h3>
+  <table>
+    <thead><tr><th>Estado</th><th>Condición</th><th>Render</th></tr></thead>
+    <tbody>
+      <tr><td>Vacío</td><td><code>value === null/undefined</code></td><td>Drop zone con icono, texto, hint</td></tr>
+      <tr><td>Drag activo</td><td><code>dragging === true</code></td><td>Drop zone con borde y bg highlight</td></tr>
+      <tr><td>Con archivo</td><td><code>value</code> es string</td><td>Preview card: img + nombre + tamaño + remove</td></tr>
+      <tr><td>Error</td><td><code>error !== undefined</code></td><td>Borde rojo en drop zone, texto de error abajo</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════════════════════════════════ PAGE 7: CLIENTES ════ -->
+<div class="page page-content">
+  <h2><span class="h2-num">6</span> Integración: Clientes.tsx</h2>
+
+  <p>
+    El ejemplo más completo de cómo se usa el patrón en producción.
+    La página pasa de ~40 líneas de boilerplate (formData, handleSubmit, resetForm, ImageReader)
+    a ~15 líneas declarativas.
+  </p>
+
+  <h3>1. Definición de campos</h3>
+  <pre><span class="kw">const</span> <span class="pr">CLIENTE_FIELDS</span>: <span class="ty">FormField</span>[] = <span class="fn">useMemo</span>(() =&gt; [
+  { <span class="pr">name</span>: <span class="str">"name"</span>,     <span class="pr">label</span>: <span class="fn">t</span>(<span class="str">"clientes.clientName"</span>),  <span class="pr">type</span>: <span class="str">"text"</span>,    <span class="pr">required</span>: <span class="kc">true</span> },
+  { <span class="pr">name</span>: <span class="str">"email"</span>,    <span class="pr">label</span>: <span class="fn">t</span>(<span class="str">"clientes.clientEmail"</span>), <span class="pr">type</span>: <span class="str">"email"</span>,   <span class="pr">required</span>: <span class="kc">true</span> },
+  { <span class="pr">name</span>: <span class="str">"phone"</span>,    <span class="pr">label</span>: <span class="fn">t</span>(<span class="str">"clientes.clientPhone"</span>), <span class="pr">type</span>: <span class="str">"tel"</span>,     <span class="pr">required</span>: <span class="kc">true</span>,
+    <span class="pr">placeholder</span>: <span class="str">"809-XXX-XXXX"</span> },
+  { <span class="pr">name</span>: <span class="str">"address"</span>,  <span class="pr">label</span>: <span class="fn">t</span>(<span class="str">"common.address"</span>),       <span class="pr">type</span>: <span class="str">"text"</span> },
+  { <span class="pr">name</span>: <span class="str">"imageUrl"</span>, <span class="pr">label</span>: <span class="fn">t</span>(<span class="str">"common.image"</span>),        <span class="pr">type</span>: <span class="str">"file"</span>,   <span class="pr">accept</span>: <span class="str">"image/*"</span> },
+  { <span class="pr">name</span>: <span class="str">"isActive"</span>, <span class="pr">label</span>: <span class="fn">t</span>(<span class="str">"common.status"</span>),       <span class="pr">type</span>: <span class="str">"checkbox"</span>,
+    <span class="pr">showOnEdit</span>: <span class="kc">true</span>, <span class="pr">placeholder</span>: <span class="fn">t</span>(<span class="str">"common.active"</span>) },
+], [<span class="pr">t</span>]);</pre>
+
+  <div class="info">
+    <strong>📌 useMemo:</strong> Los fields se envuelven en <code>useMemo</code> porque son parte de las dependencias del <code>useCallback</code> de <code>handleSubmit</code>. Sin memo, cada render crearía un nuevo array → handleSubmit se recrearía → el Modal que recibe <code>onSubmit</code> se re-renderizaría.
+  </div>
+
+  <h3>2. Hook + Modal + FormFields</h3>
+  <pre>&lt;<span class="fn">Modal</span>
+  <span class="pr">isOpen</span>={<span class="pr">showForm</span>}
+  <span class="pr">onClose</span>={() =&gt; { <span class="fn">setShowForm</span>(<span class="kc">false</span>); <span class="pr">form</span>.<span class="fn">reset</span>(); }}
+  <span class="pr">title</span>={<span class="pr">form</span>.<span class="pr">editingId</span>
+    ? <span class="fn">t</span>(<span class="str">"clientes.editClient"</span>)
+    : <span class="fn">t</span>(<span class="str">"clientes.newClient"</span>)}
+  <span class="pr">onSubmit</span>={<span class="pr">form</span>.<span class="pr">handleSubmit</span>}       <span class="cm">">&lt;form&gt; del Modal</span>
+  <span class="pr">submitLabel</span>={<span class="pr">form</span>.<span class="pr">editingId</span>
+    ? <span class="fn">t</span>(<span class="str">"common.update"</span>)
+    : <span class="fn">t</span>(<span class="str">"common.create"</span>)}&gt;
+
+  <span class="cm">{/* El componente recibe todo del hook */}</span>
+  &lt;<span class="fn">DynamicFormFields</span>
+    <span class="pr">fields</span>={<span class="pr">CLIENTE_FIELDS</span>}
+    <span class="pr">values</span>={<span class="pr">form</span>.<span class="pr">values</span>}
+    <span class="pr">errors</span>={<span class="pr">form</span>.<span class="pr">errors</span>}
+    <span class="pr">editingId</span>={<span class="pr">form</span>.<span class="pr">editingId</span>}
+    <span class="pr">onChange</span>={<span class="pr">form</span>.<span class="pr">setFieldValue</span>}
+  /&gt;
+&lt;/<span class="fn">Modal</span>&gt;</pre>
+
+  <h3>3. Hook configuration</h3>
+  <pre><span class="kw">const</span> <span class="pr">form</span> = <span class="fn">useCrudForm</span>({
+  <span class="pr">fields</span>: <span class="ty">CLIENTE_FIELDS</span>,
+  <span class="pr">defaultValues</span>: {                           <span class="cm">// template + valores iniciales</span>
+    <span class="pr">name</span>: <span class="str">""</span>, <span class="pr">email</span>: <span class="str">""</span>, <span class="pr">phone</span>: <span class="str">""</span>,
+    <span class="pr">address</span>: <span class="str">""</span>, <span class="pr">imageUrl</span>: <span class="str">""</span>, <span class="pr">isActive</span>: <span class="kc">true</span>,
+  },
+  <span class="pr">onCreate</span>: (<span class="pr">data</span>) =&gt; <span class="fn">addCliente</span>(<span class="pr">data</span> <span class="kw">as</span> <span class="ty">ClientRequest</span>),    <span class="cm">// POST</span>
+  <span class="pr">onUpdate</span>: (<span class="pr">id</span>, <span class="pr">data</span>) =&gt; <span class="fn">updateCliente</span>(<span class="pr">id</span>, <span class="pr">data</span> <span class="kw">as</span> <span class="ty">ClientRequest</span>), <span class="cm">// PUT</span>
+  <span class="pr">onSuccess</span>: () =&gt; {                           <span class="cm">// refrescar datos</span>
+    <span class="fn">setShowForm</span>(<span class="kc">false</span>);
+    <span class="fn">fetchClientes</span>(<span class="pr">pageNumber</span>, <span class="pr">ITEMS_PER_PAGE</span>);
+  },
+});</pre>
+
+  <div class="highlight">
+    <strong>⚡ Qué elimina este patrón en cada página:</strong><br>
+    ❌ <code>formData</code> + <code>setFormData</code> — reemplazado por <code>form.values</code><br>
+    ❌ <code>handleSubmit</code> manual — delegado al hook<br>
+    ❌ <code>resetForm</code> — <code>form.reset()</code><br>
+    ❌ <code>handleEdit</code> con spread y casteos — <code>form.handleEdit(entity, id)</code><br>
+    ❌ FileReader duplicado — vive en <code>DynamicFormFields</code><br>
+    ❌ Validación inline — declarativa en <code>FormField[]</code>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ PAGE 8: DATA FLOW ════ -->
+<div class="page page-content">
+  <h2><span class="h2-num">7</span> Flujo Completo: de UI → API</h2>
+
+  <p>Recorrido paso a paso desde que el usuario escribe en un campo hasta que la data llega al backend.</p>
+
+  <h3>🔵 Modo CREATE</h3>
+  <table>
+    <thead><tr><th>#</th><th>Qué pasa</th><th>Código</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Usuario clickea "+ Nuevo Cliente"</td><td><code>form.reset()</code> + <code>setShowForm(true)</code></td></tr>
+      <tr><td>2</td><td>Modal se abre con <code>form.values = defaultValues</code></td><td><code>editingId === null</code></td></tr>
+      <tr><td>3</td><td>Usuario escribe en un campo → <code>onChange</code></td><td><code>DynamicFormFields → form.setFieldValue(name, value)</code></td></tr>
+      <tr><td>4</td><td><code>setFieldValue</code> actualiza <code>values</code>, limpia error de ese campo, limpia <code>submitError</code></td><td><code>setValues(prev =&gt; ({ ...prev, [name]: value }))</code></td></tr>
+      <tr><td>5</td><td>Usuario clickea "Crear" → Modal ejecuta <code>form.handleSubmit</code></td><td><code>onSubmit={form.handleSubmit}</code></td></tr>
+      <tr><td>6</td><td><code>handleSubmit</code>: <code>e.preventDefault()</code> + validación</td><td><code>validateForm(fields, values)</code></td></tr>
+      <tr><td>7</td><td>Si hay errores → <code>setErrors</code>, corta. Usuario corrige.</td><td>Vuelve al paso 3</td></tr>
+      <tr><td>8</td><td>Si OK → <code>setIsSubmitting(true)</code>, llama <code>onCreate(values)</code></td><td><code>addCliente(data as ClientRequest)</code></td></tr>
+      <tr><td>9</td><td>Store → API → POST /api/clientes</td><td>Zustand → fetch</td></tr>
+      <tr><td>10</td><td>Éxito → <code>reset()</code> + <code>onSuccess?.()</code> → cierra modal + refetch</td><td><code>setShowForm(false); fetchClientes(...)</code></td></tr>
+      <tr><td>11</td><td>Error → <code>setSubmitError(msg)</code>, el usuario ve el error en el modal</td><td><code>catch (err) → msg</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>🟠 Modo EDIT</h3>
+  <table>
+    <thead><tr><th>#</th><th>Qué pasa</th><th>Código</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Usuario clickea editar en una fila</td><td><code>form.handleEdit(cliente, cliente.id)</code></td></tr>
+      <tr><td>2</td><td><code>handleEdit</code>: <code>pickKeys(defaultValues, entity)</code> extrae solo las keys del form</td><td><code>setValues(mapped); setEditingId(id)</code></td></tr>
+      <tr><td>3</td><td>Modal se abre con <code>form.values</code> poblados y <code>editingId = cliente.id</code></td><td><code>showOnEdit === true</code> se muestra (isActive)</td></tr>
+      <tr><td>4</td><td>Usuario modifica campos</td><td>Mismo flujo que CREATE pasos 3-4</td></tr>
+      <tr><td>5</td><td>Usuario clickea "Actualizar" → validación corre</td><td>Mismo paso 6-7</td></tr>
+      <tr><td>6</td><td>Si OK → <code>onUpdate(editingId, values)</code></td><td><code>updateCliente(id, data as ClientRequest)</code></td></tr>
+      <tr><td>7</td><td>Store → API → PUT /api/clientes/:id</td><td>Zustand → fetch</td></tr>
+      <tr><td>8</td><td>Éxito → <code>reset()</code> (editingId vuelve a null, values a default)</td><td>Cierra modal + refetch</td></tr>
+    </tbody>
+  </table>
+
+  <div class="force-before"></div>
+
+  <h3>Diagrama de estados del hook</h3>
+  <div class="diagram">
+                          ┌──────────────┐
+                          │   IDLE       │
+                          │ (create mode)│
+                          └──────┬───────┘
+                ┌────────────────┤
+                │ handleEdit     │ handleSubmit (success)
+                ▼                │
+          ┌──────────┐          │
+          │ EDITING  │          │
+          │ ID != null│         │
+          └────┬─────┘          │
+               │ handleSubmit   │
+               ▼ (success)      │
+          ┌──────────┐          │
+          │SUBMITTING│          │
+          │isSubmitting=true    │
+          └────┬─────┘          │
+     ┌─────────┼─────────┐      │
+     ▼         ▼         ▼      │
+  ┌──────┐ ┌──────┐ ┌──────┐   │
+  │SUCCESS│ │VALID.│ │ERROR │   │
+  │onSuc. │ │ERROR │ │submit│───┤
+  │→ IDLE │ │→ IDLE│ │Error │   │
+  └──────┘ │queda │ │queda │   │
+           │en el │ │visible│   │
+           │form  │ └──────┘   │
+           └──────┘            │
+                               │
+          ┌────────────────────┘
+          ▼
+     ┌──────────┐
+     │  IDLE    │ (create mode again)
+     │ reset()  │
+     └──────────┘</div>
+
+  <div class="info">
+    <strong>📌 Los estados de error no cortan el modo:</strong> Si falla el submit, <code>editingId</code> se mantiene (sigue en modo edición) y <code>values</code> conservan lo que el usuario escribió. No se pierde nada. El usuario corrige y reintenta.
+  </div>
+
+  <h3>Mapa de dependencias entre archivos</h3>
+  <div class="diagram">
+  ┌─────────────────────────────────────────────┐
+  │              useCrudForm.ts                  │
+  │  FormField  CrudFormConfig  CrudFormReturn   │
+  │  validateField (typeValidators)  pickKeys    │
+  └────────────┬────────────────────┬───────────┘
+               │ import             │ import
+               ▼                    ▼
+  ┌────────────────────┐  ┌──────────────────────┐
+  │ DynamicFormFields  │  │     Página CRUD       │
+  │ (FieldRenderer)    │  │   (Clientes.tsx)      │
+  │ (FileField)        │  │                       │
+  └────────────────────┘  │ stores → Zustand     │
+                          │ Modal + ConfirmModal  │
+                          │ Table + Pagination    │
+                          └──────────────────────┘</div>
+</div>
+
+<!-- ════════════════════════════════════════════ PAGE 9: CONCLUSION ════ -->
+<div class="page page-content">
+  <h2><span class="h2-num">8</span> Resumen &amp; Decisiones</h2>
+
+  <div class="exec-summary">
+    <h3>🧠 Síntesis del patrón</h3>
+    <p>
+      <strong>useCrudForm</strong> es un hook genérico con tipado seguro que elimina
+      el boilerplate CRUD mediante una configuración declarativa. <strong>DynamicFormFields</strong>
+      es el componente que traduce esa configuración a UI. Juntos forman un motor de
+      formularios liviano con <strong>0 dependencias externas</strong>.
+    </p>
+  </div>
+
+  <h3>Decisiones arquitectónicas clave</h3>
+
+  <table>
+    <thead><tr><th>Decisión</th><th>Alternativa descartada</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Hook + Componente separados</strong></td>
+        <td>Un solo componente todo-en-uno</td>
+        <td>El hook puede testearse en aislamiento. El componente puede reemplazarse (ej: mobile vs desktop). Separación de responsabilidades.</td>
+      </tr>
+      <tr>
+        <td><strong>Partial&lt;Record&lt;T["type"], Validator&gt;&gt;</strong></td>
+        <td>if/else chain o switch</td>
+        <td>Más declarativo, fácil de extender (solo agregás una entrada al map), TypeScript fuerza a tipar bien la key. El if chain original mezclaba formatos, rangos y string constraints.</td>
+      </tr>
+      <tr>
+        <td><strong>FileReader en el componente</strong></td>
+        <td>FileReader en el hook</td>
+        <td>El hook no debe saber de DOM ni de File API. El componente maneja la conversión a base64 y pasa el string al hook.</td>
+      </tr>
+      <tr>
+        <td><strong>defaultValues como template + pickKeys</strong></td>
+        <td>Mapeo manual entidad → form</td>
+        <td>El mapper por defecto (pickKeys) cubre el 90% de los casos. Para el 10% restante existe <code>mapEntityToForm</code>. No obligamos a escribir un mapper siempre.</td>
+      </tr>
+      <tr>
+        <td><strong>submitError se limpia en setFieldValue</strong></td>
+        <td>Solo se limpia al hacer submit</td>
+        <td>UX: si falló el submit y el usuario empieza a escribir, el error debe desaparecer. Si no, el usuario asume que el sistema está trabado.</td>
+      </tr>
+      <tr>
+        <td><strong>Validación JS de min/max/step</strong></td>
+        <td>Confiar en validación HTML5 nativa</td>
+        <td><code>e.preventDefault()</code> en handleSubmit cancela <code>checkValidity()</code>. No podemos confiar en la validación del browser. Toda validación corre en JavaScript.</td>
+      </tr>
+      <tr>
+        <td><strong>Partial&lt;CrudFormConfig&gt; y Partial&lt;T&gt; para updates</strong></td>
+        <td>Tipos Create/Update separados</td>
+        <td>Request = <code>Partial&lt;Dto&gt;</code> unifica Create y Update. El form siempre envía el objeto completo, el backend ignora lo que no necesita.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="force-before"></div>
+
+  <h3>Campos de FormField y su validación</h3>
+  <table>
+    <thead><tr><th>type</th><th>Render</th><th>Validación JS</th></tr></thead>
+    <tbody>
+      <tr><td><code>text</code></td><td><code>&lt;input type="text"&gt;</code></td><td>required, min/maxLength, custom</td></tr>
+      <tr><td><code>email</code></td><td><code>&lt;input type="email"&gt;</code></td><td>required + regex <code>/^...@...\....$/</code>, min/maxLength, custom</td></tr>
+      <tr><td><code>tel</code></td><td><code>&lt;input type="tel"&gt;</code></td><td>required, min/maxLength, custom</td></tr>
+      <tr><td><code>url</code></td><td><code>&lt;input type="url"&gt;</code></td><td>required, min/maxLength, custom</td></tr>
+      <tr><td><code>number</code></td><td><code>&lt;input type="number"&gt;</code></td><td>required, <strong>min</strong>, <strong>max</strong>, <strong>step</strong>, custom</td></tr>
+      <tr><td><code>date</code></td><td><code>&lt;input type="date"&gt;</code></td><td>required, custom</td></tr>
+      <tr><td><code>select</code></td><td><code>&lt;select&gt;</code></td><td>required, custom</td></tr>
+      <tr><td><code>checkbox</code></td><td><code>&lt;input type="checkbox"&gt;</code></td><td>custom</td></tr>
+      <tr><td><code>file</code></td><td>Drop zone + preview</td><td>required, <strong>accept (MIME)</strong>, custom</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Principios que sigue este patrón</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>🎯 Single Responsibility</h4>
+      <p>El hook maneja estado y lógica. El componente renderiza. La página configura y orquesta.</p>
+    </div>
+    <div class="card">
+      <h4>🔒 Type Safety</h4>
+      <p>Genéricos <code>&lt;T&gt;</code> en todo el pipeline, discriminación por <code>type</code>, <code>validate</code> tipado.</p>
+    </div>
+    <div class="card">
+      <h4>⚡ Performance</h4>
+      <p><code>useCallback</code>, <code>useMemo</code>, reference equality checks, evitar re-renders innecesarios.</p>
+    </div>
+    <div class="card">
+      <h4>🧪 Testeable</h4>
+      <p>El hook es puro (recibe config, devuelve state + callbacks). Sin DOM, sin side effects externos.</p>
+    </div>
+    <div class="card">
+      <h4>🧩 Extensible</h4>
+      <p>Agregar un nuevo type: (1) agregarlo al union type, (2) agregar validador al map, (3) agregar renderer en FieldRenderer.</p>
+    </div>
+    <div class="card">
+      <h4>📦 Zero deps</h4>
+      <p>0 dependencias externas de formularios. Solo React + i18n para textos. Control total del comportamiento.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

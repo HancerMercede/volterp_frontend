@@ -4,7 +4,16 @@ import { useState, useCallback } from "react";
 export interface FormField {
   name: string;
   label: string;
-  type: "text" | "email" | "tel" | "number" | "select" | "date" | "file" | "checkbox" | "url";
+  type:
+    | "text"
+    | "email"
+    | "tel"
+    | "number"
+    | "select"
+    | "date"
+    | "file"
+    | "checkbox"
+    | "url";
   required?: boolean;
   placeholder?: string;
   /** Options for <select> fields */
@@ -17,11 +26,15 @@ export interface FormField {
   min?: number;
   max?: number;
   minLength?: number;
+  maxLength?: number;
   step?: number;
   /** Accepted file extensions (default: "image/*") */
   accept?: string;
   /** Custom validation: return error message or undefined */
-  validate?: (value: unknown, values: Record<string, unknown>) => string | undefined;
+  validate?: (
+    value: unknown,
+    values: Record<string, unknown>,
+  ) => string | undefined;
 }
 
 // ─── Config ──────────────────────────────────────────────────────────
@@ -49,23 +62,80 @@ export interface CrudFormReturn<T> {
   reset: () => void;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────
-function validateField(field: FormField, value: unknown, values: Record<string, unknown>): string | undefined {
-  if (field.required) {
-    const isEmpty = value === "" || value === null || value === undefined;
-    if (isEmpty) return `${field.label} es requerido`;
+// ─── Validators ─────────────────────────────────────────────────────
+type Validator = (
+  field: FormField,
+  value: unknown,
+  values: Record<string, unknown>,
+) => string | undefined;
+
+const typeValidators: Partial<Record<FormField["type"], Validator>> = {
+  email: (f, v) =>
+    typeof v === "string" && v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+      ? "Email inválido"
+      : undefined,
+
+  number: (f, v) => {
+    if (typeof v !== "number" || isNaN(v)) return;
+    if (f.min !== undefined && v < f.min)
+      return `${f.label} debe ser mayor o igual a ${f.min}`;
+    if (f.max !== undefined && v > f.max)
+      return `${f.label} debe ser menor o igual a ${f.max}`;
+    if (f.step !== undefined && f.step > 0) {
+      const diff = Math.abs((v - (f.min ?? 0)) % f.step);
+      if (diff > 1e-8) return `${f.label} debe ser múltiplo de ${f.step}`;
+    }
+  },
+
+  file: (f, v) => {
+    if (
+      typeof v !== "string" ||
+      !v.startsWith("data:") ||
+      !f.accept ||
+      f.accept === "*"
+    )
+      return;
+    const mime = v.split(";")[0].split(":")[1];
+    const ok = f.accept
+      .split(",")
+      .map((a) => a.trim())
+      .some((a) =>
+        a.endsWith("/*") ? mime.startsWith(a.replace("/*", "")) : a === mime,
+      );
+    if (!ok) return `Formato de archivo no válido. Permitidos: ${f.accept}`;
+  },
+};
+
+function validateField(
+  field: FormField,
+  value: unknown,
+  values: Record<string, unknown>,
+): string | undefined {
+  // 1. Required
+  if (
+    field.required &&
+    (value === "" || value === null || value === undefined)
+  ) {
+    return `${field.label} es requerido`;
   }
-  if (field.type === "email" && value && typeof value === "string") {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Email inválido";
+  // 2. Type-specific format/range (email, number min/max/step, file accept)
+  const typeErr = typeValidators[field.type]?.(field, value, values);
+  if (typeErr !== undefined) return typeErr;
+  // 3. String constraints (apply to any string value)
+  if (typeof value === "string") {
+    if (field.minLength && value.length < field.minLength)
+      return `${field.label} debe tener al menos ${field.minLength} caracteres`;
+    if (field.maxLength && value.length > field.maxLength)
+      return `${field.label} debe tener máximo ${field.maxLength} caracteres`;
   }
-  if (field.minLength && typeof value === "string" && value.length < field.minLength) {
-    return `${field.label} debe tener al menos ${field.minLength} caracteres`;
-  }
-  if (field.validate) return field.validate(value, values);
-  return undefined;
+  // 4. Custom
+  return field.validate?.(value, values);
 }
 
-function validateForm<T extends Record<string, unknown>>(fields: FormField[], values: T): Record<string, string> {
+function validateForm<T extends Record<string, unknown>>(
+  fields: FormField[],
+  values: T,
+): Record<string, string> {
   const errors: Record<string, string> = {};
   for (const field of fields) {
     const err = validateField(field, values[field.name], values);
@@ -90,7 +160,14 @@ function pickKeys<T extends Record<string, unknown>>(
 export function useCrudForm<T extends Record<string, unknown>>(
   config: CrudFormConfig<T>,
 ): CrudFormReturn<T> {
-  const { fields, defaultValues, onCreate, onUpdate, onSuccess, mapEntityToForm } = config;
+  const {
+    fields,
+    defaultValues,
+    onCreate,
+    onUpdate,
+    onSuccess,
+    mapEntityToForm,
+  } = config;
   const [values, setValues] = useState<T>({ ...defaultValues });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,6 +182,7 @@ export function useCrudForm<T extends Record<string, unknown>>(
       delete next[name];
       return next;
     });
+    setSubmitError(null);
   }, []);
 
   const handleSubmit = useCallback(
@@ -136,13 +214,15 @@ export function useCrudForm<T extends Record<string, unknown>>(
         setIsSubmitting(false);
       }
     },
-    [fields, values, defaultValues, onCreate, onUpdate, onSuccess],
+    [fields, values, editingId, defaultValues, onSuccess, onUpdate, onCreate],
   );
 
   const handleEdit = useCallback(
     (entity: object, id: number) => {
       const dict = entity as Record<string, unknown>;
-      const mapped = mapEntityToForm ? mapEntityToForm(dict) : pickKeys(defaultValues, dict);
+      const mapped = mapEntityToForm
+        ? mapEntityToForm(dict)
+        : pickKeys(defaultValues, dict);
       setValues(mapped);
       setEditingId(id);
       setErrors({});

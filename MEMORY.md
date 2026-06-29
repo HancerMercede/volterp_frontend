@@ -1,9 +1,11 @@
 # Volterp - ERP System
 
 ## Project Overview
+
 ERP (Enterprise Resource Planning) system built with React + TypeScript + Vite.
 
 ## Tech Stack
+
 - **Frontend**: React 18, TypeScript, Vite
 - **Styling**: CSS Modules, CSS Variables
 - **Routing**: React Router v6
@@ -11,6 +13,7 @@ ERP (Enterprise Resource Planning) system built with React + TypeScript + Vite.
 - **Build**: Yarn
 
 ## Project Structure
+
 ```
 src/
 ├── api/                 # API layer (for .NET backend)
@@ -46,6 +49,7 @@ src/
 ```
 
 ## Modules
+
 1. **Dashboard** - KPIs, charts, recent activities
 2. **Ventas** - Sales management with CRUD
 3. **Compras** - Purchase management
@@ -59,6 +63,7 @@ src/
 11. **Configuración** - Settings
 
 ## Design System
+
 - **Colors**:
   - Primary: #FACC15 (yellow)
   - Sidebar: #1F2937 (dark)
@@ -68,6 +73,7 @@ src/
 - **Components**: 40x40px circular avatars
 
 ## Features
+
 - CRUD operations for all modules
 - Table with pagination
 - Toast notifications
@@ -75,10 +81,12 @@ src/
 - Image cells for products/avatars
 
 ## Git
+
 - **main**: Production branch
 - **development**: Development branch
 
 ## To Do
+
 - Connect to .NET API
 - Implement authentication
 - Add unit tests
