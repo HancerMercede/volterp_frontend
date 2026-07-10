@@ -16,5 +16,6 @@ export const API_CONFIG = {
     ACCOUNTING_TRANSACTIONS: "/api/accounting-transactions",
     CLIENTS: "/api/clients",
     PROJECTS: "/api/projects",
+    DASHBOARD: "/api/dashboard",
   },
 };

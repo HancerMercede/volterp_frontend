@@ -60,3 +60,44 @@ export interface DashboardStats {
   newProducts: number;
   activeSuppliers: number;
 }
+
+// ========================
+// Raw API response types
+// ========================
+export interface DashboardApiData {
+  ventas: number;
+  compras: number;
+  clientes: number;
+  utilidad: number;
+}
+
+export interface DashboardApiTopProduct {
+  name: string;
+  category: string;
+  sales: number;
+  value: number;
+  imageUrl: string;
+  rankColor: string;
+}
+
+export interface DashboardApiActivity {
+  text: string;
+  time: string;
+  type: string;
+}
+
+export interface DashboardApiReminder {
+  text: string;
+  count: number;
+  badgeColor: string;
+}
+
+export interface DashboardApiResponse {
+  data: DashboardApiData;
+  salesChart: SalesChartData[];
+  categories: CategoryData[];
+  topProducts: DashboardApiTopProduct[];
+  activities: DashboardApiActivity[];
+  reminders: DashboardApiReminder[];
+  stats: DashboardStats;
+}

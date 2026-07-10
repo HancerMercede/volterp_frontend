@@ -1,20 +1,28 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useDashboard } from '../../application/hooks/useDashboard';
-import { KpiCard, StatsRow, SalesChart, CategoryDonut, TopProducts, RecentActivities, Reminders } from '../../components/Dashboard';
-import { formatCurrency } from '../../domain/dashboard/constants';
-import type { ChartPeriod } from '../../domain/dashboard/constants';
-import styles from './Dashboard.module.css';
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useDashboard } from "../../application/hooks/useDashboard";
+import { useDashboardStore } from "../../stores/dashboardStore";
+import {
+  KpiCard,
+  StatsRow,
+  SalesChart,
+  CategoryDonut,
+  TopProducts,
+  RecentActivities,
+  Reminders,
+} from "../../components/Dashboard";
+import { formatCurrency } from "../../domain/dashboard/constants";
+import styles from "./Dashboard.module.css";
 
 const PERIOD_LABELS: Record<string, string> = {
-  today: 'Hoy',
-  week: 'Esta semana',
-  month: 'Este mes',
+  today: "Hoy",
+  week: "Esta semana",
+  month: "Este mes",
 };
 
 export function Dashboard() {
   const { t } = useTranslation();
-  const [activePeriod, setActivePeriod] = useState<string>('month');
+  const [activePeriod, setActivePeriod] = useState<string>("month");
   const {
     kpis,
     topProducts,
@@ -22,23 +30,28 @@ export function Dashboard() {
     reminders,
     dashboardStats,
     salesChartData,
-    categoryData
+    categoryData,
   } = useDashboard();
+
+  useEffect(() => {
+    useDashboardStore.getState().fetchDashboard();
+  }, []);
 
   return (
     <>
       <div className={styles.pageHeader}>
         <div className={styles.pageTitleGroup}>
           <h1 className={styles.pageTitle}>
-            <span className={styles.pageTitleAccent}>⚡</span> {t('dashboard.title')}
+            <span className={styles.pageTitleAccent}></span>
+            {t("dashboard.title")}
           </h1>
-          <p className={styles.pageSubtitle}>{t('dashboard.subtitle')}</p>
+          <p className={styles.pageSubtitle}>{t("dashboard.subtitle")}</p>
         </div>
         <div className={styles.periodPills}>
           {Object.entries(PERIOD_LABELS).map(([key, label]) => (
             <button
               key={key}
-              className={`${styles.periodPill} ${activePeriod === key ? styles.periodPillActive : ''}`}
+              className={`${styles.periodPill} ${activePeriod === key ? styles.periodPillActive : ""}`}
               onClick={() => setActivePeriod(key)}
             >
               {label}
@@ -47,7 +60,16 @@ export function Dashboard() {
         </div>
       </div>
 
-      <StatsRow stats={dashboardStats} />
+      <StatsRow
+        stats={
+          dashboardStats ?? {
+            ordersCompleted: 0,
+            ordersPending: 0,
+            newProducts: 0,
+            activeSuppliers: 0,
+          }
+        }
+      />
 
       <section className={styles.cards}>
         {kpis.map((kpi) => (
@@ -57,7 +79,10 @@ export function Dashboard() {
 
       <div className={styles.chartsSection}>
         <SalesChart data={salesChartData} />
-        <CategoryDonut data={categoryData} totalLabel={formatCurrency(145660)} />
+        <CategoryDonut
+          data={categoryData}
+          totalLabel={formatCurrency(145660)}
+        />
       </div>
 
       <section className={styles.grid}>

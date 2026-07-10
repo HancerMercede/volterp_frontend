@@ -1,19 +1,25 @@
 import { useMemo } from 'react';
 import { useDashboardStore } from '../../stores/dashboardStore';
 import type { KpiCard, TopProduct, Activity, Reminder, DashboardStats, SalesChartData, CategoryData } from '../../domain/dashboard/types';
-import { KPI_CONFIG, TOP_PRODUCTS_CONFIG, REMINDERS_CONFIG, DASHBOARD_STATS, SALES_CHART_DATA, CATEGORY_DATA, formatCurrency } from '../../domain/dashboard/constants';
+import { KPI_CONFIG, formatCurrency } from '../../domain/dashboard/constants';
+
+const ACTIVITY_TYPES = ['sale', 'payment', 'purchase', 'info'] as const;
 
 export function useDashboard() {
-  const { stats, actividades } = useDashboardStore();
+  const { dashboard, loading, error, fetchDashboard } = useDashboardStore();
 
   const kpis = useMemo((): KpiCard[] => {
-    const values = [stats.ventas, stats.compras, stats.clientes, stats.utilidad];
+    if (!dashboard) return [];
+    const { data } = dashboard;
+    const values = [data.ventas, data.compras, data.clientes, data.utilidad];
 
     return KPI_CONFIG.map((config, index) => ({
       id: `kpi-${index}`,
       label: config.label,
-      value: index === 2 ? Number(stats.clientes) : values[index],
-      formattedValue: index === 2 ? stats.clientes.toString() : formatCurrency(values[index]),
+      value: index === 2 ? Number(data.clientes) : values[index],
+      formattedValue: index === 2
+        ? data.clientes.toString()
+        : formatCurrency(values[index]),
       change: index === 2 ? 15.2 : (index === 0 ? 12.5 : index === 3 ? 18.7 : -8.3),
       changeLabel: config.changeLabel,
       isPositive: config.isPositive,
@@ -21,10 +27,11 @@ export function useDashboard() {
       iconBg: config.iconBg,
       trend: config.trend,
     }));
-  }, [stats]);
+  }, [dashboard]);
 
   const topProducts = useMemo((): TopProduct[] => {
-    return TOP_PRODUCTS_CONFIG.map((product, index) => ({
+    if (!dashboard) return [];
+    return dashboard.topProducts.map((product, index) => ({
       id: `product-${index}`,
       name: product.name,
       category: product.category,
@@ -35,31 +42,36 @@ export function useDashboard() {
       rank: index + 1,
       rankColor: product.rankColor,
     }));
-  }, []);
+  }, [dashboard]);
 
   const activities = useMemo((): Activity[] => {
-    const types: Activity['type'][] = ['sale', 'payment', 'purchase', 'info'];
-    return actividades.slice(0, 4).map((a, index) => ({
-      id: String(a.id),
-      text: a.texto,
-      time: a.hora,
-      type: types[index] || 'info',
+    if (!dashboard) return [];
+    return dashboard.activities.map((a, index) => ({
+      id: String(index + 1),
+      text: a.text,
+      time: a.time,
+      type: (ACTIVITY_TYPES as readonly string[]).includes(a.type)
+        ? a.type as Activity['type']
+        : 'info',
     }));
-  }, [actividades]);
+  }, [dashboard]);
 
   const reminders = useMemo((): Reminder[] => {
-    return REMINDERS_CONFIG.map((config, index) => ({
+    if (!dashboard) return [];
+    return dashboard.reminders.map((r, index) => ({
       id: `reminder-${index}`,
-      ...config,
+      text: r.text,
+      count: r.count,
+      badgeColor: r.badgeColor,
     }));
-  }, []);
+  }, [dashboard]);
 
-  const dashboardStats: DashboardStats = DASHBOARD_STATS;
-  const salesChartData: SalesChartData[] = SALES_CHART_DATA;
-  const categoryData: CategoryData[] = CATEGORY_DATA;
+  const dashboardStats: DashboardStats | null = dashboard?.stats ?? null;
+  const salesChartData: SalesChartData[] = dashboard?.salesChart ?? [];
+  const categoryData: CategoryData[] = dashboard?.categories ?? [];
 
   const maxSales = useMemo(() => {
-    return Math.max(...salesChartData.map(d => d.sales));
+    return Math.max(...salesChartData.map(d => d.sales), 0);
   }, [salesChartData]);
 
   return {
@@ -71,5 +83,6 @@ export function useDashboard() {
     salesChartData,
     categoryData,
     maxSales,
+    loading,
   };
 }
