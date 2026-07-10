@@ -56,35 +56,42 @@ export function Login() {
       <div className={styles.leftPanel}>
         <div className={styles.brandingContent}>
           <div className={styles.logoWrapper}>
+            <div className={styles.logoRing} />
+            <div className={styles.logoRing} />
+            <div className={styles.logoRing} />
+            <div className={styles.ringOrbit} />
+            <div className={styles.ringOrbit} />
             <img
               src="/src/assets/logo.svg"
               alt="Volterp"
               className={styles.logo}
             />
           </div>
-          <h1 className={styles.brandTitle}>Volterp ERP</h1>
+          <h1 className={styles.brandTitle}>
+            Volterp<span className={styles.brandTitleAccent}> ERP</span>
+          </h1>
           <p className={styles.brandSubtitle}>
             Sistema de gestión empresarial integral
           </p>
 
           <div className={styles.features}>
             <div className={styles.feature}>
-              <span className={styles.featureIcon}>✓</span>
+              <span className={`${styles.featureIcon} ${styles.featureIconGold}`}>⚡</span>
               <span>Gestión de ventas e inventario</span>
             </div>
             <div className={styles.feature}>
-              <span className={styles.featureIcon}>✓</span>
+              <span className={`${styles.featureIcon} ${styles.featureIconTeal}`}>◈</span>
               <span>Control de nómina y recursos humanos</span>
             </div>
             <div className={styles.feature}>
-              <span className={styles.featureIcon}>✓</span>
+              <span className={`${styles.featureIcon} ${styles.featureIconEmerald}`}>◆</span>
               <span>Reportes y análisis en tiempo real</span>
             </div>
           </div>
         </div>
 
-        <div className={styles.decorativeCircle} />
-        <div className={styles.decorativeCircle2} />
+        <div className={styles.ambientGlow1} />
+        <div className={styles.ambientGlow2} />
       </div>
 
       <div className={styles.rightPanel}>

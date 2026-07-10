@@ -7,7 +7,7 @@ interface KpiCardProps {
 
 export function KpiCard({ kpi }: KpiCardProps) {
   return (
-    <div className={styles.kpiCard}>
+    <div className={styles.kpiCard} style={{ '--accent-color': kpi.iconBg } as React.CSSProperties}>
       <div className={styles.kpiContent}>
         <div className={styles.kpiHeader}>
           <span 
