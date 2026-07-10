@@ -12,46 +12,50 @@ import {
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
-import type { Proyecto } from "../../data/mockData";
+import type { Project } from "../../domain/types";
 import styles from "./Proyectos.module.css";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 
+type ProjectStatus = Project["status"];
+
 export function Proyectos() {
   const { t } = useTranslation();
-  const { proyectos, addProyecto, updateProyecto, deleteProyecto } =
+  const { proyectos, fetchProyectos, addProyecto, updateProyecto, deleteProyecto } =
     useProyectoStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterEstado, setFilterEstado] = useState<
-    "todos" | "en_progreso" | "completado" | "pendiente"
-  >("todos");
+  const [filterStatus, setFilterStatus] = useState<"all" | ProjectStatus>("all");
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
   const [formData, setFormData] = useState({
-    nombre: "",
-    cliente: "",
-    estado: "pendiente" as "en_progreso" | "completado" | "pendiente",
-    presupuesto: 0,
-    gastado: 0,
-    fechaInicio: "",
-    fechaFin: "",
-    progreso: 0,
+    name: "",
+    client: "",
+    status: "Pending" as ProjectStatus,
+    budget: 0,
+    spent: 0,
+    startDate: "",
+    endDate: "",
+    progress: 0,
   });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  useEffect(() => {
+    fetchProyectos();
+  }, [fetchProyectos]);
+
   const filteredProyectos = useMemo(() => {
     return proyectos.filter((p) => {
       const matchesSearch =
-        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.cliente.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesEstado =
-        filterEstado === "todos" || p.estado === filterEstado;
-      return matchesSearch && matchesEstado;
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.client.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        filterStatus === "all" || p.status === filterStatus;
+      return matchesSearch && matchesStatus;
     });
-  }, [proyectos, searchTerm, filterEstado]);
+  }, [proyectos, searchTerm, filterStatus]);
 
   const paginatedProyectos = useMemo(() => {
     return paginate(filteredProyectos, pageNumber, ITEMS_PER_PAGE);
@@ -59,8 +63,8 @@ export function Proyectos() {
 
   const paginationInfo = getInfo(filteredProyectos.length);
 
-  const totalPresupuesto = proyectos.reduce((acc, p) => acc + p.presupuesto, 0);
-  const enProgreso = proyectos.filter((p) => p.estado === "en_progreso").length;
+  const totalBudget = proyectos.reduce((acc, p) => acc + p.budget, 0);
+  const inProgressCount = proyectos.filter((p) => p.status === "InProgress").length;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-DO", {
@@ -70,47 +74,47 @@ export function Proyectos() {
     }).format(amount);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateProyecto(editingId, formData);
-      setEditingId(null);
-    } else {
-      const newProyecto: Proyecto = {
-        ...formData,
-        id: `PRY${String(proyectos.length + 1).padStart(3, "0")}`,
-      };
-      addProyecto(newProyecto);
+    try {
+      if (editingId) {
+        await updateProyecto(editingId, formData);
+        setEditingId(null);
+      } else {
+        await addProyecto(formData);
+      }
+      setShowForm(false);
+      resetForm();
+    } catch {
+      // error se maneja en el store
     }
-    setShowForm(false);
-    resetForm();
   };
 
   const resetForm = () => {
     setFormData({
-      nombre: "",
-      cliente: "",
-      estado: "pendiente",
-      presupuesto: 0,
-      gastado: 0,
-      fechaInicio: "",
-      fechaFin: "",
-      progreso: 0,
+      name: "",
+      client: "",
+      status: "Pending",
+      budget: 0,
+      spent: 0,
+      startDate: "",
+      endDate: "",
+      progress: 0,
     });
   };
 
-  const handleEdit = (proyecto: Proyecto) => {
+  const handleEdit = (project: Project) => {
     setFormData({
-      nombre: proyecto.nombre,
-      cliente: proyecto.cliente,
-      estado: proyecto.estado,
-      presupuesto: proyecto.presupuesto,
-      gastado: proyecto.gastado,
-      fechaInicio: proyecto.fechaInicio,
-      fechaFin: proyecto.fechaFin,
-      progreso: proyecto.progreso,
+      name: project.name,
+      client: project.client,
+      status: project.status,
+      budget: project.budget,
+      spent: project.spent,
+      startDate: project.startDate,
+      endDate: project.endDate,
+      progress: project.progress,
     });
-    setEditingId(proyecto.id);
+    setEditingId(project.id);
     setShowForm(true);
   };
 
@@ -119,19 +123,25 @@ export function Proyectos() {
     setShowDeleteConfirm(true);
   };
 
-  const confirmDelete = () => {
-    if (deleteId) deleteProyecto(deleteId);
+  const confirmDelete = async () => {
+    if (deleteId) {
+      try {
+        await deleteProyecto(deleteId);
+      } catch {
+        // error se maneja en el store
+      }
+    }
   };
 
-  const getEstadoBadge = (estado: string) => {
-    switch (estado) {
-      case "en_progreso":
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "InProgress":
         return (
           <span className={`${styles.badge} ${styles.enProgreso}`}>
             {t("proyectos.inProgress")}
           </span>
         );
-      case "completado":
+      case "Completed":
         return (
           <span className={`${styles.badge} ${styles.completado}`}>
             {t("proyectos.completed")}
@@ -148,38 +158,38 @@ export function Proyectos() {
 
   const columns = [
     { key: "id", header: t("common.id") },
-    { key: "nombre", header: t("proyectos.project") },
-    { key: "cliente", header: t("common.client") },
+    { key: "name", header: t("proyectos.project") },
+    { key: "client", header: t("common.client") },
     {
-      key: "estado",
+      key: "status",
       header: t("common.status"),
-      render: (p: Proyecto) => getEstadoBadge(p.estado),
+      render: (p: Project) => getStatusBadge(p.status),
     },
     {
-      key: "presupuesto",
+      key: "budget",
       header: t("proyectos.budget"),
-      render: (p: Proyecto) => formatCurrency(p.presupuesto),
+      render: (p: Project) => formatCurrency(p.budget),
     },
     {
-      key: "gastado",
+      key: "spent",
       header: t("proyectos.spent"),
-      render: (p: Proyecto) => formatCurrency(p.gastado),
+      render: (p: Project) => formatCurrency(p.spent),
     },
     {
-      key: "progreso",
+      key: "progress",
       header: t("proyectos.progress"),
-      render: (p: Proyecto) => (
+      render: (p: Project) => (
         <div className={styles.progressBar}>
           <div
             className={styles.progressFill}
-            style={{ width: `${p.progreso}%` }}
+            style={{ width: `${p.progress}%` }}
           ></div>
-          <span className={styles.progressText}>{p.progreso}%</span>
+          <span className={styles.progressText}>{p.progress}%</span>
         </div>
       ),
     },
-    { key: "fechaInicio", header: t("proyectos.startDate") },
-    { key: "fechaFin", header: t("proyectos.endDate") },
+    { key: "startDate", header: t("proyectos.startDate") },
+    { key: "endDate", header: t("proyectos.endDate") },
   ];
 
   return (
@@ -209,13 +219,13 @@ export function Proyectos() {
         <div className={styles.card}>
           <span className={styles.cardLabel}>{t("proyectos.inProgress")}</span>
           <span className={`${styles.cardValue} ${styles.enProgreso}`}>
-            {enProgreso}
+            {inProgressCount}
           </span>
         </div>
         <div className={styles.card}>
           <span className={styles.cardLabel}>{t("proyectos.totalBudget")}</span>
           <span className={styles.cardValue}>
-            {formatCurrency(totalPresupuesto)}
+            {formatCurrency(totalBudget)}
           </span>
         </div>
       </div>
@@ -231,17 +241,17 @@ export function Proyectos() {
           width="240px"
         />
         <select
-          value={filterEstado}
+          value={filterStatus}
           onChange={(e) => {
-            setFilterEstado(e.target.value as typeof filterEstado);
+            setFilterStatus(e.target.value as typeof filterStatus);
             goToPage(1);
           }}
           className={styles.select}
         >
-          <option value="todos">{t("proyectos.filterAll")}</option>
-          <option value="en_progreso">{t("proyectos.inProgress")}</option>
-          <option value="completado">{t("proyectos.completed")}</option>
-          <option value="pendiente">{t("proyectos.pending")}</option>
+          <option value="all">{t("proyectos.filterAll")}</option>
+          <option value="InProgress">{t("proyectos.inProgress")}</option>
+          <option value="Completed">{t("proyectos.completed")}</option>
+          <option value="Pending">{t("proyectos.pending")}</option>
         </select>
       </div>
 
@@ -267,9 +277,9 @@ export function Proyectos() {
           <label>{t("proyectos.projectName")}</label>
           <input
             type="text"
-            value={formData.nombre}
+            value={formData.name}
             onChange={(e) =>
-              setFormData({ ...formData, nombre: e.target.value })
+              setFormData({ ...formData, name: e.target.value })
             }
             required
           />
@@ -278,9 +288,9 @@ export function Proyectos() {
           <label>{t("common.client")}</label>
           <input
             type="text"
-            value={formData.cliente}
+            value={formData.client}
             onChange={(e) =>
-              setFormData({ ...formData, cliente: e.target.value })
+              setFormData({ ...formData, client: e.target.value })
             }
             required
           />
@@ -288,29 +298,26 @@ export function Proyectos() {
         <div className="formGroup">
           <label>{t("common.status")}</label>
           <select
-            value={formData.estado}
+            value={formData.status}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                estado: e.target.value as
-                  | "en_progreso"
-                  | "completado"
-                  | "pendiente",
+                status: e.target.value as ProjectStatus,
               })
             }
           >
-            <option value="pendiente">{t("proyectos.pending")}</option>
-            <option value="en_progreso">{t("proyectos.inProgress")}</option>
-            <option value="completado">{t("proyectos.completed")}</option>
+            <option value="Pending">{t("proyectos.pending")}</option>
+            <option value="InProgress">{t("proyectos.inProgress")}</option>
+            <option value="Completed">{t("proyectos.completed")}</option>
           </select>
         </div>
         <div className="formGroup">
           <label>{t("proyectos.budget")}</label>
           <input
             type="number"
-            value={formData.presupuesto}
+            value={formData.budget}
             onChange={(e) =>
-              setFormData({ ...formData, presupuesto: Number(e.target.value) })
+              setFormData({ ...formData, budget: Number(e.target.value) })
             }
             required
           />
@@ -319,9 +326,9 @@ export function Proyectos() {
           <label>{t("proyectos.spent")}</label>
           <input
             type="number"
-            value={formData.gastado}
+            value={formData.spent}
             onChange={(e) =>
-              setFormData({ ...formData, gastado: Number(e.target.value) })
+              setFormData({ ...formData, spent: Number(e.target.value) })
             }
             required
           />
@@ -330,9 +337,9 @@ export function Proyectos() {
           <label>{t("proyectos.progress")}</label>
           <input
             type="number"
-            value={formData.progreso}
+            value={formData.progress}
             onChange={(e) =>
-              setFormData({ ...formData, progreso: Number(e.target.value) })
+              setFormData({ ...formData, progress: Number(e.target.value) })
             }
             required
           />
@@ -341,9 +348,9 @@ export function Proyectos() {
           <label>{t("proyectos.startDate")}</label>
           <input
             type="date"
-            value={formData.fechaInicio}
+            value={formData.startDate}
             onChange={(e) =>
-              setFormData({ ...formData, fechaInicio: e.target.value })
+              setFormData({ ...formData, startDate: e.target.value })
             }
             required
           />
@@ -352,9 +359,9 @@ export function Proyectos() {
           <label>{t("proyectos.endDate")}</label>
           <input
             type="date"
-            value={formData.fechaFin}
+            value={formData.endDate}
             onChange={(e) =>
-              setFormData({ ...formData, fechaFin: e.target.value })
+              setFormData({ ...formData, endDate: e.target.value })
             }
             required
           />

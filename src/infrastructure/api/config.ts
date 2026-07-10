@@ -15,5 +15,6 @@ export const API_CONFIG = {
     EMPLOYEES: "/api/employees",
     ACCOUNTING_TRANSACTIONS: "/api/accounting-transactions",
     CLIENTS: "/api/clients",
+    PROJECTS: "/api/projects",
   },
 };

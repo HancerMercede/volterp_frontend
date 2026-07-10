@@ -2,20 +2,22 @@ import type { ReactNode } from 'react';
 import styles from './Table.module.css';
 import { ActionButtons } from './ActionButtons';
 
+type TableId = number | string;
+
 interface Column<T> {
   key: keyof T | string;
   header?: string;
   render?: (item: T) => ReactNode;
 }
 
-interface TableProps<T> {
+interface TableProps<T extends { id: TableId }> {
   data: T[];
   columns: Column<T>[];
   onEdit?: (item: T) => void;
-  onDelete?: (id: number) => void;
+  onDelete?: (id: T['id']) => void;
 }
 
-export function Table<T extends { id: number }>({ data, columns, onEdit, onDelete }: TableProps<T>) {
+export function Table<T extends { id: TableId }>({ data, columns, onEdit, onDelete }: TableProps<T>) {
   return (
     <div className={styles.tableContainer}>
       <table className={styles.table}>

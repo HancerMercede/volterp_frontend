@@ -164,11 +164,15 @@ export interface AccountingTransaction {
 }
 
 export interface Project {
-  id: number;
-  nombre: string;
-  cliente: string;
-  estado: "en_progreso" | "completado" | "pendiente";
-  presupuesto: number;
+  id: string;
+  name: string;
+  client: string;
+  status: "InProgress" | "Completed" | "Pending";
+  budget: number;
+  spent: number;
+  startDate: string;
+  endDate: string;
+  progress: number;
 }
 
 // Cart types
