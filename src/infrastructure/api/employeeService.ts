@@ -3,7 +3,7 @@ import { fetchWithAuthJson } from "./fetchWithAuth";
 import type { 
   PagedResult, 
   EmployeeDto, 
-  CreateEmployeeRequest 
+  EmployeeRequest 
 } from "../../domain/types";
 
 export const employeeService = {
@@ -26,7 +26,7 @@ export const employeeService = {
     );
   },
 
-  async createEmployee(data: CreateEmployeeRequest): Promise<EmployeeDto> {
+  async createEmployee(data: EmployeeRequest): Promise<EmployeeDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.EMPLOYEES}`,
       {

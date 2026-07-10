@@ -10,6 +10,7 @@ import {
   Modal,
   ConfirmModal,
 } from "../../components/UI";
+import { useFilter } from "../../hooks/useFilter";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import type { Project } from "../../domain/types";
@@ -46,16 +47,12 @@ export function Proyectos() {
     fetchProyectos();
   }, [fetchProyectos]);
 
-  const filteredProyectos = useMemo(() => {
-    return proyectos.filter((p) => {
-      const matchesSearch =
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.client.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus =
-        filterStatus === "all" || p.status === filterStatus;
-      return matchesSearch && matchesStatus;
-    });
-  }, [proyectos, searchTerm, filterStatus]);
+  const filteredProyectos = useFilter({
+    data: proyectos,
+    searchTerm,
+    searchFields: (p) => [p.name, p.client],
+    filter: (p) => filterStatus === "all" || p.status === filterStatus,
+  });
 
   const paginatedProyectos = useMemo(() => {
     return paginate(filteredProyectos, pageNumber, ITEMS_PER_PAGE);

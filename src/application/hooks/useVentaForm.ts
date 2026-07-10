@@ -76,7 +76,7 @@ export function useVentaForm() {
     const match = clienteSearch.trim()
       ? clientes.find(
           (c) =>
-            c.nombre.toLowerCase().includes(clienteSearch.toLowerCase()) ||
+            c.name.toLowerCase().includes(clienteSearch.toLowerCase()) ||
             c.email.toLowerCase().includes(clienteSearch.toLowerCase()) ||
             (c.empresa && c.empresa.toLowerCase().includes(clienteSearch.toLowerCase())),
         )
@@ -113,7 +113,7 @@ export function useVentaForm() {
       if (editingSaleId) {
         const updateData: UpdateSaleRequest = {
           clienteId: clienteElegido,
-          clienteName: clienteData?.nombre || null,
+          clienteName: clienteData?.name || null,
           status: ventaEstado === "completada" ? "Completed" : "Pending",
           total,
           notes: null,
@@ -124,7 +124,7 @@ export function useVentaForm() {
         const saleData: CreateSaleRequest = {
           companyId: currentCompany.id,
           clienteId: clienteElegido,
-          clienteName: clienteData?.nombre || null,
+          clienteName: clienteData?.name || null,
           status: ventaEstado === "completada" ? "Completed" : "Pending",
           total,
           notes: null,
@@ -156,7 +156,7 @@ export function useVentaForm() {
     const match = clienteSearch.trim()
       ? clientes.find(
           (c) =>
-            c.nombre.toLowerCase().includes(clienteSearch.toLowerCase()) ||
+            c.name.toLowerCase().includes(clienteSearch.toLowerCase()) ||
             c.email.toLowerCase().includes(clienteSearch.toLowerCase()) ||
             (c.empresa && c.empresa.toLowerCase().includes(clienteSearch.toLowerCase())),
         )
@@ -189,7 +189,7 @@ export function useVentaForm() {
       if (editingSaleId) {
         const updateData: UpdateSaleRequest = {
           clienteId: clienteElegido,
-          clienteName: clienteData?.nombre || null,
+          clienteName: clienteData?.name || null,
           status: "Pending",
           total,
           notes: null,
@@ -200,7 +200,7 @@ export function useVentaForm() {
         const saleData: CreateSaleRequest = {
           companyId: currentCompany.id,
           clienteId: clienteElegido,
-          clienteName: clienteData?.nombre || null,
+          clienteName: clienteData?.name || null,
           status: "Pending",
           total,
           notes: null,

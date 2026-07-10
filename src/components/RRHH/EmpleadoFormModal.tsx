@@ -4,7 +4,7 @@ import type { EmployeeRequest } from "../../domain/types";
 
 interface Props {
   isOpen: boolean;
-  editingId: string | null;
+  editingId: number | null;
   formData: EmployeeRequest;
   currentStep: number;
   onClose: () => void;

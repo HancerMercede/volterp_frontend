@@ -8,7 +8,7 @@ import { Empresas } from "./Empresas";
 import styles from "./Configuracion.module.css";
 import { useAuthStore } from "../../stores/authStore";
 import { useCompanyStore } from "../../stores/companyStore";
-import { type CompanyDto } from "../../infrastructure/api/companyService";
+import type { CompanyDto } from "../../domain/types";
 
 export function Configuracion() {
   const { t } = useTranslation();

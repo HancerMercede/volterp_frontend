@@ -5,7 +5,7 @@ import { useCompraStore } from "../../stores/compraStore";
 import { useProductoStore } from "../../stores/productoStore";
 import { useClienteStore } from "../../stores/clienteStore";
 import { PageHeader } from "../../components/UI";
-import type { SaleDto } from "../../infrastructure/api/saleService";
+import type { SaleDto } from "../../domain/types";
 import styles from "./Reportes.module.css";
 
 export function Reportes() {
@@ -22,7 +22,7 @@ export function Reportes() {
 
   const totalCompras =
     compras
-      .filter((c) => c.estado === "recibida")
+      .filter((c) => c.status === "Completed")
       .reduce((sum, c) => sum + c.total, 0) ?? 0;
 
   const productosSinStock = productos.filter((p) => p.stock === 0).length;
@@ -141,7 +141,7 @@ export function Reportes() {
               .slice(0, 5)
               .map((c) => (
                 <tr key={c.id}>
-                  <td>{c.nombre}</td>
+                  <td>{c.name}</td>
                   <td>${c.totalCompras?.toLocaleString()}</td>
                 </tr>
               ))}

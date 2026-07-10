@@ -249,6 +249,23 @@ export interface EmployeeDto {
   imageUrl?: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+  // Extended HR fields (optional — may not be available from API)
+  governmentId?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  maritalStatus?: string;
+  personalEmail?: string;
+  personalPhone?: string;
+  address?: string;
+  city?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelationship?: string;
+  contractType?: string;
+  location?: string;
+  payFrequency?: string;
+  afpNumber?: string;
+  accountType?: string;
 }
 
 export type EmployeeRequest = Partial<EmployeeDto>;

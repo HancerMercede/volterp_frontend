@@ -3,7 +3,7 @@ import { fetchWithAuthJson } from "./fetchWithAuth";
 import type { 
   PagedResult, 
   PurchaseDto, 
-  CreatePurchaseRequest 
+  PurchaseRequest 
 } from "../../domain/types";
 
 export const purchaseService = {
@@ -26,7 +26,7 @@ export const purchaseService = {
     );
   },
 
-  async createPurchase(data: CreatePurchaseRequest): Promise<PurchaseDto> {
+  async createPurchase(data: PurchaseRequest): Promise<PurchaseDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PURCHASES}`,
       {

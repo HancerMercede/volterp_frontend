@@ -34,7 +34,7 @@ export function useEmpleadoForm(
   const [formData, setFormData] =
     useState<EmployeeRequest>(getInitialFormData());
   const [currentStep, setCurrentStep] = useState(1);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   const updateField = useCallback((path: string, value: unknown) => {
     setFormData((prev) => {
@@ -75,7 +75,7 @@ export function useEmpleadoForm(
       accountNumber: empleado.accountNumber,
       imageUrl: empleado.imageUrl ?? null,
     });
-    setEditingId(String(empleado.id));
+    setEditingId(empleado.id);
     setCurrentStep(1);
   }, []);
 

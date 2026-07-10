@@ -19,7 +19,7 @@ export function useClienteSelector(
   const searchFilteredClientes = useFilter({
     data: dropdownClientes,
     searchTerm: clienteSearch,
-    searchFields: (c) => [c.nombre, c.email, c.empresa ?? ""],
+    searchFields: (c) => [c.name, c.email, c.empresa ?? ""],
   });
 
   const match = useMemo(() => {
@@ -27,7 +27,7 @@ export function useClienteSelector(
     const search = clienteSearch.toLowerCase();
     return clientes.find(
       (c) =>
-        c.nombre.toLowerCase().includes(search) ||
+        c.name.toLowerCase().includes(search) ||
         c.email.toLowerCase().includes(search) ||
         (c.empresa && c.empresa.toLowerCase().includes(search)),
     );

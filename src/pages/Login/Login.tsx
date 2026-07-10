@@ -39,6 +39,7 @@ export function Login() {
           companyId: response.companyId,
         },
         response.token,
+        rememberMe,
       );
       navigate("/");
     } catch (err) {

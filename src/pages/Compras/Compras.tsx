@@ -17,7 +17,7 @@ import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
 import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
-import type { PurchaseRequest, PurchaseDto } from "../../domain/types";
+import type { PurchaseDto } from "../../domain/types";
 import styles from "./Compras.module.css";
 import { useFilter } from "../../hooks/useFilter";
 
@@ -66,7 +66,7 @@ export function Compras() {
     },
     onUpdate: (id, data) => {
       addToast(t("compras.purchaseUpdated"), "success");
-      return updateCompra(id, data);
+      return updateCompra(id, data as Partial<PurchaseDto>);
     },
     onSuccess: () => {
       setShowForm(false);

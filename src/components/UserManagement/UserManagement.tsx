@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../stores/authStore";
-import {
-  userService,
-  type UserDto,
-  type CreateUserRequest,
-} from "../../infrastructure/api/userService";
+import { userService } from "../../infrastructure/api/userService";
+import type { UserDto, CreateUserRequest } from "../../domain/types";
 import {
   ROL_LABELS,
   ROL_COLORS,

@@ -1,15 +1,15 @@
-import type { Empleado } from "../../domain/entities/Empleado";
+import type { EmployeeDto } from "../../domain/types";
 import { getVacacionesAnuales } from "../../domain/entities/Beneficio";
 import styles from "./BeneficiosSection.module.css";
 
 interface Props {
-  empleado: Empleado;
+  empleado: EmployeeDto;
 }
 
 const formatDate = (date: string) => new Date(date).toLocaleDateString("es-DO");
 
 export function BeneficiosSection({ empleado }: Props) {
-  const diasVacaciones = getVacacionesAnuales(empleado.fechaIngreso);
+  const diasVacaciones = getVacacionesAnuales(empleado.hireDate);
 
   return (
     <div className={styles.container}>
@@ -30,16 +30,16 @@ export function BeneficiosSection({ empleado }: Props) {
             </div>
           </div>
           <div className={styles.antiguedad}>
-            <span>Antigüedad desde: {formatDate(empleado.fechaIngreso)}</span>
+            <span>Antigüedad desde: {formatDate(empleado.hireDate)}</span>
           </div>
         </div>
 
         <div className={styles.card}>
           <h4>Seguro Médico</h4>
-          {empleado.informacionFiscal.ars ? (
+          {empleado.ars ? (
             <div className={styles.seguroInfo}>
-              <p><strong>ARS:</strong> {empleado.informacionFiscal.ars}</p>
-              <p><strong>NSS:</strong> {empleado.informacionFiscal.nss}</p>
+              <p><strong>ARS:</strong> {empleado.ars}</p>
+              <p><strong>NSS:</strong> {empleado.nss}</p>
               <p className={styles.noActivo}>Plan básico activo</p>
             </div>
           ) : (
@@ -49,10 +49,10 @@ export function BeneficiosSection({ empleado }: Props) {
 
         <div className={styles.card}>
           <h4>AFP - Pensión</h4>
-          {empleado.informacionFiscal.afp ? (
+          {empleado.afp ? (
             <div className={styles.afpInfo}>
-              <p><strong>AFP:</strong> {empleado.informacionFiscal.afp}</p>
-              <p><strong>Número:</strong> {empleado.informacionFiscal.afpNumero}</p>
+              <p><strong>AFP:</strong> {empleado.afp}</p>
+              <p><strong>Número:</strong> {empleado.afpNumber ?? "-"}</p>
             </div>
           ) : (
             <p className={styles.noData}>Sin AFP registrado</p>

@@ -51,7 +51,7 @@ export function Asistencia() {
     setPage(1);
   };
 
-  const empleadoInfo = empleados.find((e) => e.id === empleadoSeleccionado);
+  const empleadoInfo = empleados.find((e) => String(e.id) === empleadoSeleccionado);
 
   return (
     <div className={styles.container}>
@@ -75,7 +75,7 @@ export function Asistencia() {
             >
               {empleados.map((emp) => (
                 <option key={emp.id} value={emp.id}>
-                  {emp.nombre} - {emp.cargo}
+                  {emp.firstName} {emp.lastName} - {emp.position}
                 </option>
               ))}
             </select>
@@ -99,7 +99,7 @@ export function Asistencia() {
           <div className={styles.ponchesList}>
             <h4 className={styles.listTitle}>
               {t("asistencia.todayPunches")}{" "}
-              {empleadoInfo && `- ${empleadoInfo.nombre}`}
+               {empleadoInfo && `- ${empleadoInfo.firstName} ${empleadoInfo.lastName}`}
             </h4>
             {registrosHoy.length === 0 ? (
               <p className={styles.emptyText}>

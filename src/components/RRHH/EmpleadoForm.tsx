@@ -17,7 +17,7 @@ const isCustomSchedule = (v: string | null | undefined) =>
 interface Props {
   formData: EmployeeRequest;
   currentStep: number;
-  editingId: string | null;
+  editingId: number | null;
   onFieldChange: (path: string, value: unknown) => void;
   onStepChange: (step: number) => void;
   onSubmit: (e: React.FormEvent) => void;

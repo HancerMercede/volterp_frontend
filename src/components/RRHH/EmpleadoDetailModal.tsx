@@ -1,10 +1,10 @@
 import { Modal } from "../../components/UI";
 import { BeneficiosSection } from "./BeneficiosSection";
-import type { Empleado } from "../../domain/entities/Empleado";
+import type { EmployeeDto } from "../../domain/types";
 import styles from "./EmpleadoDetailModal.module.css";
 
 interface Props {
-  empleado: Empleado | null;
+  empleado: EmployeeDto | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -21,11 +21,11 @@ export function EmpleadoDetailModal({ empleado, isOpen, onClose }: Props) {
     <Modal isOpen={isOpen} onClose={onClose} title="Detalle de Empleado">
       <div className={styles.content}>
         <div className={styles.header}>
-          <img src={empleado.avatar} alt={empleado.nombre} className={styles.avatar} />
+          <img src={empleado.imageUrl ?? ""} alt={`${empleado.firstName} ${empleado.lastName}`} className={styles.avatar} />
           <div className={styles.headerInfo}>
-            <h2>{empleado.nombre}</h2>
-            <p>{empleado.cargo} - {empleado.departamento}</p>
-            <span className={`${styles.badge} ${styles[empleado.estado]}`}>{empleado.estado}</span>
+            <h2>{`${empleado.firstName} ${empleado.lastName}`}</h2>
+            <p>{empleado.position} - {empleado.department}</p>
+            <span className={`${styles.badge} ${styles[empleado.status.toLowerCase()]}`}>{empleado.status}</span>
           </div>
         </div>
 
@@ -33,61 +33,61 @@ export function EmpleadoDetailModal({ empleado, isOpen, onClose }: Props) {
           <section className={styles.section}>
             <h3>Información Personal</h3>
             <div className={styles.grid}>
-              <div><label>Cédula</label><span>{empleado.informacionPersonal.cedula}</span></div>
-              <div><label>Fecha Nac.</label><span>{formatDate(empleado.informacionPersonal.fechaNacimiento)}</span></div>
-              <div><label>Género</label><span>{empleado.informacionPersonal.genero}</span></div>
-              <div><label>Estado Civil</label><span>{empleado.informacionPersonal.estadoCivil}</span></div>
+              <div><label>Cédula</label><span>{empleado.governmentId ?? "-"}</span></div>
+              <div><label>Fecha Nac.</label><span>{empleado.dateOfBirth ? formatDate(empleado.dateOfBirth) : "-"}</span></div>
+              <div><label>Género</label><span>{empleado.gender ?? "-"}</span></div>
+              <div><label>Estado Civil</label><span>{empleado.maritalStatus ?? "-"}</span></div>
             </div>
           </section>
 
           <section className={styles.section}>
             <h3>Contacto</h3>
             <div className={styles.grid}>
-              <div><label>Email Laboral</label><span>{empleado.emailLaboral}</span></div>
-              <div><label>Email Personal</label><span>{empleado.emailPersonal}</span></div>
-              <div><label>Tel. Laboral</label><span>{empleado.telefonoLaboral}</span></div>
-              <div><label>Tel. Personal</label><span>{empleado.telefonoPersonal}</span></div>
-              <div><label>Dirección</label><span>{empleado.direccion}</span></div>
-              <div><label>Ciudad</label><span>{empleado.ciudad}</span></div>
+              <div><label>Email Laboral</label><span>{empleado.email}</span></div>
+              <div><label>Email Personal</label><span>{empleado.personalEmail ?? "-"}</span></div>
+              <div><label>Tel. Laboral</label><span>{empleado.phone}</span></div>
+              <div><label>Tel. Personal</label><span>{empleado.personalPhone ?? "-"}</span></div>
+              <div><label>Dirección</label><span>{empleado.address ?? "-"}</span></div>
+              <div><label>Ciudad</label><span>{empleado.city ?? "-"}</span></div>
             </div>
           </section>
 
           <section className={styles.section}>
             <h3>Emergencia</h3>
             <div className={styles.grid}>
-              <div><label>Nombre</label><span>{empleado.contactoEmergencia.nombre}</span></div>
-              <div><label>Teléfono</label><span>{empleado.contactoEmergencia.telefono}</span></div>
-              <div><label>Relación</label><span>{empleado.contactoEmergencia.relacion}</span></div>
+              <div><label>Nombre</label><span>{empleado.emergencyContactName ?? "-"}</span></div>
+              <div><label>Teléfono</label><span>{empleado.emergencyContactPhone ?? "-"}</span></div>
+              <div><label>Relación</label><span>{empleado.emergencyContactRelationship ?? "-"}</span></div>
             </div>
           </section>
 
           <section className={styles.section}>
             <h3>Información Laboral</h3>
             <div className={styles.grid}>
-              <div><label>Tipo Contrato</label><span>{empleado.tipoContrato}</span></div>
-              <div><label>Fecha Ingreso</label><span>{formatDate(empleado.fechaIngreso)}</span></div>
-              <div><label>Horario</label><span>{empleado.horarioLaboral}</span></div>
-              <div><label>Ubicación</label><span>{empleado.ubicacion}</span></div>
+              <div><label>Tipo Contrato</label><span>{empleado.contractType ?? "-"}</span></div>
+              <div><label>Fecha Ingreso</label><span>{formatDate(empleado.hireDate)}</span></div>
+              <div><label>Horario</label><span>{empleado.workSchedule}</span></div>
+              <div><label>Ubicación</label><span>{empleado.location ?? "-"}</span></div>
             </div>
           </section>
 
           <section className={styles.section}>
             <h3>Compensación</h3>
             <div className={styles.grid}>
-              <div><label>Salario Base</label><span className={styles.highlight}>{formatCurrency(empleado.salarioBase)}</span></div>
-              <div><label>Periodicidad</label><span>{empleado.periodicidadPago}</span></div>
-              <div><label>Banco</label><span>{empleado.cuentaBancaria.banco}</span></div>
-              <div><label>Tipo Cuenta</label><span>{empleado.cuentaBancaria.tipoCuenta}</span></div>
+              <div><label>Salario Base</label><span className={styles.highlight}>{formatCurrency(empleado.salary)}</span></div>
+              <div><label>Periodicidad</label><span>{empleado.payFrequency ?? "-"}</span></div>
+              <div><label>Banco</label><span>{empleado.bank ?? "-"}</span></div>
+              <div><label>Tipo Cuenta</label><span>{empleado.accountType ?? "-"}</span></div>
             </div>
           </section>
 
           <section className={styles.section}>
             <h3>Información Fiscal (RD)</h3>
             <div className={styles.grid}>
-              <div><label>AFP</label><span>{empleado.informacionFiscal.afp}</span></div>
-              <div><label>Número AFP</label><span>{empleado.informacionFiscal.afpNumero}</span></div>
-              <div><label>ARS</label><span>{empleado.informacionFiscal.ars}</span></div>
-              <div><label>NSS</label><span>{empleado.informacionFiscal.nss}</span></div>
+              <div><label>AFP</label><span>{empleado.afp ?? "-"}</span></div>
+              <div><label>Número AFP</label><span>{empleado.afpNumber ?? "-"}</span></div>
+              <div><label>ARS</label><span>{empleado.ars ?? "-"}</span></div>
+              <div><label>NSS</label><span>{empleado.nss ?? "-"}</span></div>
             </div>
           </section>
 

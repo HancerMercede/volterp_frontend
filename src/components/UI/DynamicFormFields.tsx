@@ -116,7 +116,7 @@ function FieldRenderer({
         id={id}
         type="number"
         className={`${styles.input} ${error ? styles.inputError : ""}`}
-        value={value ?? ""}
+        value={String(value ?? "")}
         placeholder={field.placeholder}
         min={field.min}
         max={field.max}
