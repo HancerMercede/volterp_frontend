@@ -1,28 +1,30 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from './components/Layout/Layout';
-import { Dashboard } from './pages/Dashboard/Dashboard';
-import { Ventas } from './pages/Ventas/Ventas';
-import { Compras } from './pages/Compras/Compras';
-import { Inventario } from './pages/Inventario/Inventario';
-import { Clientes } from './pages/Clientes/Clientes';
-import { Proveedores } from './pages/Proveedores/Proveedores';
-import { Contabilidad } from './pages/Contabilidad/Contabilidad';
-import { RRHH } from './pages/RRHH/RRHH';
-import { Nomina } from './pages/RRHH/Nomina';
-import { Asistencia } from './pages/RRHH/Asistencia';
-import { Proyectos } from './pages/Proyectos/Proyectos';
-import { Reportes } from './pages/Reportes/Reportes';
-import { Configuracion } from './pages/Configuracion/Configuracion';
-import { Soporte } from './pages/Soporte/Soporte';
-import { Login } from './pages/Login/Login';
-import { Register } from './pages/Register/Register';
-import { useAuthStore } from './stores/authStore';
-import { ToastContainer } from './components/UI';
-import './i18n';
-import './styles/variables.css';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Layout } from "./components/Layout/Layout";
+import { Dashboard } from "./pages/Dashboard/Dashboard";
+import { Ventas } from "./pages/Ventas/Ventas";
+import { Compras } from "./pages/Compras/Compras";
+import { Inventario } from "./pages/Inventario/Inventario";
+import { Clientes } from "./pages/Clientes/Clientes";
+import { Proveedores } from "./pages/Proveedores/Proveedores";
+import { Contabilidad } from "./pages/Contabilidad/Contabilidad";
+import { RRHH } from "./pages/RRHH/RRHH";
+import { Nomina } from "./pages/RRHH/Nomina";
+import { Asistencia } from "./pages/RRHH/Asistencia";
+import { Proyectos } from "./pages/Proyectos/Proyectos";
+import { Reportes } from "./pages/Reportes/Reportes";
+import { Configuracion } from "./pages/Configuracion/Configuracion";
+import { Soporte } from "./pages/Soporte/Soporte";
+import { Login } from "./pages/Login/Login";
+import { Register } from "./pages/Register/Register";
+import { useAuthStore } from "./stores/authStore";
+import { ToastContainer } from "./components/UI";
+import "./i18n";
+import "./styles/variables.css";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, hasHydrated } = useAuthStore();
+
+  if (!hasHydrated) return null;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
@@ -32,7 +34,13 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/" element={<Dashboard />} />
         <Route path="/ventas" element={<Ventas />} />
         <Route path="/compras" element={<Compras />} />
