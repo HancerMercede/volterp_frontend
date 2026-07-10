@@ -41,11 +41,21 @@
 }
 
 .logoText {
-  background: linear-gradient(135deg, #FACC15 0%, #FDE68A 40%, #FACC15 60%, #FDE68A 100%);
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #FBBF24 0%, #FDE68A 30%, #FBBF24 60%, #FDE68A 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 2px 10px rgba(250, 204, 21, 0.3);
+  filter: none;
+}
+
+.logoTextAccent {
+  background: linear-gradient(135deg, #2DD4BF, #5EEAD4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .nav {

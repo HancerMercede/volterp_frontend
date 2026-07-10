@@ -44,7 +44,9 @@ export function Sidebar() {
           alt="Logo"
           className={styles.logoIcon}
         />
-        <span className={styles.logoText}>VOLTERP</span>
+        <span className={styles.logoText}>
+          VOLT<span className={styles.logoTextAccent}> ERP</span>
+        </span>
       </div>
       <nav className={styles.navScroll}>
         <nav className={styles.nav}>
