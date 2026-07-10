@@ -169,7 +169,7 @@ export function Inventario() {
         form.setFieldValue(name, value);
       }
     },
-    [categories, form.setFieldValue],
+    [categories, form],
   );
 
   const filteredProductos = useFilter({

@@ -70,7 +70,7 @@ type Validator = (
 ) => string | undefined;
 
 const typeValidators: Partial<Record<FormField["type"], Validator>> = {
-  email: (f, v) =>
+  email: (v) =>
     typeof v === "string" && v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
       ? "Email inválido"
       : undefined,
