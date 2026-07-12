@@ -82,8 +82,13 @@ const typeValidators: Partial<Record<FormField["type"], Validator>> = {
     if (f.max !== undefined && v > f.max)
       return `${f.label} debe ser menor o igual a ${f.max}`;
     if (f.step !== undefined && f.step > 0) {
-      const diff = Math.abs((v - (f.min ?? 0)) % f.step);
-      if (diff > 1e-8) return `${f.label} debe ser múltiplo de ${f.step}`;
+      const offset = v - (f.min ?? 0);
+      const decimals = (f.step.toString().split('.')[1] || '').length;
+      const multiplier = Math.pow(10, decimals);
+      const scaledOffset = Math.round(offset * multiplier);
+      const scaledStep = Math.round(f.step * multiplier);
+      if (scaledOffset % scaledStep !== 0)
+        return `${f.label} debe ser múltiplo de ${f.step}`;
     }
   },
 
