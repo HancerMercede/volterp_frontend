@@ -93,7 +93,7 @@ export function useVentaForm() {
       return false;
     }
     if (!currentCompany) {
-      addToast("No hay empresa seleccionada", "error");
+      addToast(t("ventas.NoCompanySelected"), "error");
       return false;
     }
 
@@ -169,7 +169,7 @@ export function useVentaForm() {
       return false;
     }
     if (!currentCompany) {
-      addToast("No hay empresa seleccionada", "error");
+      addToast(t("ventas.NoCompanySelected"), "error");
       return false;
     }
 

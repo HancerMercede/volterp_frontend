@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "./components/Layout/Layout";
 import { useAuthStore } from "./stores/authStore";
-import { ToastContainer } from "./components/UI";
+import { ErrorBoundary, NotificationContainer } from "./components/UI";
 import "./i18n";
 import "./styles/variables.css";
 
@@ -125,8 +125,10 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <AppRoutes />
-      <ToastContainer />
+      <ErrorBoundary level="global">
+        <AppRoutes />
+      </ErrorBoundary>
+      <NotificationContainer />
     </BrowserRouter>
   );
 }

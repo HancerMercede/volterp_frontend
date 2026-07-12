@@ -146,6 +146,8 @@
     "cancelled": "Cancelled",
     "deleteConfirm": "Delete this sale?",
     "saleDeleted": "Sale deleted",
+    "saleCompleted": "Sale completed successfully",
+    "draftSaved": "Draft saved",
     "products": "Products",
     "summary":"Summary",
     "totalItems":"Total Items",

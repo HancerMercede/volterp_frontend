@@ -11,8 +11,25 @@ interface ConfirmModalProps {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: 'danger' | 'warning';
+  variant?: 'danger' | 'warning' | 'success' | 'info' | 'error';
+  subtitle?: string;
 }
+
+const VARIANT_ICONS: Record<string, string> = {
+  danger: '⚠️',
+  warning: '❓',
+  success: '✅',
+  info: 'ℹ️',
+  error: '❌',
+};
+
+const BUTTON_VARIANT: Record<string, 'danger' | 'primary'> = {
+  danger: 'danger',
+  error: 'danger',
+  warning: 'primary',
+  success: 'primary',
+  info: 'primary',
+};
 
 export function ConfirmModal({
   isOpen,
@@ -23,6 +40,7 @@ export function ConfirmModal({
   confirmLabel = 'Eliminar',
   cancelLabel = 'Cancelar',
   variant = 'danger',
+  subtitle,
 }: ConfirmModalProps) {
   useEffect(() => {
     if (isOpen) {
@@ -48,9 +66,10 @@ export function ConfirmModal({
   return createPortal(
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.icon}>
-          {variant === 'danger' ? '⚠️' : '❓'}
+        <div className={`${styles.icon} ${styles[variant]}`}>
+          {VARIANT_ICONS[variant] || '❓'}
         </div>
+        {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         <h3 className={styles.title}>{title}</h3>
         <p className={styles.message}>{message}</p>
         <div className={styles.actions}>
@@ -58,7 +77,7 @@ export function ConfirmModal({
             {cancelLabel}
           </Button>
           <Button
-            variant={variant === 'danger' ? 'danger' : 'primary'}
+            variant={BUTTON_VARIANT[variant] || 'primary'}
             onClick={() => {
               onConfirm();
               onCancel();

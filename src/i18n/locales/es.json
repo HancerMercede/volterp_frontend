@@ -147,6 +147,8 @@
     "cancelled": "Cancelada",
     "deleteConfirm": "¿Eliminar esta venta?",
     "saleDeleted": "Venta eliminada",
+    "saleCompleted": "Venta realizada exitosamente",
+    "draftSaved": "Borrador guardado",
     "products":"Productos",
     "summary":"Resumen",
     "totalItems":"Total de artículos",

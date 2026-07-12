@@ -90,3 +90,67 @@
     transform: rotate(360deg);
   }
 }
+
+.toastTitle {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.toastBody {
+  flex: 1;
+}
+
+.toastWithTitle {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.toastActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.toastActionBtn {
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.toastActionPrimary {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+.toastActionPrimary:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.toastActionSecondary {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.toastActionSecondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.toastActionDanger {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(120%); opacity: 0; }
+}
+
+.exiting {
+  animation: slideOut 0.3s ease forwards;
+  pointer-events: none;
+}

@@ -78,7 +78,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     const clienteElegido = selectedCliente || (match ? match.id : null);
     if (!clienteElegido) { addToast(t("ventas.selectClientWarning"), "warning"); return; }
     if (carrito.length === 0) { addToast(t("ventas.cartEmptyWarning"), "warning"); return; }
-    if (!currentCompany) { addToast("No hay empresa seleccionada", "error"); return; }
+    if (!currentCompany) { addToast(t("ventas.NoCompanySelected"), "error"); return; }
     const clienteData = clientes.find((c) => c.id === clienteElegido);
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
     try {
