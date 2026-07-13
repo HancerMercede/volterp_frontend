@@ -1,3 +1,4 @@
+import { User, Bot } from 'lucide-react';
 import type { ChatMessage as ChatMessageType } from '../../stores/chatStore';
 import styles from './ChatMessage.module.css';
 
@@ -11,7 +12,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
   return (
     <div className={`${styles.container} ${isUser ? styles.user : styles.assistant}`}>
       <div className={styles.avatar}>
-        {isUser ? '👤' : '🤖'}
+        {isUser ? <User size={20} strokeWidth={1.8} /> : <Bot size={20} strokeWidth={1.8} />}
       </div>
       <div className={styles.bubble}>
         <div className={styles.content}>{message.content}</div>

@@ -1,3 +1,4 @@
+import { UserRound } from 'lucide-react';
 import styles from './EscalationButton.module.css';
 
 interface EscalationButtonProps {
@@ -23,7 +24,7 @@ export function EscalationButton({ onClick, isLoading }: EscalationButtonProps) 
           </>
         ) : (
           <>
-            <span className={styles.icon}>👤</span>
+            <span className={styles.icon}><UserRound size={18} strokeWidth={1.8} /></span>
             Hablar con soporte humano
           </>
         )}

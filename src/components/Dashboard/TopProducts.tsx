@@ -1,3 +1,4 @@
+import { Trophy } from 'lucide-react';
 import type { TopProduct } from '../../domain/dashboard/types';
 import styles from './DashboardComponents.module.css';
 
@@ -10,7 +11,7 @@ interface TopProductsProps {
 export function TopProducts({ products }: TopProductsProps) {
   return (
     <div className={styles.box}>
-      <h3 className={styles.boxTitle}>🏆 Top Productos</h3>
+      <h3 className={styles.boxTitle}><Trophy size={20} strokeWidth={1.8} /> Top Productos</h3>
       <div className={styles.productList}>
         {products.map((product) => (
           <div key={product.id} className={styles.productItem}>

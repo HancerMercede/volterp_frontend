@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Zap, Diamond, BarChart3 } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import { authService } from "../../infrastructure/api/authService";
 import styles from "./Login.module.css";
@@ -76,15 +77,15 @@ export function Login() {
 
           <div className={styles.features}>
             <div className={styles.feature}>
-              <span className={`${styles.featureIcon} ${styles.featureIconGold}`}>⚡</span>
+              <span className={`${styles.featureIcon} ${styles.featureIconGold}`}><Zap size={20} strokeWidth={1.8} /></span>
               <span>Gestión de ventas e inventario</span>
             </div>
             <div className={styles.feature}>
-              <span className={`${styles.featureIcon} ${styles.featureIconTeal}`}>◈</span>
+              <span className={`${styles.featureIcon} ${styles.featureIconTeal}`}><Diamond size={20} strokeWidth={1.8} /></span>
               <span>Control de nómina y recursos humanos</span>
             </div>
             <div className={styles.feature}>
-              <span className={`${styles.featureIcon} ${styles.featureIconEmerald}`}>◆</span>
+              <span className={`${styles.featureIcon} ${styles.featureIconEmerald}`}><BarChart3 size={20} strokeWidth={1.8} /></span>
               <span>Reportes y análisis en tiempo real</span>
             </div>
           </div>

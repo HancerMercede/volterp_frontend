@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { FileText, CheckCircle, Save } from "lucide-react";
 import { Button } from "../../../components/UI";
 import styles from "./ResumenVenta.module.css";
 
@@ -30,7 +31,7 @@ export function ResumenVenta({
 
   return (
     <div className={styles.panel}>
-      <h3>📋 {t("ventas.summary")}</h3>
+      <h3><FileText size={20} strokeWidth={1.8} /> {t("ventas.summary")}</h3>
 
       <div className={styles.totals}>
         <div className={styles.totalRow}>
@@ -70,10 +71,10 @@ export function ResumenVenta({
       </div>
 
       <Button onClick={onCompletarVenta} className={styles.completeBtn}>
-        ✅ {t("ventas.checkout")}
+        <CheckCircle size={18} strokeWidth={1.8} /> {t("ventas.checkout")}
       </Button>
       <Button variant="secondary" onClick={onGuardarBorrador}>
-        💾 {t("ventas.saveDraft")}
+        <Save size={18} strokeWidth={1.8} /> {t("ventas.saveDraft")}
       </Button>
       <Button variant="secondary" onClick={onCancelar}>
         {t("common.cancel")}

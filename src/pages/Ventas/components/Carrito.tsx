@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { ShoppingCart } from "lucide-react";
 import type { CartItem } from "../../../domain/types";
 import styles from "./Carrito.module.css";
 
@@ -20,7 +21,7 @@ export function Carrito({ items, onQuantityChange, onRemoveItem, onClearCart }: 
   return (
     <div className={styles.panel}>
       <div className={styles.panelHeader}>
-        <h3>🛒 {t("ventas.cart")}</h3>
+        <h3><ShoppingCart size={20} strokeWidth={1.8} /> {t("ventas.cart")}</h3>
         {items.length > 0 && (
           <button className={styles.clearCart} onClick={onClearCart}>
             {t("ventas.clear")}
@@ -30,7 +31,7 @@ export function Carrito({ items, onQuantityChange, onRemoveItem, onClearCart }: 
 
       {items.length === 0 ? (
         <div className={styles.emptyCart}>
-          <span>🛒</span>
+          <span><ShoppingCart size={48} strokeWidth={1.2} /></span>
           <p>{t("ventas.cartEmpty")}</p>
           <small>{t("ventas.addProductsHint")}</small>
         </div>

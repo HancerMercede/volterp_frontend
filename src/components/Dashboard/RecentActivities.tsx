@@ -1,3 +1,4 @@
+import { ClipboardList } from 'lucide-react';
 import type { Activity } from "../../domain/dashboard/types";
 import { ACTIVITY_ICONS } from "../../domain/dashboard/constants";
 import { usePagination } from "../../hooks/usePagination";
@@ -19,7 +20,7 @@ export function RecentActivities({ activities }: RecentActivitiesProps) {
 
   return (
     <div className={styles.box}>
-      <h3 className={styles.boxTitle}>📋 Actividades Recientes</h3>
+      <h3 className={styles.boxTitle}><ClipboardList size={20} strokeWidth={1.8} /> Actividades Recientes</h3>
       <div className={styles.activityList}>
         {visibleActivities.map((activity) => {
           const iconConfig = ACTIVITY_ICONS[activity.type];

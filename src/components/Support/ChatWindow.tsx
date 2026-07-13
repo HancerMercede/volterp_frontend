@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Bot } from 'lucide-react';
 import { useChatStore } from '../../stores/chatStore';
 import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
@@ -37,7 +38,7 @@ export function ChatWindow({ onSendMessage }: ChatWindowProps) {
       <div className={styles.messages}>
         {messages.length === 0 && (
           <div className={styles.welcome}>
-            <div className={styles.welcomeIcon}>🤖</div>
+            <div className={styles.welcomeIcon}><Bot size={32} strokeWidth={1.5} /></div>
             <div className={styles.welcomeText}>{WELCOME_MESSAGE}</div>
             <QuickActions onAction={handleQuickAction} />
           </div>

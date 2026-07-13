@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { LogIn, LogOut, Coffee, FileText, type LucideIcon } from 'lucide-react';
 import type { RegistroPonche } from '../../domain/entities/Asistencia';
 import styles from './AsistenciaComponents.module.css';
 
@@ -10,12 +11,12 @@ interface PoncheCardProps {
 export function PoncheCard({ registro, nombreEmpleado }: PoncheCardProps) {
   const { t } = useTranslation();
 
-  const getTipoIcon = (tipo: string) => {
+  const getTipoIcon = (tipo: string): LucideIcon => {
     switch (tipo) {
-      case 'entrada': return '➡️';
-      case 'salida': return '⬅️';
-      case 'pausa': return '☕';
-      default: return '📝';
+      case 'entrada': return LogIn;
+      case 'salida': return LogOut;
+      case 'pausa': return Coffee;
+      default: return FileText;
     }
   };
 
@@ -28,10 +29,12 @@ export function PoncheCard({ registro, nombreEmpleado }: PoncheCardProps) {
     }
   };
 
+  const Icon = getTipoIcon(registro.tipo);
+
   return (
     <div className={styles.poncheCard}>
       <div className={styles.poncheIcon}>
-        <span>{getTipoIcon(registro.tipo)}</span>
+        <span><Icon size={20} strokeWidth={1.8} /></span>
       </div>
       <div className={styles.poncheInfo}>
         <div className={styles.poncheHeader}>

@@ -6,7 +6,7 @@ import { KPI_CONFIG, formatCurrency } from '../../domain/dashboard/constants';
 const ACTIVITY_TYPES = ['sale', 'payment', 'purchase', 'info'] as const;
 
 export function useDashboard() {
-  const { dashboard, loading, error, fetchDashboard } = useDashboardStore();
+  const { dashboard, loading } = useDashboardStore();
 
   const kpis = useMemo((): KpiCard[] => {
     if (!dashboard) return [];

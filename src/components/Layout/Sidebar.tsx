@@ -1,11 +1,42 @@
 import { useTranslation } from "react-i18next";
 import { NavLink, useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  ShoppingBag,
+  Package,
+  Users,
+  Truck,
+  TrendingUp,
+  UserCog,
+  FolderKanban,
+  FileBarChart,
+  Settings,
+  LifeBuoy,
+  LogOut,
+  type LucideIcon,
+} from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import { usePermission } from "../../hooks/usePermission";
 import { MODULOS } from "../../domain/constants/permisos";
 import { ROL_LABELS } from "../../domain/constants/roles";
 import { getFirstName } from "../../utils/name";
 import styles from "./Sidebar.module.css";
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  ventas: ShoppingCart,
+  compras: ShoppingBag,
+  inventario: Package,
+  clientes: Users,
+  proveedores: Truck,
+  contabilidad: TrendingUp,
+  rrhh: UserCog,
+  proyectos: FolderKanban,
+  reportes: FileBarChart,
+  configuracion: Settings,
+  soporte: LifeBuoy,
+};
 
 const MODULE_TRANSLATIONS: Record<string, string> = {
   dashboard: "sidebar.dashboard",
@@ -50,26 +81,33 @@ export function Sidebar() {
       </div>
       <nav className={styles.navScroll}>
         <nav className={styles.nav}>
-          {visibleNavItems.map((item) => (
-            <NavLink
-              key={item.key}
-              to={`/${item.key === "dashboard" ? "" : item.key}`}
-              className={({ isActive }) =>
-                `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
-              }
-              end={item.key === "dashboard"}
-            >
-              <span className={styles.navIcon}>{item.icon}</span>
-              {t(MODULE_TRANSLATIONS[item.key] || item.key)}
-            </NavLink>
-          ))}
+          {visibleNavItems.map((item) => {
+            const Icon = ICON_MAP[item.key];
+            return (
+              <NavLink
+                key={item.key}
+                to={`/${item.key === "dashboard" ? "" : item.key}`}
+                className={({ isActive }) =>
+                  `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
+                }
+                end={item.key === "dashboard"}
+              >
+                <span className={styles.navIcon}>
+                  {Icon && <Icon size={20} strokeWidth={1.8} />}
+                </span>
+                {t(MODULE_TRANSLATIONS[item.key] || item.key)}
+              </NavLink>
+            );
+          })}
           <NavLink
             to="/soporte"
             className={({ isActive }) =>
               `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
             }
           >
-            <span className={styles.navIcon}>💬</span>
+            <span className={styles.navIcon}>
+              <LifeBuoy size={20} strokeWidth={1.8} />
+            </span>
             {t("sidebar.soporte")}
           </NavLink>
         </nav>
@@ -99,7 +137,7 @@ export function Sidebar() {
           onClick={handleLogout}
           title={t("auth.logout")}
         >
-          ⏻
+          <LogOut size={18} strokeWidth={1.8} />
         </button>
       </div>
     </aside>

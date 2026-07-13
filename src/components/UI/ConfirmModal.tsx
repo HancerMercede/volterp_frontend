@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { AlertTriangle, HelpCircle, CheckCircle, Info, XCircle } from 'lucide-react';
 import { Button } from './Button';
 import styles from './ConfirmModal.module.css';
 
@@ -15,13 +16,13 @@ interface ConfirmModalProps {
   subtitle?: string;
 }
 
-const VARIANT_ICONS: Record<string, string> = {
-  danger: '⚠️',
-  warning: '❓',
-  success: '✅',
-  info: 'ℹ️',
-  error: '❌',
-};
+const VARIANT_ICONS = {
+  danger: AlertTriangle,
+  warning: HelpCircle,
+  success: CheckCircle,
+  info: Info,
+  error: XCircle,
+} as const;
 
 const BUTTON_VARIANT: Record<string, 'danger' | 'primary'> = {
   danger: 'danger',
@@ -63,11 +64,13 @@ export function ConfirmModal({
 
   if (!isOpen) return null;
 
+  const IconComponent = VARIANT_ICONS[variant] || HelpCircle;
+
   return createPortal(
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={`${styles.icon} ${styles[variant]}`}>
-          {VARIANT_ICONS[variant] || '❓'}
+          <IconComponent size={28} strokeWidth={1.8} />
         </div>
         {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         <h3 className={styles.title}>{title}</h3>

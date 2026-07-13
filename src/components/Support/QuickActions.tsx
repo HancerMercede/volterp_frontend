@@ -1,18 +1,19 @@
+import { Package, Users, DollarSign, BarChart3, ShoppingCart, Settings, type LucideIcon } from 'lucide-react';
 import styles from './QuickActions.module.css';
 
 interface QuickAction {
-  icon: string;
+  icon: LucideIcon;
   label: string;
   query: string;
 }
 
 const quickActions: QuickAction[] = [
-  { icon: '📦', label: 'Inventario', query: '¿Cómo gestionar el inventario de productos?' },
-  { icon: '👥', label: 'RRHH', query: '¿Cómo crear y gestionar empleados?' },
-  { icon: '💰', label: 'Ventas', query: '¿Cómo registrar una venta?' },
-  { icon: '📊', label: 'Reportes', query: '¿Cómo generar reportes?' },
-  { icon: '🛒', label: 'Compras', query: '¿Cómo registrar una compra?' },
-  { icon: '⚙️', label: 'Configuración', query: '¿Cómo configurar el sistema?' },
+  { icon: Package, label: 'Inventario', query: '¿Cómo gestionar el inventario de productos?' },
+  { icon: Users, label: 'RRHH', query: '¿Cómo crear y gestionar empleados?' },
+  { icon: DollarSign, label: 'Ventas', query: '¿Cómo registrar una venta?' },
+  { icon: BarChart3, label: 'Reportes', query: '¿Cómo generar reportes?' },
+  { icon: ShoppingCart, label: 'Compras', query: '¿Cómo registrar una compra?' },
+  { icon: Settings, label: 'Configuración', query: '¿Cómo configurar el sistema?' },
 ];
 
 interface QuickActionsProps {
@@ -30,7 +31,7 @@ export function QuickActions({ onAction }: QuickActionsProps) {
             className={styles.button}
             onClick={() => onAction(action.query)}
           >
-            <span className={styles.icon}>{action.icon}</span>
+            <span className={styles.icon}><action.icon size={20} strokeWidth={1.8} /></span>
             <span className={styles.text}>{action.label}</span>
           </button>
         ))}

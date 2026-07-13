@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 export interface KpiCard {
   id: string;
   label: string;
@@ -6,7 +8,7 @@ export interface KpiCard {
   change: number;
   changeLabel: string;
   isPositive: boolean;
-  icon: string;
+  icon: ReactNode;
   iconBg: string;
   trend: 'up' | 'down';
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FC } from 'react';
+import { useState, type FC } from 'react';
 import { useUIStore, type Toast as ToastType } from '../../stores/uiStore';
 import { ConfirmModal } from './ConfirmModal';
 import styles from './Toast.module.css';

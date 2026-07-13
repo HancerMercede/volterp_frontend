@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { Package } from "lucide-react";
 import { ImageCell, Pagination, SearchInput } from "../../../components/UI";
 import { useFilter } from "../../../hooks/useFilter";
 import type { Product } from "../../../domain/types";
@@ -53,7 +54,7 @@ export function SelectorProducto({
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
-        <h3>📦 {t("ventas.products")}</h3>
+        <h3><Package size={20} strokeWidth={1.8} /> {t("ventas.products")}</h3>
         <SearchInput
           value={searchTerm}
           onChange={onSearchChange}

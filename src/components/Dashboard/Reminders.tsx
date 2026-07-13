@@ -1,3 +1,4 @@
+import { Bell } from 'lucide-react';
 import type { Reminder } from '../../domain/dashboard/types';
 import styles from './DashboardComponents.module.css';
 
@@ -8,7 +9,7 @@ interface RemindersProps {
 export function Reminders({ reminders }: RemindersProps) {
   return (
     <div className={styles.box}>
-      <h3 className={styles.boxTitle}>⏰ Recordatorios</h3>
+      <h3 className={styles.boxTitle}><Bell size={20} strokeWidth={1.8} /> Recordatorios</h3>
       <div className={styles.reminderList}>
         {reminders.map((reminder) => (
           <div key={reminder.id} className={styles.reminderItem}>

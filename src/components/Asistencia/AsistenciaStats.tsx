@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Users, Clock, Timer, BarChart3 } from 'lucide-react';
 import { useAsistenciaStore } from '../../stores/asistenciaStore';
 import styles from './AsistenciaComponents.module.css';
 
@@ -25,7 +26,7 @@ export function AsistenciaStats() {
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ background: '#DBEAFE' }}>
-            <span style={{ fontSize: '24px' }}>👥</span>
+            <Users size={24} strokeWidth={1.5} />
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>{resumen.empleadosHoy}/{resumen.totalEmpleados}</span>
@@ -35,7 +36,7 @@ export function AsistenciaStats() {
 
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ background: '#FEF3C7' }}>
-            <span style={{ fontSize: '24px' }}>⏰</span>
+            <Clock size={24} strokeWidth={1.5} />
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>{resumen.tardanzasSemana}</span>
@@ -45,7 +46,7 @@ export function AsistenciaStats() {
 
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ background: '#FEE2E2' }}>
-            <span style={{ fontSize: '24px' }}>🕐</span>
+            <Timer size={24} strokeWidth={1.5} />
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>{resumen.horasExtrasMes}h</span>
@@ -55,7 +56,7 @@ export function AsistenciaStats() {
 
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ background: '#D1FAE5' }}>
-            <span style={{ fontSize: '24px' }}>📊</span>
+            <BarChart3 size={24} strokeWidth={1.5} />
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>{resumen.porcentajeAsistenciaMes}%</span>

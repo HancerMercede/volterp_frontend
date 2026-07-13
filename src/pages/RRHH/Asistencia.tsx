@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { LogIn, Coffee, LogOut } from "lucide-react";
 import { PageHeader, Button, Pagination } from "../../components/UI";
 import { useAsistenciaStore } from "../../stores/asistenciaStore";
 import { useEmpleadoStore } from "../../stores/empleadoStore";
@@ -86,13 +87,13 @@ export function Asistencia() {
           </h3>
           <div className={styles.poncheButtons}>
             <Button onClick={() => handlePonche("entrada")} variant="secondary">
-              ➡️ {t("asistencia.entry")}
+              <LogIn size={18} strokeWidth={1.8} /> {t("asistencia.entry")}
             </Button>
             <Button onClick={() => handlePonche("pausa")} variant="secondary">
-              ☕ {t("asistencia.pause")}
+              <Coffee size={18} strokeWidth={1.8} /> {t("asistencia.pause")}
             </Button>
             <Button onClick={() => handlePonche("salida")}>
-              ⬅️ {t("asistencia.exit")}
+              <LogOut size={18} strokeWidth={1.8} /> {t("asistencia.exit")}
             </Button>
           </div>
 

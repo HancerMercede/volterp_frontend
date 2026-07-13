@@ -1,3 +1,4 @@
+import { Users, DollarSign, BarChart3, ShoppingCart, ClipboardList, CheckCircle, Package } from 'lucide-react';
 import type { KpiCard, CategoryData, Activity, Reminder, DashboardStats, SalesChartData } from './types';
 
 export type { SalesChartData };
@@ -11,10 +12,10 @@ export const formatCurrency = (value: number): string => {
 };
 
 export const KPI_CONFIG: Omit<KpiCard, 'id' | 'value' | 'formattedValue' | 'change'>[] = [
-  { label: 'Ventas del mes', icon: '📊', iconBg: '#FEF3C7', trend: 'up', isPositive: true, changeLabel: '+12.5%' },
-  { label: 'Compras del mes', icon: '🛒', iconBg: '#F3F4F6', trend: 'down', isPositive: false, changeLabel: '-8.3%' },
-  { label: 'Clientes activos', icon: '👥', iconBg: '#DCFCE7', trend: 'up', isPositive: true, changeLabel: '+15.2%' },
-  { label: 'Utilidad neta', icon: '💵', iconBg: '#DBEAFE', trend: 'up', isPositive: true, changeLabel: '+18.7%' },
+  { label: 'Ventas del mes', icon: <BarChart3 size={20} strokeWidth={1.8} />, iconBg: '#FEF3C7', trend: 'up', isPositive: true, changeLabel: '+12.5%' },
+  { label: 'Compras del mes', icon: <ShoppingCart size={20} strokeWidth={1.8} />, iconBg: '#F3F4F6', trend: 'down', isPositive: false, changeLabel: '-8.3%' },
+  { label: 'Clientes activos', icon: <Users size={20} strokeWidth={1.8} />, iconBg: '#DCFCE7', trend: 'up', isPositive: true, changeLabel: '+15.2%' },
+  { label: 'Utilidad neta', icon: <DollarSign size={20} strokeWidth={1.8} />, iconBg: '#DBEAFE', trend: 'up', isPositive: true, changeLabel: '+18.7%' },
 ];
 
 export const SALES_CHART_DATA: SalesChartData[] = [
@@ -41,11 +42,11 @@ export const TOP_PRODUCTS_CONFIG = [
   { name: 'Teclado Corsair K70', category: 'Accesorios', sales: 22, value: 195800, imageUrl: 'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=100', rankColor: '#F59E0B' },
 ];
 
-export const ACTIVITY_ICONS: Record<Activity['type'], { bg: string; icon: string }> = {
-  sale: { bg: '#FEF3C7', icon: '💰' },
-  payment: { bg: '#DCFCE7', icon: '✅' },
-  purchase: { bg: '#FEF3C7', icon: '📦' },
-  info: { bg: '#F3F4F6', icon: '📋' },
+export const ACTIVITY_ICONS: Record<Activity['type'], { bg: string; icon: React.ReactNode }> = {
+  sale: { bg: '#FEF3C7', icon: <DollarSign size={18} strokeWidth={1.8} /> },
+  payment: { bg: '#DCFCE7', icon: <CheckCircle size={18} strokeWidth={1.8} /> },
+  purchase: { bg: '#FEF3C7', icon: <Package size={18} strokeWidth={1.8} /> },
+  info: { bg: '#F3F4F6', icon: <ClipboardList size={18} strokeWidth={1.8} /> },
 };
 
 export const REMINDERS_CONFIG: Omit<Reminder, 'id'>[] = [

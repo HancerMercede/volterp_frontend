@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react';
+import { AlertTriangle, Bomb } from 'lucide-react';
 import styles from './ErrorBoundary.module.css';
 
 interface ErrorBoundaryProps {
@@ -49,7 +50,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return (
       <div className={`${styles.fallback} ${isCompact ? styles.fallbackCompact : ''}`}>
         <div className={`${styles.icon} ${isCompact ? styles.iconCompact : ''}`}>
-          {isCompact ? '⚠️' : '💥'}
+          {isCompact ? <AlertTriangle size={32} strokeWidth={1.5} /> : <Bomb size={40} strokeWidth={1.5} />}
         </div>
         <h2 className={`${styles.title} ${isCompact ? styles.titleCompact : ''}`}>
           {isCompact ? 'This section had an error' : 'Something went wrong'}
