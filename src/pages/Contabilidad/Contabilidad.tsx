@@ -33,43 +33,79 @@ export function Contabilidad() {
     deleteTransaccion,
   } = useTransaccionStore();
 
-  useEffect(() => {
-    fetchTransacciones();
-  }, [fetchTransacciones]);
+  type typeStatus = "todos" | "Income" | "Expense";
+
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterTipo, setFilterTipo] = useState<"todos" | "Income" | "Expense">(
-    "todos",
-  );
+  const [filterTipo, setFilterTipo] = useState<typeStatus>("todos");
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  useEffect(() => {
+    fetchTransacciones(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchTransacciones]);
+
   const TRANSACCION_FIELDS: FormField[] = useMemo(
     () => [
-      { name: "description", label: t("common.description"), type: "text", required: true },
-      { name: "type", label: t("common.type"), type: "select", required: true, options: [
-        { value: "Income", label: t("contabilidad.income") },
-        { value: "Expense", label: t("contabilidad.expenses") },
-      ]},
-      { name: "amount", label: t("common.amount"), type: "number", required: true },
+      {
+        name: "description",
+        label: t("common.description"),
+        type: "text",
+        required: true,
+      },
+      {
+        name: "type",
+        label: t("common.type"),
+        type: "select",
+        required: true,
+        options: [
+          { value: "Income", label: t("contabilidad.income") },
+          { value: "Expense", label: t("contabilidad.expenses") },
+        ],
+      },
+      {
+        name: "amount",
+        label: t("common.amount"),
+        type: "number",
+        required: true,
+      },
       { name: "date", label: t("common.date"), type: "date", required: true },
-      { name: "category", label: t("common.category"), type: "text", required: true },
-      { name: "status", label: t("common.status"), type: "select", required: true, options: [
-        { value: "Pending", label: t("contabilidad.pending") },
-        { value: "Reconciled", label: t("contabilidad.reconciled") },
-      ]},
+      {
+        name: "category",
+        label: t("common.category"),
+        type: "text",
+        required: true,
+      },
+      {
+        name: "status",
+        label: t("common.status"),
+        type: "select",
+        required: true,
+        options: [
+          { value: "Pending", label: t("contabilidad.pending") },
+          { value: "Reconciled", label: t("contabilidad.reconciled") },
+        ],
+      },
     ],
     [t],
   );
 
   const form = useCrudForm({
     fields: TRANSACCION_FIELDS,
-    defaultValues: { description: "", type: "Income", amount: 0, date: "", category: "", status: "Pending" },
+    defaultValues: {
+      description: "",
+      type: "Income",
+      amount: 0,
+      date: "",
+      category: "",
+      status: "Pending",
+    },
     onCreate: (data) => addTransaccion(data as AccountingTransactionRequest),
-    onUpdate: (id, data) => updateTransaccion(id, data as AccountingTransactionRequest),
+    onUpdate: (id, data) =>
+      updateTransaccion(id, data as AccountingTransactionRequest),
     onSuccess: () => {
       setShowForm(false);
       fetchTransacciones();
@@ -254,7 +290,11 @@ export function Contabilidad() {
           setShowForm(false);
           form.reset();
         }}
-        title={form.editingId ? t("contabilidad.editTransaction") : t("contabilidad.newTransaction")}
+        title={
+          form.editingId
+            ? t("contabilidad.editTransaction")
+            : t("contabilidad.newTransaction")
+        }
         onSubmit={form.handleSubmit}
         submitLabel={form.editingId ? t("common.save") : t("common.create")}
       >
