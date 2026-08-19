@@ -40,11 +40,11 @@ export function Clientes() {
     fetchClientes(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchClientes]);
 
-  const [showForm, setShowForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
   const CLIENTE_FIELDS: FormField[] = useMemo(
     () => [

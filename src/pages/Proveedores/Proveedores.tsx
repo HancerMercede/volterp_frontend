@@ -29,14 +29,14 @@ export function Proveedores() {
     deleteProveedor,
     fetchProveedores,
   } = useProveedorStore();
-  const [showForm, setShowForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
 
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
   useEffect(() => {
     fetchProveedores(pageNumber, ITEMS_PER_PAGE);
