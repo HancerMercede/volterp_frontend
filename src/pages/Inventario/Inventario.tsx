@@ -34,11 +34,14 @@ export function Inventario() {
     updateProducto,
     deleteProducto,
   } = useProductoStore();
+
+  type stockStatus = "all" | "low" | "out";
+
   const { categories, fetchCategories } = useCategoryStore();
   const { currentCompany } = useCompanyStore();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStock, setFilterStock] = useState<"all" | "low" | "out">("all");
+  const [filterStock, setFilterStock] = useState<stockStatus>("all");
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
@@ -277,7 +280,7 @@ export function Inventario() {
             className={styles.filter}
             value={filterStock}
             onChange={(e) => {
-              setFilterStock(e.target.value as any);
+              setFilterStock(e.target.value as stockStatus);
               goToPage(1);
             }}
           >
