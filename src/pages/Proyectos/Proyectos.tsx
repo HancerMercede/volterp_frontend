@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProyectoStore } from "../../stores/proyectoStore";
 import {
@@ -21,12 +21,19 @@ type ProjectStatus = Project["status"];
 
 export function Proyectos() {
   const { t } = useTranslation();
-  const { proyectos, fetchProyectos, addProyecto, updateProyecto, deleteProyecto } =
-    useProyectoStore();
+  const {
+    proyectos,
+    fetchProyectos,
+    addProyecto,
+    updateProyecto,
+    deleteProyecto,
+  } = useProyectoStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | ProjectStatus>("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | ProjectStatus>(
+    "all",
+  );
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
@@ -43,9 +50,13 @@ export function Proyectos() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const fetchData = useCallback(() => {
+    fetchProyectos(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchProyectos]);
+
   useEffect(() => {
-    fetchProyectos();
-  }, [fetchProyectos]);
+    fetchData();
+  }, [fetchData]);
 
   const filteredProyectos = useFilter({
     data: proyectos,
@@ -61,7 +72,9 @@ export function Proyectos() {
   const paginationInfo = getInfo(filteredProyectos.length);
 
   const totalBudget = proyectos.reduce((acc, p) => acc + p.budget, 0);
-  const inProgressCount = proyectos.filter((p) => p.status === "InProgress").length;
+  const inProgressCount = proyectos.filter(
+    (p) => p.status === "InProgress",
+  ).length;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-DO", {
@@ -275,9 +288,7 @@ export function Proyectos() {
           <input
             type="text"
             value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>
