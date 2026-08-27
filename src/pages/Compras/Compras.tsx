@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useCompraStore } from "../../stores/compraStore";
 import { useUIStore } from "../../stores/uiStore";
@@ -40,19 +40,39 @@ export function Compras() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const fetchData = useCallback(() => {
+    fetchCompras(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchCompras]);
+
   useEffect(() => {
-    fetchCompras();
-  }, [fetchCompras]);
+    fetchData();
+  }, [fetchData]);
 
   const COMPRA_FIELDS: FormField[] = useMemo(
     () => [
-      { name: "supplierName", label: t("compras.supplier"), type: "text", required: true },
-      { name: "total", label: t("common.total"), type: "number", required: true },
-      { name: "status", label: t("common.status"), type: "select", required: true, options: [
-        { value: "Pending", label: t("pending") },
-        { value: "Completed", label: t("completed") },
-        { value: "Cancelled", label: t("cancelled") },
-      ]},
+      {
+        name: "supplierName",
+        label: t("compras.supplier"),
+        type: "text",
+        required: true,
+      },
+      {
+        name: "total",
+        label: t("common.total"),
+        type: "number",
+        required: true,
+      },
+      {
+        name: "status",
+        label: t("common.status"),
+        type: "select",
+        required: true,
+        options: [
+          { value: "Pending", label: t("pending") },
+          { value: "Completed", label: t("completed") },
+          { value: "Cancelled", label: t("cancelled") },
+        ],
+      },
     ],
     [t],
   );
@@ -62,7 +82,11 @@ export function Compras() {
     defaultValues: { supplierName: "", total: 0, status: "Pending" },
     onCreate: (data) => {
       addToast(t("compras.purchaseCreated"), "success");
-      return addCompra({ supplierId: null, items: [], ...data } as any);
+      return addCompra({
+        supplierId: null,
+        items: [],
+        ...data,
+      } as Partial<PurchaseDto>);
     },
     onUpdate: (id, data) => {
       addToast(t("compras.purchaseUpdated"), "success");
@@ -171,7 +195,9 @@ export function Compras() {
           setShowForm(false);
           form.reset();
         }}
-        title={form.editingId ? t("compras.editPurchase") : t("compras.newPurchase")}
+        title={
+          form.editingId ? t("compras.editPurchase") : t("compras.newPurchase")
+        }
         onSubmit={form.handleSubmit}
         submitLabel={form.editingId ? t("common.update") : t("common.create")}
       >
