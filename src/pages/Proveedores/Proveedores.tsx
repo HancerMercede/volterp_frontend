@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProveedorStore } from "../../stores/proveedorStore";
 import {
@@ -28,6 +28,7 @@ export function Proveedores() {
     updateProveedor,
     deleteProveedor,
     fetchProveedores,
+    totalCount,
   } = useProveedorStore();
   const [showForm, setShowForm] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -38,9 +39,13 @@ export function Proveedores() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     fetchProveedores(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchProveedores]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const PROVEEDOR_FIELDS: FormField[] = useMemo(
     () => [
@@ -105,7 +110,7 @@ export function Proveedores() {
     return paginate(filteredProveedores, pageNumber, ITEMS_PER_PAGE);
   }, [filteredProveedores, pageNumber]);
 
-  const paginationInfo = getInfo(filteredProveedores.length);
+  const paginationInfo = getInfo(totalCount);
 
   const handleEdit = (proveedor: SupplierDto) => {
     form.handleEdit(proveedor, proveedor.id);
