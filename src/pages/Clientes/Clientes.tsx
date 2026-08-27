@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useClienteStore } from "../../stores/clienteStore";
 import {
@@ -36,9 +36,13 @@ export function Clientes() {
     initialPageSize: ITEMS_PER_PAGE,
   });
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     fetchClientes(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchClientes]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const [showForm, setShowForm] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
