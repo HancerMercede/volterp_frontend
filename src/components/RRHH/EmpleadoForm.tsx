@@ -1,18 +1,46 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "../../components/UI";
 import { FORM_STEPS } from "../../application/hooks/useEmpleadoForm";
 import type { EmployeeRequest } from "../../domain/types";
 import styles from "./EmpleadoForm.module.css";
 
 const SCHEDULE_PRESETS = [
-  "Lunes a Viernes 9:00 AM - 6:00 PM",
-  "Lunes a Viernes 8:00 AM - 5:00 PM",
-  "Lunes a Sábado 9:00 AM - 6:00 PM",
-  "Lunes a Sábado 8:00 AM - 5:00 PM",
-  "Horario Rotativo / Turnos",
+  "schedulePresetWeekday9to6",
+  "schedulePresetWeekday8to5",
+  "schedulePresetSaturday9to6",
+  "schedulePresetSaturday8to5",
+  "schedulePresetRotating",
 ] as const;
 
 const isCustomSchedule = (v: string | null | undefined) =>
   !!v && v !== "otro" && !(SCHEDULE_PRESETS as readonly string[]).includes(v);
+
+const STEP_TITLE_KEYS: Record<number, string> = {
+  1: "rrhh.formStep1Title",
+  2: "rrhh.formStep2Title",
+  3: "rrhh.formStep3Title",
+};
+
+const AFP_OPTIONS = [
+  "AFP Reservas",
+  "AFP Popular",
+  "AFP Crecer",
+  "AFP Capital",
+] as const;
+
+const ARS_OPTIONS = [
+  "ARS Humano",
+  "ARS Senasa",
+  "ARS Universal",
+  "ARS Palic",
+] as const;
+
+const BANK_OPTIONS = [
+  "Banco Popular Dominicano",
+  "Banco de la Nación",
+  "Banco BDI",
+  "Banco Scotiabank",
+] as const;
 
 interface Props {
   formData: EmployeeRequest;
@@ -31,6 +59,8 @@ export function EmpleadoForm({
   onStepChange,
   onSubmit,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <form
       noValidate
@@ -54,13 +84,13 @@ export function EmpleadoForm({
       </div>
 
       <div className={styles.stepTitle}>
-        Paso {currentStep}: {FORM_STEPS[currentStep - 1]?.title}
+        {t("rrhh.stepLabel")} {currentStep}: {t(STEP_TITLE_KEYS[currentStep] ?? "rrhh.formStep1Title")}
       </div>
 
       {currentStep === 1 && (
         <div className={styles.grid}>
           <div className={styles.field}>
-            <label>Nombre *</label>
+            <label>{t("rrhh.employeeName")} *</label>
             <input
               type="text"
               value={formData.firstName ?? ""}
@@ -69,7 +99,7 @@ export function EmpleadoForm({
             />
           </div>
           <div className={styles.field}>
-            <label>Apellido *</label>
+            <label>{t("rrhh.employeeLastName")} *</label>
             <input
               type="text"
               value={formData.lastName ?? ""}
@@ -78,7 +108,7 @@ export function EmpleadoForm({
             />
           </div>
           <div className={styles.field}>
-            <label>Email *</label>
+            <label>{t("rrhh.employeeEmail")} *</label>
             <input
               type="email"
               value={formData.email ?? ""}
@@ -87,7 +117,7 @@ export function EmpleadoForm({
             />
           </div>
           <div className={styles.field}>
-            <label>Teléfono</label>
+            <label>{t("rrhh.employeePhone")}</label>
             <input
               type="tel"
               value={formData.phone ?? ""}
@@ -95,7 +125,7 @@ export function EmpleadoForm({
             />
           </div>
           <div className={styles.field} style={{ gridColumn: "span 2" }}>
-            <label>Foto</label>
+            <label>{t("rrhh.photo")}</label>
             <input
               type="file"
               accept="image/*"
@@ -120,7 +150,7 @@ export function EmpleadoForm({
               >
                 <img
                   src={formData.imageUrl}
-                  alt="Preview"
+                  alt={t("rrhh.previewAlt")}
                   style={{
                     width: 48,
                     height: 48,
@@ -140,7 +170,7 @@ export function EmpleadoForm({
                     textDecoration: "underline",
                   }}
                 >
-                  Eliminar
+                  {t("common.delete")}
                 </button>
               </div>
             )}
@@ -151,7 +181,7 @@ export function EmpleadoForm({
       {currentStep === 2 && (
         <div className={styles.grid}>
           <div className={styles.field}>
-            <label>Cargo *</label>
+            <label>{t("rrhh.employeePosition")} *</label>
             <input
               type="text"
               value={formData.position ?? ""}
@@ -160,7 +190,7 @@ export function EmpleadoForm({
             />
           </div>
           <div className={styles.field}>
-            <label>Departamento *</label>
+            <label>{t("rrhh.employeeDepartment")} *</label>
             <input
               type="text"
               value={formData.department ?? ""}
@@ -169,7 +199,7 @@ export function EmpleadoForm({
             />
           </div>
           <div className={styles.field}>
-            <label>Fecha de Ingreso *</label>
+            <label>{t("rrhh.employeeHireDate")} *</label>
             <input
               type="date"
               value={formData.hireDate ?? ""}
@@ -178,17 +208,17 @@ export function EmpleadoForm({
             />
           </div>
           <div className={styles.field}>
-            <label>Estado</label>
+            <label>{t("rrhh.employeeStatus")}</label>
             <select
               value={formData.status ?? "Active"}
               onChange={(e) => onFieldChange("status", e.target.value)}
             >
-              <option value="Active">Activo</option>
-              <option value="Inactive">Inactivo</option>
+              <option value="Active">{t("common.active")}</option>
+              <option value="Inactive">{t("common.inactive")}</option>
             </select>
           </div>
           <div className={styles.field}>
-            <label>Horario Laboral</label>
+            <label>{t("rrhh.workSchedule")}</label>
             <select
               value={
                 isCustomSchedule(formData.workSchedule)
@@ -197,13 +227,13 @@ export function EmpleadoForm({
               }
               onChange={(e) => onFieldChange("workSchedule", e.target.value)}
             >
-              <option value="">Seleccionar horario</option>
+              <option value="">{t("rrhh.selectSchedule")}</option>
               {SCHEDULE_PRESETS.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {t(`rrhh.${s}`)}
                 </option>
               ))}
-              <option value="otro">Otro</option>
+              <option value="otro">{t("common.other")}</option>
             </select>
             {(isCustomSchedule(formData.workSchedule) ||
               formData.workSchedule === "otro") && (
@@ -215,7 +245,7 @@ export function EmpleadoForm({
                     : (formData.workSchedule ?? "")
                 }
                 onChange={(e) => onFieldChange("workSchedule", e.target.value)}
-                placeholder="Especificar horario..."
+                placeholder={t("rrhh.specifySchedule")}
                 style={{ marginTop: 4 }}
               />
             )}
@@ -226,7 +256,7 @@ export function EmpleadoForm({
       {currentStep === 3 && (
         <div className={styles.grid}>
           <div className={styles.field}>
-            <label>Salario *</label>
+            <label>{t("rrhh.salary")} *</label>
             <input
               type="number"
               value={formData.salary ?? 0}
@@ -235,33 +265,35 @@ export function EmpleadoForm({
             />
           </div>
           <div className={styles.field}>
-            <label>AFP</label>
+            <label>{t("rrhh.afp")}</label>
             <select
               value={formData.afp ?? ""}
               onChange={(e) => onFieldChange("afp", e.target.value || null)}
             >
-              <option value="">Seleccionar AFP</option>
-              <option value="AFP Reservas">AFP Reservas</option>
-              <option value="AFP Popular">AFP Popular</option>
-              <option value="AFP Crecer">AFP Crecer</option>
-              <option value="AFP Capital">AFP Capital</option>
+              <option value="">{t("rrhh.selectAFP")}</option>
+              {AFP_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
             </select>
           </div>
           <div className={styles.field}>
-            <label>ARS</label>
+            <label>{t("rrhh.ars")}</label>
             <select
               value={formData.ars ?? ""}
               onChange={(e) => onFieldChange("ars", e.target.value || null)}
             >
-              <option value="">Seleccionar ARS</option>
-              <option value="ARS Humano">ARS Humano</option>
-              <option value="ARS Senasa">ARS Senasa</option>
-              <option value="ARS Universal">ARS Universal</option>
-              <option value="ARS Palic">ARS Palic</option>
+              <option value="">{t("rrhh.selectARS")}</option>
+              {ARS_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
             </select>
           </div>
           <div className={styles.field}>
-            <label>NSS</label>
+            <label>{t("rrhh.nss")}</label>
             <input
               type="text"
               value={formData.nss ?? ""}
@@ -270,22 +302,21 @@ export function EmpleadoForm({
             />
           </div>
           <div className={styles.field}>
-            <label>Banco</label>
+            <label>{t("rrhh.bankName")}</label>
             <select
               value={formData.bank ?? ""}
               onChange={(e) => onFieldChange("bank", e.target.value || null)}
             >
-              <option value="">Seleccionar Banco</option>
-              <option value="Banco Popular Dominicano">
-                Banco Popular Dominicano
-              </option>
-              <option value="Banco de la Nación">Banco de la Nación</option>
-              <option value="Banco BDI">Banco BDI</option>
-              <option value="Banco Scotiabank">Banco Scotiabank</option>
+              <option value="">{t("rrhh.selectBank")}</option>
+              {BANK_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
             </select>
           </div>
           <div className={styles.field}>
-            <label>Número de Cuenta</label>
+            <label>{t("rrhh.accountNumber")}</label>
             <input
               type="text"
               value={formData.accountNumber ?? ""}
@@ -305,7 +336,7 @@ export function EmpleadoForm({
             onClick={() => onStepChange(currentStep - 1)}
             variant="secondary"
           >
-            Anterior
+            {t("common.previous")}
           </Button>
         )}
         <Button
@@ -315,7 +346,7 @@ export function EmpleadoForm({
             display: currentStep < FORM_STEPS.length ? undefined : "none",
           }}
         >
-          Siguiente
+          {t("common.next")}
         </Button>
         <Button
           type="submit"
@@ -323,7 +354,7 @@ export function EmpleadoForm({
             display: currentStep === FORM_STEPS.length ? undefined : "none",
           }}
         >
-          {editingId ? "Guardar Cambios" : "Crear Empleado"}
+          {editingId ? t("rrhh.saveChanges") : t("rrhh.createEmployee")}
         </Button>
       </div>
     </form>

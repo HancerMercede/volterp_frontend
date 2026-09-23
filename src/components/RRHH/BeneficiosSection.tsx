@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { EmployeeDto } from "../../domain/types";
 import { getVacacionesAnuales } from "../../domain/entities/Beneficio";
 import styles from "./BeneficiosSection.module.css";
@@ -9,64 +10,73 @@ interface Props {
 const formatDate = (date: string) => new Date(date).toLocaleDateString("es-DO");
 
 export function BeneficiosSection({ empleado }: Props) {
+  const { t } = useTranslation();
   const diasVacaciones = getVacacionesAnuales(empleado.hireDate);
 
   return (
     <div className={styles.container}>
-      <h3>Beneficios</h3>
+      <h3>{t("rrhh.benefits")}</h3>
 
       <div className={styles.grid}>
         <div className={styles.card}>
-          <h4>Vacaciones</h4>
+          <h4>{t("rrhh.vacations")}</h4>
           <div className={styles.vacacionesInfo}>
             <div className={styles.diasBig}>
               <span className={styles.number}>{diasVacaciones}</span>
-              <span className={styles.label}>días anuales</span>
+              <span className={styles.label}>{t("rrhh.daysPerYear")}</span>
             </div>
             <div className={styles.details}>
-              <p>Acumulados este año: <strong>{diasVacaciones}</strong></p>
-              <p>Usados: <strong>0</strong></p>
-              <p>Disponibles: <strong>{diasVacaciones}</strong></p>
+              <p>
+                {t("rrhh.accumulatedThisYear")}: <strong>{diasVacaciones}</strong>
+              </p>
+              <p>
+                {t("rrhh.usedDays")}: <strong>0</strong>
+              </p>
+              <p>
+                {t("rrhh.available")}: <strong>{diasVacaciones}</strong>
+              </p>
             </div>
           </div>
           <div className={styles.antiguedad}>
-            <span>Antigüedad desde: {formatDate(empleado.hireDate)}</span>
+            <span>
+              {t("rrhh.senioritySince")}: {formatDate(empleado.hireDate)}
+            </span>
           </div>
         </div>
 
         <div className={styles.card}>
-          <h4>Seguro Médico</h4>
+          <h4>{t("rrhh.healthInsurance")}</h4>
           {empleado.ars ? (
             <div className={styles.seguroInfo}>
-              <p><strong>ARS:</strong> {empleado.ars}</p>
-              <p><strong>NSS:</strong> {empleado.nss}</p>
-              <p className={styles.noActivo}>Plan básico activo</p>
+              <p><strong>{t("rrhh.ars")}:</strong> {empleado.ars}</p>
+              <p><strong>{t("rrhh.nss")}:</strong> {empleado.nss}</p>
+              <p className={styles.noActivo}>{t("rrhh.basicPlanActive")}</p>
             </div>
           ) : (
-            <p className={styles.noData}>Sin seguro médico registrado</p>
+            <p className={styles.noData}>{t("rrhh.noHealthInsurance")}</p>
           )}
         </div>
 
         <div className={styles.card}>
-          <h4>AFP - Pensión</h4>
+          <h4>{t("rrhh.afpPension")}</h4>
           {empleado.afp ? (
             <div className={styles.afpInfo}>
-              <p><strong>AFP:</strong> {empleado.afp}</p>
-              <p><strong>Número:</strong> {empleado.afpNumber ?? "-"}</p>
+              <p><strong>{t("rrhh.afp")}:</strong> {empleado.afp}</p>
+              <p><strong>{t("rrhh.afpNumber")}:</strong> {empleado.afpNumber ?? "-"}</p>
             </div>
           ) : (
-            <p className={styles.noData}>Sin AFP registrado</p>
+            <p className={styles.noData}>{t("rrhh.noAfpRegistered")}</p>
           )}
         </div>
 
         <div className={styles.card}>
-          <h4>Permisos</h4>
+          <h4>{t("rrhh.permits")}</h4>
           <div className={styles.permisosInfo}>
-            <p className={styles.noData}>Sin permisos recientes</p>
+            <p className={styles.noData}>{t("rrhh.noRecentPermits")}</p>
             <div className={styles.resumen}>
-              <span className={styles.badgeOk}>Médico: 0</span>
-              <span className={styles.badgeOk}>Personal: 0</span>
-              <span className={styles.badgeOk}>Luto: 0</span>
+              <span className={styles.badgeOk}>{t("rrhh.medical")}: 0</span>
+              <span className={styles.badgeOk}>{t("rrhh.personalPermit")}: 0</span>
+              <span className={styles.badgeOk}>{t("rrhh.bereavement")}: 0</span>
             </div>
           </div>
         </div>

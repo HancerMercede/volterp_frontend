@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './Table.module.css';
 import { ActionButtons } from './ActionButtons';
 
@@ -18,6 +19,7 @@ interface TableProps<T extends { id: TableId }> {
 }
 
 export function Table<T extends { id: TableId }>({ data, columns, onEdit, onDelete }: TableProps<T>) {
+  const { t } = useTranslation();
   return (
     <div className={styles.tableContainer}>
       <table className={styles.table}>
@@ -26,7 +28,7 @@ export function Table<T extends { id: TableId }>({ data, columns, onEdit, onDele
             {columns.map((col) => (
               <th key={String(col.key)}>{col.header || ''}</th>
             ))}
-            {(onEdit || onDelete) && <th>Acciones</th>}
+            {(onEdit || onDelete) && <th>{t("common.actions")}</th>}
           </tr>
         </thead>
         <tbody>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { SearchInput } from "../../components/UI";
 import styles from "./EmpleadoFilters.module.css";
 
@@ -8,13 +9,20 @@ interface Props {
   onEstadoChange: (value: string) => void;
 }
 
-export function EmpleadoFilters({ searchTerm, filterEstado, onSearchChange, onEstadoChange }: Props) {
+export function EmpleadoFilters({
+  searchTerm,
+  filterEstado,
+  onSearchChange,
+  onEstadoChange,
+}: Props) {
+  const { t } = useTranslation();
+
   return (
     <div className={styles.filters}>
       <SearchInput
         value={searchTerm}
         onChange={onSearchChange}
-        placeholder="Buscar empleados..."
+        placeholder={t("rrhh.searchEmployee")}
         width="240px"
       />
       <select
@@ -22,9 +30,9 @@ export function EmpleadoFilters({ searchTerm, filterEstado, onSearchChange, onEs
         onChange={(e) => onEstadoChange(e.target.value)}
         className={styles.select}
       >
-        <option value="todos">Todos</option>
-        <option value="activo">Activos</option>
-        <option value="inactivo">Inactivos</option>
+        <option value="todos">{t("rrhh.allStatuses")}</option>
+        <option value="activo">{t("rrhh.activeEmployees")}</option>
+        <option value="inactivo">{t("rrhh.inactiveEmployees")}</option>
       </select>
     </div>
   );
