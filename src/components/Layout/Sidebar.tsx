@@ -63,9 +63,7 @@ export function Sidebar() {
     navigate("/login");
   };
 
-  const visibleNavItems = MODULOS.filter((modulo) =>
-    canRead(modulo.key as any),
-  );
+  const visibleNavItems = MODULOS.filter((modulo) => canRead(modulo.key));
 
   return (
     <aside className={styles.sidebar}>

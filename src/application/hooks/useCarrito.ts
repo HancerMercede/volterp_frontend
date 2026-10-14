@@ -48,7 +48,9 @@ export function useCarrito() {
   }, []);
 
   const removeItem = useCallback((productId: number) => {
-    setItems((prev) => prev.filter((item) => item.productId !== Number(productId)));
+    setItems((prev) =>
+      prev.filter((item) => item.productId !== Number(productId)),
+    );
   }, []);
 
   const updateQuantity = useCallback((productId: number, delta: number) => {

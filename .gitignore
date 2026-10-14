@@ -1,4 +1,4 @@
-# Logs
+q# Logs
 logs
 *.log
 npm-debug.log*
@@ -7,12 +7,15 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build output
 dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# Editor / IDE
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -22,3 +25,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+
+# Tooling caches & session artifacts (NOT app code)
+.atl/
+openspec/
+.engram/
+temp_hlink_test/
+MEMORY.md
+q
+
+# Lockfile — yarn is the package manager
+package-lock.json

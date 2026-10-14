@@ -33,10 +33,7 @@ export const productService = {
     );
   },
 
-  async updateProduct(
-    id: number,
-    data: ProductRequest,
-  ): Promise<ProductDto> {
+  async updateProduct(id: number, data: ProductRequest): Promise<ProductDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTS}/${id}`,
       {
