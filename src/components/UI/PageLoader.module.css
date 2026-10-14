@@ -1,0 +1,8 @@
+.pageLoader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #6B7280;
+    font-size: 0.95rem;
+}

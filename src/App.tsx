@@ -5,6 +5,7 @@ import { useAuthStore } from "./stores/authStore";
 import { ErrorBoundary, NotificationContainer } from "./components/UI";
 import "./i18n";
 import "./styles/variables.css";
+import { PageLoader } from "./components/UI/PageLoader";
 
 // Lazy-loaded pages — each becomes its own chunk
 const Dashboard = lazy(() =>
@@ -63,23 +64,6 @@ const Configuracion = lazy(() =>
 const Soporte = lazy(() =>
   import("./pages/Soporte/Soporte").then((m) => ({ default: m.Soporte })),
 );
-
-function PageLoader() {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        color: "#6B7280",
-        fontSize: "0.95rem",
-      }}
-    >
-      <span>Loading...</span>
-    </div>
-  );
-}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, hasHydrated } = useAuthStore();
