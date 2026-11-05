@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Table,
@@ -6,7 +5,6 @@ import {
   Pagination,
   SearchInput,
 } from "../../../components/UI";
-import { paginate } from "../../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../../config/pagination";
 import { useFilter } from "../../../hooks/useFilter";
 import { useClienteStore } from "../../../stores/clienteStore";
@@ -15,6 +13,7 @@ import styles from "./VentasList.module.css";
 
 interface Props {
   ventas: SaleDto[];
+  totalCount: number;
   onVentaClick: (venta: SaleDto) => void;
   onDelete: (id: string) => void;
   searchTerm: string;
@@ -25,6 +24,7 @@ interface Props {
 
 export function VentasList({
   ventas,
+  totalCount,
   onVentaClick,
   onDelete,
   searchTerm,
@@ -40,10 +40,6 @@ export function VentasList({
     searchTerm,
     searchFields: (v: SaleDto) => [v.clienteName || "", String(v.id), v.code],
   });
-
-  const paginatedVentas = useMemo(() => {
-    return paginate(filteredVentas, pageNumber, ITEMS_PER_PAGE);
-  }, [filteredVentas, pageNumber]);
 
   const getClienteById = (id: string | null) =>
     id ? clientes.find((c) => c.id === id) : null;
@@ -131,7 +127,7 @@ export function VentasList({
       </div>
 
       <Table
-        data={paginatedVentas}
+        data={filteredVentas}
         columns={columns}
         onEdit={onVentaClick}
         onDelete={onDelete}
@@ -139,12 +135,11 @@ export function VentasList({
 
       <Pagination
         pagination={{
-          total: filteredVentas.length,
+          total: totalCount,
           page: pageNumber,
           pageSize: ITEMS_PER_PAGE,
-          totalPages: Math.ceil(filteredVentas.length / ITEMS_PER_PAGE),
-          hasNext:
-            pageNumber < Math.ceil(filteredVentas.length / ITEMS_PER_PAGE),
+          totalPages: Math.ceil(totalCount / ITEMS_PER_PAGE),
+          hasNext: pageNumber < Math.ceil(totalCount / ITEMS_PER_PAGE),
           hasPrev: pageNumber > 1,
         }}
         onPageChange={onPageChange}

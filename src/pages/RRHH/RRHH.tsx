@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,7 +9,6 @@ import {
 } from "../../components/UI";
 import { useEmpleadoStore } from "../../stores/empleadoStore";
 import { usePagination } from "../../hooks/usePagination";
-import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import { useEmpleadoForm } from "../../application/hooks/useEmpleadoForm";
 import type { EmployeeDto, EmployeeRequest } from "../../domain/types";
@@ -31,9 +30,6 @@ export function RRHH() {
     deleteEmpleado,
   } = useEmpleadoStore();
 
-  useEffect(() => {
-    fetchEmpleados();
-  }, [fetchEmpleados]);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState<"todos" | string>("todos");
@@ -43,6 +39,10 @@ export function RRHH() {
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
+
+  useEffect(() => {
+    fetchEmpleados(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchEmpleados]);
 
   const handleSubmit = (
     formData: EmployeeRequest,
@@ -87,10 +87,6 @@ export function RRHH() {
     },
   });
 
-  const paginatedEmpleados = useMemo(
-    () => paginate(filteredEmpleados, pageNumber, ITEMS_PER_PAGE),
-    [filteredEmpleados, pageNumber],
-  );
   const paginationInfo = getInfo(totalCount);
 
   const handleEdit = (empleado: EmployeeDto) => {
@@ -147,7 +143,7 @@ export function RRHH() {
       />
 
       <EmpleadoTable
-        empleados={paginatedEmpleados}
+        empleados={filteredEmpleados}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProyectoStore } from "../../stores/proyectoStore";
 import {
@@ -12,7 +12,6 @@ import {
 } from "../../components/UI";
 import { useFilter } from "../../hooks/useFilter";
 import { usePagination } from "../../hooks/usePagination";
-import { paginate } from "../../utils/pagination";
 import type { Project } from "../../domain/types";
 import styles from "./Proyectos.module.css";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
@@ -23,6 +22,7 @@ export function Proyectos() {
   const { t } = useTranslation();
   const {
     proyectos,
+    totalCount,
     fetchProyectos,
     addProyecto,
     updateProyecto,
@@ -65,11 +65,7 @@ export function Proyectos() {
     filter: (p) => filterStatus === "all" || p.status === filterStatus,
   });
 
-  const paginatedProyectos = useMemo(() => {
-    return paginate(filteredProyectos, pageNumber, ITEMS_PER_PAGE);
-  }, [filteredProyectos, pageNumber]);
-
-  const paginationInfo = getInfo(filteredProyectos.length);
+  const paginationInfo = getInfo(totalCount);
 
   const totalBudget = proyectos.reduce((acc, p) => acc + p.budget, 0);
   const inProgressCount = proyectos.filter(
@@ -267,7 +263,7 @@ export function Proyectos() {
 
       <Table
         columns={columns}
-        data={paginatedProyectos}
+        data={filteredProyectos}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />

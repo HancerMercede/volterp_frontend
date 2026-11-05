@@ -13,7 +13,6 @@ import {
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
-import { paginate } from "../../utils/pagination";
 import type {
   AccountingTransactionDto,
   AccountingTransactionRequest,
@@ -108,7 +107,7 @@ export function Contabilidad() {
       updateTransaccion(id, data as AccountingTransactionRequest),
     onSuccess: () => {
       setShowForm(false);
-      fetchTransacciones();
+      fetchTransacciones(pageNumber, ITEMS_PER_PAGE);
     },
   });
 
@@ -118,10 +117,6 @@ export function Contabilidad() {
     searchFields: (t) => [t.description, t.category, t.code],
     filter: (t) => filterTipo === "todos" || t.type == filterTipo,
   });
-
-  const paginatedTransacciones = useMemo(() => {
-    return paginate(filteredTransacciones, pageNumber, ITEMS_PER_PAGE);
-  }, [filteredTransacciones, pageNumber]);
 
   const paginationInfo = getInfo(totalCount);
 
@@ -277,7 +272,7 @@ export function Contabilidad() {
 
       <Table
         columns={columns}
-        data={paginatedTransacciones}
+        data={filteredTransacciones}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />

@@ -14,7 +14,6 @@ import {
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
-import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { SupplierDto, SupplierRequest } from "../../domain/types";
 import styles from "./Proveedores.module.css";
@@ -106,10 +105,6 @@ export function Proveedores() {
     searchFields: (p) => [p.name, p.email, p.category, p.code],
   });
 
-  const paginatedProveedores = useMemo(() => {
-    return paginate(filteredProveedores, pageNumber, ITEMS_PER_PAGE);
-  }, [filteredProveedores, pageNumber]);
-
   const paginationInfo = getInfo(totalCount);
 
   const handleEdit = (proveedor: SupplierDto) => {
@@ -173,7 +168,7 @@ export function Proveedores() {
 
       <Table
         columns={columns}
-        data={paginatedProveedores}
+        data={filteredProveedores}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />

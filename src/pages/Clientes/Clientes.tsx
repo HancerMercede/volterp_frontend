@@ -14,7 +14,6 @@ import {
   DynamicFormFields,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
-import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { Client, ClientRequest } from "../../domain/types";
 import styles from "./Clientes.module.css";
@@ -112,10 +111,6 @@ export function Clientes() {
     searchTerm,
     searchFields: (c) => [c.name, c.email, c.phone, c.code],
   });
-
-  const paginatedClientes = useMemo(() => {
-    return paginate(filteredClientes, pageNumber, ITEMS_PER_PAGE);
-  }, [filteredClientes, pageNumber]);
 
   const paginationInfo = getInfo(totalCount);
 
@@ -216,7 +211,7 @@ export function Clientes() {
         />
       </Modal>
 
-      <Table data={paginatedClientes} columns={columns} />
+      <Table data={filteredClientes} columns={columns} />
 
       <Pagination pagination={paginationInfo} onPageChange={goToPage} />
 

@@ -15,7 +15,6 @@ import {
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
-import { paginate } from "../../utils/pagination";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { PurchaseDto } from "../../domain/types";
 import styles from "./Compras.module.css";
@@ -94,7 +93,7 @@ export function Compras() {
     },
     onSuccess: () => {
       setShowForm(false);
-      fetchCompras();
+      fetchCompras(pageNumber, ITEMS_PER_PAGE);
     },
   });
 
@@ -103,10 +102,6 @@ export function Compras() {
     searchTerm,
     searchFields: (c) => [c.supplierName, c.id.toString(), c.code],
   });
-
-  const paginatedCompras = useMemo(() => {
-    return paginate(filteredCompras, pageNumber, ITEMS_PER_PAGE);
-  }, [filteredCompras, pageNumber]);
 
   const paginationInfo = getInfo(totalCount);
 
@@ -211,7 +206,7 @@ export function Compras() {
         />
       </Modal>
 
-      <Table data={paginatedCompras} columns={columns} />
+      <Table data={filteredCompras} columns={columns} />
 
       <Pagination pagination={paginationInfo} onPageChange={goToPage} />
 

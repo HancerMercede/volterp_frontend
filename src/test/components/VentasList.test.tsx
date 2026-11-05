@@ -30,19 +30,27 @@ const VENTAS = [
   }),
 ];
 
-function VentasListHarness({ ventas }: { ventas: SaleDto[] }) {
+function VentasListHarness({
+  ventas,
+  pageNumber = 1,
+  totalCount = 50,
+}: {
+  ventas: SaleDto[];
+  pageNumber?: number;
+  totalCount?: number;
+}) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [pageNumber, setPageNumber] = useState(1);
 
   return (
     <VentasList
       ventas={ventas}
+      totalCount={totalCount}
       onVentaClick={vi.fn()}
       onDelete={vi.fn()}
       searchTerm={searchTerm}
       onSearchChange={setSearchTerm}
       pageNumber={pageNumber}
-      onPageChange={setPageNumber}
+      onPageChange={vi.fn()}
     />
   );
 }
@@ -75,5 +83,21 @@ describe("VentasList", () => {
 
     expect(screen.getByText("Vent-001")).toBeInTheDocument();
     expect(screen.getByText("Vent-002")).toBeInTheDocument();
+  });
+
+  it("renders every row of the page it receives, even on page 2", () => {
+    const pageTwo = Array.from({ length: 10 }, (_, index) =>
+      createVenta({
+        id: index + 11,
+        code: `Vent-0${index + 11}`,
+        clienteName: `Cliente ${index + 11}`,
+      }),
+    );
+
+    render(<VentasListHarness ventas={pageTwo} pageNumber={2} />);
+
+    expect(screen.getByText("Cliente 11")).toBeInTheDocument();
+    expect(screen.getByText("Cliente 20")).toBeInTheDocument();
+    expect(screen.queryByText("Cliente 1")).not.toBeInTheDocument();
   });
 });

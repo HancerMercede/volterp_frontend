@@ -15,7 +15,7 @@ import { VentaDetail } from "./components/VentaDetail";
 
 export function Ventas() {
   const { t } = useTranslation();
-  const { ventas, fetchVentas, deleteVenta } = useVentaStore();
+  const { ventas, totalCount, fetchVentas, deleteVenta } = useVentaStore();
   const { fetchClientes } = useClienteStore();
   const { currentCompany, fetchCurrentCompany } = useCompanyStore();
   const { user } = useAuthStore();
@@ -111,9 +111,10 @@ export function Ventas() {
           onClose={() => setViewingSaleId(null)}
         />
       )}
-      <VentasList
-        ventas={ventas}
-        onVentaClick={handleVentaClick}
+        <VentasList
+          ventas={ventas}
+          totalCount={totalCount}
+          onVentaClick={handleVentaClick}
         onDelete={handleDelete}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
