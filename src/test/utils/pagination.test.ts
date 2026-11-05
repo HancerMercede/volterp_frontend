@@ -120,9 +120,9 @@ describe('pagination utils', () => {
     });
 
     it('works with any type of array', () => {
-      const items = [{ id: 1 }, { id: 2 }, { id: 3 }];
+      const items = [{ id: '1' }, { id: '2' }, { id: '3' }];
       const result = paginate(items, 1, 2);
-      expect(result).toEqual([{ id: 1 }, { id: 2 }]);
+      expect(result).toEqual([{ id: '1' }, { id: '2' }]);
     });
   });
 });

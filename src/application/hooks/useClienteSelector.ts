@@ -4,7 +4,7 @@ import type { Client } from "../../domain/types";
 
 export function useClienteSelector(
   clientes: Client[],
-  selectedClienteId: number | null,
+  selectedClienteId: string | null,
   clienteSearch: string,
 ) {
   const dropdownClientes = useMemo(() => {
@@ -19,7 +19,7 @@ export function useClienteSelector(
   const searchFilteredClientes = useFilter({
     data: dropdownClientes,
     searchTerm: clienteSearch,
-    searchFields: (c) => [c.name, c.email, c.empresa ?? ""],
+    searchFields: (c) => [c.name, c.email, c.empresa ?? "", c.code],
   });
 
   const match = useMemo(() => {

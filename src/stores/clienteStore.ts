@@ -9,10 +9,10 @@ interface ClienteStore {
   totalCount: number;
   pageCount: number;
   fetchClientes: (pageNumber?: number, pageSize?: number) => Promise<void>;
-  getClienteById: (id: number) => Promise<Client | null>;
+  getClienteById: (id: string) => Promise<Client | null>;
   addCliente: (cliente: ClientRequest) => Promise<Client>;
-  updateCliente: (id: number, data: ClientRequest) => Promise<Client>;
-  deleteCliente: (id: number) => Promise<void>;
+  updateCliente: (id: string, data: ClientRequest) => Promise<Client>;
+  deleteCliente: (id: string) => Promise<void>;
   setError: (error: string | null) => void;
 }
 
@@ -42,7 +42,7 @@ export const useClienteStore = create<ClienteStore>((set) => ({
     }
   },
 
-  getClienteById: async (id: number) => {
+  getClienteById: async (id: string) => {
     set({ loading: true, error: null });
     try {
       const client = await clientService.getClientById(id);
@@ -78,7 +78,7 @@ export const useClienteStore = create<ClienteStore>((set) => ({
     }
   },
 
-  updateCliente: async (id: number, data: ClientRequest) => {
+  updateCliente: async (id: string, data: ClientRequest) => {
     set({ loading: true, error: null });
     try {
       const updatedClient = await clientService.updateClient(id, data);
@@ -99,7 +99,7 @@ export const useClienteStore = create<ClienteStore>((set) => ({
     }
   },
 
-  deleteCliente: async (id: number) => {
+  deleteCliente: async (id: string) => {
     set({ loading: true, error: null });
     try {
       await clientService.deleteClient(id);

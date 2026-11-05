@@ -63,7 +63,7 @@ export function UserManagement() {
   const [error, setError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newUser, setNewUser] = useState<CreateUserRequest>(InitialState);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { pageNumber, goToPage, getInfo } = usePagination({
@@ -114,7 +114,7 @@ export function UserManagement() {
     }
   }
 
-  async function handleRoleChange(userId: number, newRole: string) {
+  async function handleRoleChange(userId: string, newRole: string) {
     if (!token) return;
     try {
       const updated = await userService.updateUserRole(userId, newRole);
@@ -124,7 +124,7 @@ export function UserManagement() {
     }
   }
 
-  async function handleToggleStatus(userId: number, currentStatus: boolean) {
+  async function handleToggleStatus(userId: string, currentStatus: boolean) {
     if (!token) return;
     try {
       const updated = await userService.updateUserStatus(
@@ -137,7 +137,7 @@ export function UserManagement() {
     }
   }
 
-  function handleDelete(userId: number) {
+  function handleDelete(userId: string) {
     if (!token) return;
     setDeleteId(userId);
     setShowDeleteConfirm(true);

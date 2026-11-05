@@ -38,7 +38,7 @@ export function RRHH() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState<"todos" | string>("todos");
   const [showForm, setShowForm] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
@@ -46,7 +46,7 @@ export function RRHH() {
 
   const handleSubmit = (
     formData: EmployeeRequest,
-    editingId: number | null,
+    editingId: string | null,
   ) => {
     if (editingId) {
       updateEmpleado(editingId, formData);
@@ -75,6 +75,7 @@ export function RRHH() {
       e.lastName,
       e.position,
       e.department,
+      e.code,
     ],
     filter: (e: EmployeeDto) => {
       if (filterEstado === "todos") return true;
@@ -97,7 +98,7 @@ export function RRHH() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };

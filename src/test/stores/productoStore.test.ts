@@ -61,8 +61,8 @@ describe('useProductoStore', () => {
     it('loads products successfully', async () => {
       const mockResponse = {
         items: [
-          { id: 1, name: 'Product 1', category: 'Cat1', price: 100, stock: 10 },
-          { id: 2, name: 'Product 2', category: 'Cat2', price: 200, stock: 20 },
+          { id: '1', name: 'Product 1', category: 'Cat1', price: 100, stock: 10 },
+          { id: '2', name: 'Product 2', category: 'Cat2', price: 200, stock: 20 },
         ],
         rowCount: 2,
         pageCount: 1,
@@ -100,7 +100,7 @@ describe('useProductoStore', () => {
   describe('createProducto', () => {
     it('adds product to list on success', async () => {
       const newProduct = {
-        id: 1,
+        id: '1',
         name: 'New Product',
         category: 'Electronics',
         description: null,
@@ -108,7 +108,7 @@ describe('useProductoStore', () => {
         stock: 5,
         categoryId: null,
         categoryName: null,
-        companyId: 1,
+        companyId: '1',
         isActive: true,
         imageUrl: null,
         createdAt: '2024-01-01',
@@ -123,7 +123,7 @@ describe('useProductoStore', () => {
         price: 150,
         stock: 5,
         categoryId: null,
-        companyId: 1,
+        companyId: '1',
       };
 
       await useProductoStore.getState().createProducto(data);
@@ -142,7 +142,7 @@ describe('useProductoStore', () => {
         price: 100,
         stock: 5,
         categoryId: null,
-        companyId: 1,
+        companyId: '1',
       };
 
       await expect(useProductoStore.getState().createProducto(data)).rejects.toThrow('Creation failed');
@@ -160,7 +160,7 @@ describe('useProductoStore', () => {
         price: 100,
         stock: 5,
         categoryId: null,
-        companyId: 1,
+        companyId: '1',
       };
 
       await useProductoStore.getState().createProducto(data);
@@ -173,7 +173,7 @@ describe('useProductoStore', () => {
   describe('updateProducto', () => {
     it('updates product in list on success', async () => {
       const updatedProduct = {
-        id: 1,
+        id: '1',
         name: 'Updated Product',
         category: 'Electronics',
         description: null,
@@ -181,7 +181,7 @@ describe('useProductoStore', () => {
         stock: 15,
         categoryId: null,
         categoryName: null,
-        companyId: 1,
+        companyId: '1',
         isActive: true,
         imageUrl: null,
         createdAt: '2024-01-01',
@@ -192,7 +192,7 @@ describe('useProductoStore', () => {
       // Set initial state
       useProductoStore.setState({
         productos: [
-          { id: 1, name: 'Old Product', category: 'Old', description: null, price: 100, stock: 10, categoryId: null, categoryName: null, companyId: 1, isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
+          { id: '1', name: 'Old Product', category: 'Old', description: null, price: 100, stock: 10, categoryId: null, categoryName: null, companyId: '1', isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
         ],
       });
 
@@ -206,7 +206,7 @@ describe('useProductoStore', () => {
         isActive: true,
       };
 
-      await useProductoStore.getState().updateProducto(1, data);
+      await useProductoStore.getState().updateProducto('1', data);
 
       expect(useProductoStore.getState().productos[0].name).toBe('Updated Product');
       expect(useProductoStore.getState().productos[0].price).toBe(200);
@@ -218,7 +218,7 @@ describe('useProductoStore', () => {
 
       useProductoStore.setState({
         productos: [
-          { id: 1, name: 'Product', category: 'Cat', description: null, price: 100, stock: 10, categoryId: null, categoryName: null, companyId: 1, isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
+          { id: '1', name: 'Product', category: 'Cat', description: null, price: 100, stock: 10, categoryId: null, categoryName: null, companyId: '1', isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
         ],
       });
 
@@ -232,7 +232,7 @@ describe('useProductoStore', () => {
         isActive: true,
       };
 
-      await expect(useProductoStore.getState().updateProducto(1, data)).rejects.toThrow('Update failed');
+      await expect(useProductoStore.getState().updateProducto('1', data)).rejects.toThrow('Update failed');
       expect(useProductoStore.getState().error).toBe('Update failed');
       expect(useProductoStore.getState().loading).toBe(false);
     });
@@ -244,15 +244,15 @@ describe('useProductoStore', () => {
 
       useProductoStore.setState({
         productos: [
-          { id: 1, name: 'Product 1', category: 'Cat1', description: null, price: 100, stock: 10, categoryId: null, categoryName: null, companyId: 1, isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
-          { id: 2, name: 'Product 2', category: 'Cat2', description: null, price: 200, stock: 20, categoryId: null, categoryName: null, companyId: 1, isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
+          { id: '1', name: 'Product 1', category: 'Cat1', description: null, price: 100, stock: 10, categoryId: null, categoryName: null, companyId: '1', isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
+          { id: '2', name: 'Product 2', category: 'Cat2', description: null, price: 200, stock: 20, categoryId: null, categoryName: null, companyId: '1', isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
         ],
       });
 
-      await useProductoStore.getState().deleteProducto(1);
+      await useProductoStore.getState().deleteProducto('1');
 
       expect(useProductoStore.getState().productos).toHaveLength(1);
-      expect(useProductoStore.getState().productos[0].id).toBe(2);
+      expect(useProductoStore.getState().productos[0].id).toBe('2');
       expect(useProductoStore.getState().loading).toBe(false);
     });
 
@@ -261,11 +261,11 @@ describe('useProductoStore', () => {
 
       useProductoStore.setState({
         productos: [
-          { id: 1, name: 'Product 1', category: 'Cat1', description: null, price: 100, stock: 10, categoryId: null, categoryName: null, companyId: 1, isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
+          { id: '1', name: 'Product 1', category: 'Cat1', description: null, price: 100, stock: 10, categoryId: null, categoryName: null, companyId: '1', isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
         ],
       });
 
-      await expect(useProductoStore.getState().deleteProducto(1)).rejects.toThrow('Delete failed');
+      await expect(useProductoStore.getState().deleteProducto('1')).rejects.toThrow('Delete failed');
       expect(useProductoStore.getState().error).toBe('Delete failed');
       expect(useProductoStore.getState().loading).toBe(false);
     });
@@ -275,11 +275,11 @@ describe('useProductoStore', () => {
 
       useProductoStore.setState({
         productos: [
-          { id: 1, name: 'Product 1', category: 'Cat1', description: null, price: 100, stock: 10, categoryId: null, categoryName: null, companyId: 1, isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
+          { id: '1', name: 'Product 1', category: 'Cat1', description: null, price: 100, stock: 10, categoryId: null, categoryName: null, companyId: '1', isActive: true, imageUrl: null, createdAt: '2024-01-01', updatedAt: null },
         ],
       });
 
-      await useProductoStore.getState().deleteProducto(1);
+      await useProductoStore.getState().deleteProducto('1');
 
       expect(useProductoStore.getState().error).toBe('No authenticated');
       expect(useProductoStore.getState().productos).toHaveLength(1);

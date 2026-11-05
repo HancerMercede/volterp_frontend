@@ -7,7 +7,7 @@ export interface User {
   email: string;
   fullName: string;
   role: string;
-  companyId: number;
+  companyId: string;
 }
 
 interface AuthStore {

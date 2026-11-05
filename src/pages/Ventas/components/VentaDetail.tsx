@@ -6,7 +6,7 @@ import styles from "./VentaDetail.module.css";
 
 interface Props {
   venta: SaleDto;
-  clienteId: number | null;
+  clienteId: string | null;
   onClose: () => void;
 }
 

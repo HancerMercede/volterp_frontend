@@ -47,7 +47,7 @@ export function Clientes() {
   const [showForm, setShowForm] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
   const CLIENTE_FIELDS: FormField[] = useMemo(
@@ -110,7 +110,7 @@ export function Clientes() {
   const filteredClientes = useFilter({
     data: clientes,
     searchTerm,
-    searchFields: (c) => [c.name, c.email, c.phone],
+    searchFields: (c) => [c.name, c.email, c.phone, c.code],
   });
 
   const paginatedClientes = useMemo(() => {
@@ -124,7 +124,7 @@ export function Clientes() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };
@@ -134,7 +134,7 @@ export function Clientes() {
   };
 
   const columns = [
-    { key: "id", header: t("common.id") },
+    { key: "code", header: t("common.code") },
     {
       key: "name",
       header: t("clientes.client"),
@@ -155,9 +155,7 @@ export function Clientes() {
       key: "isActive",
       header: t("common.status"),
       render: (c: Client) => (
-        <span
-          style={{ color: c.isActive ? "green" : "red" }}
-        >
+        <span style={{ color: c.isActive ? "green" : "red" }}>
           {c.isActive ? t("common.active") : t("common.inactive")}
         </span>
       ),

@@ -118,7 +118,7 @@ export function Inventario() {
       isActive: true,
     },
     onCreate: async (data) => {
-      const catId = data.categoryId ? parseInt(data.categoryId) : null;
+      const catId = data.categoryId || null;
       const cat = categories.find((c) => c.id === catId);
       await createProducto({
         name: data.name,
@@ -127,12 +127,12 @@ export function Inventario() {
         stock: data.stock,
         price: data.price,
         categoryId: catId,
-        companyId: currentCompany?.id || 1,
+        companyId: currentCompany?.id,
         imageUrl: data.imageUrl || null,
       });
     },
     onUpdate: async (id, data) => {
-      const catId = data.categoryId ? parseInt(data.categoryId) : null;
+      const catId = data.categoryId || null;
       const cat = categories.find((c) => c.id === catId);
       await updateProducto(id, {
         name: data.name,
@@ -150,7 +150,7 @@ export function Inventario() {
     },
     mapEntityToForm: (entity) => ({
       name: (entity.name as string) ?? "",
-      categoryId: entity.categoryId != null ? String(entity.categoryId) : "",
+      categoryId: (entity.categoryId as string | null) ?? "",
       stock: (entity.stock as number) ?? 0,
       price: (entity.price as number) ?? 0,
       imageUrl: (entity.imageUrl as string) ?? "",
@@ -163,7 +163,7 @@ export function Inventario() {
   const handleFieldChange = useCallback(
     (name: string, value: unknown) => {
       if (name === "categoryId") {
-        const catId = value ? parseInt(value as string) : null;
+        const catId = value ? (value as string) : null;
         const cat = categories.find((c) => c.id === catId);
         form.setFieldValue("categoryId", value);
         form.setFieldValue("category", cat?.name ?? "");
@@ -177,7 +177,7 @@ export function Inventario() {
   const filteredProductos = useFilter({
     data: productos,
     searchTerm,
-    searchFields: (p) => [p.name, p.category],
+    searchFields: (p) => [p.name, p.category, p.code],
     filter: (p) => {
       if (filterStock === "low") return p.stock > 0 && p.stock < 10;
       if (filterStock === "out") return p.stock === 0;
@@ -192,15 +192,15 @@ export function Inventario() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
-    setDeleteId(String(id));
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
     setShowDeleteConfirm(true);
   };
 
   const confirmDelete = async () => {
     if (deleteId) {
       try {
-        await deleteProducto(Number(deleteId));
+        await deleteProducto(deleteId);
       } catch {
         // Error is handled in store
       }
@@ -210,13 +210,13 @@ export function Inventario() {
   };
 
   const columns = [
-    { key: "id", header: t("common.id") },
+    { key: "code", header: t("common.code") },
     {
       key: "name",
       header: t("common.product"),
       render: (p: ProductDto) => (
         <ImageCell
-          src={p.imageUrl || ""}
+          src={p.imageUrl || `https://i.pravatar.cc/150?img=${p.id}`}
           name={p.name}
           subtext={p.category}
           type="product"

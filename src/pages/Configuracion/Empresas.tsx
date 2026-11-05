@@ -51,7 +51,7 @@ export function Empresas() {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchData = useCallback(() => {
@@ -91,17 +91,17 @@ export function Empresas() {
     data: companies,
     searchTerm,
     searchFields: (c) => [c.name, c.taxId, c.email],
-  }).map((c) => ({ ...c, id: String(c.id) }));
+  });
 
   const paginationInfo = getInfo(totalCount);
 
   const handleEdit = (company: CompanyTableRow) => {
-    form.handleEdit(company as unknown as Record<string, unknown>, Number(company.id));
+    form.handleEdit(company as unknown as Record<string, unknown>, company.id);
     setShowForm(true);
   };
 
   const handleDeleteClick = (id: string) => {
-    setDeleteId(Number(id));
+    setDeleteId(id);
     setShowDeleteConfirm(true);
   };
 

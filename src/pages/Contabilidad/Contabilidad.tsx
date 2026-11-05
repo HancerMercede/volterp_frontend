@@ -41,7 +41,7 @@ export function Contabilidad() {
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -115,7 +115,7 @@ export function Contabilidad() {
   const filteredTransacciones = useFilter({
     data: transacciones,
     searchTerm,
-    searchFields: (t) => [t.description, t.category],
+    searchFields: (t) => [t.description, t.category, t.code],
     filter: (t) => filterTipo === "todos" || t.type == filterTipo,
   });
 
@@ -138,7 +138,7 @@ export function Contabilidad() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };

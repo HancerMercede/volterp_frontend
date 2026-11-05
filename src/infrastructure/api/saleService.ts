@@ -48,7 +48,7 @@ export const saleService = {
     );
   },
 
-  async getSale(id: number): Promise<SaleDto> {
+  async getSale(id: string): Promise<SaleDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}`,
     );
@@ -64,7 +64,7 @@ export const saleService = {
     );
   },
 
-  async updateSale(id: number, data: UpdateSaleRequest): Promise<SaleDto> {
+  async updateSale(id: string, data: UpdateSaleRequest): Promise<SaleDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}`,
       {
@@ -74,7 +74,7 @@ export const saleService = {
     );
   },
 
-  async completeSale(id: number): Promise<SaleDto> {
+  async completeSale(id: string): Promise<SaleDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}/complete`,
       {
@@ -83,7 +83,7 @@ export const saleService = {
     );
   },
 
-  async deleteSale(id: number): Promise<void> {
+  async deleteSale(id: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}`,
       {

@@ -51,6 +51,7 @@
     "success": "Success",
     "error": "Error",
     "id": "ID",
+    "code": "CODE",
     "product": "Product",
     "supplier": "Supplier",
     "client": "Client",

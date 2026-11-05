@@ -19,8 +19,8 @@ export function useVentaForm() {
   const { addToast } = useUIStore();
 
   const [carrito, setCarrito] = useState<CartItem[]>([]);
-  const [editingSaleId, setEditingSaleId] = useState<number | null>(null);
-  const [selectedCliente, setSelectedCliente] = useState<number | null>(null);
+  const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
+  const [selectedCliente, setSelectedCliente] = useState<string | null>(null);
   const [clienteSearch, setClienteSearch] = useState("");
   const [ventaEstado, setVentaEstado] = useState<"pendiente" | "completada">("pendiente");
 
@@ -52,7 +52,7 @@ export function useVentaForm() {
     });
   }, []);
 
-  const actualizarCantidad = useCallback((productoId: number, delta: number) => {
+  const actualizarCantidad = useCallback((productoId: string, delta: number) => {
     setCarrito((prev) =>
       prev.map((item) => {
         if (item.productId === productoId) {
@@ -68,8 +68,8 @@ export function useVentaForm() {
     );
   }, []);
 
-  const eliminarDelCarrito = useCallback((productoId: number) => {
-    setCarrito((prev) => prev.filter((item) => item.productId !== Number(productoId)));
+  const eliminarDelCarrito = useCallback((productoId: string) => {
+    setCarrito((prev) => prev.filter((item) => item.productId !== productoId));
   }, []);
 
   const handleCompletarVenta = useCallback(async () => {

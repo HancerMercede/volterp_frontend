@@ -33,7 +33,7 @@ export function Reportes() {
   const topProductosVendidos = useMemo(() => {
     const ventasCompletadas = ventas.filter((v) => v.status === "Completed");
     const productosMap = new Map<
-      number,
+      string,
       { name: string; quantity: number; total: number }
     >();
 

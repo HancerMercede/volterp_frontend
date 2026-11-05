@@ -5,8 +5,8 @@ import styles from "./Carrito.module.css";
 
 interface Props {
   items: CartItem[];
-  onQuantityChange: (productId: number, delta: number) => void;
-  onRemoveItem: (productId: number) => void;
+  onQuantityChange: (productId: string, delta: number) => void;
+  onRemoveItem: (productId: string) => void;
   onClearCart: () => void;
 }
 

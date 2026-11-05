@@ -10,10 +10,10 @@ interface TransaccionStore {
   pageCount: number;
   
   fetchTransacciones: (pageNumber?: number, pageSize?: number) => Promise<void>;
-  getTransaccionById: (id: number) => Promise<AccountingTransactionDto | null>;
+  getTransaccionById: (id: string) => Promise<AccountingTransactionDto | null>;
   addTransaccion: (transaccion: AccountingTransactionRequest) => Promise<AccountingTransactionDto>;
-  updateTransaccion: (id: number, data: AccountingTransactionRequest) => Promise<AccountingTransactionDto>;
-  deleteTransaccion: (id: number) => Promise<void>;
+  updateTransaccion: (id: string, data: AccountingTransactionRequest) => Promise<AccountingTransactionDto>;
+  deleteTransaccion: (id: string) => Promise<void>;
   setError: (error: string | null) => void;
 }
 
@@ -42,7 +42,7 @@ export const useTransaccionStore = create<TransaccionStore>((set) => ({
     }
   },
 
-  getTransaccionById: async (id: number) => {
+  getTransaccionById: async (id: string) => {
     set({ loading: true, error: null });
     try {
       const transaction = await accountingTransactionService.getTransaction(id);
@@ -76,7 +76,7 @@ export const useTransaccionStore = create<TransaccionStore>((set) => ({
     }
   },
 
-  updateTransaccion: async (id: number, data: AccountingTransactionRequest) => {
+  updateTransaccion: async (id: string, data: AccountingTransactionRequest) => {
     set({ loading: true, error: null });
     try {
       const updatedTransaction = await accountingTransactionService.updateTransaction(id, data);
@@ -96,7 +96,7 @@ export const useTransaccionStore = create<TransaccionStore>((set) => ({
     }
   },
 
-  deleteTransaccion: async (id: number) => {
+  deleteTransaccion: async (id: string) => {
     set({ loading: true, error: null });
     try {
       await accountingTransactionService.deleteTransaction(id);

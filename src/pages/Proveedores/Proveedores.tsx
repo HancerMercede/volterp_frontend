@@ -36,7 +36,7 @@ export function Proveedores() {
     initialPageSize: ITEMS_PER_PAGE,
   });
 
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
   const fetchData = useCallback(() => {
@@ -103,7 +103,7 @@ export function Proveedores() {
   const filteredProveedores = useFilter({
     data: proveedores,
     searchTerm,
-    searchFields: (p) => [p.name, p.email, p.category],
+    searchFields: (p) => [p.name, p.email, p.category, p.code],
   });
 
   const paginatedProveedores = useMemo(() => {
@@ -117,7 +117,7 @@ export function Proveedores() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };
@@ -127,7 +127,7 @@ export function Proveedores() {
   };
 
   const columns = [
-    { key: "id", header: t("common.id") },
+    { key: "code", header: t("common.code") },
     {
       key: "name",
       header: t("proveedores.supplier"),

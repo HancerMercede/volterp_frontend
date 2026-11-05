@@ -20,7 +20,7 @@ export const supplierService = {
     );
   },
 
-  async getSupplier(id: number): Promise<SupplierDto> {
+  async getSupplier(id: string): Promise<SupplierDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SUPPLIERS}/${id}`,
     );
@@ -36,7 +36,7 @@ export const supplierService = {
     );
   },
 
-  async updateSupplier(id: number, data: Partial<SupplierDto>): Promise<SupplierDto> {
+  async updateSupplier(id: string, data: Partial<SupplierDto>): Promise<SupplierDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SUPPLIERS}/${id}`,
       {
@@ -46,7 +46,7 @@ export const supplierService = {
     );
   },
 
-  async deleteSupplier(id: number): Promise<void> {
+  async deleteSupplier(id: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SUPPLIERS}/${id}`,
       {

@@ -10,13 +10,13 @@ interface EmpleadoStore {
   pageCount: number;
 
   fetchEmpleados: (pageNumber?: number, pageSize?: number) => Promise<void>;
-  getEmpleadoById: (id: number) => Promise<EmployeeDto | null>;
+  getEmpleadoById: (id: string) => Promise<EmployeeDto | null>;
   addEmpleado: (empleado: EmployeeRequest) => Promise<EmployeeDto>;
   updateEmpleado: (
-    id: number,
+    id: string,
     data: Partial<EmployeeDto>,
   ) => Promise<EmployeeDto>;
-  deleteEmpleado: (id: number) => Promise<void>;
+  deleteEmpleado: (id: string) => Promise<void>;
   setError: (error: string | null) => void;
 }
 
@@ -46,7 +46,7 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
     }
   },
 
-  getEmpleadoById: async (id: number) => {
+  getEmpleadoById: async (id: string) => {
     set({ loading: true, error: null });
     try {
       const employee = await employeeService.getEmployee(id);
@@ -82,7 +82,7 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
     }
   },
 
-  updateEmpleado: async (id: number, data: Partial<EmployeeDto>) => {
+  updateEmpleado: async (id: string, data: Partial<EmployeeDto>) => {
     set({ loading: true, error: null });
     try {
       const updatedEmployee = await employeeService.updateEmployee(id, data);
@@ -103,7 +103,7 @@ export const useEmpleadoStore = create<EmpleadoStore>((set) => ({
     }
   },
 
-  deleteEmpleado: async (id: number) => {
+  deleteEmpleado: async (id: string) => {
     set({ loading: true, error: null });
     try {
       await employeeService.deleteEmployee(id);

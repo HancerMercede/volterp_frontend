@@ -22,10 +22,10 @@ export function Ventas() {
   const { addToast } = useUIStore();
 
   const [showForm, setShowForm] = useState(false);
-  const [editingSaleId, setEditingSaleId] = useState<number | null>(null);
-  const [viewingSaleId, setViewingSaleId] = useState<number | null>(null);
+  const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
+  const [viewingSaleId, setViewingSaleId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { pageNumber, goToPage } = usePagination({
@@ -54,7 +54,7 @@ export function Ventas() {
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };

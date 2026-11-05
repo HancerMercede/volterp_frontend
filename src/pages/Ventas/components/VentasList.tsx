@@ -16,7 +16,7 @@ import styles from "./VentasList.module.css";
 interface Props {
   ventas: SaleDto[];
   onVentaClick: (venta: SaleDto) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   pageNumber: number;
@@ -38,18 +38,18 @@ export function VentasList({
   const filteredVentas = useFilter({
     data: ventas,
     searchTerm,
-    searchFields: (v: SaleDto) => [v.clienteName || "", String(v.id)],
+    searchFields: (v: SaleDto) => [v.clienteName || "", String(v.id), v.code],
   });
 
   const paginatedVentas = useMemo(() => {
     return paginate(filteredVentas, pageNumber, ITEMS_PER_PAGE);
   }, [filteredVentas, pageNumber]);
 
-  const getClienteById = (id: number | null) =>
-    id ? clientes.find((c) => Number(c.id) === id) : null;
+  const getClienteById = (id: string | null) =>
+    id ? clientes.find((c) => c.id === id) : null;
 
   const columns = [
-    { key: "id", header: t("common.id") },
+    { key: "code", header: t("common.code") },
     {
       key: "cliente",
       header: t("ventas.client"),

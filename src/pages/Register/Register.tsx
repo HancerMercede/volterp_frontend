@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { authService } from "../../infrastructure/api/authService";
 import styles from "./Register.module.css";
 
-const COMPANY_ID = 1;
+const COMPANY_ID = "1";
 
 export function Register() {
   const navigate = useNavigate();

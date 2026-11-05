@@ -16,7 +16,7 @@ export const categoryService = {
     );
   },
 
-  async getCategory(id: number): Promise<CategoryDto> {
+  async getCategory(id: string): Promise<CategoryDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}/${id}`,
     );
@@ -32,7 +32,7 @@ export const categoryService = {
     );
   },
 
-  async deleteCategory(id: number): Promise<void> {
+  async deleteCategory(id: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIES}/${id}`,
       {

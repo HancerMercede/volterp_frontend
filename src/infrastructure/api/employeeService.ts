@@ -20,7 +20,7 @@ export const employeeService = {
     );
   },
 
-  async getEmployee(id: number): Promise<EmployeeDto> {
+  async getEmployee(id: string): Promise<EmployeeDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.EMPLOYEES}/${id}`,
     );
@@ -36,7 +36,7 @@ export const employeeService = {
     );
   },
 
-  async updateEmployee(id: number, data: Partial<EmployeeDto>): Promise<EmployeeDto> {
+  async updateEmployee(id: string, data: Partial<EmployeeDto>): Promise<EmployeeDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.EMPLOYEES}/${id}`,
       {
@@ -46,7 +46,7 @@ export const employeeService = {
     );
   },
 
-  async deleteEmployee(id: number): Promise<void> {
+  async deleteEmployee(id: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.EMPLOYEES}/${id}`,
       {

@@ -47,13 +47,13 @@ export function useCarrito() {
     });
   }, []);
 
-  const removeItem = useCallback((productId: number) => {
+  const removeItem = useCallback((productId: string) => {
     setItems((prev) =>
-      prev.filter((item) => item.productId !== Number(productId)),
+      prev.filter((item) => item.productId !== productId),
     );
   }, []);
 
-  const updateQuantity = useCallback((productId: number, delta: number) => {
+  const updateQuantity = useCallback((productId: string, delta: number) => {
     setItems((prev) =>
       prev.map((item) => {
         if (item.productId === productId) {

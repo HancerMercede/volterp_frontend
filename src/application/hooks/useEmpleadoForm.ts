@@ -29,12 +29,12 @@ export function getInitialFormData(): EmployeeRequest {
 }
 
 export function useEmpleadoForm(
-  onSubmit: (data: EmployeeRequest, id: number | null) => void,
+  onSubmit: (data: EmployeeRequest, id: string | null) => void,
 ) {
   const [formData, setFormData] =
     useState<EmployeeRequest>(getInitialFormData());
   const [currentStep, setCurrentStep] = useState(1);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const updateField = useCallback((path: string, value: unknown) => {
     setFormData((prev) => {

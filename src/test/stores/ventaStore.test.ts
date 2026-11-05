@@ -63,8 +63,8 @@ describe('useVentaStore', () => {
     it('loads ventas successfully', async () => {
       const mockResponse = {
         items: [
-          { id: 1, companyId: 1, clienteId: null, clienteName: 'Client A', status: 'Pending' as const, total: 1000, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] },
-          { id: 2, companyId: 1, clienteId: null, clienteName: 'Client B', status: 'Completed' as const, total: 2000, notes: null, createdAt: '2024-01-02', updatedAt: null, items: [] },
+          { id: '1', companyId: '1', clienteId: null, clienteName: 'Client A', status: 'Pending' as const, total: 1000, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] },
+          { id: '2', companyId: '1', clienteId: null, clienteName: 'Client B', status: 'Completed' as const, total: 2000, notes: null, createdAt: '2024-01-02', updatedAt: null, items: [] },
         ],
         rowCount: 2,
         pageCount: 1,
@@ -100,7 +100,7 @@ describe('useVentaStore', () => {
   describe('fetchVentasPendientes', () => {
     it('loads pending ventas', async () => {
       const mockResponse = {
-        items: [{ id: 1, companyId: 1, clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
+        items: [{ id: '1', companyId: '1', clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
         rowCount: 1,
         pageCount: 1,
       };
@@ -116,7 +116,7 @@ describe('useVentaStore', () => {
   describe('fetchVentasCompletadas', () => {
     it('loads completed ventas', async () => {
       const mockResponse = {
-        items: [{ id: 1, companyId: 1, clienteId: null, clienteName: 'Client', status: 'Completed' as const, total: 1000, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
+        items: [{ id: '1', companyId: '1', clienteId: null, clienteName: 'Client', status: 'Completed' as const, total: 1000, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
         rowCount: 1,
         pageCount: 1,
       };
@@ -131,23 +131,23 @@ describe('useVentaStore', () => {
 
   describe('createVenta', () => {
     it('adds venta to list on success', async () => {
-      const nuevaVenta = { id: 1, companyId: 1, clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] };
+      const nuevaVenta = { id: '1', companyId: '1', clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] };
       mockSaleService.createSale.mockResolvedValue(nuevaVenta);
 
-      const data = { companyId: 1, clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, items: [] };
+      const data = { companyId: '1', clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, items: [] };
 
       await useVentaStore.getState().createVenta(data);
 
       expect(useVentaStore.getState().ventas).toContainEqual(nuevaVenta);
-      expect(useVentaStore.getState().ventas[0].id).toBe(1);
+      expect(useVentaStore.getState().ventas[0].id).toBe('1');
       expect(useVentaStore.getState().loading).toBe(false);
     });
 
     it('increments totalCount on success', async () => {
-      const nuevaVenta = { id: 1, companyId: 1, clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] };
+      const nuevaVenta = { id: '1', companyId: '1', clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] };
       mockSaleService.createSale.mockResolvedValue(nuevaVenta);
 
-      const data = { companyId: 1, clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, items: [] };
+      const data = { companyId: '1', clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, items: [] };
 
       await useVentaStore.getState().createVenta(data);
 
@@ -157,7 +157,7 @@ describe('useVentaStore', () => {
     it('sets error on failure and throws', async () => {
       mockSaleService.createSale.mockRejectedValue(new Error('Creation failed'));
 
-      const data = { companyId: 1, clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, items: [] };
+      const data = { companyId: '1', clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, items: [] };
 
       await expect(useVentaStore.getState().createVenta(data)).rejects.toThrow('Creation failed');
       expect(useVentaStore.getState().error).toBe('Creation failed');
@@ -166,16 +166,16 @@ describe('useVentaStore', () => {
 
   describe('updateVenta', () => {
     it('updates venta in list on success', async () => {
-      const actualizada = { id: 1, companyId: 1, clienteId: null, clienteName: 'Updated Client', status: 'Pending' as const, total: 800, notes: null, createdAt: '2024-01-01', updatedAt: '2024-01-02', items: [] };
+      const actualizada = { id: '1', companyId: '1', clienteId: null, clienteName: 'Updated Client', status: 'Pending' as const, total: 800, notes: null, createdAt: '2024-01-01', updatedAt: '2024-01-02', items: [] };
       mockSaleService.updateSale.mockResolvedValue(actualizada);
 
       useVentaStore.setState({
-        ventas: [{ id: 1, companyId: 1, clienteId: null, clienteName: 'Old Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
+        ventas: [{ id: '1', companyId: '1', clienteId: null, clienteName: 'Old Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
       });
 
       const data = { clienteId: null, clienteName: 'Updated Client', status: 'Pending' as const, total: 800, notes: null, items: [] };
 
-      await useVentaStore.getState().updateVenta(1, data);
+      await useVentaStore.getState().updateVenta('1', data);
 
       expect(useVentaStore.getState().ventas[0].clienteName).toBe('Updated Client');
       expect(useVentaStore.getState().ventas[0].total).toBe(800);
@@ -185,26 +185,26 @@ describe('useVentaStore', () => {
       mockSaleService.updateSale.mockRejectedValue(new Error('Update failed'));
 
       useVentaStore.setState({
-        ventas: [{ id: 1, companyId: 1, clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
+        ventas: [{ id: '1', companyId: '1', clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
       });
 
       const data = { clienteId: null, clienteName: 'Updated', status: 'Pending' as const, total: 500, notes: null, items: [] };
 
-      await expect(useVentaStore.getState().updateVenta(1, data)).rejects.toThrow('Update failed');
+      await expect(useVentaStore.getState().updateVenta('1', data)).rejects.toThrow('Update failed');
       expect(useVentaStore.getState().error).toBe('Update failed');
     });
   });
 
   describe('completeVenta', () => {
     it('updates venta status to Completed', async () => {
-      const completada = { id: 1, companyId: 1, clienteId: null, clienteName: 'Client', status: 'Completed' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: '2024-01-02', items: [] };
+      const completada = { id: '1', companyId: '1', clienteId: null, clienteName: 'Client', status: 'Completed' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: '2024-01-02', items: [] };
       mockSaleService.completeSale.mockResolvedValue(completada);
 
       useVentaStore.setState({
-        ventas: [{ id: 1, companyId: 1, clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
+        ventas: [{ id: '1', companyId: '1', clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
       });
 
-      await useVentaStore.getState().completeVenta(1);
+      await useVentaStore.getState().completeVenta('1');
 
       expect(useVentaStore.getState().ventas[0].status).toBe('Completed');
     });
@@ -213,10 +213,10 @@ describe('useVentaStore', () => {
       mockSaleService.completeSale.mockRejectedValue(new Error('Complete failed'));
 
       useVentaStore.setState({
-        ventas: [{ id: 1, companyId: 1, clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
+        ventas: [{ id: '1', companyId: '1', clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
       });
 
-      await expect(useVentaStore.getState().completeVenta(1)).rejects.toThrow('Complete failed');
+      await expect(useVentaStore.getState().completeVenta('1')).rejects.toThrow('Complete failed');
       expect(useVentaStore.getState().error).toBe('Complete failed');
     });
   });
@@ -227,16 +227,16 @@ describe('useVentaStore', () => {
 
       useVentaStore.setState({
         ventas: [
-          { id: 1, companyId: 1, clienteId: null, clienteName: 'Client A', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] },
-          { id: 2, companyId: 1, clienteId: null, clienteName: 'Client B', status: 'Pending' as const, total: 300, notes: null, createdAt: '2024-01-02', updatedAt: null, items: [] },
+          { id: '1', companyId: '1', clienteId: null, clienteName: 'Client A', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] },
+          { id: '2', companyId: '1', clienteId: null, clienteName: 'Client B', status: 'Pending' as const, total: 300, notes: null, createdAt: '2024-01-02', updatedAt: null, items: [] },
         ],
         totalCount: 2,
       });
 
-      await useVentaStore.getState().deleteVenta(1);
+      await useVentaStore.getState().deleteVenta('1');
 
       expect(useVentaStore.getState().ventas).toHaveLength(1);
-      expect(useVentaStore.getState().ventas[0].id).toBe(2);
+      expect(useVentaStore.getState().ventas[0].id).toBe('2');
       expect(useVentaStore.getState().totalCount).toBe(1);
     });
 
@@ -244,10 +244,10 @@ describe('useVentaStore', () => {
       mockSaleService.deleteSale.mockRejectedValue(new Error('Delete failed'));
 
       useVentaStore.setState({
-        ventas: [{ id: 1, companyId: 1, clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
+        ventas: [{ id: '1', companyId: '1', clienteId: null, clienteName: 'Client', status: 'Pending' as const, total: 500, notes: null, createdAt: '2024-01-01', updatedAt: null, items: [] }],
       });
 
-      await expect(useVentaStore.getState().deleteVenta(1)).rejects.toThrow('Delete failed');
+      await expect(useVentaStore.getState().deleteVenta('1')).rejects.toThrow('Delete failed');
       expect(useVentaStore.getState().error).toBe('Delete failed');
     });
   });

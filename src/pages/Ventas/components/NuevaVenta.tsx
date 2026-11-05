@@ -13,7 +13,7 @@ import { ResumenVenta } from "./ResumenVenta";
 import styles from "./NuevaVenta.module.css";
 
 interface Props {
-  editingSaleId: number | null;
+  editingSaleId: string | null;
   onSave: () => void;
   onCancel: () => void;
 }
@@ -39,7 +39,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     quantity: item.quantity,
     subtotal: item.subtotal,
   })) : []);
-  const [selectedCliente, setSelectedCliente] = useState<number | null>(editingVenta?.clienteId ?? null);
+  const [selectedCliente, setSelectedCliente] = useState<string | null>(editingVenta?.clienteId ?? null);
   const [clienteSearch, setClienteSearch] = useState(editingCliente?.name ?? "");
   const [ventaEstado, setVentaEstado] = useState<"pendiente" | "completada">(editingVenta?.status === "Completed" ? "completada" : "pendiente");
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
@@ -66,11 +66,11 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     });
   };
 
-  const actualizarCantidad = (productId: number, delta: number) => {
+  const actualizarCantidad = (productId: string, delta: number) => {
     setCarrito((prev) => prev.map((item) => item.productId === productId ? { ...item, quantity: Math.max(1, item.quantity + delta), subtotal: Math.max(1, item.quantity + delta) * item.unitPrice } : item));
   };
 
-  const eliminarDelCarrito = (productId: number) => setCarrito((prev) => prev.filter((item) => item.productId !== productId));
+  const eliminarDelCarrito = (productId: string) => setCarrito((prev) => prev.filter((item) => item.productId !== productId));
 
   const buildSaleItems = () => carrito.map((item) => ({ productId: item.productId, productName: item.productName, productImageUrl: item.imageUrl || undefined, quantity: item.quantity, unitPrice: item.unitPrice, subtotal: item.subtotal }));
 

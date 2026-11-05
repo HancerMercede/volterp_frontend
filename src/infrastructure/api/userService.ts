@@ -16,7 +16,7 @@ export const userService = {
     );
   },
 
-  async getUser(id: number): Promise<UserDto> {
+  async getUser(id: string): Promise<UserDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${id}`
     );
@@ -32,7 +32,7 @@ export const userService = {
     );
   },
 
-  async updateUserRole(userId: number, role: string): Promise<UserDto> {
+  async updateUserRole(userId: string, role: string): Promise<UserDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${userId}/role`,
       {
@@ -42,7 +42,7 @@ export const userService = {
     );
   },
 
-  async updateUserStatus(userId: number, isActive: boolean): Promise<UserDto> {
+  async updateUserStatus(userId: string, isActive: boolean): Promise<UserDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${userId}/status`,
       {
@@ -52,7 +52,7 @@ export const userService = {
     );
   },
 
-  async deleteUser(userId: number): Promise<void> {
+  async deleteUser(userId: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${userId}`,
       {

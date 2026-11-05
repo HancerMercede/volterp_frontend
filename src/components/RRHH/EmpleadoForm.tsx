@@ -45,7 +45,7 @@ const BANK_OPTIONS = [
 interface Props {
   formData: EmployeeRequest;
   currentStep: number;
-  editingId: number | null;
+  editingId: string | null;
   onFieldChange: (path: string, value: unknown) => void;
   onStepChange: (step: number) => void;
   onSubmit: (e: React.FormEvent) => void;

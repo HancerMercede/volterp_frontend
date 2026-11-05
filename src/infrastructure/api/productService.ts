@@ -17,7 +17,7 @@ export const productService = {
     );
   },
 
-  async getProduct(id: number): Promise<ProductDto> {
+  async getProduct(id: string): Promise<ProductDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTS}/${id}`,
     );
@@ -33,7 +33,7 @@ export const productService = {
     );
   },
 
-  async updateProduct(id: number, data: ProductRequest): Promise<ProductDto> {
+  async updateProduct(id: string, data: ProductRequest): Promise<ProductDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTS}/${id}`,
       {
@@ -43,7 +43,7 @@ export const productService = {
     );
   },
 
-  async deleteProduct(id: number): Promise<void> {
+  async deleteProduct(id: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PRODUCTS}/${id}`,
       {

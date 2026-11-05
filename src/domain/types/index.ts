@@ -35,8 +35,8 @@ export interface PagedResult<T> {
 
 // Sale types - centralizados
 export interface SaleItemDto {
-  id: number;
-  productId: number;
+  id: string;
+  productId: string;
   productName: string;
   productCategory?: string;
   productCode?: string;
@@ -47,9 +47,10 @@ export interface SaleItemDto {
 }
 
 export interface SaleDto {
-  id: number;
-  companyId: number;
-  clienteId: number | null;
+  id: string;
+  code: string;
+  companyId: string;
+  clienteId: string | null;
   clienteName: string | null;
   status: "Pending" | "Completed";
   total: number;
@@ -60,7 +61,7 @@ export interface SaleDto {
 }
 
 export interface CreateSaleItemRequest {
-  productId: number;
+  productId: string;
   productName: string;
   productCategory?: string;
   productCode?: string;
@@ -71,8 +72,8 @@ export interface CreateSaleItemRequest {
 }
 
 export interface CreateSaleRequest {
-  companyId: number;
-  clienteId: number | null;
+  companyId: string;
+  clienteId: string | null;
   clienteName: string | null;
   status: "Pending" | "Completed";
   total: number;
@@ -81,7 +82,7 @@ export interface CreateSaleRequest {
 }
 
 export interface UpdateSaleRequest {
-  clienteId: number | null;
+  clienteId: string | null;
   clienteName: string | null;
   status: "Pending" | "Completed";
   total: number;
@@ -93,7 +94,8 @@ export interface UpdateSaleRequest {
 // Client DTOs (from backend)
 // ========================
 export interface ClientDto {
-  id: number;
+  id: string;
+  code: string;
   name: string;
   email: string;
   phone: string;
@@ -113,15 +115,16 @@ export type Client = ClientDto;
 export type ClientRequest = Partial<ClientDto>;
 
 export interface ProductDto {
-  id: number;
+  id: string;
+  code: string;
   name: string;
   category: string;
   description: string | null;
   price: number;
   stock: number;
-  categoryId: number | null;
+  categoryId: string | null;
   categoryName: string | null;
-  companyId: number;
+  companyId: string;
   isActive: boolean;
   imageUrl: string | null;
   createdAt: string;
@@ -177,7 +180,7 @@ export interface Project {
 
 // Cart types
 export interface CartItem {
-  productId: number;
+  productId: string;
   productName: string;
   imageUrl: string;
   unitPrice: number;
@@ -187,7 +190,8 @@ export interface CartItem {
 
 // Supplier DTOs (from backend)
 export interface SupplierDto {
-  id: number;
+  id: string;
+  code: string;
   name: string;
   email: string;
   phone: string;
@@ -205,8 +209,8 @@ export type SupplierRequest = Partial<SupplierDto>;
 
 // Purchase DTOs (from backend)
 export interface PurchaseItemDto {
-  id: number;
-  productId: number | null;
+  id: string;
+  productId: string | null;
   productName: string;
   productCode: string;
   quantity: number;
@@ -215,8 +219,9 @@ export interface PurchaseItemDto {
 }
 
 export interface PurchaseDto {
-  id: number;
-  supplierId: number | null;
+  id: string;
+  code: string;
+  supplierId: string | null;
   supplierName: string;
   status: "Pending" | "Completed" | "Cancelled";
   total: number;
@@ -230,7 +235,8 @@ export type PurchaseRequest = Partial<PurchaseDto>;
 
 // Employee DTOs (from backend)
 export interface EmployeeDto {
-  id: number;
+  id: string;
+  code: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -272,7 +278,8 @@ export type EmployeeRequest = Partial<EmployeeDto>;
 
 // Accounting Transaction DTOs (from backend)
 export interface AccountingTransactionDto {
-  id: number;
+  id: string;
+  code: string;
   description: string;
   type: "Income" | "Expense";
   amount: number;
@@ -289,7 +296,7 @@ export type AccountingTransactionRequest = Partial<AccountingTransactionDto>;
 
 // Company DTOs (from backend)
 export interface CompanyDto {
-  id: number;
+  id: string;
   name: string;
   taxId: string;
   logoUrl: string | null;
@@ -306,10 +313,11 @@ export type CompanyRequest = Partial<CompanyDto>;
 
 // Category DTOs (from backend)
 export interface CategoryDto {
-  id: number;
+  id: string;
+  code: string;
   name: string;
   description: string | null;
-  companyId: number;
+  companyId: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -318,13 +326,14 @@ export type CategoryRequest = Partial<CategoryDto>;
 
 // User DTOs (from backend)
 export interface UserDto {
-  id: number;
+  id: string;
+  code: string;
   username: string;
   email: string;
   fullName: string;
   role: string | number;
   isActive: boolean;
-  companyId: number;
+  companyId: string;
 }
 
 export interface CreateUserRequest {
@@ -333,7 +342,7 @@ export interface CreateUserRequest {
   email: string;
   fullName: string;
   role: string;
-  companyId?: number;
+  companyId?: string;
 }
 
 export type UpdateUserRequest = Partial<UserDto>;

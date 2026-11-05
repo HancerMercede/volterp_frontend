@@ -6,8 +6,8 @@ import styles from "./ClienteSelector.module.css";
 
 interface Props {
   clientes: Client[];
-  selectedClienteId: number | null;
-  onClienteSelect: (clienteId: number | null) => void;
+  selectedClienteId: string | null;
+  onClienteSelect: (clienteId: string | null) => void;
   searchValue: string;
   onSearchChange: (value: string) => void;
 }
@@ -33,7 +33,7 @@ export function ClienteSelector({
   const searchFilteredClientes = useFilter({
     data: dropdownClientes,
     searchTerm: searchValue,
-    searchFields: (c) => [c.name, c.email],
+    searchFields: (c) => [c.name, c.email, c.code],
   });
 
   const match = useMemo(() => {
@@ -51,7 +51,7 @@ export function ClienteSelector({
     if (!value) {
       onClienteSelect(null);
     } else {
-      const clienteId = Number(value);
+      const clienteId = value;
       onClienteSelect(clienteId);
       const cliente = clientes.find((c) => c.id === clienteId);
       if (cliente) onSearchChange(cliente.name);

@@ -20,7 +20,7 @@ export const purchaseService = {
     );
   },
 
-  async getPurchase(id: number): Promise<PurchaseDto> {
+  async getPurchase(id: string): Promise<PurchaseDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PURCHASES}/${id}`,
     );
@@ -36,7 +36,7 @@ export const purchaseService = {
     );
   },
 
-  async updatePurchase(id: number, data: Partial<PurchaseDto>): Promise<PurchaseDto> {
+  async updatePurchase(id: string, data: Partial<PurchaseDto>): Promise<PurchaseDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PURCHASES}/${id}`,
       {
@@ -46,7 +46,7 @@ export const purchaseService = {
     );
   },
 
-  async deletePurchase(id: number): Promise<void> {
+  async deletePurchase(id: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.PURCHASES}/${id}`,
       {

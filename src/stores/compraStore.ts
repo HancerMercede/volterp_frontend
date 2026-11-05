@@ -10,13 +10,13 @@ interface CompraStore {
   pageCount: number;
 
   fetchCompras: (pageNumber?: number, pageSize?: number) => Promise<void>;
-  getCompraById: (id: number) => Promise<PurchaseDto | null>;
+  getCompraById: (id: string) => Promise<PurchaseDto | null>;
   addCompra: (compra: PurchaseRequest) => Promise<PurchaseDto>;
   updateCompra: (
-    id: number,
+    id: string,
     data: Partial<PurchaseDto>,
   ) => Promise<PurchaseDto>;
-  deleteCompra: (id: number) => Promise<void>;
+  deleteCompra: (id: string) => Promise<void>;
   setError: (error: string | null) => void;
 }
 
@@ -46,7 +46,7 @@ export const useCompraStore = create<CompraStore>((set) => ({
     }
   },
 
-  getCompraById: async (id: number) => {
+  getCompraById: async (id: string) => {
     set({ loading: true, error: null });
     try {
       const purchase = await purchaseService.getPurchase(id);
@@ -82,7 +82,7 @@ export const useCompraStore = create<CompraStore>((set) => ({
     }
   },
 
-  updateCompra: async (id: number, data) => {
+  updateCompra: async (id: string, data) => {
     set({ loading: true, error: null });
     try {
       const updatedPurchase = await purchaseService.updatePurchase(id, data);
@@ -103,7 +103,7 @@ export const useCompraStore = create<CompraStore>((set) => ({
     }
   },
 
-  deleteCompra: async (id: number) => {
+  deleteCompra: async (id: string) => {
     set({ loading: true, error: null });
     try {
       await purchaseService.deletePurchase(id);

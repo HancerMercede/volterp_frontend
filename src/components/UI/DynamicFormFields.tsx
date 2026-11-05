@@ -7,7 +7,7 @@ interface Props {
   fields: FormField[];
   values: Record<string, unknown>;
   errors: Record<string, string>;
-  editingId: number | null;
+  editingId: string | null;
   onChange: (name: string, value: unknown) => void;
 }
 

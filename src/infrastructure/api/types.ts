@@ -9,7 +9,7 @@ export interface LoginResponse {
   email: string;
   fullName: string;
   role: string;
-  companyId: number;
+  companyId: string;
 }
 
 export interface RegisterRequest {
@@ -17,7 +17,7 @@ export interface RegisterRequest {
   password: string;
   email: string;
   fullName: string;
-  companyId: number;
+  companyId?: string;
   role?: string;
 }
 

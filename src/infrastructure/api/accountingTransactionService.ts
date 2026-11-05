@@ -20,7 +20,7 @@ export const accountingTransactionService = {
     );
   },
 
-  async getTransaction(id: number): Promise<AccountingTransactionDto> {
+  async getTransaction(id: string): Promise<AccountingTransactionDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ACCOUNTING_TRANSACTIONS}/${id}`,
     );
@@ -39,7 +39,7 @@ export const accountingTransactionService = {
   },
 
   async updateTransaction(
-    id: number,
+    id: string,
     data: AccountingTransactionRequest,
   ): Promise<AccountingTransactionDto> {
     return fetchWithAuthJson(
@@ -51,7 +51,7 @@ export const accountingTransactionService = {
     );
   },
 
-  async deleteTransaction(id: number): Promise<void> {
+  async deleteTransaction(id: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ACCOUNTING_TRANSACTIONS}/${id}`,
       {

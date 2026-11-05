@@ -37,7 +37,7 @@ export function SelectorProducto({
   const filteredProducts = useFilter({
     data: productos,
     searchTerm,
-    searchFields: (p) => [p.name],
+    searchFields: (p) => [p.name, p.code],
     filter: (p) =>
       categoriaFilter === "todos" || p.category === categoriaFilter,
   });

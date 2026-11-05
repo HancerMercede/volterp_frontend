@@ -12,8 +12,8 @@ interface ProductoStore {
   pageCount: number;
   fetchProductos: (pageNumber: number, pageSize: number) => Promise<void>;
   createProducto: (data: ProductRequest) => Promise<void>;
-  updateProducto: (id: number, data: ProductRequest) => Promise<void>;
-  deleteProducto: (id: number) => Promise<void>;
+  updateProducto: (id: string, data: ProductRequest) => Promise<void>;
+  deleteProducto: (id: string) => Promise<void>;
   clearError: () => void;
 }
 

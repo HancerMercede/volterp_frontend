@@ -21,9 +21,9 @@ interface VentaStore {
     pageSize?: number,
   ) => Promise<void>;
   createVenta: (data: CreateSaleRequest) => Promise<void>;
-  updateVenta: (id: number, data: UpdateSaleRequest) => Promise<void>;
-  completeVenta: (id: number) => Promise<void>;
-  deleteVenta: (id: number) => Promise<void>;
+  updateVenta: (id: string, data: UpdateSaleRequest) => Promise<void>;
+  completeVenta: (id: string) => Promise<void>;
+  deleteVenta: (id: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -126,7 +126,7 @@ export const useVentaStore = create<VentaStore>()(
         }
       },
 
-      updateVenta: async (id: number, data: UpdateSaleRequest) => {
+      updateVenta: async (id: string, data: UpdateSaleRequest) => {
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No autenticado" });
@@ -145,7 +145,7 @@ export const useVentaStore = create<VentaStore>()(
         }
       },
 
-      completeVenta: async (id: number) => {
+      completeVenta: async (id: string) => {
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No autenticado" });
@@ -164,7 +164,7 @@ export const useVentaStore = create<VentaStore>()(
         }
       },
 
-      deleteVenta: async (id: number) => {
+      deleteVenta: async (id: string) => {
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No autenticado" });

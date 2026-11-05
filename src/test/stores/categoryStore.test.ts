@@ -53,8 +53,8 @@ describe('useCategoryStore', () => {
     it('loads categories successfully from API', async () => {
       const mockResponse = {
         items: [
-          { id: 1, name: 'Electronics', description: 'Electronic items', companyId: 1, isActive: true, createdAt: '2024-01-01' },
-          { id: 2, name: 'Office', description: 'Office supplies', companyId: 1, isActive: true, createdAt: '2024-01-02' },
+          { id: '1', name: 'Electronics', description: 'Electronic items', companyId: '1', isActive: true, createdAt: '2024-01-01' },
+          { id: '2', name: 'Office', description: 'Office supplies', companyId: '1', isActive: true, createdAt: '2024-01-02' },
         ],
         rowCount: 2,
         pageCount: 1,

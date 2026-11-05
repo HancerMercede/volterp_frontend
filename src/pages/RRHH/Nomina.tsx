@@ -20,7 +20,7 @@ export function Nomina() {
   const filteredEmpleados = useFilter({
     data: empleados,
     searchTerm,
-    searchFields: (e) => [e.firstName, e.lastName, e.position, e.department],
+    searchFields: (e) => [e.firstName, e.lastName, e.position, e.department, e.code],
     filter: (e) => e.status === "Active",
   });
 

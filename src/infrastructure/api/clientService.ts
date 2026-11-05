@@ -16,7 +16,7 @@ export const clientService = {
     );
   },
 
-  async getClientById(id: number): Promise<ClientDto> {
+  async getClientById(id: string): Promise<ClientDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CLIENTS}/${id}`,
     );
@@ -32,7 +32,7 @@ export const clientService = {
     );
   },
 
-  async updateClient(id: number, client: ClientRequest): Promise<ClientDto> {
+  async updateClient(id: string, client: ClientRequest): Promise<ClientDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CLIENTS}/${id}`,
       {
@@ -42,7 +42,7 @@ export const clientService = {
     );
   },
 
-  async deleteClient(id: number): Promise<void> {
+  async deleteClient(id: string): Promise<void> {
     await fetchWithAuth(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CLIENTS}/${id}`,
       { method: "DELETE" },

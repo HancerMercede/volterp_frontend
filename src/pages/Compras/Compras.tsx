@@ -37,7 +37,7 @@ export function Compras() {
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchData = useCallback(() => {
@@ -101,7 +101,7 @@ export function Compras() {
   const filteredCompras = useFilter({
     data: compras,
     searchTerm,
-    searchFields: (c) => [c.supplierName, c.id.toString()],
+    searchFields: (c) => [c.supplierName, c.id.toString(), c.code],
   });
 
   const paginatedCompras = useMemo(() => {
@@ -115,7 +115,7 @@ export function Compras() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     setDeleteId(id);
     setShowDeleteConfirm(true);
   };
@@ -128,7 +128,7 @@ export function Compras() {
   };
 
   const columns = [
-    { key: "id", header: t("common.id") },
+    { key: "code", header: t("common.code") },
     {
       key: "supplierName",
       header: t("compras.supplier"),

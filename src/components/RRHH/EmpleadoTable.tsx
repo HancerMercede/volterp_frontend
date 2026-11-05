@@ -6,7 +6,7 @@ import styles from "./EmpleadoTable.module.css";
 interface Props {
   empleados: EmployeeDto[];
   onEdit: (e: EmployeeDto) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
 }
 
 const formatCurrency = (amount: number) =>

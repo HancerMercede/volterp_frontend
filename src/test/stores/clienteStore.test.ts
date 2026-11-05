@@ -22,8 +22,9 @@ const mockClientService = clientService as unknown as {
   deleteClient: ReturnType<typeof vi.fn>;
 };
 
-const createMockCliente = (id: number, name: string): ClientDto => ({
+const createMockCliente = (id: string, name: string): ClientDto => ({
   id,
+  code: `Cli-${String(id).padStart(3, '0')}`,
   name,
   email: `${id}@test.com`,
   phone: '8095550000',
@@ -63,15 +64,15 @@ describe('clienteStore', () => {
   describe('setClientes via setState', () => {
     it('replaces clientes array with provided data', () => {
       const mockClientes = [
-        createMockCliente(1, 'John'),
-        createMockCliente(2, 'Jane'),
+        createMockCliente('1', 'John'),
+        createMockCliente('2', 'Jane'),
       ];
       useClienteStore.setState({ clientes: mockClientes });
       expect(useClienteStore.getState().clientes).toHaveLength(2);
     });
 
     it('can set empty array', () => {
-      useClienteStore.setState({ clientes: [createMockCliente(1, 'John')] });
+      useClienteStore.setState({ clientes: [createMockCliente('1', 'John')] });
       useClienteStore.setState({ clientes: [] });
       expect(useClienteStore.getState().clientes).toHaveLength(0);
     });
@@ -79,7 +80,7 @@ describe('clienteStore', () => {
 
   describe('addCliente', () => {
     it('adds a cliente to the array', async () => {
-      const newCliente = createMockCliente(1, 'John');
+      const newCliente = createMockCliente('1', 'John');
       mockClientService.createClient.mockResolvedValue(newCliente);
 
       await useClienteStore.getState().addCliente({ name: 'John' });
@@ -88,8 +89,8 @@ describe('clienteStore', () => {
     });
 
     it('appends to existing clientes', async () => {
-      useClienteStore.setState({ clientes: [createMockCliente(1, 'John')] });
-      const newCliente = createMockCliente(2, 'Jane');
+      useClienteStore.setState({ clientes: [createMockCliente('1', 'John')] });
+      const newCliente = createMockCliente('2', 'Jane');
       mockClientService.createClient.mockResolvedValue(newCliente);
 
       await useClienteStore.getState().addCliente({ name: 'Jane' });
@@ -98,9 +99,9 @@ describe('clienteStore', () => {
     });
 
     it('preserves existing clientes when adding new one', async () => {
-      const existing = createMockCliente(1, 'John');
+      const existing = createMockCliente('1', 'John');
       useClienteStore.setState({ clientes: [existing] });
-      const newCliente = createMockCliente(2, 'Jane');
+      const newCliente = createMockCliente('2', 'Jane');
       mockClientService.createClient.mockResolvedValue(newCliente);
 
       await useClienteStore.getState().addCliente({ name: 'Jane' });
@@ -113,42 +114,42 @@ describe('clienteStore', () => {
 
   describe('updateCliente', () => {
     it('updates a cliente by id', async () => {
-      useClienteStore.setState({ clientes: [createMockCliente(1, 'John')] });
-      const updated = { ...createMockCliente(1, 'John'), name: 'John Updated' };
+      useClienteStore.setState({ clientes: [createMockCliente('1', 'John')] });
+      const updated = { ...createMockCliente('1', 'John'), name: 'John Updated' };
       mockClientService.updateClient.mockResolvedValue(updated);
 
-      await useClienteStore.getState().updateCliente(1, { name: 'John Updated' });
+      await useClienteStore.getState().updateCliente('1', { name: 'John Updated' });
 
       expect(useClienteStore.getState().clientes[0].name).toBe('John Updated');
     });
 
     it('does not modify other clientes', async () => {
       useClienteStore.setState({
-        clientes: [createMockCliente(1, 'John'), createMockCliente(2, 'Jane')],
+        clientes: [createMockCliente('1', 'John'), createMockCliente('2', 'Jane')],
       });
-      const updated = { ...createMockCliente(1, 'John'), name: 'John Updated' };
+      const updated = { ...createMockCliente('1', 'John'), name: 'John Updated' };
       mockClientService.updateClient.mockResolvedValue(updated);
 
-      await useClienteStore.getState().updateCliente(1, { name: 'John Updated' });
+      await useClienteStore.getState().updateCliente('1', { name: 'John Updated' });
 
       expect(useClienteStore.getState().clientes[1].name).toBe('Jane');
     });
 
     it('does nothing when id does not exist', async () => {
-      useClienteStore.setState({ clientes: [createMockCliente(1, 'John')] });
+      useClienteStore.setState({ clientes: [createMockCliente('1', 'John')] });
       mockClientService.updateClient.mockRejectedValue(new Error('Not found'));
 
       await expect(
-        useClienteStore.getState().updateCliente(999, { name: 'Nonexistent' }),
+        useClienteStore.getState().updateCliente('999', { name: 'Nonexistent' }),
       ).rejects.toThrow('Not found');
 
       expect(useClienteStore.getState().clientes[0].name).toBe('John');
     });
 
     it('can update multiple fields at once', async () => {
-      useClienteStore.setState({ clientes: [createMockCliente(1, 'John')] });
+      useClienteStore.setState({ clientes: [createMockCliente('1', 'John')] });
       const updated = {
-        ...createMockCliente(1, 'John'),
+        ...createMockCliente('1', 'John'),
         name: 'New Name',
         email: 'new@test.com',
       };
@@ -156,7 +157,7 @@ describe('clienteStore', () => {
 
       await useClienteStore
         .getState()
-        .updateCliente(1, { name: 'New Name', email: 'new@test.com' });
+        .updateCliente('1', { name: 'New Name', email: 'new@test.com' });
 
       const cliente = useClienteStore.getState().clientes[0];
       expect(cliente.name).toBe('New Name');
@@ -166,32 +167,32 @@ describe('clienteStore', () => {
 
   describe('deleteCliente', () => {
     it('removes a cliente by id', async () => {
-      useClienteStore.setState({ clientes: [createMockCliente(1, 'John')] });
+      useClienteStore.setState({ clientes: [createMockCliente('1', 'John')] });
       mockClientService.deleteClient.mockResolvedValue(undefined);
 
-      await useClienteStore.getState().deleteCliente(1);
+      await useClienteStore.getState().deleteCliente('1');
 
       expect(useClienteStore.getState().clientes).toHaveLength(0);
     });
 
     it('does not affect other clientes', async () => {
       useClienteStore.setState({
-        clientes: [createMockCliente(1, 'John'), createMockCliente(2, 'Jane')],
+        clientes: [createMockCliente('1', 'John'), createMockCliente('2', 'Jane')],
       });
       mockClientService.deleteClient.mockResolvedValue(undefined);
 
-      await useClienteStore.getState().deleteCliente(1);
+      await useClienteStore.getState().deleteCliente('1');
 
       expect(useClienteStore.getState().clientes).toHaveLength(1);
       expect(useClienteStore.getState().clientes[0].name).toBe('Jane');
     });
 
     it('does nothing when id does not exist', async () => {
-      useClienteStore.setState({ clientes: [createMockCliente(1, 'John')] });
+      useClienteStore.setState({ clientes: [createMockCliente('1', 'John')] });
       mockClientService.deleteClient.mockRejectedValue(new Error('Not found'));
 
       await expect(
-        useClienteStore.getState().deleteCliente(999),
+        useClienteStore.getState().deleteCliente('999'),
       ).rejects.toThrow('Not found');
 
       expect(useClienteStore.getState().clientes).toHaveLength(1);

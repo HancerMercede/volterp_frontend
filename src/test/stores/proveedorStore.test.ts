@@ -29,8 +29,9 @@ const mockSupplierService = supplierService as unknown as {
   deleteSupplier: ReturnType<typeof vi.fn>;
 };
 
-const createMockProveedor = (id: number, name: string): SupplierDto => ({
+const createMockProveedor = (id: string, name: string): SupplierDto => ({
   id,
+  code: `Prov-${String(id).padStart(3, '0')}`,
   name,
   email: `${id}@test.com`,
   phone: '8095550000',
@@ -71,8 +72,8 @@ describe('useProveedorStore', () => {
   describe('setProveedores via setState', () => {
     it('replaces proveedores array', () => {
       const mockProveedores = [
-        createMockProveedor(1, 'Proveedor A'),
-        createMockProveedor(2, 'Proveedor B'),
+        createMockProveedor('1', 'Proveedor A'),
+        createMockProveedor('2', 'Proveedor B'),
       ];
       useProveedorStore.setState({ proveedores: mockProveedores });
 
@@ -83,7 +84,7 @@ describe('useProveedorStore', () => {
 
   describe('addProveedor', () => {
     it('adds proveedor to list', async () => {
-      const nuevoProveedor = createMockProveedor(1, 'Proveedor A');
+      const nuevoProveedor = createMockProveedor('1', 'Proveedor A');
       mockSupplierService.createSupplier.mockResolvedValue(nuevoProveedor);
 
       await useProveedorStore.getState().addProveedor({
@@ -102,9 +103,9 @@ describe('useProveedorStore', () => {
 
     it('appends to existing proveedores', async () => {
       useProveedorStore.setState({
-        proveedores: [createMockProveedor(1, 'Proveedor A')],
+        proveedores: [createMockProveedor('1', 'Proveedor A')],
       });
-      const nuevoProveedor = createMockProveedor(2, 'Proveedor B');
+      const nuevoProveedor = createMockProveedor('2', 'Proveedor B');
       mockSupplierService.createSupplier.mockResolvedValue(nuevoProveedor);
 
       await useProveedorStore.getState().addProveedor({
@@ -125,12 +126,12 @@ describe('useProveedorStore', () => {
     it('updates existing proveedor', async () => {
       useProveedorStore.setState({
         proveedores: [
-          createMockProveedor(1, 'Proveedor A'),
-          createMockProveedor(2, 'Proveedor B'),
+          createMockProveedor('1', 'Proveedor A'),
+          createMockProveedor('2', 'Proveedor B'),
         ],
       });
       const updated = {
-        ...createMockProveedor(1, 'Proveedor A'),
+        ...createMockProveedor('1', 'Proveedor A'),
         name: 'Proveedor Actualizado',
         phone: '809-999-9999',
       };
@@ -138,7 +139,7 @@ describe('useProveedorStore', () => {
 
       await useProveedorStore
         .getState()
-        .updateProveedor(1, { name: 'Proveedor Actualizado', phone: '809-999-9999' });
+        .updateProveedor('1', { name: 'Proveedor Actualizado', phone: '809-999-9999' });
 
       expect(useProveedorStore.getState().proveedores[0].name).toBe('Proveedor Actualizado');
       expect(useProveedorStore.getState().proveedores[0].phone).toBe('809-999-9999');
@@ -147,14 +148,14 @@ describe('useProveedorStore', () => {
     it('does not modify other proveedores', async () => {
       useProveedorStore.setState({
         proveedores: [
-          createMockProveedor(1, 'Proveedor A'),
-          createMockProveedor(2, 'Proveedor B'),
+          createMockProveedor('1', 'Proveedor A'),
+          createMockProveedor('2', 'Proveedor B'),
         ],
       });
-      const updated = { ...createMockProveedor(1, 'Proveedor A'), name: 'Updated' };
+      const updated = { ...createMockProveedor('1', 'Proveedor A'), name: 'Updated' };
       mockSupplierService.updateSupplier.mockResolvedValue(updated);
 
-      await useProveedorStore.getState().updateProveedor(1, { name: 'Updated' });
+      await useProveedorStore.getState().updateProveedor('1', { name: 'Updated' });
 
       expect(useProveedorStore.getState().proveedores[1].name).toBe('Proveedor B');
     });
@@ -164,26 +165,26 @@ describe('useProveedorStore', () => {
     it('removes proveedor from list', async () => {
       useProveedorStore.setState({
         proveedores: [
-          createMockProveedor(1, 'Proveedor A'),
-          createMockProveedor(2, 'Proveedor B'),
+          createMockProveedor('1', 'Proveedor A'),
+          createMockProveedor('2', 'Proveedor B'),
         ],
       });
       mockSupplierService.deleteSupplier.mockResolvedValue(undefined);
 
-      await useProveedorStore.getState().deleteProveedor(1);
+      await useProveedorStore.getState().deleteProveedor('1');
 
       expect(useProveedorStore.getState().proveedores).toHaveLength(1);
-      expect(useProveedorStore.getState().proveedores[0].id).toBe(2);
+      expect(useProveedorStore.getState().proveedores[0].id).toBe('2');
     });
 
     it('handles non-existent id gracefully', async () => {
       useProveedorStore.setState({
-        proveedores: [createMockProveedor(1, 'Proveedor A')],
+        proveedores: [createMockProveedor('1', 'Proveedor A')],
       });
       mockSupplierService.deleteSupplier.mockRejectedValue(new Error('Not found'));
 
       await expect(
-        useProveedorStore.getState().deleteProveedor(999),
+        useProveedorStore.getState().deleteProveedor('999'),
       ).rejects.toThrow('Not found');
 
       expect(useProveedorStore.getState().proveedores).toHaveLength(1);

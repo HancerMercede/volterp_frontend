@@ -12,11 +12,11 @@ interface CompanyStore {
   totalCount: number;
   pageCount: number;
   fetchCompanies: (pageNumber: number, pageSize: number) => Promise<void>;
-  fetchCurrentCompany: (companyId: number) => Promise<void>;
+  fetchCurrentCompany: (companyId: string) => Promise<void>;
   updateCurrentCompany: (data: CompanyRequest) => Promise<void>;
   addCompany: (data: CompanyRequest) => Promise<void>;
-  updateCompany: (id: number, data: CompanyRequest) => Promise<void>;
-  deleteCompany: (id: number) => Promise<void>;
+  updateCompany: (id: string, data: CompanyRequest) => Promise<void>;
+  deleteCompany: (id: string) => Promise<void>;
   clearError: () => void;
   clearCurrentCompany: () => void;
 }
@@ -35,7 +35,7 @@ export const useCompanyStore = create<CompanyStore>()(
 
       clearCurrentCompany: () => set({ currentCompany: null }),
 
-      fetchCurrentCompany: async (companyId: number) => {
+      fetchCurrentCompany: async (companyId: string) => {
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No authenticated" });
@@ -113,7 +113,7 @@ export const useCompanyStore = create<CompanyStore>()(
         }
       },
 
-      updateCompany: async (id: number, data: CompanyRequest) => {
+      updateCompany: async (id: string, data: CompanyRequest) => {
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No authenticated" });
@@ -132,7 +132,7 @@ export const useCompanyStore = create<CompanyStore>()(
         }
       },
 
-      deleteCompany: async (id: number) => {
+      deleteCompany: async (id: string) => {
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No authenticated" });

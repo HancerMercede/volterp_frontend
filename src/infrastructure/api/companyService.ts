@@ -16,7 +16,7 @@ export const companyService = {
     );
   },
 
-  async getCompany(id: number): Promise<CompanyDto> {
+  async getCompany(id: string): Promise<CompanyDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMPANIES}/${id}`,
     );
@@ -32,7 +32,7 @@ export const companyService = {
     );
   },
 
-  async updateCompany(id: number, data: Partial<CompanyDto>): Promise<CompanyDto> {
+  async updateCompany(id: string, data: Partial<CompanyDto>): Promise<CompanyDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMPANIES}/${id}`,
       {
@@ -42,7 +42,7 @@ export const companyService = {
     );
   },
 
-  async deleteCompany(id: number): Promise<void> {
+  async deleteCompany(id: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.COMPANIES}/${id}`,
       {

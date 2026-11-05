@@ -12,8 +12,8 @@ interface ProveedorStore {
   pageCount: number;
   fetchProveedores: (pageNumber: number, pageSize: number) => Promise<void>;
   addProveedor: (data: SupplierRequest) => Promise<void>;
-  updateProveedor: (id: number, data: Partial<SupplierDto>) => Promise<void>;
-  deleteProveedor: (id: number) => Promise<void>;
+  updateProveedor: (id: string, data: Partial<SupplierDto>) => Promise<void>;
+  deleteProveedor: (id: string) => Promise<void>;
   clearError: () => void;
 }
 

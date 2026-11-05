@@ -42,7 +42,7 @@ export interface CrudFormConfig<T extends Record<string, unknown>> {
   fields: FormField[];
   defaultValues: T;
   onCreate: (data: T) => Promise<unknown>;
-  onUpdate: (id: number, data: T) => Promise<unknown>;
+  onUpdate: (id: string, data: T) => Promise<unknown>;
   /** Called after successful create/update */
   onSuccess?: () => void;
   /** Custom mapper: entity → form values. Default picks keys from defaultValues */
@@ -55,10 +55,10 @@ export interface CrudFormReturn<T> {
   errors: Record<string, string>;
   isSubmitting: boolean;
   submitError: string | null;
-  editingId: number | null;
+  editingId: string | null;
   setFieldValue: (name: string, value: unknown) => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
-  handleEdit: (entity: object, id: number) => void;
+  handleEdit: (entity: object, id: string) => void;
   reset: () => void;
 }
 
@@ -177,7 +177,7 @@ export function useCrudForm<T extends Record<string, unknown>>(
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const setFieldValue = useCallback((name: string, value: unknown) => {
     setValues((prev) => ({ ...prev, [name]: value }));
@@ -223,7 +223,7 @@ export function useCrudForm<T extends Record<string, unknown>>(
   );
 
   const handleEdit = useCallback(
-    (entity: object, id: number) => {
+    (entity: object, id: string) => {
       const dict = entity as Record<string, unknown>;
       const mapped = mapEntityToForm
         ? mapEntityToForm(dict)

@@ -22,12 +22,13 @@ const mockPurchaseService = purchaseService as unknown as {
   deletePurchase: ReturnType<typeof vi.fn>;
 };
 
-const createMockCompra = (id: number): PurchaseDto => ({
+const createMockCompra = (id: string): PurchaseDto => ({
   id,
+  code: `Comp-${String(id).padStart(3, '0')}`,
   supplierId: id,
-  supplierName: `Supplier ${String.fromCharCode(64 + id)}`,
+  supplierName: `Supplier ${String.fromCharCode(64 + Number(id))}`,
   status: 'Pending',
-  total: 1000 * id,
+  total: 1000 * Number(id),
   notes: null,
   createdAt: '2024-01-01',
   updatedAt: null,
@@ -62,7 +63,7 @@ describe('useCompraStore', () => {
 
   describe('setCompras via setState', () => {
     it('replaces compras array', () => {
-      const mockCompras = [createMockCompra(1), createMockCompra(2)];
+      const mockCompras = [createMockCompra('1'), createMockCompra('2')];
       useCompraStore.setState({ compras: mockCompras });
 
       expect(useCompraStore.getState().compras).toEqual(mockCompras);
@@ -72,7 +73,7 @@ describe('useCompraStore', () => {
 
   describe('addCompra', () => {
     it('adds compra to list', async () => {
-      const nuevaCompra = createMockCompra(1);
+      const nuevaCompra = createMockCompra('1');
       mockPurchaseService.createPurchase.mockResolvedValue(nuevaCompra);
 
       await useCompraStore.getState().addCompra({ supplierName: 'Supplier A' });
@@ -82,8 +83,8 @@ describe('useCompraStore', () => {
     });
 
     it('appends to existing compras', async () => {
-      useCompraStore.setState({ compras: [createMockCompra(1)] });
-      const nuevaCompra = createMockCompra(2);
+      useCompraStore.setState({ compras: [createMockCompra('1')] });
+      const nuevaCompra = createMockCompra('2');
       mockPurchaseService.createPurchase.mockResolvedValue(nuevaCompra);
 
       await useCompraStore.getState().addCompra({ supplierName: 'Supplier B' });
@@ -94,24 +95,24 @@ describe('useCompraStore', () => {
 
   describe('updateCompra', () => {
     it('updates existing compra', async () => {
-      useCompraStore.setState({ compras: [createMockCompra(1), createMockCompra(2)] });
-      const updated = { ...createMockCompra(1), total: 2000, status: 'Completed' as const };
+      useCompraStore.setState({ compras: [createMockCompra('1'), createMockCompra('2')] });
+      const updated = { ...createMockCompra('1'), total: 2000, status: 'Completed' as const };
       mockPurchaseService.updatePurchase.mockResolvedValue(updated);
 
       await useCompraStore
         .getState()
-        .updateCompra(1, { total: 2000, status: 'Completed' });
+        .updateCompra('1', { total: 2000, status: 'Completed' });
 
       expect(useCompraStore.getState().compras[0].total).toBe(2000);
       expect(useCompraStore.getState().compras[0].status).toBe('Completed');
     });
 
     it('does not modify other compras', async () => {
-      useCompraStore.setState({ compras: [createMockCompra(1), createMockCompra(2)] });
-      const updated = { ...createMockCompra(1), total: 2000 };
+      useCompraStore.setState({ compras: [createMockCompra('1'), createMockCompra('2')] });
+      const updated = { ...createMockCompra('1'), total: 2000 };
       mockPurchaseService.updatePurchase.mockResolvedValue(updated);
 
-      await useCompraStore.getState().updateCompra(1, { total: 2000 });
+      await useCompraStore.getState().updateCompra('1', { total: 2000 });
 
       expect(useCompraStore.getState().compras[1].total).toBe(2000);
     });
@@ -119,21 +120,21 @@ describe('useCompraStore', () => {
 
   describe('deleteCompra', () => {
     it('removes compra from list', async () => {
-      useCompraStore.setState({ compras: [createMockCompra(1), createMockCompra(2)] });
+      useCompraStore.setState({ compras: [createMockCompra('1'), createMockCompra('2')] });
       mockPurchaseService.deletePurchase.mockResolvedValue(undefined);
 
-      await useCompraStore.getState().deleteCompra(1);
+      await useCompraStore.getState().deleteCompra('1');
 
       expect(useCompraStore.getState().compras).toHaveLength(1);
-      expect(useCompraStore.getState().compras[0].id).toBe(2);
+      expect(useCompraStore.getState().compras[0].id).toBe('2');
     });
 
     it('handles non-existent id gracefully', async () => {
-      useCompraStore.setState({ compras: [createMockCompra(1)] });
+      useCompraStore.setState({ compras: [createMockCompra('1')] });
       mockPurchaseService.deletePurchase.mockRejectedValue(new Error('Not found'));
 
       await expect(
-        useCompraStore.getState().deleteCompra(999),
+        useCompraStore.getState().deleteCompra('999'),
       ).rejects.toThrow('Not found');
 
       expect(useCompraStore.getState().compras).toHaveLength(1);
