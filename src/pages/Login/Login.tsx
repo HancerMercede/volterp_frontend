@@ -67,12 +67,12 @@ export function Login() {
           <div className={styles.logoWrapper}>
             <img
               src="/src/assets/logo.svg"
-              alt="Volterp"
+              alt="VOLT ERP"
               className={styles.logo}
             />
           </div>
           <h1 className={styles.brandTitle}>
-            Volterp<span className={styles.brandTitleAccent}> ERP</span>
+            VOLT<span className={styles.brandTitleAccent}> ERP</span>
           </h1>
           <p className={styles.brandSubtitle}>
             Sistema de gestión empresarial integral
