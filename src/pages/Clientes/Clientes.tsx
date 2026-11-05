@@ -155,7 +155,9 @@ export function Clientes() {
       key: "isActive",
       header: t("common.status"),
       render: (c: Client) => (
-        <span style={{ color: c.isActive ? "green" : "red" }}>
+        <span
+          style={{ color: c.isActive ? "green" : "red" }}
+        >
           {c.isActive ? t("common.active") : t("common.inactive")}
         </span>
       ),
@@ -176,15 +178,6 @@ export function Clientes() {
     <div>
       <PageHeader title={t("clientes.title")} subtitle={t("clientes.subtitle")}>
         <div className={styles.headerActions}>
-          <SearchInput
-            value={searchTerm}
-            onChange={(value) => {
-              setSearchTerm(value);
-              goToPage(1);
-            }}
-            placeholder={t("clientes.searchClient")}
-            width="240px"
-          />
           <Button
             onClick={() => {
               form.reset();
@@ -195,7 +188,17 @@ export function Clientes() {
           </Button>
         </div>
       </PageHeader>
-
+      <div className={styles.searchBar}>
+        <SearchInput
+          value={searchTerm}
+          onChange={(value) => {
+            setSearchTerm(value);
+            goToPage(1);
+          }}
+          placeholder={t("clientes.searchClient")}
+          width="240px"
+        />
+      </div>
       <Modal
         isOpen={showForm}
         onClose={() => {

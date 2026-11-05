@@ -21,6 +21,10 @@
   box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
 }
 
+.searchBar {
+  margin-bottom: 24px;
+}
+
 .badge {
   padding: 4px 10px;
   border-radius: 20px;

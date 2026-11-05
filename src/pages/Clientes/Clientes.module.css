@@ -15,6 +15,10 @@
   transition: var(--transition);
 }
 
+.searchBar {
+  margin-bottom: 24px;
+}
+
 .search:focus {
   outline: none;
   border-color: var(--primary);

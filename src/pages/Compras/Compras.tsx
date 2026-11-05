@@ -169,15 +169,6 @@ export function Compras() {
     <div>
       <PageHeader title={t("compras.title")} subtitle={t("compras.subtitle")}>
         <div className={styles.headerActions}>
-          <SearchInput
-            value={searchTerm}
-            onChange={(value) => {
-              setSearchTerm(value);
-              goToPage(1);
-            }}
-            placeholder={t("compras.searchPurchases")}
-            width="240px"
-          />
           <Button
             onClick={() => {
               form.reset();
@@ -188,6 +179,18 @@ export function Compras() {
           </Button>
         </div>
       </PageHeader>
+
+      <div className={styles.searchBar}>
+        <SearchInput
+          value={searchTerm}
+          onChange={(value) => {
+            setSearchTerm(value);
+            goToPage(1);
+          }}
+          placeholder={t("compras.searchPurchases")}
+          width="240px"
+        />
+      </div>
 
       <Modal
         isOpen={showForm}
