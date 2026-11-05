@@ -111,8 +111,8 @@
   font-size: 14px;
 }
 
-.clientEmpresa {
-  color: var(--color-text-muted, #6b7280);
+.clientPhone {
+  color: var(--color-muted, #6b7280);
   margin: 0;
   font-size: 14px;
 }
