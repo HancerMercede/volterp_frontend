@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useDashboard } from "../../application/hooks/useDashboard";
 import { useDashboardStore } from "../../stores/dashboardStore";
@@ -11,18 +11,19 @@ import {
   RecentActivities,
   Reminders,
 } from "../../components/Dashboard";
-import { formatCurrency } from "../../domain/dashboard/constants";
+import { formatCurrency, DEFAULT_CHART_WINDOW, DEFAULT_SCOPE } from "../../domain/dashboard/constants";
+import type { DashboardScope } from "../../domain/dashboard/types";
 import styles from "./Dashboard.module.css";
 
-const PERIOD_LABELS: Record<string, string> = {
-  today: "Hoy",
-  week: "Esta semana",
-  month: "Este mes",
+/** Global scopes of the dashboard header, in display order. */
+const PERIOD_LABELS: Record<DashboardScope, string> = {
+  today: "dashboard.scope.today",
+  week: "dashboard.scope.week",
+  month: "dashboard.scope.month",
 };
 
 export function Dashboard() {
   const { t } = useTranslation();
-  const [activePeriod, setActivePeriod] = useState<string>("month");
   const {
     kpis,
     topProducts,
@@ -31,10 +32,17 @@ export function Dashboard() {
     dashboardStats,
     salesChartData,
     categoryData,
+    categoryTotal,
+    scope,
+    chartWindow,
+    setScope,
+    setChartWindow,
   } = useDashboard();
 
   useEffect(() => {
-    useDashboardStore.getState().fetchDashboard();
+    // The dashboard opens with the calendar month and the current week, the
+    // same filters the page showed before they reached the backend.
+    useDashboardStore.getState().fetchDashboard(DEFAULT_SCOPE, DEFAULT_CHART_WINDOW);
   }, []);
 
   return (
@@ -51,10 +59,10 @@ export function Dashboard() {
           {Object.entries(PERIOD_LABELS).map(([key, label]) => (
             <button
               key={key}
-              className={`${styles.periodPill} ${activePeriod === key ? styles.periodPillActive : ""}`}
-              onClick={() => setActivePeriod(key)}
+              className={`${styles.periodPill} ${scope === key ? styles.periodPillActive : ""}`}
+              onClick={() => setScope(key as DashboardScope)}
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>
@@ -78,10 +86,14 @@ export function Dashboard() {
       </section>
 
       <div className={styles.chartsSection}>
-        <SalesChart data={salesChartData} />
+        <SalesChart
+          data={salesChartData}
+          chartWindow={chartWindow}
+          onChartWindowChange={setChartWindow}
+        />
         <CategoryDonut
           data={categoryData}
-          totalLabel={formatCurrency(145660)}
+          totalLabel={formatCurrency(categoryTotal)}
         />
       </div>
 

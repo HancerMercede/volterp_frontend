@@ -1,5 +1,6 @@
 import { Bell } from 'lucide-react';
 import type { Reminder } from '../../domain/dashboard/types';
+import { formatCurrency } from '../../domain/dashboard/constants';
 import styles from './DashboardComponents.module.css';
 
 interface RemindersProps {
@@ -15,11 +16,11 @@ export function Reminders({ reminders }: RemindersProps) {
           <div key={reminder.id} className={styles.reminderItem}>
             <div className={styles.reminderCheck} />
             <span className={styles.reminderText}>{reminder.text}</span>
-            <span 
+            <span
               className={styles.reminderBadge}
               style={{ background: reminder.badgeColor }}
             >
-              {reminder.count}
+              {reminder.isAmount ? formatCurrency(reminder.count) : reminder.count}
             </span>
           </div>
         ))}

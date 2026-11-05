@@ -1,14 +1,29 @@
-import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { SalesChartData } from '../../domain/dashboard/types';
-import type { ChartPeriod } from '../../domain/dashboard/constants';
+import type { ChartWindow, SalesChartData } from '../../domain/dashboard/types';
+import { CHART_PERIOD_WINDOWS, type ChartPeriod } from '../../domain/dashboard/constants';
 import styles from './DashboardComponents.module.css';
 
 interface SalesChartProps {
   data: SalesChartData[];
+  /** Chart window in effect: the tab that is active. */
+  chartWindow: ChartWindow;
+  /** Requests another window; the caller refetches the dashboard for it. */
+  onChartWindowChange: (chartWindow: ChartWindow) => void;
 }
 
 const PERIODS: ChartPeriod[] = ['semana', 'mes', 'año'];
+
+/** Chart window of each tab, in the order the tabs are rendered. */
+const CHART_WINDOWS: ChartWindow[] = PERIODS.map((period) => CHART_PERIOD_WINDOWS[period]);
+
+/**
+ * Bar size of the reference week. A wider window holds more buckets, so the
+ * bars shrink with the bucket count to keep the same density on the band.
+ */
+const REFERENCE_BUCKETS = 7;
+const MAX_BAR_SIZE = 28;
+const MIN_BAR_SIZE = 4;
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -33,27 +48,34 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function SalesChart({ data }: SalesChartProps) {
-  const [activePeriod, setActivePeriod] = useState<ChartPeriod>('semana');
+export function SalesChart({ data, chartWindow, onChartWindowChange }: SalesChartProps) {
+  const { t } = useTranslation();
+
+  const barSize = Math.max(
+    MIN_BAR_SIZE,
+    Math.min(MAX_BAR_SIZE, Math.floor((MAX_BAR_SIZE * REFERENCE_BUCKETS) / Math.max(data.length, 1))),
+  );
 
   return (
     <div className={styles.chartCard}>
       <div className={styles.chartHeader}>
         <h3 className={styles.chartTitle}>Ventas vs Compras</h3>
         <div className={styles.chartTabs}>
-          {PERIODS.map((period) => (
+          {CHART_WINDOWS.map((tabWindow) => (
             <button
-              key={period}
-              className={`${styles.chartTab} ${activePeriod === period ? styles.chartTabActive : ''}`}
-              onClick={() => setActivePeriod(period)}
+              key={tabWindow}
+              type="button"
+              aria-pressed={chartWindow === tabWindow}
+              className={`${styles.chartTab} ${chartWindow === tabWindow ? styles.chartTabActive : ''}`}
+              onClick={() => onChartWindowChange(tabWindow)}
             >
-              {period === 'semana' ? 'Semana' : period === 'mes' ? 'Mes' : 'Año'}
+              {t(`dashboard.chartWindow.${tabWindow}`)}
             </button>
           ))}
         </div>
       </div>
       <ResponsiveContainer width="100%" height={180}>
-        <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }} barSize={28}>
+        <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }} barSize={barSize}>
           <defs>
             <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#FBBF24" />

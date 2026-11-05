@@ -6,6 +6,13 @@ interface KpiCardProps {
 }
 
 export function KpiCard({ kpi }: KpiCardProps) {
+  // An undefined comparison has no direction: it is rendered as "—" without an arrow.
+  const hasChange = kpi.trend !== 'none';
+  const toneClass = hasChange ? (kpi.isPositive ? styles.positive : styles.negative) : '';
+  const changeText = hasChange
+    ? `${kpi.trend === 'up' ? '↑' : '↓'} ${kpi.changeLabel} ${kpi.compareLabel}`
+    : `${kpi.changeLabel} ${kpi.compareLabel}`;
+
   return (
     <div className={styles.kpiCard} style={{ '--accent-color': kpi.iconBg } as React.CSSProperties}>
       <div className={styles.kpiContent}>
@@ -19,8 +26,8 @@ export function KpiCard({ kpi }: KpiCardProps) {
           <span className={styles.kpiLabel}>{kpi.label}</span>
         </div>
         <div className={styles.kpiValue}>{kpi.formattedValue}</div>
-        <div className={`${styles.kpiChange} ${kpi.isPositive ? styles.positive : styles.negative}`}>
-          {kpi.trend === 'up' ? '↑' : '↓'} {kpi.changeLabel} vs mes anterior
+        <div className={`${styles.kpiChange} ${toneClass}`}>
+          {changeText}
         </div>
       </div>
       <div 

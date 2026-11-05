@@ -115,7 +115,11 @@
     "reminders": "Recordatorios",
     "topProducts": "Productos Más Vendidos",
     "salesChart": "Ventas Últimos 7 Días",
-    "topClients": "Top Clientes"
+    "topClients": "Top Clientes",
+    "scope": { "today": "Hoy", "week": "Esta semana", "month": "Este mes" },
+    "chartWindow": { "week": "Semana", "month": "Mes", "year": "Año" },
+    "kpi": { "ventas": "Ventas", "compras": "Compras", "clientes": "Clientes nuevos", "utilidad": "Utilidad neta" },
+    "compare": { "today": "vs hoy anterior", "week": "vs semana anterior", "month": "vs mes anterior" }
   },
   "ventas": {
     "title": "Ventas",

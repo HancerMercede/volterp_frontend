@@ -114,7 +114,11 @@
     "reminders": "Reminders",
     "topProducts": "Top Selling Products",
     "salesChart": "Sales Last 7 Days",
-    "topClients": "Top Clients"
+    "topClients": "Top Clients",
+    "scope": { "today": "Today", "week": "This week", "month": "This month" },
+    "chartWindow": { "week": "Week", "month": "Month", "year": "Year" },
+    "kpi": { "ventas": "Sales", "compras": "Purchases", "clientes": "New clients", "utilidad": "Net profit" },
+    "compare": { "today": "vs yesterday", "week": "vs last week", "month": "vs last month" }
   },
   "ventas": {
     "title": "Sales",
