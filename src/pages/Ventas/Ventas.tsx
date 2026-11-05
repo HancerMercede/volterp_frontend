@@ -12,11 +12,10 @@ import type { SaleDto } from "../../domain/types";
 import { VentasList } from "./components/VentasList";
 import { NuevaVenta } from "./components/NuevaVenta";
 import { VentaDetail } from "./components/VentaDetail";
-import styles from "./Ventas.module.css";
 
 export function Ventas() {
   const { t } = useTranslation();
-  const { ventas, fetchVentas, deleteVenta, loading } = useVentaStore();
+  const { ventas, fetchVentas, deleteVenta } = useVentaStore();
   const { fetchClientes } = useClienteStore();
   const { currentCompany, fetchCurrentCompany } = useCompanyStore();
   const { user } = useAuthStore();
@@ -94,11 +93,9 @@ export function Ventas() {
   return (
     <div>
       <PageHeader title={t("ventas.title")} subtitle={t("ventas.subtitle")}>
-        <div className={styles.headerActions}>
-          <Button onClick={handleNewVenta}>+ {t("ventas.newSale")}</Button>
-        </div>
+        <Button onClick={handleNewVenta}>+ {t("ventas.newSale")}</Button>
       </PageHeader>
-      {loading && <p>{t("common.loading")}</p>}
+      {/* {loading && <p>{t("common.loading")}</p>} */}
       {showForm && (
         <NuevaVenta
           key={editingSaleId ?? "new"}

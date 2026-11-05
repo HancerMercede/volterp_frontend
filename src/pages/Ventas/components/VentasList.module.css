@@ -16,6 +16,6 @@
   color: #92400E;
 }
 
-.SearchBar {
-  margin-bottom: 24px;
+.searchBar {
+  margin-bottom: var(--space-lg);
 }

@@ -177,16 +177,14 @@ export function Clientes() {
   return (
     <div>
       <PageHeader title={t("clientes.title")} subtitle={t("clientes.subtitle")}>
-        <div className={styles.headerActions}>
-          <Button
-            onClick={() => {
-              form.reset();
-              setShowForm(true);
-            }}
-          >
-            + {t("clientes.newClient")}
-          </Button>
-        </div>
+        <Button
+          onClick={() => {
+            form.reset();
+            setShowForm(true);
+          }}
+        >
+          + {t("clientes.newClient")}
+        </Button>
       </PageHeader>
       <div className={styles.searchBar}>
         <SearchInput

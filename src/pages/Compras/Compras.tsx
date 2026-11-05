@@ -168,16 +168,14 @@ export function Compras() {
   return (
     <div>
       <PageHeader title={t("compras.title")} subtitle={t("compras.subtitle")}>
-        <div className={styles.headerActions}>
-          <Button
-            onClick={() => {
-              form.reset();
-              setShowForm(true);
-            }}
-          >
-            + {t("compras.newPurchase")}
-          </Button>
-        </div>
+        <Button
+          onClick={() => {
+            form.reset();
+            setShowForm(true);
+          }}
+        >
+          + {t("compras.newPurchase")}
+        </Button>
       </PageHeader>
 
       <div className={styles.searchBar}>

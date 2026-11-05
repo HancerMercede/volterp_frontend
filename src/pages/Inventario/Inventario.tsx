@@ -266,38 +266,39 @@ export function Inventario() {
         title={t("inventario.title")}
         subtitle={t("inventario.subtitle")}
       >
-        <div className={styles.headerActions}>
-          <SearchInput
-            value={searchTerm}
-            onChange={(value) => {
-              setSearchTerm(value);
-              goToPage(1);
-            }}
-            placeholder={t("inventario.searchPlaceholder")}
-            width="240px"
-          />
-          <select
-            className={styles.filter}
-            value={filterStock}
-            onChange={(e) => {
-              setFilterStock(e.target.value as stockStatus);
-              goToPage(1);
-            }}
-          >
-            <option value="all">{t("inventario.all")}</option>
-            <option value="low">{t("inventario.lowStock")}</option>
-            <option value="out">{t("inventario.outOfStock")}</option>
-          </select>
-          <Button
-            onClick={() => {
-              form.reset();
-              setShowForm(true);
-            }}
-          >
-            + {t("inventario.newProduct")}
-          </Button>
-        </div>
+        <Button
+          onClick={() => {
+            form.reset();
+            setShowForm(true);
+          }}
+        >
+          + {t("inventario.newProduct")}
+        </Button>
       </PageHeader>
+
+      <div className={styles.filters}>
+        <SearchInput
+          value={searchTerm}
+          onChange={(value) => {
+            setSearchTerm(value);
+            goToPage(1);
+          }}
+          placeholder={t("inventario.searchPlaceholder")}
+          width="240px"
+        />
+        <select
+          className={styles.filter}
+          value={filterStock}
+          onChange={(e) => {
+            setFilterStock(e.target.value as stockStatus);
+            goToPage(1);
+          }}
+        >
+          <option value="all">{t("inventario.all")}</option>
+          <option value="low">{t("inventario.lowStock")}</option>
+          <option value="out">{t("inventario.outOfStock")}</option>
+        </select>
+      </div>
 
       {loading && <p>Cargando...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}

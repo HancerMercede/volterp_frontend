@@ -167,7 +167,7 @@ export function Proveedores() {
             goToPage(1);
           }}
           placeholder={t("proveedores.searchProvider")}
-          width="300px"
+          width="240px"
         />
       </div>
 

@@ -166,7 +166,6 @@ export function Empresas() {
         value={searchTerm}
         onChange={setSearchTerm}
         placeholder={t("common.search")}
-        showIcon
       />
 
       <Table data={filteredCompanies} columns={columns} />

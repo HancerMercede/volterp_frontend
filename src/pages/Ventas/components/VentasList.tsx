@@ -118,7 +118,7 @@ export function VentasList({
 
   return (
     <div>
-      <div className={styles.SearchBar}>
+      <div className={styles.searchBar}>
         <SearchInput
           value={searchTerm}
           onChange={(value) => {
