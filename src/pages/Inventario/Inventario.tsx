@@ -26,7 +26,6 @@ export function Inventario() {
   const { t } = useTranslation();
   const {
     productos,
-    loading,
     error,
     totalCount,
     fetchProductos,
@@ -300,7 +299,6 @@ export function Inventario() {
         </select>
       </div>
 
-      {loading && <p>Cargando...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       <Modal
