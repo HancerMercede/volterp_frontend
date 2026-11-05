@@ -138,6 +138,19 @@ describe('Dashboard', () => {
     });
   });
 
+  describe('KPI change rendering', () => {
+    it('renders an undefined comparison as "—" and never as a percentage of zero', async () => {
+      render(<Dashboard />);
+
+      // The clientes card has no comparable previous period, so its change is
+      // undefined: it shows "—" and the scope's comparison, never a percentage.
+      // The exact match is the proof: a card rendering "0.0% vs mes anterior"
+      // would not match it.
+      await waitFor(() => expect(screen.getByText('— vs mes anterior')).toBeInTheDocument());
+      expect(screen.queryByText(/—.*%/)).toBeNull();
+    });
+  });
+
   describe('reminders', () => {
     it('renders the amount reminder as currency and the count reminder as a count', async () => {
       render(<Dashboard />);
