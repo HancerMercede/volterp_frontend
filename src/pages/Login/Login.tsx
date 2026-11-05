@@ -67,7 +67,7 @@ export function Login() {
           <div className={styles.logoWrapper}>
             <img
               src="/src/assets/logo.svg"
-              alt="VOLT ERP"
+              alt="Volterp"
               className={styles.logo}
             />
           </div>
