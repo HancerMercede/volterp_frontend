@@ -124,6 +124,10 @@
   font-size: 38px;
   font-weight: 800;
   color: #FBBF24;
+  background: linear-gradient(135deg, #FBBF24 0%, #FDE68A 30%, #FBBF24 60%, #FDE68A 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin: 0 0 6px 0;
   letter-spacing: -0.8px;
   line-height: 1.1;
@@ -131,6 +135,7 @@
 
 .brandTitleAccent {
   color: #2DD4BF;
+  -webkit-text-fill-color: #2DD4BF;
 }
 
 .brandSubtitle {
@@ -182,7 +187,7 @@
 }
 
 .featureIconGold {
-  background: linear-gradient(135deg, #FBBF24, #F59E0B);
+  background: linear-gradient(135deg, #FBBF24, #FDE68A);
   color: #0A0A1A;
 }
 
@@ -434,7 +439,7 @@
   justify-content: center;
   gap: 10px;
   padding: 16px 28px;
-  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+  background: linear-gradient(135deg, #FBBF24 0%, #FDE68A 100%);
   color: #0A0A1A;
   border: none;
   border-radius: 12px;
@@ -448,7 +453,7 @@
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  background: linear-gradient(135deg, #FDE68A 0%, #FBBF24 100%);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
 }
