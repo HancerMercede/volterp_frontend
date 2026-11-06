@@ -144,6 +144,27 @@ describe('useDeleteConfirm', () => {
     expect(onDelete).toHaveBeenLastCalledWith('def');
   });
 
+  it('exposes the pending id so callers can describe the resource', () => {
+    const onDelete = vi.fn().mockResolvedValue(undefined);
+    const { result } = renderHook(() =>
+      useDeleteConfirm({ onDelete, successMessage: SUCCESS_MESSAGE }),
+    );
+
+    expect(result.current.deleteId).toBeNull();
+
+    act(() => {
+      result.current.handleDelete('abc');
+    });
+
+    expect(result.current.deleteId).toBe('abc');
+
+    act(() => {
+      result.current.cancelDelete();
+    });
+
+    expect(result.current.deleteId).toBeNull();
+  });
+
   it('closes the confirmation and clears the selected id on cancel', async () => {
     const onDelete = vi.fn().mockResolvedValue(undefined);
     const { result } = renderHook(() =>

@@ -34,12 +34,40 @@
 }
 
 .danger {
-  background: #EF4444;
+  background: #B91C1C;
   color: white;
 }
 
 .danger:hover {
-  background: #DC2626;
+  background: #991B1B;
+}
+
+.ghost {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.ghost:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-300);
+}
+
+.dark {
+  background: var(--dark);
+  color: #fff;
+}
+
+.dark:hover {
+  background: #1E293B;
+}
+
+.accentDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
 }
 
 .small {

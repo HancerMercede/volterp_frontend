@@ -1,8 +1,14 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, HelpCircle, CheckCircle, Info, XCircle } from 'lucide-react';
+import { CheckCircle, HelpCircle, Info, Trash2, XCircle } from 'lucide-react';
 import { Button } from './Button';
 import styles from './ConfirmModal.module.css';
+
+interface ConfirmContext {
+  title: string;
+  subtitle?: string;
+  amount?: string;
+}
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -14,10 +20,11 @@ interface ConfirmModalProps {
   cancelLabel?: string;
   variant?: 'danger' | 'warning' | 'success' | 'info' | 'error';
   subtitle?: string;
+  context?: ConfirmContext;
 }
 
 const VARIANT_ICONS = {
-  danger: AlertTriangle,
+  danger: Trash2,
   warning: HelpCircle,
   success: CheckCircle,
   info: Info,
@@ -42,7 +49,9 @@ export function ConfirmModal({
   cancelLabel = 'Cancelar',
   variant = 'danger',
   subtitle,
+  context,
 }: ConfirmModalProps) {
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -68,15 +77,37 @@ export function ConfirmModal({
 
   return createPortal(
     <div className={styles.overlay} onClick={onCancel}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={`${styles.icon} ${styles[variant]}`}>
-          <IconComponent size={28} strokeWidth={1.8} />
-        </div>
+      <div
+        className={styles.card}
+        onClick={(e) => e.stopPropagation()}
+        role="alertdialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        <span className={`${styles.iconCircle} ${styles[variant]}`}>
+          <IconComponent size={22} strokeWidth={1.9} />
+        </span>
+
+        <h2 className={styles.title}>{title}</h2>
         {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-        <h3 className={styles.title}>{title}</h3>
         <p className={styles.message}>{message}</p>
+
+        {context && (
+          <div className={styles.context} data-testid="confirm-context">
+            <div className={styles.contextInfo}>
+              <p className={styles.contextTitle}>{context.title}</p>
+              {context.subtitle && (
+                <p className={styles.contextSubtitle}>{context.subtitle}</p>
+              )}
+            </div>
+            {context.amount && (
+              <span className={styles.contextAmount}>{context.amount}</span>
+            )}
+          </div>
+        )}
+
         <div className={styles.actions}>
-          <Button variant="secondary" onClick={onCancel}>
+          <Button variant="ghost" type="button" onClick={onCancel}>
             {cancelLabel}
           </Button>
           <Button

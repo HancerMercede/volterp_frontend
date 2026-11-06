@@ -1,12 +1,14 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  padding: 24px;
+  animation: fadeIn 0.18s ease;
 }
 
 @keyframes fadeIn {
@@ -15,85 +17,196 @@
 }
 
 .modal {
-  background: var(--surface-blur);
-  padding: 24px;
+  background: var(--surface);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(10px);
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
-  overflow-y: auto;
-  animation: slideIn 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modalLg {
+  max-width: 940px;
 }
 
 @keyframes slideIn {
-  from { 
+  from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-12px) scale(0.985);
   }
-  to { 
+  to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
+}
+
+/* ─── Header ────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 24px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.iconSlot {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .title {
-  margin-bottom: 20px;
-  color: var(--text-primary);
   font-size: 18px;
-  font-weight: 600;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.formGroup label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.formGroup input,
-.formGroup select,
-.formGroup textarea {
-  padding: 10px 12px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-family: var(--font-body);
-  background: var(--surface);
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
-  transition: var(--transition);
+  line-height: 1.3;
 }
 
-.formGroup input:focus,
-.formGroup select:focus,
-.formGroup textarea:focus {
+.subtitle {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--gray-100);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.closeBtn:hover {
+  background: var(--gray-200);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.closeBtn:focus-visible {
   outline: none;
-  border-color: var(--primary);
   box-shadow: var(--focus-ring);
 }
 
+/* ─── Body ──────────────────────────────────────────────────────── */
+.form {
+  display: contents;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* ─── Footer ────────────────────────────────────────────────────── */
 .actions {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--gray-50);
+  flex-shrink: 0;
+}
+
+.footerStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 0;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.statusDotDirty {
+  background: var(--primary-dark);
+}
+
+.footerButtons {
+  display: flex;
+  align-items: center;
   gap: 12px;
-  justify-content: flex-end;
-  margin-top: 8px;
+  margin-left: auto;
+}
+
+/* Both footer buttons share one height, whatever their border looks like. */
+.footerButtons > * {
+  min-height: 44px;
+  padding: 12px 22px;
+}
+
+
+
+@media (max-width: 640px) {
+  .overlay {
+    padding: 0;
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 100vh;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .footerButtons {
+    margin-left: 0;
+  }
+
+  .footerButtons > * {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .modal {
+    animation: none;
+  }
 }

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 // ─── Field definition ────────────────────────────────────────────────
 export interface FormField {
@@ -13,6 +13,7 @@ export interface FormField {
     | "date"
     | "file"
     | "checkbox"
+    | "textarea"
     | "url";
   required?: boolean;
   placeholder?: string;
@@ -35,6 +36,18 @@ export interface FormField {
     value: unknown,
     values: Record<string, unknown>,
   ) => string | undefined;
+
+  // ─── Presentation (optional) ──────────────────────────────────────
+  /** Section this field belongs to. Fields with no section share the first group. */
+  section?: string;
+  /** How many of the 6 section columns the field occupies (6 = full width). */
+  span?: 1 | 2 | 3 | 4 | 5 | 6;
+  /** Helper text rendered under the control. */
+  hint?: string;
+  /** Renders the control as disabled (e.g. a server-generated code). */
+  readonly?: boolean;
+  /** Renders the field in the right sidebar instead of the main grid. */
+  sidebar?: boolean;
 }
 
 // ─── Config ──────────────────────────────────────────────────────────
@@ -56,6 +69,8 @@ export interface CrudFormReturn<T> {
   isSubmitting: boolean;
   submitError: string | null;
   editingId: string | null;
+  /** True when the current values differ from the ones the form was opened with. */
+  isDirty: boolean;
   setFieldValue: (name: string, value: unknown) => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   handleEdit: (entity: object, id: string) => void;
@@ -174,6 +189,7 @@ export function useCrudForm<T extends Record<string, unknown>>(
     mapEntityToForm,
   } = config;
   const [values, setValues] = useState<T>({ ...defaultValues });
+  const [initialValues, setInitialValues] = useState<T>({ ...defaultValues });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -211,6 +227,7 @@ export function useCrudForm<T extends Record<string, unknown>>(
         setEditingId(null);
         setErrors({});
         setValues({ ...defaultValues });
+        setInitialValues({ ...defaultValues });
         onSuccess?.();
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Error al guardar";
@@ -229,6 +246,7 @@ export function useCrudForm<T extends Record<string, unknown>>(
         ? mapEntityToForm(dict)
         : pickKeys(defaultValues, dict);
       setValues(mapped);
+      setInitialValues(mapped);
       setEditingId(id);
       setErrors({});
       setSubmitError(null);
@@ -238,11 +256,22 @@ export function useCrudForm<T extends Record<string, unknown>>(
 
   const reset = useCallback(() => {
     setValues({ ...defaultValues });
+    setInitialValues({ ...defaultValues });
     setEditingId(null);
     setErrors({});
     setSubmitError(null);
     setIsSubmitting(false);
   }, [defaultValues]);
+
+  const isDirty = useMemo(() => {
+    const current = values as Record<string, unknown>;
+    const initial = initialValues as Record<string, unknown>;
+    const keys = new Set([...Object.keys(initial), ...Object.keys(current)]);
+    for (const key of keys) {
+      if (current[key] !== initial[key]) return true;
+    }
+    return false;
+  }, [values, initialValues]);
 
   return {
     values,
@@ -250,6 +279,7 @@ export function useCrudForm<T extends Record<string, unknown>>(
     isSubmitting,
     submitError,
     editingId,
+    isDirty,
     setFieldValue,
     handleSubmit,
     handleEdit,

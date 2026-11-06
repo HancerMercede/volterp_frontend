@@ -1,56 +1,93 @@
-.fields {
+/* ─── Layout ────────────────────────────────────────────────────── */
+.stack {
   display: flex;
   flex-direction: column;
+  gap: 26px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 32px;
+  align-items: start;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 0;
+}
+
+/* ─── Section ───────────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 16px;
 }
 
+/* ─── Field ─────────────────────────────────────────────────────── */
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+}
+
+.span1 {
+  grid-column: span 1;
+}
+
+.span2 {
+  grid-column: span 2;
+}
+
+.span3 {
+  grid-column: span 3;
+}
+
+.span4 {
+  grid-column: span 4;
+}
+
+.span5 {
+  grid-column: span 5;
+}
+
+.span6 {
+  grid-column: span 6;
 }
 
 .label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .required {
   color: #EF4444;
-  margin-left: 2px;
+  margin-left: 3px;
 }
 
-.input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius);
-  font-size: 14px;
-  font-family: var(--font-body);
-  background: var(--surface);
-  color: var(--text-primary);
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-sizing: border-box;
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
-}
-
-.inputError {
-  border-color: #EF4444;
-}
-
-.inputError:focus {
-  border-color: #EF4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
-}
-
-.hasError .label {
-  color: #EF4444;
+.hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 
 .errorText {
@@ -59,7 +96,64 @@
   margin-top: -2px;
 }
 
-/* ── select ── */
+/* ─── Controls ──────────────────────────────────────────────────── */
+.input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: var(--surface);
+  color: var(--text-primary);
+  transition: border-color 0.18s, box-shadow 0.18s;
+  box-sizing: border-box;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-dark);
+  box-shadow: var(--focus-ring);
+}
+
+.inputError {
+  border-color: #EF4444;
+}
+
+.textarea {
+  height: auto;
+  min-height: 84px;
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.inputError:focus {
+  border-color: #EF4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.inputReadonly {
+  background: var(--gray-100);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.inputReadonly:focus {
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+.hasError .label {
+  color: #EF4444;
+}
+
+/* ─── select ────────────────────────────────────────────────────── */
 select.input {
   cursor: pointer;
   appearance: none;
@@ -69,7 +163,7 @@ select.input {
   padding-right: 36px;
 }
 
-/* ── checkbox ── */
+/* ─── checkbox ──────────────────────────────────────────────────── */
 .checkWrapper {
   display: flex;
   align-items: center;
@@ -83,11 +177,94 @@ select.input {
 .checkbox {
   width: 18px;
   height: 18px;
-  accent-color: var(--primary);
+  accent-color: var(--primary-dark);
   cursor: pointer;
 }
 
-/* ── file upload drop zone ── */
+/* ─── Sidebar blocks ────────────────────────────────────────────── */
+.sidebarSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebarTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ─── Status card + switch ──────────────────────────────────────── */
+.statusCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--dark);
+  color: #fff;
+}
+
+.statusText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.statusLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.statusHint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.switch:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.45);
+}
+
+.switchOn {
+  background: var(--primary);
+}
+
+.switchKnob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.switchOn .switchKnob {
+  transform: translateX(20px);
+}
+
+/* ─── File upload: compact drop zone ────────────────────────────── */
 .fileInputHidden {
   display: none;
 }
@@ -99,28 +276,25 @@ select.input {
   justify-content: center;
   gap: 8px;
   padding: 24px 16px;
-  border: 2px dashed var(--border-light);
+  border: 2px dashed var(--border);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--gray-50);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
 }
 
 .fileZone:hover {
-  border-color: var(--primary);
+  border-color: var(--primary-dark);
   background: color-mix(in srgb, var(--primary) 5%, var(--surface));
 }
 
 .fileZoneDragging {
-  border-color: var(--primary);
+  border-color: var(--primary-dark);
   background: color-mix(in srgb, var(--primary) 8%, var(--surface));
 }
 
 .fileZoneIcon {
-  width: 36px;
-  height: 36px;
-  color: var(--text-secondary);
-  opacity: 0.6;
+  color: var(--text-muted);
 }
 
 .fileZoneText {
@@ -131,20 +305,18 @@ select.input {
 
 .fileZoneHint {
   font-size: 12px;
-  color: var(--text-secondary);
-  opacity: 0.7;
+  color: var(--text-muted);
 }
 
-/* ── file preview card ── */
+/* ─── File preview card ─────────────────────────────────────────── */
 .previewCard {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
-  margin-top: 8px;
 }
 
 .previewImg {
@@ -152,7 +324,7 @@ select.input {
   height: 56px;
   border-radius: 8px;
   object-fit: cover;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -182,18 +354,169 @@ select.input {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.18s, color 0.18s;
   flex-shrink: 0;
 }
 
 .removeBtn:hover {
   background: rgba(239, 68, 68, 0.1);
   color: #EF4444;
+}
+
+/* ─── File panel (sidebar) ──────────────────────────────────────── */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panelPreview {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--gray-50);
+}
+
+.panelImg {
+  display: block;
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
+.panelDropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 190px;
+  padding: 20px 16px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--gray-50);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.panelDropzone:hover {
+  border-color: var(--primary-dark);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+}
+
+.panelIcon {
+  color: var(--text-muted);
+}
+
+.panelInitials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--dark);
+  color: var(--primary);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.panelDropTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.panelDropHint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.panelActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panelChange {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.panelChange:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-300);
+}
+
+.panelTrash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+.panelTrash:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #EF4444;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .span3,
+  .span4,
+  .span5,
+  .span6 {
+    grid-column: span 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switchKnob,
+  .fileZone,
+  .fileZoneDragging,
+  .panelDropzone {
+    transition: none;
+  }
 }

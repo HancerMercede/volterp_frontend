@@ -8,6 +8,7 @@ export interface DeleteConfirmConfig {
 
 export interface DeleteConfirmReturn {
   showDeleteConfirm: boolean;
+  deleteId: string | null;
   handleDelete: (id: string) => void;
   confirmDelete: () => Promise<void>;
   cancelDelete: () => void;
@@ -50,6 +51,7 @@ export function useDeleteConfirm({
 
   return {
     showDeleteConfirm,
+    deleteId,
     handleDelete,
     confirmDelete,
     cancelDelete,
