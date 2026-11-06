@@ -37,36 +37,41 @@ export function Carrito({ items, onQuantityChange, onRemoveItem }: Props) {
                   {initialsOf(item.productName)}
                 </span>
               )}
-              <div className={styles.cartItemInfo}>
-                <span className={styles.cartItemName}>
-                  {item.productName}
-                </span>
-                <span className={styles.cartItemPrice}>
-                  {t("ventas.eachUnit")} {money(item.unitPrice)}
-                </span>
+              <div className={styles.cartItemBody}>
+                <div className={styles.cartItemTop}>
+                  <span className={styles.cartItemName}>
+                    {item.productName}
+                  </span>
+                  <button
+                    className={styles.cartItemDelete}
+                    onClick={() => onRemoveItem(item.productId)}
+                    aria-label={t("ventas.removeFromCart")}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className={styles.cartItemBottom}>
+                  <span className={styles.cartItemPrice}>
+                    {t("ventas.eachUnit")} {money(item.unitPrice)}
+                  </span>
+                  <div className={styles.cartItemControls}>
+                    <button
+                      onClick={() => onQuantityChange(item.productId, -1)}
+                    >
+                      −
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button
+                      onClick={() => onQuantityChange(item.productId, 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span className={styles.cartItemSubtotal}>
+                    {money(item.subtotal)}
+                  </span>
+                </div>
               </div>
-              <div className={styles.cartItemControls}>
-                <button
-                  onClick={() => onQuantityChange(item.productId, -1)}
-                >
-                  −
-                </button>
-                <span>{item.quantity}</span>
-                <button
-                  onClick={() => onQuantityChange(item.productId, 1)}
-                >
-                  +
-                </button>
-              </div>
-              <span className={styles.cartItemSubtotal}>
-                {money(item.subtotal)}
-              </span>
-              <button
-                className={styles.cartItemDelete}
-                onClick={() => onRemoveItem(item.productId)}
-              >
-                ×
-              </button>
             </div>
           ))}
         </div>
