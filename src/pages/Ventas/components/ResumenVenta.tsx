@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { FileText, CheckCircle, Save } from "lucide-react";
 import { Button } from "../../../components/UI";
+import { money } from "../../../utils/currency";
 import styles from "./ResumenVenta.module.css";
 
 interface Props {
@@ -14,8 +15,6 @@ interface Props {
   onGuardarBorrador: () => void;
   onCancelar: () => void;
 }
-
-const formatCurrency = (amount: number) => `$${amount.toLocaleString()}`;
 
 export function ResumenVenta({
   subtotal,
@@ -36,15 +35,15 @@ export function ResumenVenta({
       <div className={styles.totals}>
         <div className={styles.totalRow}>
           <span>{t("common.subtotal")}</span>
-          <span>{formatCurrency(subtotal)}</span>
+          <span>{money(subtotal)}</span>
         </div>
         <div className={styles.totalRow}>
           <span>{t("ventas.itbisLabel")}</span>
-          <span>{formatCurrency(itbis)}</span>
+          <span>{money(itbis)}</span>
         </div>
         <div className={`${styles.totalRow} ${styles.totalFinal}`}>
           <span>{t("ventas.totalAmount")}</span>
-          <span>{formatCurrency(total)}</span>
+          <span>{money(total)}</span>
         </div>
       </div>
 

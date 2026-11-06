@@ -1,4 +1,4 @@
-import { type ChangeEvent, type KeyboardEvent } from 'react';
+import { type ChangeEvent, type KeyboardEvent, type Ref } from 'react';
 import styles from './SearchInput.module.css';
 
 interface SearchInputProps {
@@ -10,6 +10,7 @@ interface SearchInputProps {
   autoFocus?: boolean;
   width?: string;
   showIcon?: boolean;
+  inputRef?: Ref<HTMLInputElement>;
 }
 
 export function SearchInput({ 
@@ -20,7 +21,8 @@ export function SearchInput({
   className = '',
   autoFocus = false,
   width = '240px',
-  showIcon = true
+  showIcon = true,
+  inputRef
 }: SearchInputProps) {
   
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -50,6 +52,7 @@ export function SearchInput({
         </svg>
       )}
       <input
+        ref={inputRef}
         type="text"
         className={`${styles.input} ${!showIcon ? styles.noIcon : ''}`}
         value={value}

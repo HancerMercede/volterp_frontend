@@ -155,6 +155,7 @@
     "product": "Product",
     "selectClient": "Select client",
     "searchProducts": "Search products...",
+    "searchProductsOrCode": "Search or scan code...",
     "searchSales": "Search sales...",
     "addToCart": "Add to cart",
     "removeFromCart": "Remove from cart",

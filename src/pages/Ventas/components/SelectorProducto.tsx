@@ -1,8 +1,10 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Package } from "lucide-react";
 import { ImageCell, Pagination, SearchInput } from "../../../components/UI";
 import { useFilter } from "../../../hooks/useFilter";
+import { initialsOf } from "../../../utils/initials";
+import { money } from "../../../utils/currency";
 import type { Product } from "../../../domain/types";
 import styles from "./SelectorProducto.module.css";
 
@@ -15,8 +17,6 @@ interface Props {
   onSearchChange: (term: string) => void;
 }
 
-const formatCurrency = (amount: number) => `$${amount.toLocaleString()}`;
-
 export function SelectorProducto({
   productos,
   onAddProduct,
@@ -28,6 +28,18 @@ export function SelectorProducto({
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 50;
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const focusSearch = (event: KeyboardEvent) => {
+      if (event.key === "F2") {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", focusSearch);
+    return () => document.removeEventListener("keydown", focusSearch);
+  }, []);
 
   const categorias = useMemo(() => {
     const cats = [...new Set(productos.map((p) => p.category))];
@@ -54,13 +66,19 @@ export function SelectorProducto({
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
-        <h3><Package size={20} strokeWidth={1.8} /> {t("ventas.products")}</h3>
-        <SearchInput
-          value={searchTerm}
-          onChange={onSearchChange}
-          placeholder={t("ventas.searchProducts")}
-          className={styles.productSearchInput}
-        />
+        <h3>
+          <Package size={20} strokeWidth={1.8} /> {t("ventas.products")}
+        </h3>
+        <div className={styles.searchWrap}>
+          <SearchInput
+            value={searchTerm}
+            onChange={onSearchChange}
+            placeholder={t("ventas.searchProductsOrCode")}
+            className={styles.productSearchInput}
+            inputRef={searchInputRef}
+          />
+          <kbd className={styles.shortcutBadge}>F2</kbd>
+        </div>
       </div>
 
       <div className={styles.categoryTabs}>
@@ -85,17 +103,33 @@ export function SelectorProducto({
             className={styles.productCard}
             onClick={() => onAddProduct(producto)}
           >
-            <ImageCell
-              src={producto.imageUrl || ""}
-              name={producto.name}
-              subtext={producto.category}
-              type="product"
-            />
+            <div className={styles.productThumb}>
+              {producto.imageUrl ? (
+                <ImageCell
+                  src={producto.imageUrl}
+                  name={producto.name}
+                  type="product"
+                  showInfo={false}
+                />
+              ) : (
+                <span className={styles.productInitials}>
+                  {initialsOf(producto.name)}
+                </span>
+              )}
+            </div>
             <span className={styles.productName}>{producto.name}</span>
-            <span className={styles.productPrice}>
-              {formatCurrency(producto.price)}
-            </span>
-            <button className={styles.addBtn}>+</button>
+            <span className={styles.productCategory}>{producto.category}</span>
+            <div className={styles.productFooter}>
+              <span className={styles.productPrice}>
+                {money(producto.price)}
+              </span>
+              <button
+                className={styles.addBtn}
+                aria-label={t("ventas.addToCart")}
+              >
+                +
+              </button>
+            </div>
           </div>
         ))}
       </div>

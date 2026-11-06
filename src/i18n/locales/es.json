@@ -156,6 +156,7 @@
     "product": "Producto",
     "selectClient": "Seleccionar cliente",
     "searchProducts": "Buscar productos...",
+    "searchProductsOrCode": "Buscar o escanear código...",
     "searchSales": "Buscar ventas...",
     "addToCart": "Agregar al carrito",
     "removeFromCart": "Quitar del carrito",

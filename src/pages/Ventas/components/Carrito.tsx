@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { ShoppingCart } from "lucide-react";
+import { money } from "../../../utils/currency";
 import type { CartItem } from "../../../domain/types";
 import styles from "./Carrito.module.css";
 
@@ -9,8 +10,6 @@ interface Props {
   onRemoveItem: (productId: string) => void;
   onClearCart: () => void;
 }
-
-const formatCurrency = (amount: number) => `$${amount.toLocaleString()}`;
 
 export function Carrito({ items, onQuantityChange, onRemoveItem, onClearCart }: Props) {
   const { t } = useTranslation();
@@ -49,7 +48,7 @@ export function Carrito({ items, onQuantityChange, onRemoveItem, onClearCart }: 
                   {item.productName}
                 </span>
                 <span className={styles.cartItemPrice}>
-                  {formatCurrency(item.unitPrice)}
+                  {money(item.unitPrice)}
                 </span>
               </div>
               <div className={styles.cartItemControls}>
@@ -66,7 +65,7 @@ export function Carrito({ items, onQuantityChange, onRemoveItem, onClearCart }: 
                 </button>
               </div>
               <span className={styles.cartItemSubtotal}>
-                {formatCurrency(item.subtotal)}
+                {money(item.subtotal)}
               </span>
               <button
                 className={styles.cartItemDelete}
@@ -86,7 +85,7 @@ export function Carrito({ items, onQuantityChange, onRemoveItem, onClearCart }: 
         </div>
         <div className={styles.cartTotal}>
           <span>{t("common.total")}:</span>
-          <strong>{formatCurrency(subtotal)}</strong>
+          <strong>{money(subtotal)}</strong>
         </div>
       </div>
     </div>
