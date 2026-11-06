@@ -95,7 +95,7 @@ export function Ventas() {
       <PageHeader title={t("ventas.title")} subtitle={t("ventas.subtitle")}>
         <Button onClick={handleNewVenta}>+ {t("ventas.newSale")}</Button>
       </PageHeader>
-      {/* {loading && <p>{t("common.loading")}</p>} */}
+
       {showForm && (
         <NuevaVenta
           key={editingSaleId ?? "new"}
@@ -111,10 +111,10 @@ export function Ventas() {
           onClose={() => setViewingSaleId(null)}
         />
       )}
-        <VentasList
-          ventas={ventas}
-          totalCount={totalCount}
-          onVentaClick={handleVentaClick}
+      <VentasList
+        ventas={ventas}
+        totalCount={totalCount}
+        onVentaClick={handleVentaClick}
         onDelete={handleDelete}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}

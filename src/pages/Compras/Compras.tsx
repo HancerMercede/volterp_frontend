@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useCompraStore } from "../../stores/compraStore";
 import { useUIStore } from "../../stores/uiStore";
@@ -39,13 +39,9 @@ export function Compras() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const fetchData = useCallback(() => {
+  useEffect(() => {
     fetchCompras(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchCompras]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   const COMPRA_FIELDS: FormField[] = useMemo(
     () => [
@@ -120,6 +116,7 @@ export function Compras() {
       deleteCompra(deleteId);
       addToast(t("compras.purchaseDeleted"), "error");
     }
+    setDeleteId(null);
   };
 
   const columns = [

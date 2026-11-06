@@ -30,7 +30,7 @@ export function EmpleadoTable({ empleados, onEdit, onDelete }: Props) {
   };
 
   const columns = [
-    { key: "id", header: t("common.id") },
+    { key: "code", header: t("common.code") },
     {
       key: "nombre",
       header: t("rrhh.tableHeaders.employee"),
