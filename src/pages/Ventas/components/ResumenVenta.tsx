@@ -8,7 +8,6 @@ interface Props {
   subtotal: number;
   itbis: number;
   total: number;
-  totalItems: number;
   ventaEstado: "pendiente" | "completada";
   onEstadoChange: (estado: "pendiente" | "completada") => void;
   onCompletarVenta: () => void;
@@ -60,17 +59,9 @@ export function ResumenVenta({
         </select>
       </div>
 
-      <div className={styles.formGroup}>
-        <label>{t("common.date")}</label>
-        <input
-          type="text"
-          value={new Date().toISOString().split("T")[0]}
-          disabled
-        />
-      </div>
-
       <Button onClick={onCompletarVenta} className={styles.completeBtn}>
-        <CheckCircle size={18} strokeWidth={1.8} /> {t("ventas.checkout")}
+        <CheckCircle size={18} strokeWidth={1.8} /> {t("ventas.checkout")}{" "}
+        {money(total)}
       </Button>
       <Button variant="secondary" onClick={onGuardarBorrador}>
         <Save size={18} strokeWidth={1.8} /> {t("ventas.saveDraft")}

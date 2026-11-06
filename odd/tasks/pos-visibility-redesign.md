@@ -27,7 +27,7 @@ Rediseño visual del punto de venta para acercarlo a la referencia compartida po
 - Los chips de categoría arrancan en **"Todos"**.
 - Cada card muestra el placeholder de iniciales, el nombre, la categoría, el precio y un botón **(+)** redondo con el color de acento.
 
-**Criterios**: con N productos cargados se renderizan N cards; el input tiene el placeholder exacto; el badge "F2" está visible.
+**Criterios**: el input tiene el placeholder exacto; el badge "F2" está visible y enfoca el buscador; cada card muestra iniciales (o imagen), nombre, categoría, precio y el botón (+) redondo. La carga del catálogo no cambia (L8).
 
 **Checks**: test del POS (RED → GREEN) + suite.
 
@@ -72,13 +72,13 @@ Con cliente seleccionado se muestran sus iniciales en un avatar, su nombre, su t
 
 | ID | Specs | Route | Commit | Estado | Evidencia |
 |---|---|---|---|---|---|
-| T1 | S4 | inline | — | en curso | RED: el POS no muestra "RD$ 1,085.60" |
+| T1 | S4 | inline | 6210f29 | hecho | GREEN: `money()` en SelectorProducto, Carrito y ResumenVenta |
 | T2 | S2 | — | — | cancelado | El usuario decidió no cambiar la carga del catálogo (L8) |
-| T3 | S3 | inline | — | pendiente | RED: el POS no tiene panel "Venta actual" |
-| T4 | S5 | inline | — | pendiente | RED: el cliente no muestra teléfono ni "Cambiar" |
-| T5 | S3 | inline | — | pendiente | RED: la línea no muestra "c/u" ni hay bloque de totales único |
-| T6 | S3 | inline | — | pendiente | RED: el botón de cobrar no incluye el monto |
-| T7 | S2 | inline | — | en curso | RED: falta el placeholder "Buscar o escanear código..." y el badge "F2" |
+| T3 | S3 | inline | — | hecho | GREEN: rail de 2 columnas con "Venta actual", contador y "Vaciar" |
+| T4 | S5 | inline | — | hecho | GREEN: card de cliente con iniciales, teléfono y "Cambiar" |
+| T5 | S3 | inline | — | hecho | GREEN: línea con "c/u" + precio, totales y actions en el pie del rail |
+| T6 | S3 | inline | — | hecho | GREEN: el botón lleva el total ("Completar Venta RD$ 1,085.60") |
+| T7 | S2 | inline | 6210f29 | hecho | GREEN: placeholder de escáner + badge F2 + card con iniciales y (+) |
 
 **Orden**: T1 → T7 → T3 → T4 → T5 → T6 (T2 cancelado, L8). T1 y T7 van juntos: son el panel izquierdo (la moneda y el catálogo).
 
@@ -106,3 +106,9 @@ Con cliente seleccionado se muestran sus iniciales en un avatar, su nombre, su t
 - **L5 — Siguiente paso**: implementar T1 (RED → GREEN) sobre `development` y encadenar el resto.
 - **L6 — 2026-11-06**: "El panel de productos ya muestra el total de los productos y si hay mas los pagina no veo problemas explicame" / "Lo respeta siempre lo respeta". Verificado: la API sí respeta `pageSize` (`PaginationExtensions.cs:9-11` → `CountAsync` + `Skip/Take(pageSize)`), pero el único llamador en toda la app es `Inventario.tsx:52` con `ITEMS_PER_PAGE = 10`, y `fetchProductos` reemplaza el array (`productoStore.ts:38-42`): el store nunca pasa de 10 productos. Por eso la paginación del panel del POS es inalcanzable (`SelectorProducto.tsx:30` pagina de 50 sobre 10 → `totalProductPages = 1` → el `<Pagination>` de la línea 103 nunca renderiza) y su `total` sería `filteredProducts.length` (la página cargada), no el `totalCount` real. La página de Inventario sí está bien (`Inventario.tsx:218` → `getInfo(totalCount)`).
 - **L7 — Decisión de requisito (L6)**: S2 se reescribe: el panel debe mostrar el **total real** y **paginar si hay más**. Queda abierto cómo se sirve el catálogo en el POS (paginación server-side como Inventario vs. catálogo completo en memoria para la grilla continua de la referencia).
+- **L8 — 2026-11-06**: "No estoy de acuerdo con que el pos cargue todo creo que como esta esta bien por el momento" / "para este cambio lo haremos en una rama nueva para no ensuciar development" / "solo quiero mejorar la experiencia del user para eso es el plan". Decisiones: **T2 cancelado** (la carga del catálogo no se toca, el POS sigue usando el `productoStore`); la implementación va en la rama `feature/pos-visibility-redesign`; el alcance es solo UX/visibilidad.
+- **L9 — 2026-11-06**: "creo que ya entendi lo que me decias tener una carga para el pos de los productos aparte porque actualmente los que usa son los de la memoria es eso?" — confirmado: el POS consume el array en memoria del `productoStore` (persistido en localStorage), nunca pide productos. Queda sin implementar por L8.
+- **L10 — Verificación de la unidad 1**: `SelectorProducto.test.tsx` (4 tests, RED→GREEN) + `tsc` limpio + `eslint` limpio en lo tocado + suite 26 archivos / 241 tests verde. Commit `6210f29`.
+- **L11 — Componentes compartidos**: `SearchInput` gana `inputRef` opcional y `ImageCell` gana `showInfo` (default `true`). Ambos aditivos con defaults que preservan el comportamiento, así que Compras y las demás páginas no cambian.
+- **L12 — 2026-11-06 (unidad 2, el rail)**: el POS pasa de tres columnas a dos (catálogo | rail). El rail tiene encabezado "Venta actual" con el contador de artículos y "Vaciar", la card de cliente (iniciales + teléfono + "Cambiar"), las líneas con "c/u" y los totales con las acciones. El `Carrito` pierde su encabezado y su pie (el contador vive en el rail y los totales en el `ResumenVenta`), y el `ResumenVenta` pierde el campo de fecha (era un input deshabilitado, sin capacidad). El CTA quedó como "Completar Venta RD$ 1,085.60" — el copy sigue el tono de la app, no el "Cobrar" de la referencia, porque el select de estado sigue mandando (`Completed` o `Pending`) y no se puede cambiar la lógica. Tests nuevos: `NuevaVenta`, `Carrito`, `ResumenVenta`, `ClienteSelector` (9 casos). Verificación: `tsc` limpio, `eslint` limpio en lo tocado, suite 30 archivos / 250 tests verde.
+- **L13 — 2026-11-06 (bug de CSS en Compras)**: el usuario reportó que la columna ESTADO de Compras se veía sin color. Causa: `Compras.tsx:134` hace `styles[c.status.toLowerCase()]` (los enums del API: `pending`/`completed`/`cancelled`) pero el CSS tenía `.pendiente`/`.recibida`/`.cancelada` → la clase resolvía `undefined` y el chip quedaba sin fondo. Regresión del 29 de mayo (`1593b57f`), no de esta sesión. Fix: las clases del CSS pasan a inglés (`.completed`, `.pending`, `.cancelled`) con los mismos colores. El test de página se descartó por decisión del usuario (el fix es un rename de clases).

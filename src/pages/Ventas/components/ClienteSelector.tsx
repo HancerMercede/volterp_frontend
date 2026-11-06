@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFilter } from "../../../hooks/useFilter";
+import { initialsOf } from "../../../utils/initials";
 import type { Client } from "../../../domain/types";
 import styles from "./ClienteSelector.module.css";
 
@@ -20,6 +21,12 @@ export function ClienteSelector({
   onSearchChange,
 }: Props) {
   const { t } = useTranslation();
+  const [isPicking, setIsPicking] = useState(false);
+
+  const selectedCliente = useMemo(
+    () => clientes.find((c) => c.id === selectedClienteId) ?? null,
+    [clientes, selectedClienteId],
+  );
 
   const dropdownClientes = useMemo(() => {
     const top50 = clientes.slice(0, 50);
@@ -55,6 +62,7 @@ export function ClienteSelector({
       onClienteSelect(clienteId);
       const cliente = clientes.find((c) => c.id === clienteId);
       if (cliente) onSearchChange(cliente.name);
+      setIsPicking(false);
     }
   };
 
@@ -71,6 +79,28 @@ export function ClienteSelector({
 
   const displayValue =
     match?.id?.toString() || selectedClienteId?.toString() || "";
+
+  if (selectedCliente && !isPicking) {
+    return (
+      <div className={styles.clientCard}>
+        <span className={styles.clientAvatar}>
+          {initialsOf(selectedCliente.name)}
+        </span>
+        <div className={styles.clientInfo}>
+          <span className={styles.clientName}>{selectedCliente.name}</span>
+          {selectedCliente.phone && (
+            <span className={styles.clientPhone}>{selectedCliente.phone}</span>
+          )}
+        </div>
+        <button
+          className={styles.changeClient}
+          onClick={() => setIsPicking(true)}
+        >
+          {t("ventas.changeClient")}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
