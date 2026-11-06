@@ -10,17 +10,17 @@
   text-transform: capitalize;
 }
 
-.recibida {
+.completed {
   background: #D1FAE5;
   color: #065F46;
 }
 
-.pendiente {
+.pending {
   background: #FEF3C7;
   color: #92400E;
 }
 
-.cancelada {
+.cancelled {
   background: #FEE2E2;
   color: #991B1B;
 }
