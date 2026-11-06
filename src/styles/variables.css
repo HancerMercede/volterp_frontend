@@ -8,6 +8,7 @@
   --primary-dark: #EAB308;
   --primary-light: #FEF08A;
   --primary-gradient: linear-gradient(180deg, #FACC15 0%, #EAB308 100%);
+  --brand-gradient: linear-gradient(180deg, #1e3a5f 0%, #0f172a 50%, #020617 100%);
   --focus-ring: 0 0 0 3px rgba(250, 204, 21, 0.15);
 
   --background: #F8F9FC;

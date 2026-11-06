@@ -42,13 +42,15 @@
   justify-content: space-between;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--brand-gradient);
 }
 
 .railHeader h3 {
   font-size: 16px;
   font-weight: 600;
   margin: 0;
+  color: #fff;
 }
 
 .railHeaderActions {
@@ -60,8 +62,8 @@
 .itemCount {
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--surface-hover);
-  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.88);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -70,14 +72,14 @@
 .railClear {
   background: none;
   border: none;
-  color: #EF4444;
+  color: #F87171;
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
 }
 
 .railClear:disabled {
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.35);
   cursor: not-allowed;
 }
 
