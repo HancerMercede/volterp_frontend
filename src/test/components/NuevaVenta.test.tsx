@@ -59,6 +59,19 @@ describe("NuevaVenta", () => {
     expect(screen.getByText("0 items")).toBeInTheDocument();
   });
 
+  it("shows the selected client card after choosing a client", async () => {
+    renderPos();
+
+    await userEvent.selectOptions(
+      screen.getByRole("combobox", { name: "Client" }),
+      "c1",
+    );
+
+    expect(screen.getByText("Acme Corp")).toBeInTheDocument();
+    expect(screen.getByText("809-555-1201")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Change" })).toBeInTheDocument();
+  });
+
   it("counts the articles added to the cart", async () => {
     renderPos();
 

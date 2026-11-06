@@ -118,6 +118,7 @@ export function ClienteSelector({
           value={displayValue}
           onChange={handleSelectChange}
           className={styles.select}
+          aria-label={t("ventas.client")}
         >
           <option value="">{t("ventas.selectClient")}</option>
           {searchFilteredClientes.map((c) => (
