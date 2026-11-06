@@ -189,5 +189,15 @@ describe('useProveedorStore', () => {
 
       expect(useProveedorStore.getState().proveedores).toHaveLength(1);
     });
+
+    it('rejects when there is no token', async () => {
+      vi.mocked(useAuthStore.getState).mockReturnValueOnce({ token: null });
+
+      await expect(
+        useProveedorStore.getState().deleteProveedor('1'),
+      ).rejects.toThrow('No authenticated');
+
+      expect(useProveedorStore.getState().error).toBe('No authenticated');
+    });
   });
 });

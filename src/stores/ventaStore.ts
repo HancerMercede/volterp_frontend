@@ -168,7 +168,7 @@ export const useVentaStore = create<VentaStore>()(
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No autenticado" });
-          return;
+          throw new Error("No autenticado");
         }
         set({ loading: true, error: null });
         try {

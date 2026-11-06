@@ -250,6 +250,13 @@ describe('useVentaStore', () => {
       await expect(useVentaStore.getState().deleteVenta('1')).rejects.toThrow('Delete failed');
       expect(useVentaStore.getState().error).toBe('Delete failed');
     });
+
+    it('rejects when there is no token', async () => {
+      vi.mocked(useAuthStore.getState).mockReturnValueOnce({ token: null });
+
+      await expect(useVentaStore.getState().deleteVenta('1')).rejects.toThrow('No autenticado');
+      expect(useVentaStore.getState().error).toBe('No autenticado');
+    });
   });
 
   describe('clearError', () => {

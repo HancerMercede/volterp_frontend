@@ -136,7 +136,7 @@ export const useCompanyStore = create<CompanyStore>()(
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No authenticated" });
-          return;
+          throw new Error("No authenticated");
         }
         set({ loading: true, error: null });
         try {

@@ -169,6 +169,13 @@ describe('useCompanyStore', () => {
 
       await expect(useCompanyStore.getState().deleteCompany('1')).rejects.toThrow('Delete failed');
     });
+
+    it('rejects when there is no token', async () => {
+      vi.mocked(useAuthStore.getState).mockReturnValueOnce({ token: null });
+
+      await expect(useCompanyStore.getState().deleteCompany('1')).rejects.toThrow('No authenticated');
+      expect(useCompanyStore.getState().error).toBe('No authenticated');
+    });
   });
 
   describe('clearError', () => {

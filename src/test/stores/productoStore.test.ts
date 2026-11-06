@@ -270,7 +270,7 @@ describe('useProductoStore', () => {
       expect(useProductoStore.getState().loading).toBe(false);
     });
 
-    it('does not remove product when no token', async () => {
+    it('does not remove product and rejects when no token', async () => {
       vi.mocked(useAuthStore.getState).mockReturnValueOnce({ token: null });
 
       useProductoStore.setState({
@@ -279,7 +279,7 @@ describe('useProductoStore', () => {
         ],
       });
 
-      await useProductoStore.getState().deleteProducto('1');
+      await expect(useProductoStore.getState().deleteProducto('1')).rejects.toThrow('No authenticated');
 
       expect(useProductoStore.getState().error).toBe('No authenticated');
       expect(useProductoStore.getState().productos).toHaveLength(1);
