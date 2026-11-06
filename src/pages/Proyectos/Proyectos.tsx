@@ -12,6 +12,7 @@ import {
 } from "../../components/UI";
 import { useFilter } from "../../hooks/useFilter";
 import { usePagination } from "../../hooks/usePagination";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import type { Project } from "../../domain/types";
 import styles from "./Proyectos.module.css";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
@@ -47,8 +48,6 @@ export function Proyectos() {
     endDate: "",
     progress: 0,
   });
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchData = useCallback(() => {
     fetchProyectos(pageNumber, ITEMS_PER_PAGE);
@@ -124,20 +123,11 @@ export function Proyectos() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = async () => {
-    if (deleteId) {
-      try {
-        await deleteProyecto(deleteId);
-      } catch {
-        // error se maneja en el store
-      }
-    }
-  };
+  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+    useDeleteConfirm({
+      onDelete: deleteProyecto,
+      successMessage: t("proyectos.projectDeleted"),
+    });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -375,10 +365,7 @@ export function Proyectos() {
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
-        onCancel={() => {
-          setShowDeleteConfirm(false);
-          setDeleteId(null);
-        }}
+        onCancel={cancelDelete}
         title={t("common.confirmDeleteTitle")}
         message={t("proyectos.deleteConfirm")}
         confirmLabel={t("common.delete")}

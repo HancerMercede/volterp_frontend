@@ -9,6 +9,7 @@ import {
 } from "../../components/UI";
 import { useEmpleadoStore } from "../../stores/empleadoStore";
 import { usePagination } from "../../hooks/usePagination";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import { useEmpleadoForm } from "../../application/hooks/useEmpleadoForm";
 import type { EmployeeDto, EmployeeRequest } from "../../domain/types";
@@ -34,8 +35,6 @@ export function RRHH() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState<"todos" | string>("todos");
   const [showForm, setShowForm] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
@@ -94,16 +93,11 @@ export function RRHH() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = () => {
-    if (deleteId) {
-      deleteEmpleado(deleteId);
-    }
-  };
+  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+    useDeleteConfirm({
+      onDelete: deleteEmpleado,
+      successMessage: t("rrhh.employeeDeleted"),
+    });
 
   const openNewForm = () => {
     reset();
@@ -164,10 +158,7 @@ export function RRHH() {
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
-        onCancel={() => {
-          setShowDeleteConfirm(false);
-          setDeleteId(null);
-        }}
+        onCancel={cancelDelete}
         title={t("common.confirmDeleteTitle")}
         message={t("rrhh.deleteConfirm")}
         confirmLabel={t("common.delete")}

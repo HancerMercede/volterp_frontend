@@ -7,6 +7,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
 import { PageHeader, Button, ConfirmModal } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { SaleDto } from "../../domain/types";
 import { VentasList } from "./components/VentasList";
@@ -25,8 +26,6 @@ export function Ventas() {
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
   const [viewingSaleId, setViewingSaleId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { pageNumber, goToPage } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
@@ -54,22 +53,11 @@ export function Ventas() {
     }
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = async () => {
-    if (deleteId) {
-      try {
-        await deleteVenta(deleteId);
-        addToast(t("ventas.saleDeleted"), "success");
-      } catch (err) {
-        addToast((err as Error).message, "error");
-      }
-    }
-    setDeleteId(null);
-  };
+  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+    useDeleteConfirm({
+      onDelete: deleteVenta,
+      successMessage: t("ventas.saleDeleted"),
+    });
 
   const handleNewVenta = () => {
     setEditingSaleId(null);
@@ -124,10 +112,7 @@ export function Ventas() {
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
-        onCancel={() => {
-          setShowDeleteConfirm(false);
-          setDeleteId(null);
-        }}
+        onCancel={cancelDelete}
         title={t("common.confirmDeleteTitle")}
         message={t("ventas.deleteConfirm")}
         confirmLabel={t("common.delete")}

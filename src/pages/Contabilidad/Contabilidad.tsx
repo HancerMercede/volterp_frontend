@@ -13,6 +13,7 @@ import {
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import type {
   AccountingTransactionDto,
   AccountingTransactionRequest,
@@ -40,8 +41,6 @@ export function Contabilidad() {
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     fetchTransacciones(pageNumber, ITEMS_PER_PAGE);
@@ -133,14 +132,11 @@ export function Contabilidad() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = () => {
-    if (deleteId) deleteTransaccion(deleteId);
-  };
+  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+    useDeleteConfirm({
+      onDelete: deleteTransaccion,
+      successMessage: t("contabilidad.transactionDeleted"),
+    });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-DO", {
@@ -305,10 +301,7 @@ export function Contabilidad() {
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
-        onCancel={() => {
-          setShowDeleteConfirm(false);
-          setDeleteId(null);
-        }}
+        onCancel={cancelDelete}
         title={t("common.confirmDeleteTitle")}
         message={t("contabilidad.deleteConfirm")}
         confirmLabel={t("common.delete")}

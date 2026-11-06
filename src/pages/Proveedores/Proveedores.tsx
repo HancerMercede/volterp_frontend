@@ -14,6 +14,7 @@ import {
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { SupplierDto, SupplierRequest } from "../../domain/types";
 import styles from "./Proveedores.module.css";
@@ -34,9 +35,6 @@ export function Proveedores() {
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
   const fetchData = useCallback(() => {
     fetchProveedores(pageNumber, ITEMS_PER_PAGE);
@@ -112,14 +110,11 @@ export function Proveedores() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = () => {
-    if (deleteId) deleteProveedor(deleteId);
-  };
+  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+    useDeleteConfirm({
+      onDelete: deleteProveedor,
+      successMessage: t("proveedores.providerDeleted"),
+    });
 
   const columns = [
     { key: "code", header: t("common.code") },
@@ -201,10 +196,7 @@ export function Proveedores() {
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
-        onCancel={() => {
-          setShowDeleteConfirm(false);
-          setDeleteId(null);
-        }}
+        onCancel={cancelDelete}
         title={t("common.confirmDeleteTitle")}
         message={t("proveedores.deleteConfirm")}
         confirmLabel={t("common.delete")}

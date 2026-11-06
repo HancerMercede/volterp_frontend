@@ -14,6 +14,7 @@ import {
   DynamicFormFields,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { Client, ClientRequest } from "../../domain/types";
 import styles from "./Clientes.module.css";
@@ -45,9 +46,6 @@ export function Clientes() {
 
   const [showForm, setShowForm] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
-
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
   const CLIENTE_FIELDS: FormField[] = useMemo(
     () => [
@@ -119,14 +117,11 @@ export function Clientes() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = () => {
-    if (deleteId) deleteCliente(deleteId);
-  };
+  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+    useDeleteConfirm({
+      onDelete: deleteCliente,
+      successMessage: t("clientes.clientDeleted"),
+    });
 
   const columns = [
     { key: "code", header: t("common.code") },
@@ -218,10 +213,7 @@ export function Clientes() {
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
-        onCancel={() => {
-          setShowDeleteConfirm(false);
-          setDeleteId(null);
-        }}
+        onCancel={cancelDelete}
         title={t("common.confirmDeleteTitle")}
         message={t("clientes.deleteConfirm")}
         confirmLabel={t("common.delete")}

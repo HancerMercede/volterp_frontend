@@ -520,7 +520,9 @@
     "language": "Language",
     "interfaceLanguage": "Interface Language",
     "languageHint": "The language will be applied to the entire system interface",
-    "settingsSaved": "Settings saved"
+    "settingsSaved": "Settings saved",
+    "userDeleted": "User deleted",
+    "deleteUserConfirm": "Are you sure you want to delete this user?"
   },
   "soporte": {
     "title": "Support",
@@ -637,6 +639,7 @@
       "delete": "Delete",
       "add": "New Company"
     },
-    "confirmDelete": "Are you sure you want to delete this company?"
+    "confirmDelete": "Are you sure you want to delete this company?",
+    "companyDeleted": "Company deleted"
   }
 }

@@ -527,7 +527,9 @@
     "language": "Idioma",
     "interfaceLanguage": "Idioma de la interfaz",
     "languageHint": "El idioma se aplicará a toda la interfaz del sistema",
-    "settingsSaved": "Configuración guardada"
+    "settingsSaved": "Configuración guardada",
+    "userDeleted": "Usuario eliminado",
+    "deleteUserConfirm": "¿Eliminar este usuario?"
   },
   "soporte": {
     "title": "Soporte",
@@ -644,6 +646,7 @@
       "delete": "Eliminar",
       "add": "Nueva Empresa"
     },
-    "confirmDelete": "¿Está seguro de eliminar esta empresa?"
+    "confirmDelete": "¿Está seguro de eliminar esta empresa?",
+    "companyDeleted": "Empresa eliminada"
   }
 }

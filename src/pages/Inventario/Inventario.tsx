@@ -21,6 +21,7 @@ import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { ProductDto } from "../../domain/types";
 import styles from "./Inventario.module.css";
 import { useFilter } from "../../hooks/useFilter";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 
 export function Inventario() {
   const { t } = useTranslation();
@@ -44,9 +45,6 @@ export function Inventario() {
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchData = useCallback(() => {
     fetchProductos(pageNumber, ITEMS_PER_PAGE);
@@ -192,22 +190,11 @@ export function Inventario() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = async () => {
-    if (deleteId) {
-      try {
-        await deleteProducto(deleteId);
-      } catch {
-        // Error is handled in store
-      }
-      setShowDeleteConfirm(false);
-      setDeleteId(null);
-    }
-  };
+  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+    useDeleteConfirm({
+      onDelete: deleteProducto,
+      successMessage: t("inventario.productDeleted"),
+    });
 
   const columns = [
     { key: "code", header: t("common.code") },
@@ -331,10 +318,7 @@ export function Inventario() {
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
-        onCancel={() => {
-          setShowDeleteConfirm(false);
-          setDeleteId(null);
-        }}
+        onCancel={cancelDelete}
         title={t("common.confirmDeleteTitle")}
         message={t("inventario.deleteConfirm")}
         confirmLabel={t("common.delete")}

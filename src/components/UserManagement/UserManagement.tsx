@@ -17,6 +17,7 @@ import {
   ActionButtons,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import styles from "./UserManagement.module.css";
 
@@ -63,8 +64,6 @@ export function UserManagement() {
   const [error, setError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newUser, setNewUser] = useState<CreateUserRequest>(InitialState);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
@@ -137,21 +136,15 @@ export function UserManagement() {
     }
   }
 
-  function handleDelete(userId: string) {
-    if (!token) return;
-    setDeleteId(userId);
-    setShowDeleteConfirm(true);
-  }
-
-  const confirmDelete = async () => {
-    if (!token || !deleteId) return;
-    try {
-      await userService.deleteUser(deleteId);
-      setUsers(users.filter((u) => u.id !== deleteId));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error deleting user");
-    }
-  };
+  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+    useDeleteConfirm({
+      onDelete: async (id) => {
+        if (!token) throw new Error("No autenticado");
+        await userService.deleteUser(id);
+        setUsers((prev) => prev.filter((u) => u.id !== id));
+      },
+      successMessage: t("configuracion.userDeleted"),
+    });
 
   const paginationInfo = getInfo(totalCount);
 
@@ -319,12 +312,9 @@ export function UserManagement() {
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
-        onCancel={() => {
-          setShowDeleteConfirm(false);
-          setDeleteId(null);
-        }}
+        onCancel={cancelDelete}
         title={t("common.confirmDeleteTitle")}
-        message="¿Eliminar este usuario?"
+        message={t("configuracion.deleteUserConfirm")}
         confirmLabel={t("common.delete")}
         cancelLabel={t("common.cancel")}
       />

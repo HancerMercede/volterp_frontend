@@ -13,6 +13,7 @@ import {
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { CompanyRequest } from "../../domain/types";
 import styles from "./Empresas.module.css";
@@ -50,9 +51,6 @@ export function Empresas() {
 
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchData = useCallback(() => {
     fetchCompanies(pageNumber, ITEMS_PER_PAGE);
@@ -100,22 +98,11 @@ export function Empresas() {
     setShowForm(true);
   };
 
-  const handleDeleteClick = (id: string) => {
-    setDeleteId(id);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = async () => {
-    if (deleteId) {
-      try {
-        await deleteCompany(deleteId);
-        setShowDeleteConfirm(false);
-        setDeleteId(null);
-      } catch {
-        // Error is handled in store
-      }
-    }
-  };
+  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+    useDeleteConfirm({
+      onDelete: deleteCompany,
+      successMessage: t("empresas.companyDeleted"),
+    });
 
   const columns = [
     { key: "name", header: t("empresas.table.headers.name") },
@@ -142,7 +129,7 @@ export function Empresas() {
       render: (company: CompanyTableRow) => (
         <ActionButtons
           onEdit={() => handleEdit(company)}
-          onDelete={() => handleDeleteClick(company.id)}
+          onDelete={() => handleDelete(company.id)}
         />
       ),
     },
@@ -197,10 +184,7 @@ export function Empresas() {
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
-        onCancel={() => {
-          setShowDeleteConfirm(false);
-          setDeleteId(null);
-        }}
+        onCancel={cancelDelete}
         title={t("common.confirmDeleteTitle")}
         message={t("empresas.confirmDelete")}
         confirmLabel={t("common.delete")}

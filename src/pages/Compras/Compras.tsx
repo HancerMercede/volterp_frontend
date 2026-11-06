@@ -15,6 +15,7 @@ import {
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { PurchaseDto } from "../../domain/types";
 import styles from "./Compras.module.css";
@@ -36,8 +37,6 @@ export function Compras() {
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     fetchCompras(pageNumber, ITEMS_PER_PAGE);
@@ -106,18 +105,11 @@ export function Compras() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = () => {
-    if (deleteId) {
-      deleteCompra(deleteId);
-      addToast(t("compras.purchaseDeleted"), "error");
-    }
-    setDeleteId(null);
-  };
+  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+    useDeleteConfirm({
+      onDelete: deleteCompra,
+      successMessage: t("compras.purchaseDeleted"),
+    });
 
   const columns = [
     { key: "code", header: t("common.code") },
@@ -210,10 +202,7 @@ export function Compras() {
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
-        onCancel={() => {
-          setShowDeleteConfirm(false);
-          setDeleteId(null);
-        }}
+        onCancel={cancelDelete}
         title={t("common.confirmDeleteTitle")}
         message={t("compras.deleteConfirm")}
         confirmLabel={t("common.delete")}
