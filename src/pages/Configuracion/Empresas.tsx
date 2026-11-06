@@ -98,11 +98,13 @@ export function Empresas() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
       onDelete: deleteCompany,
       successMessage: t("empresas.companyDeleted"),
     });
+
+  const pendingCompany = companies.find((c) => c.id === deleteId) ?? null;
 
   const columns = [
     { key: "name", header: t("empresas.table.headers.name") },
@@ -185,10 +187,18 @@ export function Empresas() {
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title={t("common.confirmDeleteTitle")}
+        title={`${t("common.delete")} ${t("common.company")}`}
         message={t("empresas.confirmDelete")}
-        confirmLabel={t("common.delete")}
+        confirmLabel={t("common.confirmDeleteAction")}
         cancelLabel={t("common.cancel")}
+        context={
+          pendingCompany
+            ? {
+                title: `${t("common.company")} ${pendingCompany.name}`,
+                subtitle: pendingCompany.taxId,
+              }
+            : undefined
+        }
       />
     </div>
   );

@@ -136,7 +136,7 @@ export function UserManagement() {
     }
   }
 
-  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
       onDelete: async (id) => {
         if (!token) throw new Error("No autenticado");
@@ -145,6 +145,8 @@ export function UserManagement() {
       },
       successMessage: t("configuracion.userDeleted"),
     });
+
+  const pendingUser = users.find((u) => u.id === deleteId) ?? null;
 
   const paginationInfo = getInfo(totalCount);
 
@@ -313,10 +315,20 @@ export function UserManagement() {
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title={t("common.confirmDeleteTitle")}
+        title={`${t("common.delete")} ${t("common.user")}`}
         message={t("configuracion.deleteUserConfirm")}
-        confirmLabel={t("common.delete")}
+        confirmLabel={t("common.confirmDeleteAction")}
         cancelLabel={t("common.cancel")}
+        context={
+          pendingUser
+            ? {
+                title: `${t("common.user")} ${pendingUser.fullName}`,
+                subtitle: [pendingUser.username, String(pendingUser.role)]
+                  .filter(Boolean)
+                  .join(" · "),
+              }
+            : undefined
+        }
       />
     </div>
   );

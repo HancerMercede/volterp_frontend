@@ -21,6 +21,7 @@ import type {
 import styles from "./Contabilidad.module.css";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import { useFilter } from "../../hooks/useFilter";
+import { money } from "../../utils/currency";
 
 export function Contabilidad() {
   const { t } = useTranslation();
@@ -132,11 +133,13 @@ export function Contabilidad() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
       onDelete: deleteTransaccion,
       successMessage: t("contabilidad.transactionDeleted"),
     });
+
+  const pendingTransaction = transacciones.find((x) => x.id === deleteId) ?? null;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-DO", {
@@ -302,10 +305,24 @@ export function Contabilidad() {
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title={t("common.confirmDeleteTitle")}
+        title={`${t("common.delete")} ${t("common.transaction")}`}
         message={t("contabilidad.deleteConfirm")}
-        confirmLabel={t("common.delete")}
+        confirmLabel={t("common.confirmDeleteAction")}
         cancelLabel={t("common.cancel")}
+        context={
+          pendingTransaction
+            ? {
+                title: `${t("common.transaction")} #${pendingTransaction.code}`,
+                subtitle: [
+                  pendingTransaction.description,
+                  pendingTransaction.category,
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
+                amount: money(pendingTransaction.amount),
+              }
+            : undefined
+        }
       />
     </div>
   );

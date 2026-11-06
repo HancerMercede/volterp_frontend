@@ -11,6 +11,7 @@ import {
   Modal,
   ConfirmModal,
   DynamicFormFields,
+  VolterpMark,
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
@@ -46,32 +47,59 @@ export function Proveedores() {
 
   const PROVEEDOR_FIELDS: FormField[] = useMemo(
     () => [
-      { name: "name", label: t("common.name"), type: "text", required: true },
+      {
+        name: "name",
+        label: t("common.name"),
+        type: "text",
+        required: true,
+        section: "formSections.identity",
+        span: 6,
+      },
       {
         name: "email",
         label: t("common.email"),
         type: "email",
         required: true,
+        section: "formSections.contact",
+        span: 3,
       },
-      { name: "phone", label: t("common.phone"), type: "tel", required: true },
+      {
+        name: "phone",
+        label: t("common.phone"),
+        type: "tel",
+        required: true,
+        section: "formSections.contact",
+        span: 3,
+      },
       {
         name: "address",
         label: t("common.address"),
         type: "text",
         required: true,
+        section: "formSections.location",
+        span: 6,
       },
       {
         name: "category",
         label: t("common.category"),
         type: "text",
         required: true,
+        section: "formSections.sector",
+        span: 3,
       },
-      { name: "contactPerson", label: "Contacto", type: "text" },
+      {
+        name: "contactPerson",
+        label: t("proveedores.contactPerson"),
+        type: "text",
+        section: "formSections.sector",
+        span: 3,
+      },
       {
         name: "imageUrl",
         label: t("common.image"),
         type: "file",
         accept: "image/*",
+        sidebar: true,
       },
     ],
     [t],
@@ -110,11 +138,13 @@ export function Proveedores() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
       onDelete: deleteProveedor,
       successMessage: t("proveedores.providerDeleted"),
     });
+
+  const pendingSupplier = proveedores.find((p) => p.id === deleteId) ?? null;
 
   const columns = [
     { key: "code", header: t("common.code") },
@@ -176,13 +206,27 @@ export function Proveedores() {
           setShowForm(false);
           form.reset();
         }}
+        size="lg"
+        icon={<VolterpMark size={40} />}
         title={
           form.editingId
             ? t("proveedores.editProvider")
             : t("proveedores.newProvider")
         }
+        subtitle={
+          form.editingId
+            ? form.values.name || t("common.newRecordSubtitle")
+            : t("common.newRecordSubtitle")
+        }
+        footerStatus={
+          form.isDirty ? t("common.unsavedChanges") : t("common.noPendingChanges")
+        }
+        dirty={form.isDirty}
         onSubmit={form.handleSubmit}
-        submitLabel={form.editingId ? t("common.save") : t("common.create")}
+        submitLabel={form.editingId ? t("common.saveChanges") : t("common.create")}
+        submitVariant="dark"
+        cancelLabel={t("common.cancel")}
+        closeLabel={t("common.close")}
       >
         <DynamicFormFields
           fields={PROVEEDOR_FIELDS}
@@ -197,10 +241,20 @@ export function Proveedores() {
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title={t("common.confirmDeleteTitle")}
+        title={`${t("common.delete")} ${t("common.supplier")}`}
         message={t("proveedores.deleteConfirm")}
-        confirmLabel={t("common.delete")}
+        confirmLabel={t("common.confirmDeleteAction")}
         cancelLabel={t("common.cancel")}
+        context={
+          pendingSupplier
+            ? {
+                title: `${t("common.supplier")} #${pendingSupplier.code}`,
+                subtitle: [pendingSupplier.name, pendingSupplier.category]
+                  .filter(Boolean)
+                  .join(" · "),
+              }
+            : undefined
+        }
       />
     </div>
   );

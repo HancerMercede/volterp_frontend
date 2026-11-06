@@ -16,6 +16,7 @@ import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import type { Project } from "../../domain/types";
 import styles from "./Proyectos.module.css";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
+import { money } from "../../utils/currency";
 
 type ProjectStatus = Project["status"];
 
@@ -123,11 +124,13 @@ export function Proyectos() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
       onDelete: deleteProyecto,
       successMessage: t("proyectos.projectDeleted"),
     });
+
+  const pendingProject = proyectos.find((p) => p.id === deleteId) ?? null;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -366,10 +369,19 @@ export function Proyectos() {
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title={t("common.confirmDeleteTitle")}
+        title={`${t("common.delete")} ${t("common.project")}`}
         message={t("proyectos.deleteConfirm")}
-        confirmLabel={t("common.delete")}
+        confirmLabel={t("common.confirmDeleteAction")}
         cancelLabel={t("common.cancel")}
+        context={
+          pendingProject
+            ? {
+                title: `${t("common.project")} ${pendingProject.name}`,
+                subtitle: `${t("proyectos.projectClient")}: ${pendingProject.client}`,
+                amount: money(pendingProject.budget),
+              }
+            : undefined
+        }
       />
     </div>
   );

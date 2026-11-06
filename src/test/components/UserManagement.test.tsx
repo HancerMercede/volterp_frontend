@@ -59,7 +59,7 @@ beforeEach(() => {
 
 const confirmDelete = async () => {
   await userEvent.click(await screen.findByRole("button", { name: "Eliminar" }));
-  await userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+  await userEvent.click(await screen.findByRole("button", { name: "Yes, delete" }));
 };
 
 describe("UserManagement delete flow", () => {

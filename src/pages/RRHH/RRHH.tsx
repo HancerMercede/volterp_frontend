@@ -19,6 +19,7 @@ import { EmpleadoTable } from "../../components/RRHH/EmpleadoTable";
 import { EmpleadoFormModal } from "../../components/RRHH/EmpleadoFormModal";
 import styles from "./RRHH.module.css";
 import { useFilter } from "../../hooks/useFilter";
+import { money } from "../../utils/currency";
 
 export function RRHH() {
   const { t } = useTranslation();
@@ -93,11 +94,13 @@ export function RRHH() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
       onDelete: deleteEmpleado,
       successMessage: t("rrhh.employeeDeleted"),
     });
+
+  const pendingEmployee = empleados.find((e) => e.id === deleteId) ?? null;
 
   const openNewForm = () => {
     reset();
@@ -159,10 +162,24 @@ export function RRHH() {
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title={t("common.confirmDeleteTitle")}
+        title={`${t("common.delete")} ${t("common.employee")}`}
         message={t("rrhh.deleteConfirm")}
-        confirmLabel={t("common.delete")}
+        confirmLabel={t("common.confirmDeleteAction")}
         cancelLabel={t("common.cancel")}
+        context={
+          pendingEmployee
+            ? {
+                title: `${t("common.employee")} #${pendingEmployee.code}`,
+                subtitle: [
+                  `${pendingEmployee.firstName} ${pendingEmployee.lastName}`,
+                  pendingEmployee.position,
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
+                amount: money(pendingEmployee.salary),
+              }
+            : undefined
+        }
       />
     </div>
   );

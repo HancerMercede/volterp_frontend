@@ -13,6 +13,7 @@ import type { SaleDto } from "../../domain/types";
 import { VentasList } from "./components/VentasList";
 import { NuevaVenta } from "./components/NuevaVenta";
 import { VentaDetail } from "./components/VentaDetail";
+import { money } from "../../utils/currency";
 
 export function Ventas() {
   const { t } = useTranslation();
@@ -53,11 +54,13 @@ export function Ventas() {
     }
   };
 
-  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
       onDelete: deleteVenta,
       successMessage: t("ventas.saleDeleted"),
     });
+
+  const pendingSale = ventas.find((v) => v.id === deleteId) ?? null;
 
   const handleNewVenta = () => {
     setEditingSaleId(null);
@@ -113,10 +116,24 @@ export function Ventas() {
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title={t("common.confirmDeleteTitle")}
+        title={`${t("common.delete")} ${t("ventas.sale")}`}
         message={t("ventas.deleteConfirm")}
-        confirmLabel={t("common.delete")}
+        confirmLabel={t("common.confirmDeleteAction")}
         cancelLabel={t("common.cancel")}
+        context={
+          pendingSale
+            ? {
+                title: `${t("ventas.sale")} #${pendingSale.code}`,
+                subtitle: [
+                  pendingSale.clienteName,
+                  `${pendingSale.items.length} ${t("ventas.productCount")}`,
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
+                amount: money(pendingSale.total),
+              }
+            : undefined
+        }
       />
     </div>
   );

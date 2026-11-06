@@ -12,6 +12,7 @@ import {
   Modal,
   ConfirmModal,
   DynamicFormFields,
+  VolterpMark,
 } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
@@ -54,12 +55,16 @@ export function Clientes() {
         label: t("clientes.clientName"),
         type: "text",
         required: true,
+        section: "formSections.identity",
+        span: 6,
       },
       {
         name: "email",
         label: t("clientes.clientEmail"),
         type: "email",
         required: true,
+        section: "formSections.contact",
+        span: 3,
       },
       {
         name: "phone",
@@ -67,13 +72,22 @@ export function Clientes() {
         type: "tel",
         required: true,
         placeholder: "809-XXX-XXXX",
+        section: "formSections.contact",
+        span: 3,
       },
-      { name: "address", label: t("common.address"), type: "text" },
+      {
+        name: "address",
+        label: t("common.address"),
+        type: "text",
+        section: "formSections.location",
+        span: 6,
+      },
       {
         name: "imageUrl",
         label: t("common.image"),
         type: "file",
         accept: "image/*",
+        sidebar: true,
       },
       {
         name: "isActive",
@@ -81,6 +95,8 @@ export function Clientes() {
         type: "checkbox",
         showOnEdit: true,
         placeholder: t("common.active"),
+        sidebar: true,
+        hint: t("common.visibleInSales"),
       },
     ],
     [t],
@@ -117,11 +133,13 @@ export function Clientes() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
       onDelete: deleteCliente,
       successMessage: t("clientes.clientDeleted"),
     });
+
+  const pendingClient = clientes.find((c) => c.id === deleteId) ?? null;
 
   const columns = [
     { key: "code", header: t("common.code") },
@@ -191,11 +209,25 @@ export function Clientes() {
           setShowForm(false);
           form.reset();
         }}
+        size="lg"
+        icon={<VolterpMark size={40} />}
         title={
           form.editingId ? t("clientes.editClient") : t("clientes.newClient")
         }
+        subtitle={
+          form.editingId
+            ? form.values.name || t("common.newRecordSubtitle")
+            : t("common.newRecordSubtitle")
+        }
+        footerStatus={
+          form.isDirty ? t("common.unsavedChanges") : t("common.noPendingChanges")
+        }
+        dirty={form.isDirty}
         onSubmit={form.handleSubmit}
-        submitLabel={form.editingId ? t("common.update") : t("common.create")}
+        submitLabel={form.editingId ? t("common.saveChanges") : t("common.create")}
+        submitVariant="dark"
+        cancelLabel={t("common.cancel")}
+        closeLabel={t("common.close")}
       >
         <DynamicFormFields
           fields={CLIENTE_FIELDS}
@@ -214,10 +246,20 @@ export function Clientes() {
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title={t("common.confirmDeleteTitle")}
+        title={`${t("common.delete")} ${t("common.client")}`}
         message={t("clientes.deleteConfirm")}
-        confirmLabel={t("common.delete")}
+        confirmLabel={t("common.confirmDeleteAction")}
         cancelLabel={t("common.cancel")}
+        context={
+          pendingClient
+            ? {
+                title: `${t("common.client")} #${pendingClient.code}`,
+                subtitle: [pendingClient.name, pendingClient.email]
+                  .filter(Boolean)
+                  .join(" · "),
+              }
+            : undefined
+        }
       />
     </div>
   );

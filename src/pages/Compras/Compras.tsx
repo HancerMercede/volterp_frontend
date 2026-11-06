@@ -20,6 +20,7 @@ import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { PurchaseDto } from "../../domain/types";
 import styles from "./Compras.module.css";
 import { useFilter } from "../../hooks/useFilter";
+import { money } from "../../utils/currency";
 
 export function Compras() {
   const { t } = useTranslation();
@@ -105,11 +106,13 @@ export function Compras() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, handleDelete, confirmDelete, cancelDelete } =
+  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
       onDelete: deleteCompra,
       successMessage: t("compras.purchaseDeleted"),
     });
+
+  const pendingPurchase = compras.find((c) => c.id === deleteId) ?? null;
 
   const columns = [
     { key: "code", header: t("common.code") },
@@ -203,10 +206,24 @@ export function Compras() {
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title={t("common.confirmDeleteTitle")}
+        title={`${t("common.delete")} ${t("common.purchase")}`}
         message={t("compras.deleteConfirm")}
-        confirmLabel={t("common.delete")}
+        confirmLabel={t("common.confirmDeleteAction")}
         cancelLabel={t("common.cancel")}
+        context={
+          pendingPurchase
+            ? {
+                title: `${t("common.purchase")} #${pendingPurchase.code}`,
+                subtitle: [
+                  pendingPurchase.supplierName,
+                  `${pendingPurchase.items.length} ${t("compras.productCount")}`,
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
+                amount: money(pendingPurchase.total),
+              }
+            : undefined
+        }
       />
     </div>
   );
