@@ -29,6 +29,26 @@
   transform: scale(1.05);
 }
 
+.resend {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+}
+
+.resend:hover {
+  background: var(--primary-light);
+  transform: scale(1.05);
+}
+
+.resetPassword {
+  background: var(--gray-100);
+  color: var(--text-secondary);
+}
+
+.resetPassword:hover {
+  background: var(--gray-200);
+  transform: scale(1.05);
+}
+
 .edit {
   background: #ECFDF5;
   color: #059669;

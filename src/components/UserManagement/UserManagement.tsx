@@ -1,25 +1,27 @@
-import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { useAuthStore } from "../../stores/authStore";
-import { userService } from "../../infrastructure/api/userService";
-import type { UserDto, CreateUserRequest } from "../../domain/types";
+import { useEffect, useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../stores/authStore';
+import { useUIStore } from '../../stores/uiStore';
+import { userService } from '../../infrastructure/api/userService';
+import type { UserDto, InviteUserRequest } from '../../domain/types';
+import { resolveUserStatus, UserStatus } from '../../domain/constants/userStatus';
 import {
   ROL_LABELS,
   ROL_COLORS,
   Rol,
   normalizeRole,
-} from "../../domain/constants/roles";
+} from '../../domain/constants/roles';
 import {
   Button,
   Modal,
   ConfirmModal,
   Pagination,
   ActionButtons,
-} from "../../components/UI";
-import { usePagination } from "../../hooks/usePagination";
-import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
-import { ITEMS_PER_PAGE } from "../../config/pagination";
-import styles from "./UserManagement.module.css";
+} from '../../components/UI';
+import { usePagination } from '../../hooks/usePagination';
+import { useDeleteConfirm } from '../../hooks/useDeleteConfirm';
+import { ITEMS_PER_PAGE } from '../../config/pagination';
+import styles from './UserManagement.module.css';
 
 // Basic roles that all admins can assign
 const BASIC_ROLES = [
@@ -40,17 +42,29 @@ const ALL_ROLES = [
   Rol.RRHH,
 ] as const;
 
-const InitialState = {
-  username: "",
-  password: "",
-  email: "",
-  fullName: "",
-  role: "ventas",
+const INITIAL_INVITE: InviteUserRequest = {
+  email: '',
+  fullName: '',
+  role: 'ventas',
+  username: '',
+};
+
+const STATUS_LABEL_KEY: Record<UserStatus, string> = {
+  [UserStatus.INVITED]: 'configuracion.userManagement.statusInvited',
+  [UserStatus.ACTIVE]: 'configuracion.userManagement.statusActive',
+  [UserStatus.INACTIVE]: 'configuracion.userManagement.statusInactive',
+};
+
+const STATUS_CLASS: Record<UserStatus, string> = {
+  [UserStatus.INVITED]: styles.invited,
+  [UserStatus.ACTIVE]: styles.active,
+  [UserStatus.INACTIVE]: styles.inactive,
 };
 
 export function UserManagement() {
   const { t } = useTranslation();
   const { token, user } = useAuthStore();
+  const { addToast } = useUIStore();
 
   // Get current user role (normalized to lowercase)
   const currentRole = user?.role?.toLowerCase();
@@ -61,9 +75,13 @@ export function UserManagement() {
   const availableRoles = isSuperAdmin ? ALL_ROLES : BASIC_ROLES;
   const [users, setUsers] = useState<UserDto[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newUser, setNewUser] = useState<CreateUserRequest>(InitialState);
+  const [error, setError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [invite, setInvite] = useState<InviteUserRequest>(INITIAL_INVITE);
+  const [resetPasswordUser, setResetPasswordUser] = useState<UserDto | null>(
+    null,
+  );
 
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
@@ -76,40 +94,43 @@ export function UserManagement() {
 
     async function loadUsers() {
       setLoading(true);
-      setError("");
+      setError('');
       try {
         const data = await userService.getUsers(pageNumber, ITEMS_PER_PAGE);
         setUsers(data.items);
         setTotalCount(data.rowCount);
         setPageCount(data.pageCount);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error loading users");
+        setError(err instanceof Error ? err.message : 'Error loading users');
       } finally {
         setLoading(false);
       }
     }
-    loadUsers();
-  }, [token, pageNumber]);
 
-  async function handleCreate(e: React.FormEvent) {
+    loadUsers();
+  }, [token, pageNumber, reloadKey]);
+
+  async function handleInvite(e: FormEvent) {
     e.preventDefault();
     if (!token) return;
     try {
-      const created = await userService.createUser({
-        ...newUser,
-        role: newUser.role === "ventas" ? "ventas" : newUser.role,
+      await userService.inviteUser({
+        email: invite.email,
+        fullName: invite.fullName,
+        role: invite.role,
+        username: invite.username?.trim() || undefined,
       });
-      setUsers([...users, created]);
-      setShowCreateModal(false);
-      setNewUser({
-        username: "",
-        password: "",
-        email: "",
-        fullName: "",
-        role: "ventas",
-      });
+      setShowInviteModal(false);
+      setInvite(INITIAL_INVITE);
+      setReloadKey((key) => key + 1);
+      addToast(t('configuracion.userManagement.inviteSuccess'), 'success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error creating user");
+      addToast(
+        err instanceof Error && err.message
+          ? err.message
+          : t('configuracion.userManagement.inviteError'),
+        'error',
+      );
     }
   }
 
@@ -119,7 +140,7 @@ export function UserManagement() {
       const updated = await userService.updateUserRole(userId, newRole);
       setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error updating role");
+      setError(err instanceof Error ? err.message : 'Error updating role');
     }
   }
 
@@ -132,18 +153,48 @@ export function UserManagement() {
       );
       setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error updating status");
+      setError(err instanceof Error ? err.message : 'Error updating status');
+    }
+  }
+
+  async function handleResendInvite(userId: string) {
+    if (!token) return;
+    try {
+      await userService.resendInvitation(userId);
+      addToast(t('configuracion.userManagement.resendInviteSuccess'), 'success');
+    } catch (err) {
+      addToast(
+        err instanceof Error && err.message
+          ? err.message
+          : t('configuracion.userManagement.resendInviteError'),
+        'error',
+      );
+    }
+  }
+
+  async function handleSendPasswordReset() {
+    if (!resetPasswordUser) return;
+    try {
+      await userService.sendPasswordReset(resetPasswordUser.id);
+      addToast(t('configuracion.userManagement.resetPasswordSuccess'), 'success');
+    } catch (err) {
+      addToast(
+        err instanceof Error && err.message
+          ? err.message
+          : t('configuracion.userManagement.resetPasswordError'),
+        'error',
+      );
     }
   }
 
   const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
       onDelete: async (id) => {
-        if (!token) throw new Error("No autenticado");
+        if (!token) throw new Error('No autenticado');
         await userService.deleteUser(id);
         setUsers((prev) => prev.filter((u) => u.id !== id));
       },
-      successMessage: t("configuracion.userDeleted"),
+      successMessage: t('configuracion.userDeleted'),
     });
 
   const pendingUser = users.find((u) => u.id === deleteId) ?? null;
@@ -153,88 +204,95 @@ export function UserManagement() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h3>Gestión de Usuarios</h3>
-        <Button onClick={() => setShowCreateModal(true)}>
-          + Nuevo Usuario
+        <h3>{t('configuracion.userManagement.title')}</h3>
+        <Button onClick={() => setShowInviteModal(true)}>
+          {t('configuracion.userManagement.invite')}
         </Button>
       </div>
 
       {error && <div className={styles.error}>{error}</div>}
 
       {loading ? (
-        <div className={styles.loading}>Cargando...</div>
+        <div className={styles.loading}>{t('common.loading')}</div>
       ) : users.length === 0 ? (
-        <div className={styles.empty}>No hay usuarios registrados</div>
+        <div className={styles.empty}>{t('table.noData')}</div>
       ) : (
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Usuario</th>
-                <th>Email</th>
-                <th>Nombre</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Acciones</th>
+                <th>{t('common.user')}</th>
+                <th>{t('common.email')}</th>
+                <th>{t('common.name')}</th>
+                <th>{t('configuracion.userManagement.role')}</th>
+                <th>{t('common.status')}</th>
+                <th>{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td className={styles.username}>{user.username}</td>
-                  <td>{user.email}</td>
-                  <td>{user.fullName}</td>
-                  <td>
-                    <select
-                      value={normalizeRole(user.role)}
-                      onChange={(e) =>
-                        handleRoleChange(user.id, e.target.value)
-                      }
-                      className={styles.roleSelect}
-                      style={{
-                        borderColor:
-                          ROL_COLORS[
-                            normalizeRole(user.role) as keyof typeof ROL_COLORS
-                          ],
-                        color:
-                          ROL_COLORS[
-                            normalizeRole(user.role) as keyof typeof ROL_COLORS
-                          ],
-                      }}
-                    >
-                      {availableRoles.map((role) => (
-                        <option key={role} value={role}>
-                          {ROL_LABELS[role]}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>
-                    <span
-                      className={`${styles.badge} ${user.isActive ? styles.active : styles.inactive}`}
-                    >
-                      {user.isActive ? "Activo" : "Inactivo"}
-                    </span>
-                  </td>
-                  <td>
-                    {normalizeRole(user.role) !== Rol.ADMIN &&
-                    normalizeRole(user.role) !== Rol.SUPER_ADMIN ? (
-                      <ActionButtons
-                        onToggle={() =>
-                          handleToggleStatus(user.id, user.isActive)
+              {users.map((user) => {
+                const status = resolveUserStatus(user);
+                const role = normalizeRole(user.role);
+                const isProtected =
+                  role === Rol.ADMIN || role === Rol.SUPER_ADMIN;
+                const isInvited = status === UserStatus.INVITED;
+
+                return (
+                  <tr key={user.id}>
+                    <td className={styles.username}>{user.username}</td>
+                    <td>{user.email}</td>
+                    <td>{user.fullName}</td>
+                    <td>
+                      <select
+                        value={role}
+                        onChange={(e) =>
+                          handleRoleChange(user.id, e.target.value)
                         }
-                        onDelete={() => handleDelete(user.id)}
-                      />
-                    ) : (
+                        className={styles.roleSelect}
+                        style={{
+                          borderColor: ROL_COLORS[role],
+                          color: ROL_COLORS[role],
+                        }}
+                      >
+                        {availableRoles.map((availableRole) => (
+                          <option key={availableRole} value={availableRole}>
+                            {ROL_LABELS[availableRole]}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <span
+                        className={`${styles.badge} ${STATUS_CLASS[status]}`}
+                      >
+                        {t(STATUS_LABEL_KEY[status])}
+                      </span>
+                    </td>
+                    <td>
                       <ActionButtons
-                        onToggle={() =>
-                          handleToggleStatus(user.id, user.isActive)
+                        onToggle={
+                          isInvited
+                            ? undefined
+                            : () => handleToggleStatus(user.id, user.isActive)
                         }
+                        onResend={
+                          isInvited ? () => handleResendInvite(user.id) : undefined
+                        }
+                        onResetPassword={
+                          isInvited ? undefined : () => setResetPasswordUser(user)
+                        }
+                        onDelete={
+                          isProtected ? undefined : () => handleDelete(user.id)
+                        }
+                        resendLabel={t('configuracion.userManagement.resendInvite')}
+                        resetPasswordLabel={t(
+                          'configuracion.userManagement.resetPassword',
+                        )}
                       />
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -245,87 +303,97 @@ export function UserManagement() {
       )}
 
       <Modal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        title="Crear Nuevo Usuario"
-        onSubmit={handleCreate}
-        submitLabel="Crear"
-        cancelLabel="Cancelar"
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        title={t('configuracion.userManagement.inviteTitle')}
+        subtitle={t('configuracion.userManagement.inviteSubtitle')}
+        onSubmit={handleInvite}
+        submitLabel={t('configuracion.userManagement.inviteSend')}
+        cancelLabel={t('common.cancel')}
       >
         <div className={styles.formGroup}>
-          <label>Usuario</label>
+          <label htmlFor="invite-email">{t('common.email')}</label>
           <input
-            type="text"
-            value={newUser.username}
-            onChange={(e) =>
-              setNewUser({ ...newUser, username: e.target.value })
-            }
-            required
-            minLength={3}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>Email</label>
-          <input
+            id="invite-email"
             type="email"
-            value={newUser.email}
-            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+            value={invite.email}
+            onChange={(e) => setInvite({ ...invite, email: e.target.value })}
             required
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Nombre Completo</label>
+          <label htmlFor="invite-full-name">{t('common.name')}</label>
           <input
+            id="invite-full-name"
             type="text"
-            value={newUser.fullName}
+            value={invite.fullName}
             onChange={(e) =>
-              setNewUser({ ...newUser, fullName: e.target.value })
+              setInvite({ ...invite, fullName: e.target.value })
             }
             required
           />
         </div>
         <div className={styles.formGroup}>
-          <label>Contraseña</label>
-          <input
-            type="password"
-            value={newUser.password}
-            onChange={(e) =>
-              setNewUser({ ...newUser, password: e.target.value })
-            }
-            required
-            minLength={6}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label>Rol</label>
+          <label htmlFor="invite-role">
+            {t('configuracion.userManagement.role')}
+          </label>
           <select
-            value={newUser.role}
-            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+            id="invite-role"
+            value={invite.role}
+            onChange={(e) => setInvite({ ...invite, role: e.target.value })}
+            required
           >
-            {availableRoles.map((role) => (
-              <option key={role} value={role}>
-                {ROL_LABELS[role]}
+            {availableRoles.map((availableRole) => (
+              <option key={availableRole} value={availableRole}>
+                {ROL_LABELS[availableRole]}
               </option>
             ))}
           </select>
         </div>
+        <div className={styles.formGroup}>
+          <label htmlFor="invite-username">{t('auth.username')}</label>
+          <input
+            id="invite-username"
+            type="text"
+            value={invite.username ?? ''}
+            onChange={(e) =>
+              setInvite({ ...invite, username: e.target.value })
+            }
+          />
+          <span className={styles.hint}>
+            {t('configuracion.userManagement.usernameHint')}
+          </span>
+        </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={resetPasswordUser !== null}
+        onConfirm={handleSendPasswordReset}
+        onCancel={() => setResetPasswordUser(null)}
+        title={t('configuracion.userManagement.resetPasswordConfirmTitle')}
+        message={t('configuracion.userManagement.resetPasswordConfirmBody', {
+          email: resetPasswordUser?.email ?? '',
+        })}
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.cancel')}
+        variant="warning"
+      />
 
       <ConfirmModal
         isOpen={showDeleteConfirm}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title={`${t("common.delete")} ${t("common.user")}`}
-        message={t("configuracion.deleteUserConfirm")}
-        confirmLabel={t("common.confirmDeleteAction")}
-        cancelLabel={t("common.cancel")}
+        title={`${t('common.delete')} ${t('common.user')}`}
+        message={t('configuracion.deleteUserConfirm')}
+        confirmLabel={t('common.confirmDeleteAction')}
+        cancelLabel={t('common.cancel')}
         context={
           pendingUser
             ? {
-                title: `${t("common.user")} ${pendingUser.fullName}`,
+                title: `${t('common.user')} ${pendingUser.fullName}`,
                 subtitle: [pendingUser.username, String(pendingUser.role)]
                   .filter(Boolean)
-                  .join(" · "),
+                  .join(' · '),
               }
             : undefined
         }

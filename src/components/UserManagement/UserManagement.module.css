@@ -115,6 +115,11 @@
   color: #dc2626;
 }
 
+.invited {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+}
+
 .actions {
   display: flex;
   gap: 8px;
@@ -169,4 +174,9 @@
   outline: none;
   border-color: var(--primary);
   box-shadow: var(--focus-ring);
+}
+
+.hint {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
 }
