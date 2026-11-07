@@ -22,7 +22,7 @@
 | Tables | custom generic `<Table<T>>` + `<Pagination>` components |
 | Architecture | Clean Architecture-inspired (`infrastructure` → `stores` → `application` → `components`/`pages`) |
 | Source language | English (artifacts), Spanish (conversational docs) |
-| Last synced with code | **2026-11-07** — `useCrudForm`, `useDeleteConfirm`, `useColecciones`, `Modal`, `ConfirmModal`, `DynamicFormFields`, `SearchableSelect`, contrato visual (§1.5) |
+| Last synced with code | **2026-11-07** — `useCrudForm`, `useDeleteConfirm`, `useColecciones`, `Modal`, `ConfirmModal`, `DynamicFormFields`, `SearchableSelect`, contrato visual (§1.5), flujo de invitación y recuperación de cuenta (§2.8) |
 
 ---
 
@@ -142,7 +142,7 @@ erp-mvp/
     ├── infrastructure/           ← adapters hacia el exterior (HTTP, auth, etc.)
     │   └── api/
     │       ├── config.ts         ← API_CONFIG.BASE_URL + ENDPOINTS
-    │       ├── types.ts          ← ApiError, LoginRequest, LoginResponse, RegisterRequest
+    │       ├── types.ts          ← ApiError + contratos de `/api/auth/*`
     │       ├── fetchWithAuth.ts  ← fetch wrapper + 401 interceptor
     │       ├── authService.ts
     │       ├── clientService.ts
@@ -161,7 +161,10 @@ erp-mvp/
     ├── pages/                    ← rutas — una carpeta por módulo
     │   ├── Dashboard/
     │   ├── Login/
-    │   ├── Register/
+    │   ├── ForgotPassword/
+    │   ├── ResetPassword/
+    │   ├── ActivateAccount/
+    │   ├── InvalidLink/
     │   ├── Ventas/
     │   ├── Compras/
     │   ├── Inventario/
@@ -549,7 +552,7 @@ export async function fetchWithAuthJson<T>(
 **Propósito**: tipos que describen contratos HTTP puros (request/response/error). Solo tipos de auth — los DTOs de entidades viven en `domain/types/`.
 **Reglas**:
 - `ApiError` es el shape de error que devuelve el backend (`{ error: string, details?: string }`).
-- `LoginRequest`/`LoginResponse`/`RegisterRequest` describen el contrato de `/api/auth/*`.
+- `LoginRequest`/`LoginResponse` y los contratos de recuperación (`ForgotPasswordRequest`, `ResetPasswordRequest`, `ActivateAccountRequest`, `AuthLinkStatus`) describen el contrato de `/api/auth/*`.
 - Los DTOs de entidades (`ClientDto`, `SaleDto`, etc.) NO van aquí — van en `src/domain/types/index.ts`.
 
 **Snippet:**
@@ -569,13 +572,33 @@ export interface LoginResponse {
   companyId: string;
 }
 
-export interface RegisterRequest {
-  username: string;
-  password: string;
+export interface ForgotPasswordRequest {
   email: string;
-  fullName: string;
-  companyId?: string;
-  role?: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export interface ActivateAccountRequest {
+  token: string;
+  password: string;
+}
+
+/** Which invitation link a token belongs to. */
+export type AuthLinkPurpose = "activation" | "password-reset";
+
+/**
+ * Answer of `GET /api/auth/link-status`.
+ *
+ * `email` lets the activation screen confirm which account is being activated;
+ * `expiresAt` lets the UI explain why a link stopped working.
+ */
+export interface AuthLinkStatus {
+  valid: boolean;
+  email: string | null;
+  expiresAt: string | null;
 }
 
 export interface ApiError {
@@ -601,7 +624,10 @@ export const API_CONFIG = {
   ENDPOINTS: {
     AUTH: {
       LOGIN: "/api/auth/login",
-      REGISTER: "/api/auth/register",
+      FORGOT_PASSWORD: "/api/auth/forgot-password",
+      RESET_PASSWORD: "/api/auth/reset-password",
+      ACTIVATE_ACCOUNT: "/api/auth/activate-account",
+      LINK_STATUS: "/api/auth/link-status",
     },
     PRODUCTS: "/api/products",
     CATEGORIES: "/api/categories",
@@ -804,18 +830,23 @@ export const clientService = {
 ### authService `[PRINCIPIO + STACK]`
 
 **Ubicación**: `src/infrastructure/api/authService.ts`
-**Propósito**: el service más simple. Solo dos métodos POST (`login` y `register`).
+**Propósito**: el service más simple. Un método por endpoint de `/api/auth/*`: `login`, `forgotPassword`, `resetPassword`, `activateAccount` y `getLinkStatus`.
 **Reglas**:
 - Misma forma canónica que los demás services (`export const authService = { ... }`, métodos `async`, retorno de `Promise<T>`).
+- Los endpoints públicos de recuperación también van por `fetchWithAuthJson`: el wrapper sólo adjunta el token **si hay sesión**, así que no filtra credenciales. El backend responde `400` —nunca `401`— cuando un token venció, porque un `401` dispararía el logout global.
 
 **Snippet:**
 
 ```typescript
 import { API_CONFIG } from "../api/config";
 import type {
+  ActivateAccountRequest,
+  AuthLinkPurpose,
+  AuthLinkStatus,
+  ForgotPasswordRequest,
   LoginRequest,
   LoginResponse,
-  RegisterRequest,
+  ResetPasswordRequest,
 } from "../api/types";
 import { fetchWithAuthJson } from "./fetchWithAuth";
 
@@ -831,9 +862,9 @@ export const authService = {
     );
   },
 
-  async register(data: RegisterRequest): Promise<LoginResponse> {
+  async forgotPassword(data: ForgotPasswordRequest): Promise<void> {
     return fetchWithAuthJson(
-      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.REGISTER}`,
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -841,10 +872,42 @@ export const authService = {
       },
     );
   },
+
+  async resetPassword(data: ResetPasswordRequest): Promise<void> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      },
+    );
+  },
+
+  async activateAccount(data: ActivateAccountRequest): Promise<void> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.ACTIVATE_ACCOUNT}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      },
+    );
+  },
+
+  async getLinkStatus(
+    token: string,
+    purpose: AuthLinkPurpose,
+  ): Promise<AuthLinkStatus> {
+    const params = new URLSearchParams({ token, purpose });
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LINK_STATUS}?${params}`,
+    );
+  },
 };
 ```
 
-> **Nota**: `authService` es el único service que re-escribe `headers: { "Content-Type": "application/json" }` en cada método, aunque `fetchWithAuth` ya lo setea por default. Es ruido, pero se mantiene por simetría (si quitás los headers de authService, hacelo en ambos métodos — no en uno solo). Ver §4.8.
+> **Nota**: `authService` es el único service que re-escribe `headers: { "Content-Type": "application/json" }` en cada método, aunque `fetchWithAuth` ya lo setea por default. Es ruido, pero se mantiene por simetría (si quitás los headers de authService, hacelo en todos los métodos — no en uno solo). Ver §4.8.
 
 ---
 
@@ -3252,7 +3315,7 @@ Esta sección recorre el camino completo de un usuario: login, register, expirac
 
 ```tsx
 import { useState } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Zap,
@@ -3466,13 +3529,6 @@ export function Login() {
               )}
             </button>
           </form>
-
-          <div className={styles.registerLink}>
-            <p>
-              {t("auth.dontHaveAccount")}{" "}
-              <Link to="/register">{t("auth.createAccount")}</Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -3480,266 +3536,130 @@ export function Login() {
 }
 ```
 
-### 2.8.2 Register — `Register.tsx` `[PRINCIPIO + STACK]`
+### 2.8.2 Recuperación de cuenta — `ForgotPassword` / `ResetPassword` / `ActivateAccount` / `InvalidLink` `[PRINCIPIO + STACK]`
 
-**Ubicación**: `src/pages/Register/Register.tsx`
-**Propósito**: registro público de nuevos usuarios (single-company por ahora).
+**Ubicación**: `src/pages/ForgotPassword/`, `src/pages/ResetPassword/`, `src/pages/ActivateAccount/`, `src/pages/InvalidLink/`
+**Propósito**: pantallas públicas del flujo de invitación. En este ERP el usuario **no** se registra solo: un admin lo invita desde Configuración → Usuarios y el invitado activa su cuenta con un enlace por correo.
+
 **Reglas**:
-- Estado local con `useState` para los 9 campos (`username`, `email`, `fullName`, `password`, `confirmPassword`, `showPassword`, `error`, `loading`, `focusedField`).
-- Validaciones inline (no `useCrudForm` — mismo razonamiento que Login): `password !== confirmPassword`, `password.length < 6`.
-- `COMPANY_ID = 1` hardcodeado — decisión intencional: el register público es single-tenant. Para multi-tenant real, este valor debe venir de un endpoint de tenant discovery o de un selector de empresa.
-- **Copy estática en español hardcodeado** ("Crear Cuenta", "Registra un nuevo usuario para HM Software Solutions", "¿Ya tienes cuenta? Inicia sesión"). Decisión intencional: register es página de onboarding interno, no requiere i18n todavía. Si vas a traducir, agregar los keys a `locales/{es,en}.json` primero (ver §4.8).
-- Después del éxito: `navigate("/login", { replace: true })` — `replace: true` evita que el back-button lleve al register otra vez.
-- **Inconsistencia consciente**: Login usa `useTranslation` completo, Register no. No es bug, es decisión documentada en §4.8.
+- Estado local con `useState` (NO `useCrudForm` — mismo razonamiento que Login: auth es un caso especial de 2–5 campos con submit simple).
+- El token viaja en la query: `useSearchParams()` → `?token=`.
+- Antes de mostrar el formulario, la pantalla valida el enlace con `authService.getLinkStatus(token, purpose)`. Si falta el token o `valid === false` → `navigate("/invalid-link", { replace: true })`.
+- Validaciones inline **antes** de pegarle al backend: contraseñas que no coinciden y longitud < 6.
+- Cada pantalla es autocontenida: su propio `<Name>.module.css` con los mismos nombres de clase, y **cero literales de color** — sólo tokens de `src/styles/variables.css`.
+- Rutas públicas (fuera de `ProtectedRoute`): `/forgot-password`, `/reset-password`, `/activate-account`, `/invalid-link`.
 
-**Snippet (verbatim — archivo completo):**
+**Snippet (verbatim — `ForgotPassword.tsx`):**
 
 ```tsx
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { authService } from "../../infrastructure/api/authService";
-import styles from "./Register.module.css";
+import { useState } from 'react';
+import type { FormEvent } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { authService } from '../../infrastructure/api/authService';
+import styles from './ForgotPassword.module.css';
 
-const COMPANY_ID = 1;
-
-export function Register() {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+export function ForgotPassword() {
+  const { t } = useTranslation();
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [isSent, setIsSent] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
-      return;
-    }
-
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setError('');
     setLoading(true);
 
     try {
-      await authService.register({
-        username,
-        password,
-        email,
-        fullName,
-        companyId: COMPANY_ID,
-      });
-      navigate("/login", { replace: true });
+      await authService.forgotPassword({ email });
+      setIsSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al registrar usuario");
+      setError(
+        err instanceof Error && err.message ? err.message : t('auth.genericError'),
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.leftPanel}>
-        <div className={styles.brandingContent}>
-          <div className={styles.logoWrapper}>
-            <img src="/src/assets/logo.svg" alt="Volterp" className={styles.logo} />
+  if (isSent) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>{t('auth.forgotPasswordSentTitle')}</h1>
+            <p className={styles.subtitle}>{t('auth.forgotPasswordSentBody')}</p>
           </div>
-          <h1 className={styles.brandTitle}>Volterp ERP</h1>
-          <p className={styles.brandSubtitle}>Sistema de gestión empresarial integral</p>
-
-          <div className={styles.features}>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>✓</span>
-              <span>Gestión de ventas y inventario</span>
-            </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>✓</span>
-              <span>Control de nómina y recursos humanos</span>
-            </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>✓</span>
-              <span>Reportes y análisis en tiempo real</span>
-            </div>
+          <div className={styles.form}>
+            <button
+              type="button"
+              className={styles.submit}
+              onClick={() => setIsSent(false)}
+            >
+              {t('auth.forgotPasswordResend')}
+            </button>
+          </div>
+          <div className={styles.footer}>
+            <Link className={styles.link} to="/login">
+              {t('auth.backToLogin')}
+            </Link>
           </div>
         </div>
-
-        <div className={styles.decorativeCircle} />
-        <div className={styles.decorativeCircle2} />
       </div>
+    );
+  }
 
-      <div className={styles.rightPanel}>
-        <div className={styles.formCard}>
-          <div className={styles.formHeader}>
-            <h2>Crear Cuenta</h2>
-            <p>Registra un nuevo usuario para HM Software Solutions</p>
+  return (
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>{t('auth.forgotPasswordTitle')}</h1>
+          <p className={styles.subtitle}>{t('auth.forgotPasswordSubtitle')}</p>
+        </div>
+
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="email">
+              {t('auth.email')}
+            </label>
+            <input
+              className={styles.input}
+              id="email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder={t('auth.email')}
+              required
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={`${styles.inputGroup} ${focusedField === "username" ? styles.focused : ""}`}>
-              <label htmlFor="username">Usuario</label>
-              <div className={styles.inputWrapper}>
-                <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  onFocus={() => setFocusedField("username")}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="usuario"
-                  required
-                  minLength={3}
-                />
-              </div>
-            </div>
+          {error && <div className={styles.error}>{error}</div>}
 
-            <div className={`${styles.inputGroup} ${focusedField === "email" ? styles.focused : ""}`}>
-              <label htmlFor="email">Correo electrónico</label>
-              <div className={styles.inputWrapper}>
-                <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="2" y="4" width="20" height="16" rx="2"/>
-                  <path d="M22 6l-10 7L2 6"/>
-                </svg>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setFocusedField("email")}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="correo@empresa.com"
-                  required
-                />
-              </div>
-            </div>
+          <button type="submit" className={styles.submit} disabled={loading}>
+            {t('auth.forgotPasswordSend')}
+          </button>
+        </form>
 
-            <div className={`${styles.inputGroup} ${focusedField === "fullName" ? styles.focused : ""}`}>
-              <label htmlFor="fullName">Nombre completo</label>
-              <div className={styles.inputWrapper}>
-                <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-                <input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  onFocus={() => setFocusedField("fullName")}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="Juan Pérez"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className={`${styles.inputGroup} ${focusedField === "password" ? styles.focused : ""}`}>
-              <label htmlFor="password">Contraseña</label>
-              <div className={styles.inputWrapper}>
-                <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setFocusedField("password")}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  className={styles.passwordToggle}
-                  onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
-                >
-                  {showPassword ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className={`${styles.inputGroup} ${focusedField === "confirmPassword" ? styles.focused : ""}`}>
-              <label htmlFor="confirmPassword">Confirmar contraseña</label>
-              <div className={styles.inputWrapper}>
-                <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                <input
-                  id="confirmPassword"
-                  type={showPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  onFocus={() => setFocusedField("confirmPassword")}
-                  onBlur={() => setFocusedField(null)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className={styles.errorMessage}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                <span>{error}</span>
-              </div>
-            )}
-
-            <button type="submit" className={styles.submitBtn} disabled={loading}>
-              {loading ? (
-                <span className={styles.loadingSpinner} />
-              ) : (
-                <>
-                  <span>Crear Cuenta</span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
-                  </svg>
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className={styles.loginLink}>
-            <p>¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link></p>
-          </div>
+        <div className={styles.footer}>
+          <Link className={styles.link} to="/login">
+            {t('auth.backToLogin')}
+          </Link>
         </div>
       </div>
     </div>
   );
 }
 ```
+
+**Diferencias entre las cuatro:**
+
+| Pantalla | `purpose` | Qué muestra | Estado final |
+|---|---|---|---|
+| `ForgotPassword` | — | campo de correo | confirmación genérica (nunca revela si el correo existe) |
+| `ResetPassword` | `"password-reset"` | contraseña nueva + confirmación | `auth.resetPasswordSuccessTitle` |
+| `ActivateAccount` | `"activation"` | correo de la cuenta + contraseña nueva + confirmación | `auth.activateAccountSuccessTitle` |
+| `InvalidLink` | — | explicación + "pedir un nuevo enlace" / "volver al login" | — |
 
 ### 2.8.3 El wrapper de errores 401 → redirect al login `[PRINCIPIO]`
 
@@ -3853,7 +3773,10 @@ function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/activate-account" element={<ActivateAccount />} />
+        <Route path="/invalid-link" element={<InvalidLink />} />
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/clientes" element={<Clientes />} />
@@ -4160,9 +4083,9 @@ catch (err) {
 - **`pages/Proveedores/` (español) — carpeta en español pero contenido mezcla español e inglés**. Decisión histórica. Mantener.
 - **`useCrudForm` valida `email` con regex simple** (`^[^\s@]+@[^\s@]+\.[^\s@]+$`). No es perfecto (no acepta IDs internacionales), pero es lo que está. **No cambiar** sin necesidad real.
 - **`<Pagination>` tiene los `title` de los botones hardcodeados en español** — debería estar en i18n. **Decisión intencional** de no traducir el componente (es infraestructura de UI, no copia user-facing). Pero si querés i18n completo, mover a `t("common.firstPage")` etc.
-- **Register NO usa i18n** mientras Login sí. Decisión intencional: register es página de onboarding interno single-company, los textos no cambian entre locales. Si en el futuro hace falta traducir, agregar keys a `locales/{es,en}.json` y reemplazar los literales por `t("auth.registerUsername")` etc.
-- **Register hardcodea `COMPANY_ID = 1`**. Decisión intencional para MVP single-tenant. Para multi-tenant real, este valor debe venir de un endpoint de tenant discovery o de un selector de empresa en el flujo de register.
-- **Branding hardcodeado en Login/Register** (logo, "Volterp ERP", "Sistema de gestión empresarial integral", "Gestión de ventas e inventario" etc.). Decisión intencional: no es copy traducible, es identidad de marca. Si se quiere traducir, separar branding de copy traducible en el JSON.
+- **Las pantallas de recuperación de cuenta usan i18n completo** (`auth.*`), a diferencia del viejo `Register` que quedó hardcodeado en español. Se mantiene así porque son pantallas públicas de cara al usuario final, con copy traducible.
+- **No existe auto-registro público.** El usuario se crea desde adentro del sistema (Configuración → Usuarios → Invitar usuario) y activa su cuenta con un enlace por correo. `POST /api/auth/register` ya no lo usa el frontend.
+- **Branding hardcodeado en Login** (logo, "Volterp ERP", "Sistema de gestión empresarial integral", "Gestión de ventas e inventario" etc.). Decisión intencional: no es copy traducible, es identidad de marca. Si se quiere traducir, separar branding de copy traducible en el JSON.
 - **Login maneja banner de sesión expirada** vía `location.state.expired`. Si el usuario llega a `/login` sin ese state, no muestra banner. Es la única señal que la app tiene para distinguir "veniste a loguearte" de "te deslogueamos".
 
 ## 4.9 Anti-patterns (lo que NO hacer) `[PRINCIPIO]`
@@ -4181,7 +4104,7 @@ catch (err) {
 - **No usar `class` para componentes React** — solo `function` (excepto `ErrorBoundary`, que NECESITA class porque es el único componente React que tiene lifecycle hooks para capturar errores).
 - **No mezclar español e inglés en la MISMA entidad**. Si tu entity se llama `client` en el dominio, todos los derivados van en inglés (`clientService`, `clientStore`, `useClientForm`). Si va en español, todo español. **No** `clientService` + `clienteStore`.
 - **No "arreglar" los typos históricos** listados en §4.8 sin entender el impacto. Cada uno tiene un motivo.
-- **No usar `useCrudForm` para login/register**. Auth es un caso especial de 2–5 campos con submit simple. Forzar la abstracción CRUD complica el código sin beneficio. Usar `useState` local.
+- **No usar `useCrudForm` para login ni para las pantallas de recuperación de cuenta**. Auth es un caso especial de 2–5 campos con submit simple. Forzar la abstracción CRUD complica el código sin beneficio. Usar `useState` local.
 - **No usar el mapper por defecto `pickKeys` cuando el DTO trae arrays o campos vacíos** — ver §4.5. Compartir la referencia del array hace que el form edite el array del store en vivo, y no normalizar los `null` rompe `isDirty` (el form aparece sucio al abrirse).
 - **No re-implementar el estado del modal de borrado en la página** (`deleteId` + `showDeleteConfirm` + `confirmDelete`). Usar `useDeleteConfirm`.
 - **No usar `<select>` para referencias a entidades con muchos registros** (proveedores, productos). Declarar el campo como `type: "combobox"`. Para una lista corta, el `<select>` nativo ES el control correcto (ver §4.5).
