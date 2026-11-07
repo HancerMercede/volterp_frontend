@@ -67,11 +67,11 @@ export function Modal({
   if (!isOpen) return null;
 
   const shell = (
-    <div className={styles.overlay} onClick={onClose}>
-      <div
-        className={`${styles.modal} ${size === 'lg' ? styles.modalLg : ''}`}
-        onClick={e => e.stopPropagation()}
-        role="dialog"
+<div className={styles.overlay} onMouseDown={onClose}>
+        <div
+          className={`${styles.modal} ${size === 'lg' ? styles.modalLg : ''}`}
+          onMouseDown={e => e.stopPropagation()}
+          role="dialog"
         aria-modal="true"
         aria-label={title}
       >

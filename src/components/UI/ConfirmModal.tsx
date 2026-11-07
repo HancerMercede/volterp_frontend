@@ -76,10 +76,10 @@ export function ConfirmModal({
   const IconComponent = VARIANT_ICONS[variant] || HelpCircle;
 
   return createPortal(
-    <div className={styles.overlay} onClick={onCancel}>
+    <div className={styles.overlay} onMouseDown={onCancel}>
       <div
         className={styles.card}
-        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
         role="alertdialog"
         aria-modal="true"
         aria-label={title}
