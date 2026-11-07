@@ -56,6 +56,11 @@ export function RRHH() {
     setShowForm(false);
   };
 
+  const handleEdit = (empleado: EmployeeDto) => {
+    startEdit(empleado);
+    setShowForm(true);
+  };
+
   const {
     formData,
     currentStep,
@@ -89,16 +94,16 @@ export function RRHH() {
 
   const paginationInfo = getInfo(totalCount);
 
-  const handleEdit = (empleado: EmployeeDto) => {
-    startEdit(empleado);
-    setShowForm(true);
-  };
-
-  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
-    useDeleteConfirm({
-      onDelete: deleteEmpleado,
-      successMessage: t("rrhh.employeeDeleted"),
-    });
+  const {
+    showDeleteConfirm,
+    deleteId,
+    handleDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useDeleteConfirm({
+    onDelete: deleteEmpleado,
+    successMessage: t("rrhh.employeeDeleted"),
+  });
 
   const pendingEmployee = empleados.find((e) => e.id === deleteId) ?? null;
 
