@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { usePermission } from "../../hooks/usePermission";
+import { isForbidden } from "../../utils/apiError";
 import { Rol } from "../../domain/constants/roles";
 import { PageHeader, Button } from "../../components/UI";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
@@ -51,6 +52,13 @@ export function Configuracion() {
       alert(t("common.saved"));
     } catch (err) {
       console.error("Error saving company:", err);
+      alert(
+        isForbidden(err)
+          ? t("permissions.noPermission")
+          : err instanceof Error
+            ? err.message
+            : t("common.error"),
+      );
     }
   };
 

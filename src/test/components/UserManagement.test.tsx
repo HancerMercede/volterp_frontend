@@ -251,4 +251,15 @@ describe("UserManagement user states", () => {
       });
     });
   });
+
+  it("explains a forbidden request instead of a generic error", async () => {
+    vi.mocked(userService.getUsers).mockRejectedValue(
+      Object.assign(new Error("Forbidden"), { status: 403 }),
+    );
+    render(<UserManagement />);
+
+    expect(
+      await screen.findByText("You don't have permission to access this module"),
+    ).toBeInTheDocument();
+  });
 });

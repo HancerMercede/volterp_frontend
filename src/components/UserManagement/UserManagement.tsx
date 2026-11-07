@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -20,6 +20,7 @@ import {
 } from '../../components/UI';
 import { usePagination } from '../../hooks/usePagination';
 import { useDeleteConfirm } from '../../hooks/useDeleteConfirm';
+import { isForbidden } from '../../utils/apiError';
 import { ITEMS_PER_PAGE } from '../../config/pagination';
 import styles from './UserManagement.module.css';
 
@@ -89,6 +90,14 @@ export function UserManagement() {
   const [totalCount, setTotalCount] = useState(0);
   const [pageCount, setPageCount] = useState(0);
 
+  const describeError = useCallback(
+    (err: unknown, fallback: string) => {
+      if (isForbidden(err)) return t('permissions.noPermission');
+      return err instanceof Error && err.message ? err.message : fallback;
+    },
+    [t],
+  );
+
   useEffect(() => {
     if (!token) return;
 
@@ -101,14 +110,14 @@ export function UserManagement() {
         setTotalCount(data.rowCount);
         setPageCount(data.pageCount);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error loading users');
+        setError(describeError(err, 'Error loading users'));
       } finally {
         setLoading(false);
       }
     }
 
     loadUsers();
-  }, [token, pageNumber, reloadKey]);
+  }, [token, pageNumber, reloadKey, describeError]);
 
   async function handleInvite(e: FormEvent) {
     e.preventDefault();
@@ -126,9 +135,7 @@ export function UserManagement() {
       addToast(t('configuracion.userManagement.inviteSuccess'), 'success');
     } catch (err) {
       addToast(
-        err instanceof Error && err.message
-          ? err.message
-          : t('configuracion.userManagement.inviteError'),
+        describeError(err, t('configuracion.userManagement.inviteError')),
         'error',
       );
     }
@@ -140,7 +147,7 @@ export function UserManagement() {
       const updated = await userService.updateUserRole(userId, newRole);
       setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error updating role');
+      setError(describeError(err, 'Error updating role'));
     }
   }
 
@@ -153,7 +160,7 @@ export function UserManagement() {
       );
       setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error updating status');
+      setError(describeError(err, 'Error updating status'));
     }
   }
 
@@ -164,9 +171,7 @@ export function UserManagement() {
       addToast(t('configuracion.userManagement.resendInviteSuccess'), 'success');
     } catch (err) {
       addToast(
-        err instanceof Error && err.message
-          ? err.message
-          : t('configuracion.userManagement.resendInviteError'),
+        describeError(err, t('configuracion.userManagement.resendInviteError')),
         'error',
       );
     }
@@ -179,9 +184,7 @@ export function UserManagement() {
       addToast(t('configuracion.userManagement.resetPasswordSuccess'), 'success');
     } catch (err) {
       addToast(
-        err instanceof Error && err.message
-          ? err.message
-          : t('configuracion.userManagement.resetPasswordError'),
+        describeError(err, t('configuracion.userManagement.resetPasswordError')),
         'error',
       );
     }

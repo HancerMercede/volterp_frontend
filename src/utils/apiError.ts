@@ -6,6 +6,26 @@
  */
 export const DEFAULT_ERROR_MESSAGE = "An error occurred";
 
+export interface ApiRequestError extends Error {
+  status: number;
+}
+
+export function createApiRequestError(
+  message: string,
+  status: number,
+): ApiRequestError {
+  return Object.assign(new Error(message), { status });
+}
+
+export function isForbidden(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    (error as { status?: unknown }).status === 403
+  );
+}
+
 export function extractErrorMessage(
   body: unknown,
   status: number,

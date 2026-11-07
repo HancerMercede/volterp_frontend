@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_ERROR_MESSAGE, extractErrorMessage } from "../../utils/apiError";
+import {
+  DEFAULT_ERROR_MESSAGE,
+  createApiRequestError,
+  extractErrorMessage,
+  isForbidden,
+} from "../../utils/apiError";
 
 describe("extractErrorMessage", () => {
   it("reads the ErrorResponse shape the accounts endpoints use", () => {
@@ -45,5 +50,27 @@ describe("extractErrorMessage", () => {
     expect(extractErrorMessage(null, 400, "No pudimos conectar con el servidor")).toBe(
       "No pudimos conectar con el servidor",
     );
+  });
+});
+
+describe("createApiRequestError", () => {
+  it("keeps the HTTP status on the error", () => {
+    const error = createApiRequestError("Forbidden", 403);
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toBe("Forbidden");
+    expect(error.status).toBe(403);
+  });
+});
+
+describe("isForbidden", () => {
+  it("detects a forbidden response", () => {
+    expect(isForbidden(createApiRequestError("Forbidden", 403))).toBe(true);
+  });
+
+  it("ignores other statuses and plain errors", () => {
+    expect(isForbidden(createApiRequestError("Not found", 404))).toBe(false);
+    expect(isForbidden(new Error("boom"))).toBe(false);
+    expect(isForbidden(undefined)).toBe(false);
   });
 });
