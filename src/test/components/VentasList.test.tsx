@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import "../../i18n";
+import i18n from "../../i18n";
 import { VentasList } from "../../pages/Ventas/components/VentasList";
 import type { SaleDto } from "../../domain/types";
 
@@ -83,6 +83,23 @@ describe("VentasList", () => {
 
     expect(screen.getByText("Vent-001")).toBeInTheDocument();
     expect(screen.getByText("Vent-002")).toBeInTheDocument();
+  });
+
+  it("shows the detail action for a completed sale and keeps the edit action for a pending one", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({ id: "1", code: "Vent-001", status: "Completed" }),
+          createVenta({ id: "2", code: "Vent-002", status: "Pending" }),
+        ]}
+      />,
+    );
+
+    const detailAction = screen.getByTitle(i18n.t("common.detail"));
+    expect(detailAction).toHaveAttribute("data-action", "detail");
+
+    const editAction = screen.getByTitle(i18n.t("common.edit"));
+    expect(editAction).toHaveAttribute("data-action", "edit");
   });
 
   it("renders every row of the page it receives, even on page 2", () => {

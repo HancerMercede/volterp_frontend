@@ -131,6 +131,11 @@ export function VentasList({
         columns={columns}
         onEdit={onVentaClick}
         onDelete={onDelete}
+        getEditAction={(v) =>
+          v.status === "Completed"
+            ? { label: t("common.detail"), variant: "detail" }
+            : { label: t("common.edit"), variant: "edit" }
+        }
       />
 
       <Pagination

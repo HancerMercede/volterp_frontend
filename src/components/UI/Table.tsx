@@ -16,9 +16,16 @@ interface TableProps<T extends { id: TableId }> {
   columns: Column<T>[];
   onEdit?: (item: T) => void;
   onDelete?: (id: T['id']) => void;
+  getEditAction?: (item: T) => { label: string; variant: "edit" | "detail" };
 }
 
-export function Table<T extends { id: TableId }>({ data, columns, onEdit, onDelete }: TableProps<T>) {
+export function Table<T extends { id: TableId }>({
+  data,
+  columns,
+  onEdit,
+  onDelete,
+  getEditAction,
+}: TableProps<T>) {
   const { t } = useTranslation();
   return (
     <div className={styles.tableContainer}>
@@ -32,23 +39,28 @@ export function Table<T extends { id: TableId }>({ data, columns, onEdit, onDele
           </tr>
         </thead>
         <tbody>
-          {data.map((item) => (
-            <tr key={item.id}>
-              {columns.map((col) => (
-                <td key={`${item.id}-${String(col.key)}`}>
-                  {col.render ? col.render(item) : String(item[col.key as keyof T] || '')}
-                </td>
-              ))}
-              {(onEdit || onDelete) && (
-                <td>
-                  <ActionButtons 
-                    onEdit={onEdit ? () => onEdit(item) : undefined}
-                    onDelete={onDelete ? () => onDelete(item.id) : undefined}
-                  />
-                </td>
-              )}
-            </tr>
-          ))}
+          {data.map((item) => {
+            const editAction = getEditAction?.(item);
+            return (
+              <tr key={item.id}>
+                {columns.map((col) => (
+                  <td key={`${item.id}-${String(col.key)}`}>
+                    {col.render ? col.render(item) : String(item[col.key as keyof T] || '')}
+                  </td>
+                ))}
+                {(onEdit || onDelete) && (
+                  <td>
+                    <ActionButtons
+                      onEdit={onEdit ? () => onEdit(item) : undefined}
+                      onDelete={onDelete ? () => onDelete(item.id) : undefined}
+                      editLabel={editAction?.label}
+                      editVariant={editAction?.variant}
+                    />
+                  </td>
+                )}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
