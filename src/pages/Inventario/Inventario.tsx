@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { useProductoStore } from "../../stores/productoStore";
-import { useCategoryStore } from "../../stores/categoryStore";
+import { useCategorias } from "../../hooks/useColecciones";
 import { useCompanyStore } from "../../stores/companyStore";
 import {
   Table,
@@ -39,7 +39,8 @@ export function Inventario() {
 
   type stockStatus = "all" | "low" | "out";
 
-  const { categories, fetchCategories } = useCategoryStore();
+  // The categories are a lookup: they must not follow the products' page.
+  const categories = useCategorias();
   const { currentCompany } = useCompanyStore();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,14 +49,9 @@ export function Inventario() {
     initialPageSize: ITEMS_PER_PAGE,
   });
 
-  const fetchData = useCallback(() => {
-    fetchProductos(pageNumber, ITEMS_PER_PAGE);
-    fetchCategories(pageNumber, 100);
-  }, [pageNumber, fetchProductos, fetchCategories]);
-
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchProductos(pageNumber, ITEMS_PER_PAGE);
+  }, [pageNumber, fetchProductos]);
 
   const fields: FormField[] = useMemo(
     () => [

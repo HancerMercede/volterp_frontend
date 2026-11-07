@@ -1238,7 +1238,7 @@ export function usePagination(options?: UsePaginationOptions) {
 
 **Criterio**: si `defaultValues` tiene un campo que el DTO puede devolver vacío, o un campo que es una colección, el mapper custom NO es opcional.
 
-**Snippet (completo — 289 líneas, verbatim de `src/hooks/useCrudForm.ts`):**
+**Snippet (completo — 296 líneas, verbatim de `src/hooks/useCrudForm.ts`):**
 
 ```typescript
 import { useState, useCallback, useMemo } from "react";
@@ -1261,6 +1261,8 @@ export interface FormField {
     | "url";
   required?: boolean;
   placeholder?: string;
+  /** Message shown when a combobox query matches no option. */
+  emptyLabel?: string;
   /** Options for <select> and combobox fields */
   options?: {
     value: string;
@@ -1616,11 +1618,12 @@ export function useDeleteConfirm({
 ### useColecciones (colecciones completas para el POS) `[PRINCIPIO: el POS filtra en memoria, no contra el servidor]`
 
 **Ubicación**: `src/hooks/useColecciones.ts`
-**Propósito**: cargar el listado completo de clientes, productos y proveedores para las pantallas que filtran y paginan en memoria.
+**Propósito**: cargar el listado completo de clientes, productos, proveedores y categorías para las pantallas que filtran y paginan en memoria — o que necesitan un lookup completo.
 **Reglas**:
 - **Nació para el POS**: el POS y el editor de líneas de compra necesitan el listado entero, no la página del módulo. Por eso piden `PAGE_SIZE = 100` en vez de `ITEMS_PER_PAGE`.
 - **Compras la usa por la misma razón**: el form de compra referencia proveedores y el editor de líneas referencia productos.
-- Un hook por colección (`useClientes`, `useProductos`, `useProveedores`): cada uno dispara su `fetch` una vez al montar y devuelve el array del store.
+- Un hook por colección (`useClientes`, `useProductos`, `useProveedores`, `useCategorias`): cada uno dispara su `fetch` una vez al montar y devuelve el array del store.
+- **Inventario usa `useCategorias` porque las categorías son un lookup, no una lista paginada**: el módulo pagina los productos en el servidor, pero el `select` de categoría necesita TODAS las categorías siempre. Pedirlas con el `pageNumber` de los productos devolvía una página vacía desde la segunda página en adelante (y pisaba el snapshot persistido de `category-storage`).
 - No tocar los stores: los `fetch*` ya aceptan cualquier `pageSize`.
 
 **Snippet:**
@@ -1650,6 +1653,14 @@ export function useProveedores() {
     fetchProveedores(1, PAGE_SIZE);
   }, [fetchProveedores]);
   return proveedores;
+}
+
+export function useCategorias() {
+  const { categories, fetchCategories } = useCategoryStore();
+  useEffect(() => {
+    fetchCategories(1, PAGE_SIZE);
+  }, [fetchCategories]);
+  return categories;
 }
 ```
 
@@ -2433,7 +2444,7 @@ export function SearchInput({
 - `options: { value: string; label: string; description?: string; keywords?: string[] }[]`. `description` es la línea secundaria (típicamente el `code` del negocio). `keywords` son términos **buscables pero no renderizados** (ej. el código del cliente: se busca por código pero no se muestra en la lista).
 - **El valor inicial se muestra**: el input arranca con el `label` de la opción seleccionada, no vacío.
 - **El texto sólo se resincroniza con un valor externo no vacío**: mientras el usuario escribe el componente reporta `onChange("", texto)`; si el padre devuelve ese `""` como `value`, el texto que acaba de escribir NO se borra.
-- **Filtra con `normalizeSearch`** (`src/utils/normalizeSearch.ts`): ignora acentos y mayúsculas, sobre `label`, `description` y `keywords`. El mismo helper usan `useFilter` y el buscador del header.
+- **Filtra con `matchesQuery`** (exportada por `src/hooks/useFilter.ts`): ignora acentos y mayúsculas, sobre `label`, `description` y `keywords`. `useFilter` la usa también, así que el hook y el combobox comparten una sola definición de búsqueda.
 - **Si el texto es sólo la selección mostrada, la lista no se filtra**: el filtro arranca con todas las opciones para que el usuario pueda elegir otra sin borrar el label.
 - **Teclado**: `ArrowDown`/`ArrowUp` mueven la opción activa y abren la lista, `Enter` selecciona la activa, `Escape` cierra **sin propagar** (el `Escape` del modal no se dispara a la vez). La lista se abre también con `focus`.
 - **Al escribir a mano** llama `onChange("", texto)`: el valor no matchea ninguna opción y el formulario lo trata como vacío. No inventa un id.
@@ -2443,7 +2454,7 @@ export function SearchInput({
 - **Accesibilidad**: `role="combobox"` con `aria-expanded`, `aria-controls`, `aria-activedescendant`; la lista es `role="listbox"` y cada ítem `role="option"` con `aria-selected`.
 - Se renderiza desde `DynamicFormFields` cuando `field.type === "combobox"`, o directamente en un componente de feature (líneas de compra, selector de cliente del POS).
 
-**Snippet (representativo — el archivo completo son 177 líneas):**
+**Snippet (representativo — el archivo completo son 176 líneas):**
 
 ```typescript
 export interface SearchableOption {
@@ -2490,17 +2501,15 @@ export function SearchableSelect({
   const selectedLabel = selected?.label ?? "";
 
   const filtered = useMemo(() => {
-    const query = normalizeSearch(text);
     // The text may only be showing the current selection, not a search query.
-    if (!query || text === selectedLabel) return options;
-    return options.filter(
-      (option) =>
-        normalizeSearch(option.label).includes(query) ||
-        (option.description
-          ? normalizeSearch(option.description).includes(query)
-          : false),
+    if (!text.trim() || text === selectedLabel) return options;
+    return options.filter((option) =>
+      matchesQuery(
+        [option.label, option.description ?? "", ...(option.keywords ?? [])],
+        text,
+      ),
     );
-  }, [options, text]);
+  }, [options, text, selectedLabel]);
 
   const handleSelect = (option: SearchableOption) => {
     setText(clearOnSelect ? "" : option.label);
@@ -2550,6 +2559,7 @@ export function SearchableSelect({
 - **`hint`** es el texto de ayuda bajo el control; se oculta si hay error (el error manda).
 - **`readonly`** renderiza el control deshabilitado (ej. un código generado por el servidor).
 - **Dispatch por `field.type`**: `combobox` → `SearchableSelect`; `select` → `<select>` con option vacío; `checkbox` → checkbox o switch (según esté en el sidebar); `file` → drop-zone + preview; `textarea`; `number` (decide `parseInt`/`parseFloat` según `step < 1`); el resto, `<input>`.
+- **`emptyLabel`** es el mensaje que el `combobox` muestra cuando la búsqueda no matchea ninguna opción. **No es el placeholder**: el placeholder es la invitación a buscar ("Buscar proveedor por nombre...") y el `emptyLabel` dice que no hay resultados ("No hay proveedores"). Si el campo no lo define, se usa el placeholder como fallback.
 - El panel de archivo del sidebar muestra las **iniciales** del `name` mientras no hay imagen (`initialsOf`).
 
 **Snippet (representativo, el archivo completo son 563 líneas):**
@@ -2654,7 +2664,7 @@ if (field.type === "combobox") {
       options={field.options ?? []}
       value={String(value ?? "")}
       placeholder={field.placeholder}
-      emptyLabel={field.placeholder}
+      emptyLabel={field.emptyLabel ?? field.placeholder}
       invalid={Boolean(error)}
       onChange={(optionValue) => onChange(field.name, optionValue)}
     />
@@ -4095,7 +4105,8 @@ catch (err) {
 - **`setFieldValue(name, value)`** limpia el error de ESE campo en el momento (mejora UX).
 - **Validators built-in**: required, email regex, number min/max/step, file accept con wildcards, string minLength/maxLength.
 - **Custom validator**: `validate?: (value, values) => string | undefined` — devuelve mensaje o `undefined`.
-- **Campos de referencia a otra entidad** (`type: "combobox"`): no usar `<select>` cuando la lista es grande. El `SearchableSelect` busca por `label` y `description` con `normalizeSearch` (ignora acentos y mayúsculas).
+- **Campos de referencia a otra entidad** (`type: "combobox"`): el `SearchableSelect` busca por `label` y `description` con `normalizeSearch` (ignora acentos y mayúsculas).
+- **Criterio combobox vs. `<select>` nativo**: el combobox es para referencias a entidades con **muchos** registros (el cliente, el proveedor, el producto — 100 en memoria). Para una **lista corta** dentro de un form, el `<select>` nativo es el mejor control: muestra todas las opciones de una vez, tiene una opción vacía, y el mensaje genérico "es requerido" es exacto para él — con un combobox lo tipeado NO es el valor, así que ese mensaje mentiría. La categoría de Inventario es el ejemplo de lista corta: sigue siendo un `type: "select"`.
 - **El borrado NO es parte del form**: vive en `useDeleteConfirm` (`src/hooks/useDeleteConfirm.ts`). No se fusiona con `useCrudForm`: no comparte `values`, `errors` ni `editingId`.
 
 ## 4.6 Tablas y Paginación `[PRINCIPIO]`
@@ -4173,7 +4184,7 @@ catch (err) {
 - **No usar `useCrudForm` para login/register**. Auth es un caso especial de 2–5 campos con submit simple. Forzar la abstracción CRUD complica el código sin beneficio. Usar `useState` local.
 - **No usar el mapper por defecto `pickKeys` cuando el DTO trae arrays o campos vacíos** — ver §4.5. Compartir la referencia del array hace que el form edite el array del store en vivo, y no normalizar los `null` rompe `isDirty` (el form aparece sucio al abrirse).
 - **No re-implementar el estado del modal de borrado en la página** (`deleteId` + `showDeleteConfirm` + `confirmDelete`). Usar `useDeleteConfirm`.
-- **No usar `<select>` para referencias a entidades con muchos registros** (proveedores, productos). Declarar el campo como `type: "combobox"`.
+- **No usar `<select>` para referencias a entidades con muchos registros** (proveedores, productos). Declarar el campo como `type: "combobox"`. Para una lista corta, el `<select>` nativo ES el control correcto (ver §4.5).
 - **No crear un hook en `application/hooks/` sin call site** — un hook sin consumidor es código muerto con tests. El POS de Ventas ya no tiene hooks: su estado vive en los componentes que lo poseen.
 - **No escribir literales de color** (`#hex`, `rgb()`, `rgba()`, `hsl()`) fuera de `src/styles/variables.css`. Si el color no existe como token, **se agrega el token** (§1.5).
 - **No usar `--primary` ni `--text-muted` como color de texto** sobre superficie clara — 1.53:1 y 2.42:1. Son rellenos y metadatos. Para texto: `--text-primary` o `--text-secondary`.

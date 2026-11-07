@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useCategoryStore } from "../stores/categoryStore";
 import { useClienteStore } from "../stores/clienteStore";
 import { useProductoStore } from "../stores/productoStore";
 import { useProveedorStore } from "../stores/proveedorStore";
@@ -32,4 +33,12 @@ export function useProveedores() {
     fetchProveedores(1, PAGE_SIZE);
   }, [fetchProveedores]);
   return proveedores;
+}
+
+export function useCategorias() {
+  const { categories, fetchCategories } = useCategoryStore();
+  useEffect(() => {
+    fetchCategories(1, PAGE_SIZE);
+  }, [fetchCategories]);
+  return categories;
 }

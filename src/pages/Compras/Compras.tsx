@@ -58,6 +58,7 @@ export function Compras() {
         section: "formSections.info",
         span: 6,
         placeholder: t("compras.supplierSearch"),
+        emptyLabel: t("compras.noSuppliersFound"),
         options: proveedores.map((p) => ({
           value: p.id,
           label: p.name,

@@ -1,6 +1,10 @@
 import { API_CONFIG } from "../api/config";
 import { fetchWithAuthJson } from "./fetchWithAuth";
-import type { PagedResult, CategoryDto, CategoryRequest } from "../../domain/types";
+import type {
+  PagedResult,
+  CategoryDto,
+  CategoryRequest,
+} from "../../domain/types";
 
 export const categoryService = {
   async getCategories(
@@ -8,7 +12,7 @@ export const categoryService = {
     pageSize: number,
   ): Promise<PagedResult<CategoryDto>> {
     const params = new URLSearchParams({
-      page: String(pageNumber),
+      pageNumber: String(pageNumber),
       pageSize: String(pageSize),
     });
     return fetchWithAuthJson(

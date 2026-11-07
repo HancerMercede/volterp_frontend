@@ -238,6 +238,7 @@
     "product": "Product",
     "productSearch": "Search product by name or code...",
     "noProductsFound": "No products found",
+    "noSuppliersFound": "No suppliers found",
     "quantity": "Quantity",
     "unitPrice": "Unit price",
     "removeLine": "Remove product",

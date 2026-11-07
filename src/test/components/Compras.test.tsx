@@ -235,6 +235,24 @@ describe("Compras", () => {
     expect(fetchProductos).toHaveBeenCalledWith(1, 100);
   });
 
+  it("shows the no-suppliers message when the query matches nothing", async () => {
+    render(<Compras />);
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: new RegExp(i18n.t("compras.newPurchase"), "i"),
+      }),
+    );
+
+    await userEvent.type(
+      screen.getByRole("combobox", {
+        name: new RegExp(i18n.t("compras.supplier"), "i"),
+      }),
+      "zzz",
+    );
+
+    expect(screen.getByText(i18n.t("compras.noSuppliersFound"))).toBeInTheDocument();
+  });
+
   it("keeps the created purchase in the list without reloading it", async () => {
     const fetchCompras = vi.fn();
     useCompraStore.setState({

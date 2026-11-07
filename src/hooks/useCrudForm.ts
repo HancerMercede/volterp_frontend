@@ -18,6 +18,8 @@ export interface FormField {
     | "url";
   required?: boolean;
   placeholder?: string;
+  /** Message shown when a combobox query matches no option. */
+  emptyLabel?: string;
   /** Options for <select> and combobox fields */
   options?: {
     value: string;

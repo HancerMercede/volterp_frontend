@@ -262,7 +262,7 @@ function FieldRenderer({
         options={field.options ?? []}
         value={String(value ?? "")}
         placeholder={field.placeholder}
-        emptyLabel={field.placeholder}
+        emptyLabel={field.emptyLabel ?? field.placeholder}
         invalid={Boolean(error)}
         onChange={(optionValue) => onChange(field.name, optionValue)}
       />
