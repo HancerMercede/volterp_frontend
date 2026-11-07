@@ -25,7 +25,9 @@ const formatDateTime = (dateStr: string) =>
 export function VentaDetail({ venta, clienteId, onClose }: Props) {
   const { t } = useTranslation();
   const { clientes } = useClienteStore();
-  const cliente = clienteId ? clientes.find((c) => c.id === clienteId) ?? null : null;
+  const cliente = clienteId
+    ? (clientes.find((c) => c.id === clienteId) ?? null)
+    : null;
 
   const subtotal = venta.total / 1.18;
   const itbis = venta.total - subtotal;
@@ -45,7 +47,7 @@ export function VentaDetail({ venta, clienteId, onClose }: Props) {
       onClose={onClose}
       size="lg"
       icon={<VolterpMark size={40} />}
-      title={`${t("ventas.saleDetail")} #${venta.id}`}
+      title={`${t("ventas.saleDetail")} #${venta.code}`}
       badge={
         <span
           className={`${styles.statusBadge} ${
@@ -79,7 +81,9 @@ export function VentaDetail({ venta, clienteId, onClose }: Props) {
                   className={styles.clientAvatarImg}
                 />
               ) : (
-                <span className={styles.clientAvatar}>{initialsOf(clientName)}</span>
+                <span className={styles.clientAvatar}>
+                  {initialsOf(clientName)}
+                </span>
               )}
               <div className={styles.clientInfo}>
                 <p className={styles.clientName}>{clientName}</p>
@@ -122,7 +126,9 @@ export function VentaDetail({ venta, clienteId, onClose }: Props) {
                             </span>
                           )}
                           <div>
-                            <p className={styles.productName}>{item.productName}</p>
+                            <p className={styles.productName}>
+                              {item.productName}
+                            </p>
                             {item.productCategory && (
                               <p className={styles.productCategory}>
                                 {item.productCategory}
