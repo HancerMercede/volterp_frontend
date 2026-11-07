@@ -222,11 +222,16 @@ export function Inventario() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
-    useDeleteConfirm({
-      onDelete: deleteProducto,
-      successMessage: t("inventario.productDeleted"),
-    });
+  const {
+    showDeleteConfirm,
+    deleteId,
+    handleDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useDeleteConfirm({
+    onDelete: deleteProducto,
+    successMessage: t("inventario.productDeleted"),
+  });
 
   const pendingProduct = productos.find((p) => p.id === deleteId) ?? null;
 
@@ -341,11 +346,15 @@ export function Inventario() {
             : t("common.newRecordSubtitle")
         }
         footerStatus={
-          form.isDirty ? t("common.unsavedChanges") : t("common.noPendingChanges")
+          form.isDirty
+            ? t("common.unsavedChanges")
+            : t("common.noPendingChanges")
         }
         dirty={form.isDirty}
         onSubmit={form.handleSubmit}
-        submitLabel={form.editingId ? t("common.saveChanges") : t("common.create")}
+        submitLabel={
+          form.editingId ? t("common.saveChanges") : t("common.create")
+        }
         submitVariant="dark"
         cancelLabel={t("common.cancel")}
         closeLabel={t("common.close")}
