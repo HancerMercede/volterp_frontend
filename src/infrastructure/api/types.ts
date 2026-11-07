@@ -12,13 +12,33 @@ export interface LoginResponse {
   companyId: string;
 }
 
-export interface RegisterRequest {
-  username: string;
-  password: string;
+export interface ForgotPasswordRequest {
   email: string;
-  fullName: string;
-  companyId?: string;
-  role?: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export interface ActivateAccountRequest {
+  token: string;
+  password: string;
+}
+
+/** Which invitation link a token belongs to. */
+export type AuthLinkPurpose = "activation" | "password-reset";
+
+/**
+ * Answer of `GET /api/auth/link-status`.
+ *
+ * `email` lets the activation screen confirm which account is being activated;
+ * `expiresAt` lets the UI explain why a link stopped working.
+ */
+export interface AuthLinkStatus {
+  valid: boolean;
+  email: string | null;
+  expiresAt: string | null;
 }
 
 /**

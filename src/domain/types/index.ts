@@ -1,3 +1,5 @@
+import type { UserStatus } from '../constants/userStatus';
+
 export interface Direccion {
   calle: string;
   ciudad: string;
@@ -333,16 +335,15 @@ export interface UserDto {
   fullName: string;
   role: string | number;
   isActive: boolean;
+  status?: UserStatus;
   companyId: string;
 }
 
-export interface CreateUserRequest {
-  username: string;
-  password: string;
+export interface InviteUserRequest {
   email: string;
   fullName: string;
   role: string;
-  companyId?: string;
+  username?: string;
 }
 
 export type UpdateUserRequest = Partial<UserDto>;

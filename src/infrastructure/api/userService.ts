@@ -1,6 +1,6 @@
 import { API_CONFIG } from '../api/config';
 import { fetchWithAuthJson } from './fetchWithAuth';
-import type { PagedResult, UserDto, CreateUserRequest } from '../../domain/types';
+import type { PagedResult, UserDto, InviteUserRequest } from '../../domain/types';
 
 export const userService = {
   async getUsers(
@@ -22,12 +22,30 @@ export const userService = {
     );
   },
 
-  async createUser(data: CreateUserRequest): Promise<UserDto> {
+  async inviteUser(data: InviteUserRequest): Promise<UserDto> {
     return fetchWithAuthJson(
-      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}`,
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/invite`,
       {
         method: 'POST',
         body: JSON.stringify(data),
+      }
+    );
+  },
+
+  async resendInvitation(userId: string): Promise<void> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${userId}/invite`,
+      {
+        method: 'POST',
+      }
+    );
+  },
+
+  async sendPasswordReset(userId: string): Promise<void> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${userId}/reset-password`,
+      {
+        method: 'POST',
       }
     );
   },
