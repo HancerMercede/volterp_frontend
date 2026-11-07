@@ -29,7 +29,7 @@
 
 .cardLabel {
   font-size: 14px;
-  color: #6B7280;
+  color: var(--text-secondary);
 }
 
 .cardValue {
@@ -38,11 +38,11 @@
 }
 
 .positivo {
-  color: #10B981;
+  color: var(--success);
 }
 
 .negativo {
-  color: #EF4444;
+  color: var(--danger);
 }
 
 .filters {
@@ -65,7 +65,7 @@
 .select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
+  box-shadow: var(--focus-ring);
 }
 
 .badge {
@@ -76,21 +76,21 @@
 }
 
 .ingreso {
-  background: #D1FAE5;
-  color: #065F46;
+  background: var(--success-soft);
+  color: var(--success-text);
 }
 
 .egreso {
-  background: #FEE2E2;
-  color: #991B1B;
+  background: var(--danger-soft);
+  color: var(--danger-text);
 }
 
 .conciliada {
-  background: #D1FAE5;
-  color: #065F46;
+  background: var(--success-soft);
+  color: var(--success-text);
 }
 
 .pendiente {
-  background: #FEF3C7;
-  color: #92400E;
+  background: var(--warning-soft);
+  color: var(--warning-text);
 }

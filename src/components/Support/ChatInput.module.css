@@ -47,7 +47,7 @@
 }
 
 .button:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: var(--primary-dark);
   transform: scale(1.05);
 }
 

@@ -36,6 +36,16 @@
   --text-base: 14px;
   --text-lg: 16px;
 
+  --success: #10B981;
+  --success-soft: #D1FAE5;
+  --success-text: #065F46;
+  --danger: #EF4444;
+  --danger-soft: #FEE2E2;
+  --danger-text: #991B1B;
+  --warning: var(--primary);
+  --warning-soft: #FEF3C7;
+  --warning-text: #92400E;
+
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
