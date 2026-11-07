@@ -123,11 +123,13 @@ El backend **todavía no tiene** estos endpoints. Esta es la especificación que
 
 | ID | S# | Route | Commit | Estado |
 | --- | --- | --- | --- | --- |
-| T1 | S9 | inline | — | PENDIENTE — capa de contrato: tipos, config, servicios, `fetchPublicJson`, i18n, `AuthLayout`, `AuthForm` |
-| T2 | S1, S9 | inline | — | PENDIENTE — login sin "Crear cuenta", borrar `Register`, rutas en `App.tsx` |
-| T3 | S2, S3, S4, S5 | delegado | — | PENDIENTE — 4 pantallas públicas + tests |
-| T4 | S6, S7, S8 | delegado | — | PENDIENTE — Admin > Usuarios: invitar, estados, acciones + tests |
-| T5 | S9 | inline | — | PENDIENTE — seam check, verificación, doc, commits |
+| T1 | S9 | inline | `4b49a92` | HECHO — capa de contrato: tipos, config, servicios, i18n |
+| T2 | S1, S9 | inline | `a8d4c9d` | HECHO — login sin "Crear cuenta", borrar `Register`, rutas en `App.tsx` |
+| T3 | S2, S3, S4, S5 | delegado | `a8d4c9d` | HECHO — 4 pantallas públicas + 23 tests |
+| T4 | S6, S7, S8 | delegado | `a6d6a01` | HECHO — invitar, estados, acciones + 8 tests |
+| T5 | S9 | inline | `9785e92`, `dab3a0d` | HECHO — seam check (351 tests verdes), doc del skeleton, commits |
+| T6 | S6, S9 | inline | `dab3a0d` | HECHO — pestaña Usuarios para admin (decisión L3) |
+| T7 | — | inline | `7c2b8d5`, `7c96511` | HECHO — 403 con mensaje claro (L5) + fix de modales (L6) |
 
 ## Log
 
@@ -161,6 +163,20 @@ Confirmado, y el detalle importante: **el backend ya lo permitía y el frontend 
 ### L4 — 2026-11-07 — patrón, no invención
 
 El usuario fijó la regla: si algo no existe, seguir el patrón; no crear componentes compartidos inventados. Por eso las 4 pantallas de recuperación son autocontenidas (cada una con su `<Name>.module.css`), igual que `Login` y el extinto `Register`, y no hay un `AuthLayout`/`AuthForm` común.
+
+### L5 — 2026-11-07 — mensaje claro de "no autorizado"
+
+El usuario preguntó por el 401: "lo saca de la página pero debe decirle un mensaje claro de no estás autorizado". Verificado:
+
+- El **401 por sesión expirada** ya tiene mensaje claro ("Tu sesión ha expirado", `ExpirationSession` + `useTokenExpiry`). Es de mayo (`e343600`), no de ayer.
+- El **403** (permiso denegado) no lo tenía: el backend responde `Forbid()` con body vacío → `extractErrorMessage` caía en el fallback `"An error occurred"` (inglés, técnico). Y la key `permissions.noPermission` existía en los locales **sin que nadie la usara**.
+- **Decisión del usuario**: opción (b) — el wrapper expone el status y la página mapea 403 → `t("permissions.noPermission")`. Implementado en `src/utils/apiError.ts` (`createApiRequestError`, `isForbidden`) + `src/infrastructure/api/fetchWithAuth.ts` + `UserManagement` + `Configuracion`.
+
+### L6 — 2026-11-07 — los modales se cerraban al seleccionar texto
+
+Causa (confirmada por el usuario y verificada en el código): el overlay de `Modal`/`ConfirmModal` cerraba con `onClick`, y el `click` se dispara sobre el **ancestro común** cuando el mousedown empieza dentro del modal y el mouseup cae fuera. Al seleccionar texto de un input y arrastrar más allá del borde, el modal se cerraba.
+
+**Fix**: decidir en el `mousedown` (`onMouseDown` en el overlay + `stopPropagation` en la card). Un press que empieza dentro nunca alcanza el overlay; un press fuera sigue cerrando. Cubierto por `src/test/components/Modal.test.tsx` (RED verificado contra el código viejo).
 
 ## Relevant files
 
