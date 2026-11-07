@@ -1,5 +1,5 @@
 import { useAuthStore } from '../../stores/authStore';
-import type { ApiError } from './types';
+import { extractErrorMessage } from '../../utils/apiError';
 
 /**
  * Centralized fetch wrapper that:
@@ -31,8 +31,8 @@ export async function fetchWithAuth(
   }
 
   if (!response.ok) {
-    const error: ApiError = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || 'An error occurred');
+    const body: unknown = await response.json().catch(() => null);
+    throw new Error(extractErrorMessage(body, response.status));
   }
 
   if (response.status === 204) return response;
