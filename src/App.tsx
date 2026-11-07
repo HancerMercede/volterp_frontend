@@ -14,8 +14,25 @@ const Dashboard = lazy(() =>
 const Login = lazy(() =>
   import("./pages/Login/Login").then((m) => ({ default: m.Login })),
 );
-const Register = lazy(() =>
-  import("./pages/Register/Register").then((m) => ({ default: m.Register })),
+const ForgotPassword = lazy(() =>
+  import("./pages/ForgotPassword/ForgotPassword").then((m) => ({
+    default: m.ForgotPassword,
+  })),
+);
+const ResetPassword = lazy(() =>
+  import("./pages/ResetPassword/ResetPassword").then((m) => ({
+    default: m.ResetPassword,
+  })),
+);
+const ActivateAccount = lazy(() =>
+  import("./pages/ActivateAccount/ActivateAccount").then((m) => ({
+    default: m.ActivateAccount,
+  })),
+);
+const InvalidLink = lazy(() =>
+  import("./pages/InvalidLink/InvalidLink").then((m) => ({
+    default: m.InvalidLink,
+  })),
 );
 const Ventas = lazy(() =>
   import("./pages/Ventas/Ventas").then((m) => ({ default: m.Ventas })),
@@ -78,7 +95,10 @@ function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/activate-account" element={<ActivateAccount />} />
+        <Route path="/invalid-link" element={<InvalidLink />} />
         <Route
           element={
             <ProtectedRoute>

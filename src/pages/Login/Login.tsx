@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Zap,
@@ -185,7 +185,7 @@ export function Login() {
               <button
                 type="button"
                 className={styles.forgotLink}
-                onClick={() => alert(t("auth.forgotPassword"))}
+                onClick={() => navigate("/forgot-password")}
               >
                 {t("auth.forgotPassword")}
               </button>
@@ -213,13 +213,6 @@ export function Login() {
               )}
             </button>
           </form>
-
-          <div className={styles.registerLink}>
-            <p>
-              {t("auth.dontHaveAccount")}{" "}
-              <Link to="/register">{t("auth.createAccount")}</Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>

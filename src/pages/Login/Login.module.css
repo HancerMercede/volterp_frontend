@@ -493,31 +493,6 @@
   }
 }
 
-.registerLink {
-  text-align: center;
-  margin-top: 28px;
-  padding-top: 24px;
-  border-top: 1px solid #E7E5E4;
-}
-
-.registerLink p {
-  font-size: 14px;
-  color: #78716C;
-  margin: 0;
-}
-
-.registerLink a {
-  color: #FBBF24;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.registerLink a:hover {
-  color: #F59E0B;
-  text-decoration: underline;
-}
-
 @media (max-width: 768px) {
   .container {
     flex-direction: column;
