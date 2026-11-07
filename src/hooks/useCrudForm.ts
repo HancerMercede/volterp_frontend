@@ -10,6 +10,7 @@ export interface FormField {
     | "tel"
     | "number"
     | "select"
+    | "combobox"
     | "date"
     | "file"
     | "checkbox"

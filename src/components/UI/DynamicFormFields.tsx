@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Image as ImageIcon, Trash2 } from "lucide-react";
 import type { FormField } from "../../hooks/useCrudForm";
 import { initialsOf } from "../../utils/initials";
+import { SearchableSelect } from "./SearchableSelect";
 import styles from "./DynamicFormFields.module.css";
 
 interface Props {
@@ -251,6 +252,22 @@ function FieldRenderer({
 }) {
   const id = `field-${field.name}`;
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // â”€â”€ combobox (select con búsqueda) â”€â”€
+  if (field.type === "combobox") {
+    return (
+      <SearchableSelect
+        id={id}
+        label={field.label}
+        options={field.options ?? []}
+        value={String(value ?? "")}
+        placeholder={field.placeholder}
+        emptyLabel={field.placeholder}
+        invalid={Boolean(error)}
+        onChange={(optionValue) => onChange(field.name, optionValue)}
+      />
+    );
+  }
 
   // â”€â”€ select â”€â”€
   if (field.type === "select") {

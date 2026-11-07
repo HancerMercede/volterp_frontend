@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useCompraStore } from "../../stores/compraStore";
+import { useProveedorStore } from "../../stores/proveedorStore";
+import { useProductoStore } from "../../stores/productoStore";
 import { useUIStore } from "../../stores/uiStore";
 import {
   Table,
@@ -12,6 +14,7 @@ import {
   Modal,
   ConfirmModal,
   DynamicFormFields,
+  VolterpMark,
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
@@ -21,6 +24,7 @@ import type { PurchaseDto } from "../../domain/types";
 import styles from "./Compras.module.css";
 import { useFilter } from "../../hooks/useFilter";
 import { money } from "../../utils/currency";
+import { LineasCompraEditor } from "./components/LineasCompraEditor";
 
 export function Compras() {
   const { t } = useTranslation();
@@ -32,6 +36,8 @@ export function Compras() {
     updateCompra,
     deleteCompra,
   } = useCompraStore();
+  const { proveedores, fetchProveedores } = useProveedorStore();
+  const { productos, fetchProductos } = useProductoStore();
   const { addToast } = useUIStore();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,53 +49,113 @@ export function Compras() {
     fetchCompras(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchCompras]);
 
+  useEffect(() => {
+    fetchProveedores(1, 100);
+  }, [fetchProveedores]);
+
+  useEffect(() => {
+    fetchProductos(1, 100);
+  }, [fetchProductos]);
+
   const COMPRA_FIELDS: FormField[] = useMemo(
     () => [
       {
-        name: "supplierName",
+        name: "supplierId",
         label: t("compras.supplier"),
-        type: "text",
+        type: "combobox",
         required: true,
-      },
-      {
-        name: "total",
-        label: t("common.total"),
-        type: "number",
-        required: true,
+        section: "formSections.info",
+        span: 6,
+        placeholder: t("compras.supplierSearch"),
+        options: proveedores.map((p) => ({
+          value: p.id,
+          label: p.name,
+          description: p.code,
+        })),
       },
       {
         name: "status",
         label: t("common.status"),
         type: "select",
         required: true,
+        section: "formSections.info",
+        span: 6,
         options: [
-          { value: "Pending", label: t("pending") },
-          { value: "Completed", label: t("completed") },
-          { value: "Cancelled", label: t("cancelled") },
+          { value: "Pending", label: t("common.pending") },
+          { value: "Completed", label: t("common.completed") },
+          { value: "Cancelled", label: t("common.cancelled") },
         ],
       },
+      {
+        name: "total",
+        label: t("common.total"),
+        type: "number",
+        required: true,
+        readonly: true,
+        section: "formSections.pricing",
+        span: 6,
+      },
+      {
+        name: "notes",
+        label: t("compras.notes"),
+        type: "textarea",
+        section: "formSections.detail",
+        span: 6,
+      },
     ],
-    [t],
+    [t, proveedores],
   );
 
   const form = useCrudForm({
     fields: COMPRA_FIELDS,
-    defaultValues: { supplierName: "", total: 0, status: "Pending" },
-    onCreate: (data) => {
-      addToast(t("compras.purchaseCreated"), "success");
-      return addCompra({
-        supplierId: null,
-        items: [],
-        ...data,
-      } as Partial<PurchaseDto>);
+    defaultValues: {
+      supplierId: "",
+      supplierName: "",
+      total: 0,
+      status: "Pending",
+      notes: "",
+      items: [],
     },
-    onUpdate: (id, data) => {
+    mapEntityToForm: (entity) => {
+      const purchase = entity as unknown as PurchaseDto;
+      return {
+        supplierId: purchase.supplierId ?? "",
+        supplierName: purchase.supplierName ?? "",
+        status: purchase.status,
+        total: purchase.total,
+        notes: purchase.notes ?? "",
+        items: purchase.items.map((item) => ({ ...item })),
+      };
+    },
+    onCreate: async (data) => {
+      const items = (data.items as PurchaseDto["items"]) ?? [];
+      if (items.length === 0) {
+        throw new Error(t("compras.itemsRequired"));
+      }
+      const created = await addCompra({
+        ...(data as PurchaseDto),
+        supplierId: data.supplierId || null,
+        supplierName: data.supplierName || null,
+        items,
+      } as Partial<PurchaseDto>);
+      addToast(t("compras.purchaseCreated"), "success");
+      return created;
+    },
+    onUpdate: async (id, data) => {
+      const items = (data.items as PurchaseDto["items"]) ?? [];
+      if (items.length === 0) {
+        throw new Error(t("compras.itemsRequired"));
+      }
+      const updated = await updateCompra(id, {
+        ...data,
+        items,
+      } as Partial<PurchaseDto>);
       addToast(t("compras.purchaseUpdated"), "success");
-      return updateCompra(id, data as Partial<PurchaseDto>);
+      await fetchCompras(pageNumber, ITEMS_PER_PAGE);
+      return updated;
     },
     onSuccess: () => {
       setShowForm(false);
-      fetchCompras(pageNumber, ITEMS_PER_PAGE);
     },
   });
 
@@ -106,11 +172,16 @@ export function Compras() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
-    useDeleteConfirm({
-      onDelete: deleteCompra,
-      successMessage: t("compras.purchaseDeleted"),
-    });
+  const {
+    showDeleteConfirm,
+    deleteId,
+    handleDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useDeleteConfirm({
+    onDelete: deleteCompra,
+    successMessage: t("compras.purchaseDeleted"),
+  });
 
   const pendingPurchase = compras.find((c) => c.id === deleteId) ?? null;
 
@@ -126,7 +197,11 @@ export function Compras() {
       header: t("common.total"),
       render: (c: PurchaseDto) => `$${c.total.toLocaleString()}`,
     },
-    { key: "createdAt", header: t("common.date") },
+    {
+      key: "createdAt",
+      header: t("common.date"),
+      render: (c: PurchaseDto) => new Date(c.createdAt).toLocaleDateString(),
+    },
     {
       key: "status",
       header: t("common.status"),
@@ -183,18 +258,62 @@ export function Compras() {
           setShowForm(false);
           form.reset();
         }}
+        size="lg"
+        icon={<VolterpMark size={40} />}
         title={
           form.editingId ? t("compras.editPurchase") : t("compras.newPurchase")
         }
+        subtitle={
+          form.editingId
+            ? form.values.supplierName || t("common.newRecordSubtitle")
+            : t("common.newRecordSubtitle")
+        }
+        footerStatus={
+          form.isDirty
+            ? t("common.unsavedChanges")
+            : t("common.noPendingChanges")
+        }
+        dirty={form.isDirty}
         onSubmit={form.handleSubmit}
-        submitLabel={form.editingId ? t("common.update") : t("common.create")}
+        submitLabel={
+          form.editingId ? t("common.saveChanges") : t("common.create")
+        }
+        submitVariant="dark"
+        cancelLabel={t("common.cancel")}
+        closeLabel={t("common.close")}
       >
+        {form.submitError && (
+          <div className={styles.formError} role="alert">
+            {form.submitError}
+          </div>
+        )}
         <DynamicFormFields
           fields={COMPRA_FIELDS}
           values={form.values}
           errors={form.errors}
           editingId={form.editingId}
-          onChange={form.setFieldValue}
+          onChange={(name, value) => {
+            form.setFieldValue(name, value);
+            if (name === "supplierId") {
+              const supplier = proveedores.find((p) => p.id === value);
+              form.setFieldValue("supplierName", supplier?.name ?? "");
+            }
+          }}
+        />
+        <LineasCompraEditor
+          lineas={(form.values.items as PurchaseDto["items"]) ?? []}
+          productos={productos}
+          invalid={Boolean(form.errors.items)}
+          onChange={(lineas) => {
+            form.setFieldValue("items", lineas);
+            form.setFieldValue(
+              "total",
+              lineas.reduce(
+                (acc, linea) => acc + linea.quantity * linea.unitPrice,
+                0,
+              ),
+            );
+          }}
         />
       </Modal>
 

@@ -230,7 +230,19 @@
     "pending": "Pendiente",
     "received": "Recibida",
     "cancelled": "Cancelada",
-    "editPurchase":"Actualizar compra"
+    "editPurchase":"Actualizar compra",
+    "supplierSearch": "Buscar proveedor por nombre...",
+    "notes": "Notas",
+    "itemsSection": "Productos de la compra",
+    "addItem": "Agregar producto",
+    "product": "Producto",
+    "productSearch": "Buscar producto por nombre o código...",
+    "noProductsFound": "No hay productos",
+    "quantity": "Cantidad",
+    "unitPrice": "Precio unitario",
+    "removeLine": "Quitar producto",
+    "emptyLines": "Agrega productos para armar la compra",
+    "itemsRequired": "Agregá al menos un producto a la compra"
   },
   "inventario": {
     "title": "Inventario",

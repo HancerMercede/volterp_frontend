@@ -210,7 +210,7 @@ export type SupplierRequest = Partial<SupplierDto>;
 // Purchase DTOs (from backend)
 export interface PurchaseItemDto {
   id: string;
-  productId: string | null;
+  productId: string;
   productName: string;
   productCode: string;
   quantity: number;

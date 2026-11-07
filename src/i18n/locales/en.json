@@ -229,7 +229,19 @@
     "pending": "Pending",
     "received": "Received",
     "cancelled": "Cancelled",
-    "editPurchase":"Edit Purchase"
+    "editPurchase":"Edit Purchase",
+    "supplierSearch": "Search supplier by name...",
+    "notes": "Notes",
+    "itemsSection": "Purchase items",
+    "addItem": "Add product",
+    "product": "Product",
+    "productSearch": "Search product by name or code...",
+    "noProductsFound": "No products found",
+    "quantity": "Quantity",
+    "unitPrice": "Unit price",
+    "removeLine": "Remove product",
+    "emptyLines": "Add products to build the purchase",
+    "itemsRequired": "Add at least one product to the purchase"
   },
   "inventario": {
     "title": "Inventory",
