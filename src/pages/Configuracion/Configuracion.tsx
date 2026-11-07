@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { usePermission } from "../../hooks/usePermission";
+import { Rol } from "../../domain/constants/roles";
 import { PageHeader, Button } from "../../components/UI";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
 import { UserManagement } from "../../components/UserManagement/UserManagement";
@@ -12,10 +13,13 @@ import type { CompanyDto } from "../../domain/types";
 
 export function Configuracion() {
   const { t } = useTranslation();
-  const { isAdmin } = usePermission();
+  const { canRead, userRole } = usePermission();
   const [activeTab, setActiveTab] = useState<"general" | "users" | "companies">(
     "general",
   );
+
+  const canManageConfig = canRead("configuracion");
+  const isSuperAdmin = userRole === Rol.SUPER_ADMIN;
 
   const { user } = useAuthStore();
   const {
@@ -69,7 +73,7 @@ export function Configuracion() {
         subtitle={t("configuracion.subtitle")}
       />
 
-      {isAdmin && (
+      {canManageConfig && (
         <div className={styles.tabs}>
           <button
             className={`${styles.tab} ${activeTab === "general" ? styles.active : ""}`}
@@ -77,12 +81,14 @@ export function Configuracion() {
           >
             General
           </button>
-          <button
-            className={`${styles.tab} ${activeTab === "companies" ? styles.active : ""}`}
-            onClick={() => setActiveTab("companies")}
-          >
-            {t("empresas.title")}
-          </button>
+          {isSuperAdmin && (
+            <button
+              className={`${styles.tab} ${activeTab === "companies" ? styles.active : ""}`}
+              onClick={() => setActiveTab("companies")}
+            >
+              {t("empresas.title")}
+            </button>
+          )}
           <button
             className={`${styles.tab} ${activeTab === "users" ? styles.active : ""}`}
             onClick={() => setActiveTab("users")}

@@ -148,6 +148,20 @@ El backend **todavía no tiene** estos endpoints. Esta es la especificación que
 - **Anti enumeración**: el backend responde igual (204) exista o no el correo. El frontend nunca muestra "¿no existe esa cuenta?".
 - **Pantalla "enlace inválido" reutilizable**: se implementa como componente y además como ruta `/invalid-link`, para que S3 y S4 la rendericen en el lugar y el usuario pueda navegar a ella.
 
+### L3 — 2026-11-07 — quién gestiona los usuarios
+
+> "ya existe lo que pasa es que solo el super admin actualmente puede crear usuarios del sistema, sino me equivoco."
+
+Confirmado, y el detalle importante: **el backend ya lo permitía y el frontend lo cerraba**.
+
+- `BaseController.IsAdmin()` (backend) devuelve `true` para `admin` **o** `superadmin` → `GET/POST/PUT/DELETE /api/users` ya le permitían al admin de empresa. `CanManageUser` le impide tocar usuarios admin/superadmin ni asignar esos roles.
+- El frontend dibujaba las pestañas con `usePermission().isAdmin`, que es **superadmin-only** (`usePermission.ts:23`) → un `admin` normal ni veía la pestaña Usuarios. El componente `UserManagement` ya tenía escrito el caso admin (`availableRoles = BASIC_ROLES`), pero era código inalcanzable.
+- **Decisión del usuario**: la pestaña Usuarios se abre para `admin` + `superadmin`; "Empresas" (registro de empresas) queda sólo para superadmin. El gate se resuelve con la matriz de permisos (`canRead("configuracion")`), no hardcodeando roles.
+
+### L4 — 2026-11-07 — patrón, no invención
+
+El usuario fijó la regla: si algo no existe, seguir el patrón; no crear componentes compartidos inventados. Por eso las 4 pantallas de recuperación son autocontenidas (cada una con su `<Name>.module.css`), igual que `Login` y el extinto `Register`, y no hay un `AuthLayout`/`AuthForm` común.
+
 ## Relevant files
 
 - `src/pages/Login/Login.tsx` — S1: se le quita el enlace a "Crear cuenta".
