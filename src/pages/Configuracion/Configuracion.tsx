@@ -10,6 +10,7 @@ import { Empresas } from "./Empresas";
 import styles from "./Configuracion.module.css";
 import { useAuthStore } from "../../stores/authStore";
 import { useCompanyStore } from "../../stores/companyStore";
+import { useUIStore } from "../../stores/uiStore";
 import type { CompanyDto } from "../../domain/types";
 
 export function Configuracion() {
@@ -29,6 +30,7 @@ export function Configuracion() {
     fetchCurrentCompany,
     updateCurrentCompany,
   } = useCompanyStore();
+  const { addToast } = useUIStore();
 
   const handleCompanyChange = (field: keyof CompanyDto, value: string) => {
     if (!currentCompany) return;
@@ -49,15 +51,16 @@ export function Configuracion() {
         phone: currentCompany.phone,
         email: currentCompany.email,
       });
-      alert(t("common.saved"));
+      addToast(t("configuracion.settingsSaved"), "success");
     } catch (err) {
       console.error("Error saving company:", err);
-      alert(
+      addToast(
         isForbidden(err)
           ? t("permissions.noPermission")
-          : err instanceof Error
+          : err instanceof Error && err.message
             ? err.message
             : t("common.error"),
+        "error",
       );
     }
   };

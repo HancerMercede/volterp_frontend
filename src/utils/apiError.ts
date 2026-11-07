@@ -32,6 +32,9 @@ export function extractErrorMessage(
   fallback: string = DEFAULT_ERROR_MESSAGE,
 ): string {
   if (status >= 500) return fallback;
+  // `BadRequest(error.Message)` answers a bare JSON string, and that string IS
+  // the message the backend wants the user to read.
+  if (typeof body === "string") return body.trim() || fallback;
   if (!body || typeof body !== "object") return fallback;
 
   const candidate = body as { error?: unknown; message?: unknown };

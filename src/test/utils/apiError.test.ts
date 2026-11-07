@@ -28,7 +28,17 @@ describe("extractErrorMessage", () => {
   it("falls back when the body carries no readable message", () => {
     expect(extractErrorMessage({}, 400)).toBe(DEFAULT_ERROR_MESSAGE);
     expect(extractErrorMessage(null, 400)).toBe(DEFAULT_ERROR_MESSAGE);
-    expect(extractErrorMessage("texto plano", 400)).toBe(DEFAULT_ERROR_MESSAGE);
+    expect(extractErrorMessage(404, 400)).toBe(DEFAULT_ERROR_MESSAGE);
+  });
+
+  it("reads a bare JSON string, the shape BadRequest(error.Message) answers", () => {
+    expect(
+      extractErrorMessage("The tax id must be a valid RNC or citizen ID.", 400),
+    ).toBe("The tax id must be a valid RNC or citizen ID.");
+  });
+
+  it("falls back when a bare JSON string is blank", () => {
+    expect(extractErrorMessage("   ", 400)).toBe(DEFAULT_ERROR_MESSAGE);
   });
 
   it("falls back when the message is blank", () => {
