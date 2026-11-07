@@ -1,8 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useCompraStore } from "../../stores/compraStore";
-import { useProveedorStore } from "../../stores/proveedorStore";
-import { useProductoStore } from "../../stores/productoStore";
 import { useUIStore } from "../../stores/uiStore";
 import {
   Table,
@@ -19,6 +17,7 @@ import {
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import { useProductos, useProveedores } from "../../hooks/useColecciones";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { PurchaseDto } from "../../domain/types";
 import styles from "./Compras.module.css";
@@ -36,9 +35,9 @@ export function Compras() {
     updateCompra,
     deleteCompra,
   } = useCompraStore();
-  const { proveedores, fetchProveedores } = useProveedorStore();
-  const { productos, fetchProductos } = useProductoStore();
   const { addToast } = useUIStore();
+  const proveedores = useProveedores();
+  const productos = useProductos();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { pageNumber, goToPage, getInfo } = usePagination({
@@ -48,14 +47,6 @@ export function Compras() {
   useEffect(() => {
     fetchCompras(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchCompras]);
-
-  useEffect(() => {
-    fetchProveedores(1, 100);
-  }, [fetchProveedores]);
-
-  useEffect(() => {
-    fetchProductos(1, 100);
-  }, [fetchProductos]);
 
   const COMPRA_FIELDS: FormField[] = useMemo(
     () => [

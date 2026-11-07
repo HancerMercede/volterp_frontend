@@ -3,9 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import "../../i18n";
 import { NuevaVenta } from "../../pages/Ventas/components/NuevaVenta";
+import { Ventas } from "../../pages/Ventas/Ventas";
 import { useClienteStore } from "../../stores/clienteStore";
 import { useCompanyStore } from "../../stores/companyStore";
 import { useProductoStore } from "../../stores/productoStore";
+import { useUIStore } from "../../stores/uiStore";
+import { useVentaStore } from "../../stores/ventaStore";
 import type { Client, Company, Product } from "../../domain/types";
 
 const PRODUCT: Product = {
@@ -39,17 +42,23 @@ const CLIENT: Client = {
 };
 
 beforeEach(() => {
-  useProductoStore.setState({ productos: [PRODUCT] });
-  useClienteStore.setState({ clientes: [CLIENT] });
+  useProductoStore.setState({ productos: [PRODUCT], fetchProductos: vi.fn() });
+  useClienteStore.setState({ clientes: [CLIENT], fetchClientes: vi.fn() });
   useCompanyStore.setState({
     currentCompany: { id: "c1", name: "Acme Corp" } as Company,
   });
+  useVentaStore.setState({ ventas: [], createVenta: vi.fn(async () => {}) });
 });
 
 const renderPos = () =>
   render(
     <NuevaVenta editingSaleId={null} onSave={vi.fn()} onCancel={vi.fn()} />,
   );
+
+const chooseClient = async () => {
+  await userEvent.click(screen.getByRole("combobox", { name: "Client" }));
+  await userEvent.click(screen.getByRole("button", { name: /Acme Corp/ }));
+};
 
 describe("NuevaVenta", () => {
   it("renders the current sale rail with the item count", () => {
@@ -62,10 +71,7 @@ describe("NuevaVenta", () => {
   it("shows the selected client card after choosing a client", async () => {
     renderPos();
 
-    await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: "Client" }),
-      "c1",
-    );
+    await chooseClient();
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("809-555-1201")).toBeInTheDocument();
@@ -78,5 +84,53 @@ describe("NuevaVenta", () => {
     await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
 
     expect(screen.getByText("1 item")).toBeInTheDocument();
+  });
+
+  it("creates the sale with the client id and the denormalized client name", async () => {
+    const createVenta = vi.fn(async () => {});
+    useVentaStore.setState({ createVenta });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(createVenta).toHaveBeenCalledWith(
+      expect.objectContaining({ clienteId: "c1", clienteName: "Acme Corp" }),
+    );
+  });
+
+  it("does not create the sale without a client and warns instead", async () => {
+    const createVenta = vi.fn(async () => {});
+    const addToast = vi.fn();
+    useVentaStore.setState({ createVenta });
+    useUIStore.setState({ addToast });
+
+    renderPos();
+
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(createVenta).not.toHaveBeenCalled();
+    expect(addToast).toHaveBeenCalledWith("Select a client, please.", "warning");
+  });
+
+  it("loads the client collection with a page size of 100", () => {
+    const fetchClientes = vi.fn();
+    useClienteStore.setState({ fetchClientes });
+
+    render(<Ventas />);
+
+    expect(fetchClientes).toHaveBeenCalledWith(1, 100);
+  });
+
+  it("loads the product collection with a page size of 100", () => {
+    const fetchProductos = vi.fn();
+    useProductoStore.setState({ fetchProductos });
+
+    renderPos();
+
+    expect(fetchProductos).toHaveBeenCalledWith(1, 100);
   });
 });

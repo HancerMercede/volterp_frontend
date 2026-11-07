@@ -16,40 +16,6 @@
   color: var(--text-secondary);
 }
 
-.searchInput {
-  padding: 10px 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border-light);
-  font-size: 14px;
-  font-family: var(--font-body);
-  background: var(--surface);
-  transition: var(--transition);
-  width: 100%;
-}
-
-.searchInput:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
-}
-
-.select {
-  padding: 10px 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border-light);
-  font-size: 14px;
-  font-family: var(--font-body);
-  background: var(--surface);
-  transition: var(--transition);
-  width: 100%;
-}
-
-.select:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
-}
-
 .clientCard {
   display: flex;
   align-items: center;

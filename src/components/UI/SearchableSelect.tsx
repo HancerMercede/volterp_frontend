@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import { normalizeSearch } from "../../utils/normalizeSearch";
+import { matchesQuery } from "../../hooks/useFilter";
 import styles from "./SearchableSelect.module.css";
 
 export interface SearchableOption {
   value: string;
   label: string;
   description?: string;
+  /** Extra terms that match the query but are never rendered. */
+  keywords?: string[];
 }
 
 interface Props {
@@ -18,6 +20,7 @@ interface Props {
   emptyLabel?: string;
   invalid?: boolean;
   clearOnSelect?: boolean;
+  autoFocus?: boolean;
   onChange: (value: string, label: string) => void;
 }
 
@@ -30,9 +33,12 @@ export function SearchableSelect({
   emptyLabel,
   invalid = false,
   clearOnSelect = false,
+  autoFocus = false,
   onChange,
 }: Props) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(
+    () => options.find((option) => option.value === value)?.label ?? "",
+  );
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,20 +48,22 @@ export function SearchableSelect({
 
   if (value !== syncedValue) {
     setSyncedValue(value);
-    setText(selected ? selected.label : "");
+    // An empty value means the user is typing: resyncing would wipe the text.
+    if (value) setText(selected ? selected.label : "");
   }
 
+  const selectedLabel = selected?.label ?? "";
+
   const filtered = useMemo(() => {
-    const query = normalizeSearch(text);
-    if (!query) return options;
-    return options.filter(
-      (option) =>
-        normalizeSearch(option.label).includes(query) ||
-        (option.description
-          ? normalizeSearch(option.description).includes(query)
-          : false),
+    // The text may only be showing the current selection, not a search query.
+    if (!text.trim() || text === selectedLabel) return options;
+    return options.filter((option) =>
+      matchesQuery(
+        [option.label, option.description ?? "", ...(option.keywords ?? [])],
+        text,
+      ),
     );
-  }, [options, text]);
+  }, [options, text, selectedLabel]);
 
   useEffect(() => {
     const handleOutside = (event: MouseEvent) => {
@@ -91,6 +99,7 @@ export function SearchableSelect({
       return;
     }
     if (event.key === "Escape") {
+      event.stopPropagation();
       setOpen(false);
       setActiveIndex(-1);
     }
@@ -111,10 +120,15 @@ export function SearchableSelect({
             : undefined
         }
         autoComplete="off"
+        autoFocus={autoFocus}
         className={`${styles.input} ${invalid ? styles.invalid : ""}`}
         value={text}
         placeholder={placeholder}
-        onFocus={() => setOpen(true)}
+        onFocus={(event) => {
+          setOpen(true);
+          // Typing must replace the selected label instead of appending to it.
+          if (text && text === selectedLabel) event.target.select();
+        }}
         onKeyDown={handleKeyDown}
         onChange={(event) => {
           setText(event.target.value);

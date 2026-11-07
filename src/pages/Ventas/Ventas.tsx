@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useVentaStore } from "../../stores/ventaStore";
-import { useClienteStore } from "../../stores/clienteStore";
 import { useCompanyStore } from "../../stores/companyStore";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
 import { PageHeader, Button, ConfirmModal } from "../../components/UI";
 import { usePagination } from "../../hooks/usePagination";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import { useClientes } from "../../hooks/useColecciones";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { SaleDto } from "../../domain/types";
 import { VentasList } from "./components/VentasList";
@@ -18,7 +18,6 @@ import { money } from "../../utils/currency";
 export function Ventas() {
   const { t } = useTranslation();
   const { ventas, totalCount, fetchVentas, deleteVenta } = useVentaStore();
-  const { fetchClientes } = useClienteStore();
   const { currentCompany, fetchCurrentCompany } = useCompanyStore();
   const { user } = useAuthStore();
   const { addToast } = useUIStore();
@@ -40,9 +39,7 @@ export function Ventas() {
     fetchVentas(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchVentas]);
 
-  useEffect(() => {
-    fetchClientes(pageNumber, ITEMS_PER_PAGE);
-  }, [pageNumber, fetchClientes]);
+  useClientes();
 
   const handleVentaClick = (venta: SaleDto) => {
     if (venta.status === "Completed") {

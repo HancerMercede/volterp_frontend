@@ -158,6 +158,81 @@ describe("Compras", () => {
     await userEvent.click(screen.getByTitle("Editar"));
 
     expect(screen.getByText("Leche entera")).toBeInTheDocument();
+    expect(screen.getByLabelText(i18n.t("compras.quantity"))).toHaveValue(2);
+  });
+
+  it("shows the supplier name in the combobox when editing a purchase", async () => {
+    useCompraStore.setState({
+      compras: [
+        {
+          ...PURCHASE,
+          supplierId: "s1",
+          supplierName: "Distribuidora Aurora",
+        },
+      ],
+    });
+
+    render(<Compras />);
+    await userEvent.click(screen.getByTitle("Editar"));
+
+    expect(
+      screen.getByRole("combobox", {
+        name: new RegExp(i18n.t("compras.supplier"), "i"),
+      }),
+    ).toHaveValue("Distribuidora Aurora");
+  });
+
+  it("creates the purchase with the picked supplier and the picked line", async () => {
+    const addCompra = vi.fn(async () => PURCHASE);
+    useCompraStore.setState({ addCompra });
+
+    await fillForm();
+    await submit();
+
+    expect(addCompra).toHaveBeenCalledWith(
+      expect.objectContaining({
+        supplierId: "s1",
+        supplierName: "Distribuidora Aurora",
+        items: [
+          expect.objectContaining({ productId: "p1", productName: "Leche entera" }),
+        ],
+      }),
+    );
+  });
+
+  it("keeps the product picker empty so the same product can be added twice", async () => {
+    render(<Compras />);
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: new RegExp(i18n.t("compras.newPurchase"), "i"),
+      }),
+    );
+
+    const productPicker = screen.getByRole("combobox", {
+      name: new RegExp(i18n.t("compras.product"), "i"),
+    });
+
+    await userEvent.click(productPicker);
+    await userEvent.click(screen.getByRole("button", { name: /Leche entera/ }));
+
+    expect(productPicker).toHaveValue("");
+
+    await userEvent.click(productPicker);
+    await userEvent.click(screen.getByRole("button", { name: /Leche entera/ }));
+
+    expect(screen.getAllByText("Leche entera")).toHaveLength(2);
+  });
+
+  it("loads the supplier and product collections with a page size of 100", () => {
+    const fetchProveedores = vi.fn();
+    const fetchProductos = vi.fn();
+    useProveedorStore.setState({ fetchProveedores });
+    useProductoStore.setState({ fetchProductos });
+
+    render(<Compras />);
+
+    expect(fetchProveedores).toHaveBeenCalledWith(1, 100);
+    expect(fetchProductos).toHaveBeenCalledWith(1, 100);
   });
 
   it("keeps the created purchase in the list without reloading it", async () => {

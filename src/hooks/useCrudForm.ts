@@ -18,8 +18,13 @@ export interface FormField {
     | "url";
   required?: boolean;
   placeholder?: string;
-  /** Options for <select> fields */
-  options?: { value: string; label: string }[];
+  /** Options for <select> and combobox fields */
+  options?: {
+    value: string;
+    label: string;
+    description?: string;
+    keywords?: string[];
+  }[];
   /** Only show when editing */
   showOnEdit?: boolean;
   /** Only show when creating */

@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useClienteStore } from "../../../stores/clienteStore";
-import { useProductoStore } from "../../../stores/productoStore";
 import { useVentaStore } from "../../../stores/ventaStore";
 import { useCompanyStore } from "../../../stores/companyStore";
 import { useUIStore } from "../../../stores/uiStore";
+import { useProductos } from "../../../hooks/useColecciones";
 import type {
   CreateSaleRequest,
   UpdateSaleRequest,
@@ -26,7 +26,7 @@ interface Props {
 export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
   const { t } = useTranslation();
   const { clientes } = useClienteStore();
-  const { productos } = useProductoStore();
+  const productos = useProductos();
   const { ventas, createVenta, updateVenta } = useVentaStore();
   const { currentCompany } = useCompanyStore();
   const { addToast } = useUIStore();
@@ -35,13 +35,6 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
   const editingVenta = useMemo(
     () => (editingSaleId ? ventas.find((v) => v.id === editingSaleId) : null),
     [editingSaleId, ventas],
-  );
-  const editingCliente = useMemo(
-    () =>
-      editingVenta?.clienteId
-        ? clientes.find((c) => c.id === editingVenta.clienteId)
-        : null,
-    [editingVenta, clientes],
   );
 
   // Local form state — key remount pattern ensures fresh state on editingSaleId change
@@ -60,24 +53,11 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
   const [selectedCliente, setSelectedCliente] = useState<string | null>(
     editingVenta?.clienteId ?? null,
   );
-  const [clienteSearch, setClienteSearch] = useState(
-    editingCliente?.name ?? "",
-  );
   const [ventaEstado, setVentaEstado] = useState<"pendiente" | "completada">(
     editingVenta?.status === "Completed" ? "completada" : "pendiente",
   );
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
   const [productSearch, setProductSearch] = useState("");
-
-  const match = useMemo(() => {
-    if (!clienteSearch.trim()) return null;
-    const search = clienteSearch.toLowerCase();
-    return clientes.find(
-      (c) =>
-        c.name.toLowerCase().includes(search) ||
-        c.email.toLowerCase().includes(search),
-    );
-  }, [clienteSearch, clientes]);
 
   const totales = useMemo(() => {
     const subtotal = carrito.reduce((acc, item) => acc + item.subtotal, 0);
@@ -144,7 +124,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     }));
 
   const validateAndSubmit = async (status: "Pending" | "Completed") => {
-    const clienteElegido = selectedCliente || (match ? match.id : null);
+    const clienteElegido = selectedCliente;
     if (!clienteElegido) {
       addToast(t("ventas.selectClientWarning"), "warning");
       return;
@@ -227,8 +207,6 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
               clientes={clientes}
               selectedClienteId={selectedCliente}
               onClienteSelect={setSelectedCliente}
-              searchValue={clienteSearch}
-              onSearchChange={setClienteSearch}
             />
             <Carrito
               items={carrito}

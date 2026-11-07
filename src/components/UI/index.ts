@@ -6,6 +6,8 @@ export { ToastContainer, NotificationContainer } from './Toast';
 export { Pagination } from './Pagination';
 export { ActionButtons } from './ActionButtons';
 export { SearchInput } from './SearchInput';
+export { SearchableSelect } from './SearchableSelect';
+export type { SearchableOption } from './SearchableSelect';
 export { Modal } from './Modal';
 export { ConfirmModal } from './ConfirmModal';
 export { DynamicFormFields } from './DynamicFormFields';

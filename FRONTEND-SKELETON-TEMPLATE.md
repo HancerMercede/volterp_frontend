@@ -22,6 +22,17 @@
 | Tables | custom generic `<Table<T>>` + `<Pagination>` components |
 | Architecture | Clean Architecture-inspired (`infrastructure` → `stores` → `application` → `components`/`pages`) |
 | Source language | English (artifacts), Spanish (conversational docs) |
+| Last synced with code | **2026-11-07** — `useCrudForm`, `useDeleteConfirm`, `useColecciones`, `Modal`, `ConfirmModal`, `DynamicFormFields`, `SearchableSelect`, contrato visual (§1.5) |
+
+---
+
+## Maintenance rule
+
+> Este MD **duplica código vivo**. Un snippet desactualizado es peor que un snippet ausente: alguien lo copia y hereda el bug.
+>
+> **Si cambiás un archivo que tiene snippet acá, actualizá su snippet en el mismo commit.** Los archivos con snippet son: `useCrudForm`, `useDeleteConfirm`, `useFilter`, `usePagination`, `usePermission`, `useTokenExpiry`, `useColecciones`, `fetchWithAuth`, `config.ts`, los services, `clienteStore`, `authStore`, `Table`, `Pagination`, `Modal`, `ConfirmModal`, `Button`, `ActionButtons`, `SearchInput`, `SearchableSelect`, `DynamicFormFields`, `Toast`, `PageHeader`, `ErrorBoundary`, `ImageCell`, los helpers de `utils/`, el init de i18n, `Login`, `Register` y `App.tsx`.
+>
+> Si el archivo cambió tanto que el snippet ya no es representativo, **borrá el snippet y apuntá al path vivo** (§2.4, "Hooks retirados", es el precedente).
 
 ---
 
@@ -58,9 +69,6 @@ erp-mvp/
     │
     ├── application/              ← use-cases / orquestación específica de dominio
     │   └── hooks/                ← un hook por caso de uso (recibe deps de stores)
-    │       ├── useCarrito.ts
-    │       ├── useVentaForm.ts
-    │       ├── useClienteSelector.ts
     │       ├── useNominaCalculator.ts
     │       ├── useEmpleadoForm.ts
     │       └── useDashboard.ts
@@ -80,10 +88,13 @@ erp-mvp/
     │   │   ├── Modal.tsx
     │   │   ├── ConfirmModal.tsx
     │   │   ├── SearchInput.tsx
+    │   │   ├── SearchableSelect.tsx
     │   │   ├── PageHeader.tsx
+    │   │   ├── PageLoader.tsx
     │   │   ├── ActionButtons.tsx
     │   │   ├── ImageCell.tsx
     │   │   ├── DynamicFormFields.tsx
+    │   │   ├── VolterpMark.tsx
     │   │   ├── Toast.tsx
     │   │   ├── ErrorBoundary.tsx
     │   │   └── index.ts          ← barrel (solo para UI primitives)
@@ -117,6 +128,8 @@ erp-mvp/
     │   ├── useFilter.ts
     │   ├── usePagination.ts
     │   ├── useCrudForm.ts
+    │   ├── useDeleteConfirm.ts
+    │   ├── useColecciones.ts
     │   ├── usePermission.ts
     │   └── useTokenExpiry.ts
     │
@@ -393,6 +406,68 @@ src/i18n/
 
 ---
 
+## 1.5 Contrato visual (color, tipografía, tokens) `[PRINCIPIO: el color se declara una vez; STACK: los valores concretos]`
+
+**Ubicación**: `src/styles/variables.css` — importado una vez en `App.tsx`. **Es la única fuente de verdad** del color, la tipografía, el radio, el espaciado y las sombras.
+
+> **Por qué existe esta sección**: una dirección de diseño anterior (naranja `#FF632B` + shell crema, tipo Coderhouse) se probó y se **abandonó** el 2026-11-05 — quedó en el stash `634ab2c` (57 archivos) y nunca llegó a `development`; el guard de tokens nunca se creó. La paleta **vigente** es la de abajo. Los **principios** de aquel intento sí se conservan: tokenización total del color, contraste como contrato y tipografía libre con licencia OFL.
+
+### La paleta vigente
+
+| Token | Valor | Rol |
+|---|---|---|
+| `--primary` | `#FACC15` | **ámbar de marca** — relleno: botón primario, acentos, highlights |
+| `--primary-dark` | `#EAB308` | hover del primario |
+| `--primary-light` | `#FEF08A` | fondo teñido del primario |
+| `--primary-gradient` | `linear-gradient(180deg, #FACC15, #EAB308)` | encabezado de marca |
+| `--brand-navy` | `#1e3a5f` | navy de marca |
+| `--brand-gradient` | `linear-gradient(180deg, #1e3a5f, #0f172a 50%, #020617)` | degradado de marca (POS, login) |
+| `--dark` | `#0f172a` | fondo oscuro de marca |
+| `--sidebar-bg` | `#1F2937` | shell del sidebar |
+| `--sidebar-hover` | `#374151` | hover del item del sidebar |
+| `--background` | `#F8F9FC` | canvas |
+| `--surface` | `#ffffff` | superficie de tarjeta |
+| `--surface-hover` | `#F3F4F6` | hover de superficie |
+| `--surface-soft` | `#FEFEFE` | superficie casi blanca |
+| `--border` | `#E5E7EB` | borde estándar |
+| `--border-light` | `rgba(0, 0, 0, 0.06)` | borde suave |
+| `--glass-bg` / `--glass-border` / `--surface-blur` | `rgba(255,255,255,.75)` / `rgba(255,255,255,.3)` / `rgba(255,255,255,.85)` | superficies translúcidas del shell |
+| `--gray-50` … `--gray-300` | `#F9FAFB` … `#D1D5DB` | escala de grises |
+| `--text-primary` | `#1F2937` | **texto principal** (13.9:1 sobre canvas — AAA) |
+| `--text-secondary` | `#6B7280` | **texto secundario** (4.64:1 sobre canvas — AA) |
+| `--text-muted` | `#9CA3AF` | texto apagado / metadatos (2.42:1 — **no usar para texto que se lea**) |
+| `--success` / `--success-soft` / `--success-text` | `#10B981` / `#D1FAE5` / `#065F46` | estado positivo: saldo a favor, conciliado |
+| `--danger` / `--danger-soft` / `--danger-text` | `#EF4444` / `#FEE2E2` / `#991B1B` | estado negativo: egreso, rechazo |
+| `--warning` / `--warning-soft` / `--warning-text` | `var(--primary)` / `#FEF3C7` / `#92400E` | estado de aviso: pendiente |
+| `--focus-ring` | `0 0 0 3px rgba(250,204,21,.15)` | anillo de foco |
+| `--shadow-sm` … `--shadow-soft` | 5 niveles | elevación |
+| `--radius-sm` … `--radius-xl` | `8px` … `20px` | radios |
+| `--space-xs` … `--space-xl` | `4px` … `32px` | espaciado |
+| `--transition` | `all .25s cubic-bezier(.4,0,.2,1)` | transición estándar |
+
+> `--warning` es una **referencia** a `--primary`, no un valor duplicado: el ámbar de marca es el color de aviso en esta app. Referenciarlo evita que las dos copias diverjan.
+
+### Tipografía
+
+- **Hoy hay una sola familia**: `Plus Jakarta Sans` (OFL, gratuita). `--font-body` (21 usos) y `--font-display` (4 usos) **apuntan a la misma familia** — `--font-display` marca los 4 puntos de jerarquía (wordmark del sidebar y títulos de página), no una tipografía distinta.
+- `index.html` **no carga** ninguna fuente de display extra.
+- **Regla**: si alguna vez se quiere una tipografía de display, tiene que ser libre con licencia OFL. Nada de fuentes de pago sin decisión explícita del usuario.
+
+### Reglas
+
+- **Tokenización**: el color se declara en `variables.css` y se consume con `var(--x)`. En código **nuevo**: cero literales `#hex`, `rgb()`, `rgba()`, `hsl()` fuera de ese archivo.
+  - **Deuda real y conocida**: hoy hay **363 literales hex y 132 `rgba()`** fuera de `variables.css` en `src/**`, sobre **57 tokens declarados**. No hay guard que lo imponga (`src/test/design-tokens.test.ts` nunca se creó). No es motivo para *no* tokenizar lo nuevo — es el backlog.
+  - **Deuda más grave: 7 tokens referenciados y nunca declarados** — `--accent-color`, `--color-background`, `--color-primary`, `--surface-secondary`, `--surface-tertiary`, `--text-inverse`, `--text-inverse-muted`. Una custom property sin declarar resuelve a un valor inválido, así que **la regla CSS que la usa no se aplica en el navegador**. Son alias de tokens que ya existen: la corrección es apuntarlos al token canónico, no inventar un valor nuevo.
+- **Contraste como contrato**:
+  - `--primary` (ámbar) es **relleno, nunca texto** sobre superficie clara: `#FACC15` sobre `#F8F9FC` da **1.53:1** (FAIL). Como botón con texto oscuro encima, sí.
+  - `--text-muted` es **2.42:1** sobre el canvas (FAIL AA): sólo para metadatos, iconos o separadores, nunca para texto que el usuario tenga que leer.
+  - Texto legible sobre claro: `--text-primary` (13.9:1, AAA) y `--text-secondary` (4.64:1, AA).
+- **Glassmorphism**: el shell **sí lo usa hoy** (`--glass-bg`, `--surface-blur`, 12 `backdrop-filter` en `src/**/*.css`). No se elimina sin una decisión explícita — la dirección que lo eliminaba era la abandonada.
+- **Sombras**: 1px y sutiles (`--shadow-sm` / `--shadow`). La sombra mínima es el valor por defecto.
+- **Homología**: una pantalla nueva se ve como las existentes. Si necesita estilos que no existen en `variables.css`, el token **se agrega al archivo** — no se inlinea el valor.
+
+---
+
 # PARTE 2 — TEMPLATE
 
 ## 2.1 Infrastructure layer `[STACK: fetch wrapper; PRINCIPIO en la idea de interceptor 401]`
@@ -407,13 +482,14 @@ src/i18n/
 - `fetchWithAuthJson<T>` es la versión que también parsea el body. Usar por defecto salvo que el endpoint devuelva `204 No Content` (donde se usa `fetchWithAuth` y se ignora el body).
 - Headers: `'Content-Type': 'application/json'` se aplica por defecto. Cualquier header del caller pisa el default.
 - **NO** se importa React ni hooks aquí. Solo `useAuthStore.getState()` (acceso directo al state de Zustand).
+- **Errores**: el backend usa **tres** cuerpos de error a la vez (`ErrorResponse{error,details?}`, anónimo `{message}` y RFC 7807 `ProblemDetails`). El wrapper NO lee el body: lo pasa a `extractErrorMessage` (`src/utils/apiError.ts`), que es quien sabe cuál trae un mensaje que el usuario puede actuar. Un 5xx conserva el mensaje genérico porque su body puede llevar texto crudo de base de datos.
 - **Hexagonal — port vs adapter**: `fetchWithAuth` es el **port** (interfaz pública: `(url, options) => Response` y la variante `fetchWithAuthJson<T>`). La función `fetch` nativa adentro es el **adapter** actual. Si querés cambiar de HTTP client (`axios`, `ky`, `ofetch`, etc.), reescribís SOLO el cuerpo de las dos funciones — los ~12 services que importan este wrapper no se enteran porque el contrato público no cambia. Esta es la razón principal de existir del wrapper.
 
 **Snippet:**
 
 ```typescript
 import { useAuthStore } from '../../stores/authStore';
-import type { ApiError } from './types';
+import { extractErrorMessage } from '../../utils/apiError';
 
 /**
  * Centralized fetch wrapper that:
@@ -445,8 +521,8 @@ export async function fetchWithAuth(
   }
 
   if (!response.ok) {
-    const error: ApiError = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || 'An error occurred');
+    const body: unknown = await response.json().catch(() => null);
+    throw new Error(extractErrorMessage(body, response.status));
   }
 
   if (response.status === 204) return response;
@@ -490,7 +566,7 @@ export interface LoginResponse {
   email: string;
   fullName: string;
   role: string;
-  companyId: number;
+  companyId: string;
 }
 
 export interface RegisterRequest {
@@ -498,7 +574,7 @@ export interface RegisterRequest {
   password: string;
   email: string;
   fullName: string;
-  companyId: number;
+  companyId?: string;
   role?: string;
 }
 
@@ -616,7 +692,7 @@ export const saleService = {
     );
   },
 
-  async getSale(id: number): Promise<SaleDto> {
+  async getSale(id: string): Promise<SaleDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}`,
     );
@@ -632,7 +708,7 @@ export const saleService = {
     );
   },
 
-  async updateSale(id: number, data: UpdateSaleRequest): Promise<SaleDto> {
+  async updateSale(id: string, data: UpdateSaleRequest): Promise<SaleDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}`,
       {
@@ -642,7 +718,7 @@ export const saleService = {
     );
   },
 
-  async completeSale(id: number): Promise<SaleDto> {
+  async completeSale(id: string): Promise<SaleDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}/complete`,
       {
@@ -651,7 +727,7 @@ export const saleService = {
     );
   },
 
-  async deleteSale(id: number): Promise<void> {
+  async deleteSale(id: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}`,
       {
@@ -688,7 +764,7 @@ export const clientService = {
     );
   },
 
-  async getClientById(id: number): Promise<ClientDto> {
+  async getClientById(id: string): Promise<ClientDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CLIENTS}/${id}`,
     );
@@ -704,7 +780,7 @@ export const clientService = {
     );
   },
 
-  async updateClient(id: number, client: ClientRequest): Promise<ClientDto> {
+  async updateClient(id: string, client: ClientRequest): Promise<ClientDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CLIENTS}/${id}`,
       {
@@ -714,7 +790,7 @@ export const clientService = {
     );
   },
 
-  async deleteClient(id: number): Promise<void> {
+  async deleteClient(id: string): Promise<void> {
     await fetchWithAuth(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CLIENTS}/${id}`,
       { method: "DELETE" },
@@ -803,10 +879,10 @@ interface ClienteStore {
   totalCount: number;
   pageCount: number;
   fetchClientes: (pageNumber?: number, pageSize?: number) => Promise<void>;
-  getClienteById: (id: number) => Promise<Client | null>;
+  getClienteById: (id: string) => Promise<Client | null>;
   addCliente: (cliente: ClientRequest) => Promise<Client>;
-  updateCliente: (id: number, data: ClientRequest) => Promise<Client>;
-  deleteCliente: (id: number) => Promise<void>;
+  updateCliente: (id: string, data: ClientRequest) => Promise<Client>;
+  deleteCliente: (id: string) => Promise<void>;
   setError: (error: string | null) => void;
 }
 
@@ -836,7 +912,7 @@ export const useClienteStore = create<ClienteStore>((set) => ({
     }
   },
 
-  getClienteById: async (id: number) => {
+  getClienteById: async (id: string) => {
     set({ loading: true, error: null });
     try {
       const client = await clientService.getClientById(id);
@@ -872,7 +948,7 @@ export const useClienteStore = create<ClienteStore>((set) => ({
     }
   },
 
-  updateCliente: async (id: number, data: ClientRequest) => {
+  updateCliente: async (id: string, data: ClientRequest) => {
     set({ loading: true, error: null });
     try {
       const updatedClient = await clientService.updateClient(id, data);
@@ -893,7 +969,7 @@ export const useClienteStore = create<ClienteStore>((set) => ({
     }
   },
 
-  deleteCliente: async (id: number) => {
+  deleteCliente: async (id: string) => {
     set({ loading: true, error: null });
     try {
       await clientService.deleteClient(id);
@@ -942,7 +1018,7 @@ export interface User {
   email: string;
   fullName: string;
   role: string;
-  companyId: number;
+  companyId: string;
 }
 
 interface AuthStore {
@@ -1124,20 +1200,48 @@ export function usePagination(options?: UsePaginationOptions) {
 **Propósito**: hook genérico para formularios CRUD con validación declarativa.
 **Reglas**:
 - Recibe `{ fields: FormField[], defaultValues: T, onCreate, onUpdate, onSuccess?, mapEntityToForm? }`.
+- Los ids son **strings** en toda la app (`editingId: string | null`, `handleEdit(entity, id: string)`, `onUpdate(id: string, data)`). El backend usa GUIDs.
 - `FormField` es declarativo: `name`, `label`, `type`, `required`, `placeholder`, `options`, `min/max/step`, `accept`, `validate?`, `showOnEdit?`, `showOnCreate?`.
+- **Props de presentación** (las consume `DynamicFormFields`, no el hook): `section` agrupa en secciones, `span` (1-6) ocupa columnas de la grilla, `hint` es texto de ayuda, `readonly` deshabilita el control, `sidebar` mueve el campo a la columna derecha.
 - **Validators built-in**:
   - `email` → regex `^[^\s@]+@[^\s@]+\.[^\s@]+$`.
   - `number` → respeta `min`, `max`, y `step` (calcula `step` con decimales).
   - `file` → respeta `accept` (con wildcards tipo `image/*`).
   - Cualquier string → respeta `minLength`/`maxLength`.
-- `mapEntityToForm` opcional: si está, se usa en `handleEdit`. Si no, se hace `pickKeys` (toma solo las claves que están en `defaultValues`).
+- **`isDirty`**: `true` cuando `values` difiere de los valores con los que se abrió el form. Lo consume el `Modal` para pintar el punto de estado del footer. Se recalcula con `useMemo` sobre `values` + `initialValues`.
+- **`mapEntityToForm` NO es opcional en la práctica** cuando el DTO y el form no calzan 1:1. Ver "Cuándo `mapEntityToForm` es obligatorio" abajo.
 - **Mutaciones re-tiran** (`throw error`); el catch interno setea `submitError` y NO re-tira — la UI ya tiene el error en estado.
 - `handleSubmit` ejecuta validación, llama `onCreate` o `onUpdate` según `editingId`, resetea el form al éxito, invoca `onSuccess`.
 
-**Snippet (completo — 258 líneas):**
+#### Cuándo `mapEntityToForm` es obligatorio
+
+`pickKeys` (el mapper por defecto) **copia las claves superficialmente**: `dict[key] = source[key]`. Eso es correcto sólo cuando el DTO y el form tienen la misma forma. Se rompe en dos casos concretos:
+
+1. **El DTO trae un array.** `pickKeys` copia la **referencia**, no el contenido. El form editaría el array del store en vivo. Hay que clonar:
+   ```typescript
+   // Compras.tsx — el DTO trae items[]
+   mapEntityToForm: (entity) => ({
+     ...,
+     items: purchase.items.map((item) => ({ ...item })),
+   })
+   ```
+2. **El DTO trae `null`/`undefined`.** El form renderiza inputs controlados: un `undefined` produce un input sin valor y un `null` no es `""`. Peor: `isDirty` compara `values[key] !== initialValues[key]`, así que `null` contra `""` marca el form **sucio al abrirse**. Hay que normalizar:
+   ```typescript
+   // Inventario.tsx — el DTO trae categoryId null y números sin defecto
+   mapEntityToForm: (entity) => ({
+     name: (entity.name as string) ?? "",
+     categoryId: (entity.categoryId as string | null) ?? "",
+     stock: (entity.stock as number) ?? 0,
+     isActive: (entity.isActive as boolean) ?? true,
+   })
+   ```
+
+**Criterio**: si `defaultValues` tiene un campo que el DTO puede devolver vacío, o un campo que es una colección, el mapper custom NO es opcional.
+
+**Snippet (completo — 289 líneas, verbatim de `src/hooks/useCrudForm.ts`):**
 
 ```typescript
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 // ─── Field definition ────────────────────────────────────────────────
 export interface FormField {
@@ -1149,14 +1253,21 @@ export interface FormField {
     | "tel"
     | "number"
     | "select"
+    | "combobox"
     | "date"
     | "file"
     | "checkbox"
+    | "textarea"
     | "url";
   required?: boolean;
   placeholder?: string;
-  /** Options for <select> fields */
-  options?: { value: string; label: string }[];
+  /** Options for <select> and combobox fields */
+  options?: {
+    value: string;
+    label: string;
+    description?: string;
+    keywords?: string[];
+  }[];
   /** Only show when editing */
   showOnEdit?: boolean;
   /** Only show when creating */
@@ -1174,6 +1285,18 @@ export interface FormField {
     value: unknown,
     values: Record<string, unknown>,
   ) => string | undefined;
+
+  // ─── Presentation (optional) ──────────────────────────────────────
+  /** Section this field belongs to. Fields with no section share the first group. */
+  section?: string;
+  /** How many of the 6 section columns the field occupies (6 = full width). */
+  span?: 1 | 2 | 3 | 4 | 5 | 6;
+  /** Helper text rendered under the control. */
+  hint?: string;
+  /** Renders the control as disabled (e.g. a server-generated code). */
+  readonly?: boolean;
+  /** Renders the field in the right sidebar instead of the main grid. */
+  sidebar?: boolean;
 }
 
 // ─── Config ──────────────────────────────────────────────────────────
@@ -1181,7 +1304,7 @@ export interface CrudFormConfig<T extends Record<string, unknown>> {
   fields: FormField[];
   defaultValues: T;
   onCreate: (data: T) => Promise<unknown>;
-  onUpdate: (id: number, data: T) => Promise<unknown>;
+  onUpdate: (id: string, data: T) => Promise<unknown>;
   /** Called after successful create/update */
   onSuccess?: () => void;
   /** Custom mapper: entity → form values. Default picks keys from defaultValues */
@@ -1194,10 +1317,12 @@ export interface CrudFormReturn<T> {
   errors: Record<string, string>;
   isSubmitting: boolean;
   submitError: string | null;
-  editingId: number | null;
+  editingId: string | null;
+  /** True when the current values differ from the ones the form was opened with. */
+  isDirty: boolean;
   setFieldValue: (name: string, value: unknown) => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
-  handleEdit: (entity: object, id: number) => void;
+  handleEdit: (entity: object, id: string) => void;
   reset: () => void;
 }
 
@@ -1313,10 +1438,11 @@ export function useCrudForm<T extends Record<string, unknown>>(
     mapEntityToForm,
   } = config;
   const [values, setValues] = useState<T>({ ...defaultValues });
+  const [initialValues, setInitialValues] = useState<T>({ ...defaultValues });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const setFieldValue = useCallback((name: string, value: unknown) => {
     setValues((prev) => ({ ...prev, [name]: value }));
@@ -1350,6 +1476,7 @@ export function useCrudForm<T extends Record<string, unknown>>(
         setEditingId(null);
         setErrors({});
         setValues({ ...defaultValues });
+        setInitialValues({ ...defaultValues });
         onSuccess?.();
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Error al guardar";
@@ -1362,12 +1489,13 @@ export function useCrudForm<T extends Record<string, unknown>>(
   );
 
   const handleEdit = useCallback(
-    (entity: object, id: number) => {
+    (entity: object, id: string) => {
       const dict = entity as Record<string, unknown>;
       const mapped = mapEntityToForm
         ? mapEntityToForm(dict)
         : pickKeys(defaultValues, dict);
       setValues(mapped);
+      setInitialValues(mapped);
       setEditingId(id);
       setErrors({});
       setSubmitError(null);
@@ -1377,11 +1505,22 @@ export function useCrudForm<T extends Record<string, unknown>>(
 
   const reset = useCallback(() => {
     setValues({ ...defaultValues });
+    setInitialValues({ ...defaultValues });
     setEditingId(null);
     setErrors({});
     setSubmitError(null);
     setIsSubmitting(false);
   }, [defaultValues]);
+
+  const isDirty = useMemo(() => {
+    const current = values as Record<string, unknown>;
+    const initial = initialValues as Record<string, unknown>;
+    const keys = new Set([...Object.keys(initial), ...Object.keys(current)]);
+    for (const key of keys) {
+      if (current[key] !== initial[key]) return true;
+    }
+    return false;
+  }, [values, initialValues]);
 
   return {
     values,
@@ -1389,11 +1528,128 @@ export function useCrudForm<T extends Record<string, unknown>>(
     isSubmitting,
     submitError,
     editingId,
+    isDirty,
     setFieldValue,
     handleSubmit,
     handleEdit,
     reset,
   };
+}
+```
+
+### useDeleteConfirm (confirmación de borrado) `[PRINCIPIO]`
+
+**Ubicación**: `src/hooks/useDeleteConfirm.ts`
+**Propósito**: hook genérico que maneja el estado del modal de confirmación de borrado y el toast de resultado. Existe para que ninguna página repita el trío `deleteId` + `showDeleteConfirm` + `confirmDelete`.
+**Reglas**:
+- Recibe `{ onDelete: (id: string) => Promise<void>, successMessage: string }`. El mensaje de éxito lo pasa la página porque es user-facing y va por i18n.
+- `handleDelete(id)` guarda el id y abre el modal. `cancelDelete()` cierra y **limpia el id**. `confirmDelete()` borra y avisa por toast.
+- **`deleteId` NO se limpia en `handleDelete`**: el borrado en vuelo no puede pisar una selección hecha después de que arrancó. Se limpia en `cancelDelete`.
+- El error del borrado se muestra como toast `error` con el mensaje del `Error`; si no hay mensaje, cae en `"Error al eliminar"`.
+- **No se fusiona dentro de `useCrudForm`**: el borrado no es parte del ciclo de vida del formulario (no comparte `values`, `errors` ni `editingId`). Ver `odd/tasks/volterp-frontend-style-skill.md`.
+- La página renderiza el `<ConfirmModal>` con `showDeleteConfirm`, `deleteId` y las acciones del hook.
+
+**Snippet (completo — 59 líneas):**
+
+```typescript
+import { useCallback, useState } from "react";
+import { useUIStore } from "../stores/uiStore";
+
+export interface DeleteConfirmConfig {
+  onDelete: (id: string) => Promise<void>;
+  successMessage: string;
+}
+
+export interface DeleteConfirmReturn {
+  showDeleteConfirm: boolean;
+  deleteId: string | null;
+  handleDelete: (id: string) => void;
+  confirmDelete: () => Promise<void>;
+  cancelDelete: () => void;
+}
+
+const DEFAULT_ERROR_MESSAGE = "Error al eliminar";
+
+export function useDeleteConfirm({
+  onDelete,
+  successMessage,
+}: DeleteConfirmConfig): DeleteConfirmReturn {
+  const { addToast } = useUIStore();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const handleDelete = useCallback((id: string) => {
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+  }, []);
+
+  // deleteId is cleared by cancelDelete, not here: a delete still in flight
+  // must not wipe a selection made after it started.
+  const confirmDelete = useCallback(async () => {
+    if (!deleteId) return;
+
+    try {
+      await onDelete(deleteId);
+      addToast(successMessage, "success");
+    } catch (err) {
+      const message =
+        err instanceof Error && err.message ? err.message : DEFAULT_ERROR_MESSAGE;
+      addToast(message, "error");
+    }
+  }, [deleteId, onDelete, successMessage, addToast]);
+
+  const cancelDelete = useCallback(() => {
+    setShowDeleteConfirm(false);
+    setDeleteId(null);
+  }, []);
+
+  return {
+    showDeleteConfirm,
+    deleteId,
+    handleDelete,
+    confirmDelete,
+    cancelDelete,
+  };
+}
+```
+
+### useColecciones (colecciones completas para el POS) `[PRINCIPIO: el POS filtra en memoria, no contra el servidor]`
+
+**Ubicación**: `src/hooks/useColecciones.ts`
+**Propósito**: cargar el listado completo de clientes, productos y proveedores para las pantallas que filtran y paginan en memoria.
+**Reglas**:
+- **Nació para el POS**: el POS y el editor de líneas de compra necesitan el listado entero, no la página del módulo. Por eso piden `PAGE_SIZE = 100` en vez de `ITEMS_PER_PAGE`.
+- **Compras la usa por la misma razón**: el form de compra referencia proveedores y el editor de líneas referencia productos.
+- Un hook por colección (`useClientes`, `useProductos`, `useProveedores`): cada uno dispara su `fetch` una vez al montar y devuelve el array del store.
+- No tocar los stores: los `fetch*` ya aceptan cualquier `pageSize`.
+
+**Snippet:**
+
+```typescript
+const PAGE_SIZE = 100;
+
+export function useClientes() {
+  const { clientes, fetchClientes } = useClienteStore();
+  useEffect(() => {
+    fetchClientes(1, PAGE_SIZE);
+  }, [fetchClientes]);
+  return clientes;
+}
+
+export function useProductos() {
+  const { productos, fetchProductos } = useProductoStore();
+  useEffect(() => {
+    fetchProductos(1, PAGE_SIZE);
+  }, [fetchProductos]);
+  return productos;
+}
+
+export function useProveedores() {
+  const { proveedores, fetchProveedores } = useProveedorStore();
+  useEffect(() => {
+    fetchProveedores(1, PAGE_SIZE);
+  }, [fetchProveedores]);
+  return proveedores;
 }
 ```
 
@@ -1538,229 +1794,17 @@ export function useTokenExpiry(): void {
 **Ubicación**: `src/application/hooks/use{UseCase}.ts`
 **Propósito**: hook que orquesta stores + services para un caso de uso específico.
 **Reglas**:
-- Un hook por caso de uso (`useCarrito` para el carrito de ventas, `useVentaForm` para crear/editar ventas).
+- Un hook por caso de uso, y **sólo si tiene call site** (un hook sin consumidor es código muerto: ver "Hooks retirados" más abajo). Ejemplos vivos: `useNominaCalculator`, `useEmpleadoForm`, `useDashboard`.
 - Recibe `useStoreX()` y/o servicios, y devuelve una API cohesiva para la vista (`state + actions`).
 - Puede tener state local (`useState`) propio si es state ephemeral del caso de uso (no global).
 - Dispara toasts vía `useUIStore().addToast(t("clave"), "variant")`.
 
-### useCarrito (carrito de compra) `[STACK: dominio ventas]`
+### Hooks retirados: `useCarrito`, `useVentaForm`, `useClienteSelector` `[STACK: dominio ventas]`
 
-**Ubicación**: `src/application/hooks/useCarrito.ts`
-**Propósito**: carrito de compras local (no se persiste). Maneja add/remove/updateQuantity/clear y calcula totales (subtotal, ITBIS 18%, total).
+> **Retirados el 2026-11-06** en `c7881d8 chore: remove the unused domain hooks` (387 líneas).
+> El POS de Ventas se reconstruyó como **componentes** en `src/pages/Ventas/components/` (`NuevaVenta`, `Carrito`, `ResumenVenta`, `ClienteSelector`, `SelectorProducto`): el carrito dejó de ser un hook porque su estado es efímero y pertenece al componente que lo posee. Ninguno de los tres hooks tenía call site.
 
-**Snippet:**
-
-```typescript
-import { useState, useMemo, useCallback } from "react";
-import type { CartItem, Product } from "../../domain/types";
-
-export interface Totales {
-  subtotal: number;
-  itbis: number;
-  total: number;
-  totalItems: number;
-}
-
-export function useCarrito() {
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  const totales = useMemo<Totales>(() => {
-    const subtotal = items.reduce((acc, item) => acc + item.subtotal, 0);
-    const itbis = subtotal * 0.18;
-    const total = subtotal + itbis;
-    const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
-    return { subtotal, itbis, total, totalItems };
-  }, [items]);
-
-  const addItem = useCallback((producto: Product) => {
-    setItems((prev) => {
-      const existingItem = prev.find((item) => item.productId === producto.id);
-      if (existingItem) {
-        return prev.map((item) =>
-          item.productId === producto.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-                subtotal: (item.quantity + 1) * item.unitPrice,
-              }
-            : item,
-        );
-      }
-      return [
-        ...prev,
-        {
-          productId: producto.id,
-          productName: producto.name,
-          imageUrl: producto.imageUrl || "",
-          unitPrice: producto.price,
-          quantity: 1,
-          subtotal: producto.price,
-        },
-      ];
-    });
-  }, []);
-
-  const removeItem = useCallback((productId: number) => {
-    setItems((prev) =>
-      prev.filter((item) => item.productId !== Number(productId)),
-    );
-  }, []);
-
-  const updateQuantity = useCallback((productId: number, delta: number) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.productId === productId) {
-          const newCantidad = Math.max(1, item.quantity + delta);
-          return {
-            ...item,
-            quantity: newCantidad,
-            subtotal: newCantidad * item.unitPrice,
-          };
-        }
-        return item;
-      }),
-    );
-  }, []);
-
-  const clearCart = useCallback(() => {
-    setItems([]);
-  }, []);
-
-  return {
-    items,
-    totales,
-    addItem,
-    removeItem,
-    updateQuantity,
-    clearCart,
-  };
-}
-```
-
-### useVentaForm (crear/editar ventas) `[STACK: dominio ventas]`
-
-**Ubicación**: `src/application/hooks/useVentaForm.ts`
-**Propósito**: orquesta `ventaStore`, `clienteStore`, `companyStore`, `uiStore` para crear o editar una venta completa (con carrito + cliente).
-**Reglas**:
-- Mantiene state local: `carrito`, `editingSaleId`, `selectedCliente`, `clienteSearch`, `ventaEstado`.
-- `handleCompletarVenta` valida que haya cliente + carrito + company, arma el payload, llama `createVenta` o `updateVenta`, dispara toast.
-- `handleGuardarBorrador` fuerza `status: "Pending"` siempre.
-- `handleSave` es alias de `handleCompletarVenta` (compatibilidad con call sites existentes).
-- Errores: `addToast((err as Error).message, "error")`.
-
-**Snippet (extracto representativo — el archivo completo son 262 líneas):**
-
-```typescript
-import { useState, useCallback } from "react";
-import type {
-  CartItem,
-  Product,
-  CreateSaleRequest,
-  UpdateSaleRequest,
-} from "../../domain/types";
-import { useVentaStore } from "../../stores/ventaStore";
-import { useClienteStore } from "../../stores/clienteStore";
-import { useCompanyStore } from "../../stores/companyStore";
-import { useUIStore } from "../../stores/uiStore";
-import { useTranslation } from "react-i18next";
-
-export function useVentaForm() {
-  const { t } = useTranslation();
-  const { createVenta, updateVenta } = useVentaStore();
-  const { clientes } = useClienteStore();
-  const { currentCompany } = useCompanyStore();
-  const { addToast } = useUIStore();
-
-  const [carrito, setCarrito] = useState<CartItem[]>([]);
-  const [editingSaleId, setEditingSaleId] = useState<number | null>(null);
-  const [selectedCliente, setSelectedCliente] = useState<number | null>(null);
-  const [clienteSearch, setClienteSearch] = useState("");
-  const [ventaEstado, setVentaEstado] = useState<"pendiente" | "completada">("pendiente");
-
-  const agregarAlCarrito = useCallback((producto: Product) => { /* … */ }, []);
-  const actualizarCantidad = useCallback((productoId: number, delta: number) => { /* … */ }, []);
-  const eliminarDelCarrito = useCallback((productoId: number) => { /* … */ }, []);
-
-  const handleCompletarVenta = useCallback(async () => {
-    const match = clienteSearch.trim()
-      ? clientes.find(
-          (c) =>
-            c.name.toLowerCase().includes(clienteSearch.toLowerCase()) ||
-            c.email.toLowerCase().includes(clienteSearch.toLowerCase()) ||
-            (c.empresa && c.empresa.toLowerCase().includes(clienteSearch.toLowerCase())),
-        )
-      : null;
-
-    const clienteElegido = selectedCliente || (match ? match.id : null);
-
-    if (!clienteElegido) {
-      addToast(t("ventas.selectClientWarning"), "warning");
-      return false;
-    }
-    if (carrito.length === 0) {
-      addToast(t("ventas.cartEmptyWarning"), "warning");
-      return false;
-    }
-    if (!currentCompany) {
-      addToast(t("ventas.NoCompanySelected"), "error");
-      return false;
-    }
-
-    const clienteData = clientes.find((c) => c.id === clienteElegido);
-    const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
-
-    const saleItems = carrito.map((item) => ({
-      productId: item.productId,
-      productName: item.productName,
-      productImageUrl: item.imageUrl || undefined,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      subtotal: item.subtotal,
-    }));
-
-    try {
-      if (editingSaleId) {
-        const updateData: UpdateSaleRequest = {
-          clienteId: clienteElegido,
-          clienteName: clienteData?.name || null,
-          status: ventaEstado === "completada" ? "Completed" : "Pending",
-          total, notes: null, items: saleItems,
-        };
-        await updateVenta(editingSaleId, updateData);
-      } else {
-        const saleData: CreateSaleRequest = {
-          companyId: currentCompany.id,
-          clienteId: clienteElegido,
-          clienteName: clienteData?.name || null,
-          status: ventaEstado === "completada" ? "Completed" : "Pending",
-          total, notes: null, items: saleItems,
-        };
-        await createVenta(saleData);
-      }
-      addToast(t("ventas.saleCompleted"), "success");
-      return true;
-    } catch (err) {
-      addToast((err as Error).message, "error");
-      return false;
-    }
-  }, [/* deps */]);
-
-  // handleGuardarBorrador, handleSave, reset — mismo patrón.
-
-  return {
-    carrito, setCarrito,
-    selectedCliente, setSelectedCliente,
-    editingSaleId, setEditingSaleId,
-    clienteSearch, setClienteSearch,
-    ventaEstado, setVentaEstado,
-    agregarAlCarrito, actualizarCantidad, eliminarDelCarrito,
-    handleSave, handleGuardarBorrador, handleCompletarVenta,
-    reset,
-  };
-}
-```
-
-> **Decisión intencional**: `handleGuardarBorrador` y `handleCompletarVenta` repiten ~30 líneas de armado de payload. No extraje porque la lógica diverge (uno fuerza `Pending`, el otro respeta `ventaEstado`). Refactorizar agregaría un parámetro `forcePending` que es menos legible que la duplicación.
+**Regla que dejó:** antes de escribir un hook en `application/hooks/`, comprobar que hay un call site. Un hook sin consumidor es código muerto con tests.
 
 ---
 
@@ -1931,22 +1975,28 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
 }
 ```
 
-### Modal (portal + escape + scroll lock) `[PRINCIPIO]`
+### Modal (form shell: header + body + footer) `[PRINCIPIO]`
 
 **Ubicación**: `src/components/UI/Modal.tsx`
-**Propósito**: modal genérico con dos modos: con `onSubmit` (form) o sin (vista).
+**Propósito**: modal genérico con dos modos: con `onSubmit` (form) o sin (vista). Es el **shell de formularios** compartido por todas las páginas CRUD.
 **Reglas**:
 - Renderiza con `createPortal(..., document.body)` — escapa del overflow del padre.
 - **Body scroll lock**: `document.body.style.overflow = 'hidden'` cuando está abierto.
 - **Escape listener**: cierra al apretar `Escape`.
 - Click en overlay → `onClose()`. Click en modal → `stopPropagation()`.
+- **Estructura en tres zonas**: `header` (icono + título + badge + subtítulo + botón X), `body` (los children) y `footer` (estado + acciones). El footer se dibuja igual con y sin `onSubmit`.
+- **Props del shell**: `icon` (tile ⚡), `subtitle`, `badge`, `closeLabel`, `footerStatus`, `dirty`, `submitVariant` (`'primary' | 'dark'`), `footerActions`, `size` (`'md' | 'lg'`).
+- **`size="lg"`** para formularios de dos columnas (los que usan `span` y `sidebar` de `FormField`); `'md'` para los simples.
+- **`footerStatus` + `dirty`**: el estado del pie viene del form — `footerStatus={form.isDirty ? t("common.unsavedChanges") : t("common.noPendingChanges")}` y `dirty={form.isDirty}`. El punto se pinta distinto cuando hay cambios sin guardar.
+- **Accesibilidad**: `role="dialog"`, `aria-modal="true"`, `aria-label={title}`.
 - Si recibe `onSubmit`, envuelve children en `<form onSubmit={onSubmit}>` con botones submit/cancel. Si no, es vista libre.
 
-**Snippet:**
+**Snippet (completo — 150 líneas, verbatim de `src/components/UI/Modal.tsx`):**
 
 ```typescript
 import { type ReactNode, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 import { Button } from './Button';
 import styles from './Modal.module.css';
 
@@ -1958,18 +2008,39 @@ interface ModalProps {
   onSubmit?: (e: React.FormEvent) => void;
   submitLabel?: string;
   cancelLabel?: string;
+  closeLabel?: string;
+  icon?: ReactNode;
+  subtitle?: string;
+  badge?: ReactNode;
+  footerStatus?: ReactNode;
+  /** Renders the accent dot next to the footer status. */
+  dirty?: boolean;
+  submitVariant?: 'primary' | 'dark';
+  /** Extra actions rendered next to the cancel button. */
+  footerActions?: ReactNode;
+  /** 'md' fits simple forms, 'lg' fits two-column forms. */
+  size?: 'md' | 'lg';
 }
 
-export function Modal({ 
-  isOpen, 
-  onClose, 
-  title, 
-  children, 
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
   onSubmit,
   submitLabel = 'Crear',
-  cancelLabel = 'Cancelar'
+  cancelLabel = 'Cancelar',
+  closeLabel = 'Close',
+  icon,
+  subtitle,
+  badge,
+  footerStatus,
+  dirty = false,
+  submitVariant = 'primary',
+  footerActions,
+  size = 'md',
 }: ModalProps) {
-  
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -1991,33 +2062,87 @@ export function Modal({
 
   if (!isOpen) return null;
 
-  return createPortal(
+  const shell = (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <h3 className={styles.title}>{title}</h3>
-        
+      <div
+        className={`${styles.modal} ${size === 'lg' ? styles.modalLg : ''}`}
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        <header className={styles.header}>
+          {icon && <span className={styles.iconSlot}>{icon}</span>}
+          <div className={styles.heading}>
+            <div className={styles.titleRow}>
+              <h3 className={styles.title}>{title}</h3>
+              {badge}
+            </div>
+            {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+          </div>
+          <button
+            type="button"
+            className={styles.closeBtn}
+            onClick={onClose}
+            aria-label={closeLabel}
+          >
+            <X size={18} strokeWidth={2} />
+          </button>
+        </header>
+
         {onSubmit ? (
           <form onSubmit={onSubmit} className={styles.form}>
-            {children}
-            <div className={styles.actions}>
-              <Button variant="secondary" type="button" onClick={onClose}>{cancelLabel}</Button>
-              <Button type="submit">{submitLabel}</Button>
-            </div>
+            <div className={styles.body}>{children}</div>
+            <footer className={styles.actions}>
+              {footerStatus && (
+                <span className={styles.footerStatus}>
+                  <span
+                    className={`${styles.statusDot} ${dirty ? styles.statusDotDirty : ""}`}
+                  />
+                  {footerStatus}
+                </span>
+              )}
+              <div className={styles.footerButtons}>
+                <Button variant="ghost" type="button" onClick={onClose}>
+                  {cancelLabel}
+                </Button>
+                {footerActions}
+                <Button
+                  type="submit"
+                  variant={submitVariant}
+                  accent={submitVariant === 'dark'}
+                >
+                  {submitLabel}
+                </Button>
+              </div>
+            </footer>
           </form>
         ) : (
           <>
-            <div className={styles.content}>
-              {children}
-            </div>
-            <div className={styles.actions}>
-              <Button variant="secondary" type="button" onClick={onClose}>{cancelLabel}</Button>
-            </div>
+            <div className={styles.body}>{children}</div>
+            <footer className={styles.actions}>
+              {footerStatus && (
+                <span className={styles.footerStatus}>
+                  <span
+                    className={`${styles.statusDot} ${dirty ? styles.statusDotDirty : ""}`}
+                  />
+                  {footerStatus}
+                </span>
+              )}
+              <div className={styles.footerButtons}>
+                <Button variant="ghost" type="button" onClick={onClose}>
+                  {cancelLabel}
+                </Button>
+                {footerActions}
+              </div>
+            </footer>
           </>
         )}
       </div>
-    </div>,
-    document.body
+    </div>
   );
+
+  return createPortal(shell, document.body);
 }
 ```
 
@@ -2027,17 +2152,26 @@ export function Modal({
 **Propósito**: modal de confirmación con variantes (danger, warning, success, info, error) e icon de lucide-react.
 **Reglas**:
 - Igual body scroll lock + escape que `Modal`, pero `Escape` llama `onCancel` (no `onClose`).
-- Mapea variant → icon (`AlertTriangle`, `HelpCircle`, `CheckCircle`, `Info`, `XCircle`).
+- Mapea variant → icon (`Trash2`, `HelpCircle`, `CheckCircle`, `Info`, `XCircle`). `danger` usa `Trash2`, no un triángulo: la acción es borrar.
 - `BUTTON_VARIANT` traduce la variant del modal al variant del `<Button>` (`danger` o `primary`).
+- **`context`**: bloque opcional que dice **qué** se va a eliminar (`{ title, subtitle?, amount? }`). Sin esto el modal dice "Eliminar" y el usuario tiene que inferir el objeto. Con `context`, el modal nombra el ítem y su monto.
+- `role="alertdialog"` + `aria-modal="true"` + `aria-label={title}`.
+- El botón de cancelar es `ghost`; el de confirmar lleva el variant mapeado.
 
-**Snippet (representativo):**
+**Snippet (completo — 127 líneas, verbatim de `src/components/UI/ConfirmModal.tsx`):**
 
 ```typescript
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, HelpCircle, CheckCircle, Info, XCircle } from 'lucide-react';
+import { CheckCircle, HelpCircle, Info, Trash2, XCircle } from 'lucide-react';
 import { Button } from './Button';
 import styles from './ConfirmModal.module.css';
+
+interface ConfirmContext {
+  title: string;
+  subtitle?: string;
+  amount?: string;
+}
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -2049,10 +2183,11 @@ interface ConfirmModalProps {
   cancelLabel?: string;
   variant?: 'danger' | 'warning' | 'success' | 'info' | 'error';
   subtitle?: string;
+  context?: ConfirmContext;
 }
 
 const VARIANT_ICONS = {
-  danger: AlertTriangle,
+  danger: Trash2,
   warning: HelpCircle,
   success: CheckCircle,
   info: Info,
@@ -2068,11 +2203,29 @@ const BUTTON_VARIANT: Record<string, 'danger' | 'primary'> = {
 };
 
 export function ConfirmModal({
-  isOpen, onConfirm, onCancel, title, message,
-  confirmLabel = 'Eliminar', cancelLabel = 'Cancelar',
-  variant = 'danger', subtitle,
+  isOpen,
+  onConfirm,
+  onCancel,
+  title,
+  message,
+  confirmLabel = 'Eliminar',
+  cancelLabel = 'Cancelar',
+  variant = 'danger',
+  subtitle,
+  context,
 }: ConfirmModalProps) {
-  useEffect(() => { /* body scroll lock idéntico a Modal */ }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) onCancel();
@@ -2082,22 +2235,50 @@ export function ConfirmModal({
   }, [isOpen, onCancel]);
 
   if (!isOpen) return null;
+
   const IconComponent = VARIANT_ICONS[variant] || HelpCircle;
 
   return createPortal(
     <div className={styles.overlay} onClick={onCancel}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={`${styles.icon} ${styles[variant]}`}>
-          <IconComponent size={28} strokeWidth={1.8} />
-        </div>
+      <div
+        className={styles.card}
+        onClick={(e) => e.stopPropagation()}
+        role="alertdialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        <span className={`${styles.iconCircle} ${styles[variant]}`}>
+          <IconComponent size={22} strokeWidth={1.9} />
+        </span>
+
+        <h2 className={styles.title}>{title}</h2>
         {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-        <h3 className={styles.title}>{title}</h3>
         <p className={styles.message}>{message}</p>
+
+        {context && (
+          <div className={styles.context} data-testid="confirm-context">
+            <div className={styles.contextInfo}>
+              <p className={styles.contextTitle}>{context.title}</p>
+              {context.subtitle && (
+                <p className={styles.contextSubtitle}>{context.subtitle}</p>
+              )}
+            </div>
+            {context.amount && (
+              <span className={styles.contextAmount}>{context.amount}</span>
+            )}
+          </div>
+        )}
+
         <div className={styles.actions}>
-          <Button variant="secondary" onClick={onCancel}>{cancelLabel}</Button>
+          <Button variant="ghost" type="button" onClick={onCancel}>
+            {cancelLabel}
+          </Button>
           <Button
             variant={BUTTON_VARIANT[variant] || 'primary'}
-            onClick={() => { onConfirm(); onCancel(); }}
+            onClick={() => {
+              onConfirm();
+              onCancel();
+            }}
           >
             {confirmLabel}
           </Button>
@@ -2244,59 +2425,241 @@ export function SearchInput({
 }
 ```
 
+### SearchableSelect (referencia buscable a otra entidad) `[PRINCIPIO]`
+
+**Ubicación**: `src/components/UI/SearchableSelect.tsx`
+**Propósito**: input de texto con lista desplegable, para los campos que **referencian otra entidad** (proveedor, producto) donde un `<select>` no escala: con 100 proveedores no se puede elegir a ojo.
+**Reglas**:
+- `options: { value: string; label: string; description?: string; keywords?: string[] }[]`. `description` es la línea secundaria (típicamente el `code` del negocio). `keywords` son términos **buscables pero no renderizados** (ej. el código del cliente: se busca por código pero no se muestra en la lista).
+- **El valor inicial se muestra**: el input arranca con el `label` de la opción seleccionada, no vacío.
+- **El texto sólo se resincroniza con un valor externo no vacío**: mientras el usuario escribe el componente reporta `onChange("", texto)`; si el padre devuelve ese `""` como `value`, el texto que acaba de escribir NO se borra.
+- **Filtra con `normalizeSearch`** (`src/utils/normalizeSearch.ts`): ignora acentos y mayúsculas, sobre `label`, `description` y `keywords`. El mismo helper usan `useFilter` y el buscador del header.
+- **Si el texto es sólo la selección mostrada, la lista no se filtra**: el filtro arranca con todas las opciones para que el usuario pueda elegir otra sin borrar el label.
+- **Teclado**: `ArrowDown`/`ArrowUp` mueven la opción activa y abren la lista, `Enter` selecciona la activa, `Escape` cierra **sin propagar** (el `Escape` del modal no se dispara a la vez). La lista se abre también con `focus`.
+- **Al escribir a mano** llama `onChange("", texto)`: el valor no matchea ninguna opción y el formulario lo trata como vacío. No inventa un id.
+- `clearOnSelect` deja el input vacío después de elegir (lo usa el editor de líneas de compra, donde el mismo producto se puede agregar varias veces).
+- `autoFocus` enfoca el input al montar (lo usa el POS cuando el usuario pulsa "Cambiar" en la card del cliente).
+- Se cierra al hacer click afuera (`mousedown` sobre `document`).
+- **Accesibilidad**: `role="combobox"` con `aria-expanded`, `aria-controls`, `aria-activedescendant`; la lista es `role="listbox"` y cada ítem `role="option"` con `aria-selected`.
+- Se renderiza desde `DynamicFormFields` cuando `field.type === "combobox"`, o directamente en un componente de feature (líneas de compra, selector de cliente del POS).
+
+**Snippet (representativo — el archivo completo son 177 líneas):**
+
+```typescript
+export interface SearchableOption {
+  value: string;
+  label: string;
+  description?: string;
+  /** Extra terms that match the query but are never rendered. */
+  keywords?: string[];
+}
+
+interface Props {
+  id?: string;
+  label?: string;
+  options: SearchableOption[];
+  value: string;
+  placeholder?: string;
+  emptyLabel?: string;
+  invalid?: boolean;
+  clearOnSelect?: boolean;
+  autoFocus?: boolean;
+  onChange: (value: string, label: string) => void;
+}
+
+export function SearchableSelect({
+  id, label, options, value, placeholder, emptyLabel,
+  invalid = false, clearOnSelect = false, autoFocus = false, onChange,
+}: Props) {
+  const [text, setText] = useState(
+    () => options.find((option) => option.value === value)?.label ?? "",
+  );
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const selected = options.find((option) => option.value === value);
+  const [syncedValue, setSyncedValue] = useState(value);
+
+  if (value !== syncedValue) {
+    setSyncedValue(value);
+    // An empty value means the user is typing: resyncing would wipe the text.
+    if (value) setText(selected ? selected.label : "");
+  }
+
+  const selectedLabel = selected?.label ?? "";
+
+  const filtered = useMemo(() => {
+    const query = normalizeSearch(text);
+    // The text may only be showing the current selection, not a search query.
+    if (!query || text === selectedLabel) return options;
+    return options.filter(
+      (option) =>
+        normalizeSearch(option.label).includes(query) ||
+        (option.description
+          ? normalizeSearch(option.description).includes(query)
+          : false),
+    );
+  }, [options, text]);
+
+  const handleSelect = (option: SearchableOption) => {
+    setText(clearOnSelect ? "" : option.label);
+    setOpen(false);
+    setActiveIndex(-1);
+    onChange(option.value, option.label);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setOpen(true);
+      setActiveIndex((current) => Math.min(current + 1, filtered.length - 1));
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((current) => Math.max(current - 1, 0));
+      return;
+    }
+    if (event.key === "Enter") {
+      if (!open || activeIndex < 0) return;
+      event.preventDefault();
+      handleSelect(filtered[activeIndex]);
+      return;
+    }
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      setOpen(false);
+      setActiveIndex(-1);
+    }
+  };
+  /* … render con role="combobox" + listbox … */
+}
+```
+
 ### DynamicFormFields (renderiza `FormField[]`) `[PRINCIPIO]`
 
 **Ubicación**: `src/components/UI/DynamicFormFields.tsx`
-**Propósito**: renderiza declarativamente un array `FormField[]` consumiendo `useCrudForm`.
+**Propósito**: renderiza declarativamente un array `FormField[]` consumiendo `useCrudForm`. Es el otro lado del contrato: el hook define los datos, este componente define cómo se ven.
 **Reglas**:
 - Recibe `fields`, `values`, `errors`, `editingId`, `onChange(name, value)`.
 - Respeta `showOnEdit`/`showOnCreate`.
-- `<select>` con option vacío cuando `placeholder` no está.
-- `<input type="file">` con drop-zone + preview card + remove.
-- `<input type="number">` decide `parseInt`/`parseFloat` según `step < 1`.
+- **Layout en dos columnas**: los campos con `sidebar: true` van a un `<aside>` derecho; el resto a la grilla principal. Si no hay campos de sidebar, la grilla ocupa todo el ancho.
+- **`section`** agrupa los campos en bloques con título (el título es una **clave de i18n**: `t(group.section)`). Los campos sin `section` comparten el primer grupo.
+- **`span`** (1-6) decide cuántas columnas de la grilla ocupa el campo; sin `span` ocupa el ancho completo (6).
+- **`hint`** es el texto de ayuda bajo el control; se oculta si hay error (el error manda).
+- **`readonly`** renderiza el control deshabilitado (ej. un código generado por el servidor).
+- **Dispatch por `field.type`**: `combobox` → `SearchableSelect`; `select` → `<select>` con option vacío; `checkbox` → checkbox o switch (según esté en el sidebar); `file` → drop-zone + preview; `textarea`; `number` (decide `parseInt`/`parseFloat` según `step < 1`); el resto, `<input>`.
+- El panel de archivo del sidebar muestra las **iniciales** del `name` mientras no hay imagen (`initialsOf`).
 
-**Snippet (representativo, full file es 279 líneas):**
+**Snippet (representativo, el archivo completo son 563 líneas):**
 
 ```typescript
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Image as ImageIcon, Trash2 } from "lucide-react";
 import type { FormField } from "../../hooks/useCrudForm";
+import { initialsOf } from "../../utils/initials";
+import { SearchableSelect } from "./SearchableSelect";
 import styles from "./DynamicFormFields.module.css";
 
 interface Props {
   fields: FormField[];
   values: Record<string, unknown>;
   errors: Record<string, string>;
-  editingId: number | null;
+  editingId: string | null;
   onChange: (name: string, value: unknown) => void;
 }
 
+interface FieldGroup {
+  section?: string;
+  fields: FormField[];
+}
+
+const SPAN_CLASSES = ["", styles.span1, styles.span2, styles.span3, styles.span4, styles.span5, styles.span6];
+
 export function DynamicFormFields({ fields, values, errors, editingId, onChange }: Props) {
+  const visible = fields.filter((field) => {
+    if (field.showOnEdit && editingId === null) return false;
+    if (field.showOnCreate && editingId !== null) return false;
+    return true;
+  });
+
+  const main = visible.filter((field) => !field.sidebar);
+  const sidebar = visible.filter((field) => field.sidebar);
+  const initials = initialsOf(String(values.name ?? ""));
+
+  const groups = groupBySection(main);
+
+  if (sidebar.length === 0) {
+    return (
+      <div className={styles.stack}>
+        {groups.map((group) => (
+          <Section key={group.section ?? "main"} group={group}>
+            {(field) => (
+              <FieldCell
+                key={field.name}
+                field={field}
+                value={values[field.name]}
+                error={errors[field.name]}
+                onChange={onChange}
+              />
+            )}
+          </Section>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.fields}>
-      {fields.map((field) => {
-        if (field.showOnEdit && editingId === null) return null;
-        if (field.showOnCreate && editingId !== null) return null;
+    <div className={styles.columns}>
+      <div className={styles.stack}>
+        {groups.map((group) => (
+          <Section key={group.section ?? "main"} group={group}>
+            {(field) => (
+              <FieldCell
+                key={field.name}
+                field={field}
+                value={values[field.name]}
+                error={errors[field.name]}
+                onChange={onChange}
+              />
+            )}
+          </Section>
+        ))}
+      </div>
 
-        const value = values[field.name];
-        const error = errors[field.name];
-
-        return (
-          <div key={field.name} className={`${styles.field} ${error ? styles.hasError : ""}`}>
-            <label className={styles.label} htmlFor={`field-${field.name}`}>
-              {field.label}
-              {field.required && <span className={styles.required}>*</span>}
-            </label>
-            <FieldRenderer field={field} value={value} error={error} onChange={onChange} />
-            {error && <span className={styles.errorText}>{error}</span>}
-          </div>
-        );
-      })}
+      <aside className={styles.sidebar}>
+        {sidebar.map((field) => (
+          <SidebarBlock
+            key={field.name}
+            field={field}
+            value={values[field.name]}
+            error={errors[field.name]}
+            onChange={onChange}
+            initials={initials}
+          />
+        ))}
+      </aside>
     </div>
   );
 }
 
-// FieldRenderer dispatch por type — ver archivo completo para todos los casos.
+// ─── combobox (select con búsqueda) ───
+if (field.type === "combobox") {
+  return (
+    <SearchableSelect
+      id={id}
+      label={field.label}
+      options={field.options ?? []}
+      value={String(value ?? "")}
+      placeholder={field.placeholder}
+      emptyLabel={field.placeholder}
+      invalid={Boolean(error)}
+      onChange={(optionValue) => onChange(field.name, optionValue)}
+    />
+  );
+}
 ```
 
 ### Toast (NotificationContainer) `[PRINCIPIO]`
@@ -2536,9 +2899,12 @@ export { ToastContainer, NotificationContainer } from './Toast';
 export { Pagination } from './Pagination';
 export { ActionButtons } from './ActionButtons';
 export { SearchInput } from './SearchInput';
+export { SearchableSelect } from './SearchableSelect';
+export type { SearchableOption } from './SearchableSelect';
 export { Modal } from './Modal';
 export { ConfirmModal } from './ConfirmModal';
 export { DynamicFormFields } from './DynamicFormFields';
+export { VolterpMark } from './VolterpMark';
 export { ErrorBoundary } from './ErrorBoundary';
 ```
 
@@ -2709,6 +3075,39 @@ export function getInitials(fullName?: string): string {
   return parts.length >= 2 
     ? `${parts[0]?.[0] || ''}${parts[1]?.[0] || ''}`.toUpperCase() 
     : (parts[0]?.substring(0, 2).toUpperCase() || '');
+}
+```
+
+### apiError (normaliza el error del backend) `[PRINCIPIO]`
+
+**Ubicación**: `src/utils/apiError.ts`
+**Propósito**: leer el mensaje de error de un body del backend, que viene en tres formas distintas.
+**Reglas**:
+- El backend usa `ErrorResponse{error,details?}` (api/accounts, 401/403), un `{message}` anónimo (api/sales, api/purchases) y RFC 7807 `ProblemDetails` (5xx, 429).
+- Sólo se muestra el mensaje en un **4xx**: un 5xx puede llevar texto crudo de base de datos o un stack trace, así que conserva el mensaje genérico.
+- `error` tiene prioridad sobre `message`. Un string vacío no cuenta como mensaje.
+- **Función pura**: vive en `utils/`, no toca `fetch` ni React. Por eso se testea sin mockear red.
+
+**Snippet:**
+
+```typescript
+export const DEFAULT_ERROR_MESSAGE = "An error occurred";
+
+export function extractErrorMessage(
+  body: unknown,
+  status: number,
+  fallback: string = DEFAULT_ERROR_MESSAGE,
+): string {
+  if (status >= 500) return fallback;
+  if (!body || typeof body !== "object") return fallback;
+
+  const candidate = body as { error?: unknown; message?: unknown };
+  for (const key of ["error", "message"] as const) {
+    const value = candidate[key];
+    if (typeof value === "string" && value.trim() !== "") return value;
+  }
+
+  return fallback;
 }
 ```
 
@@ -3530,11 +3929,15 @@ Workflow de 7 pasos. Cada paso referencia qué sección del template usar.
 4. **Application hook (opcional)**:
    - Si la página es compleja (ej. wizard multi-step), crear `src/application/hooks/useSupplierForm.ts` (§2.4).
    - Si es simple, la página puede usar el store directo.
+   - **Sólo si hay call site**: un hook sin consumidor es código muerto con tests (ver §2.4, "Hooks retirados").
 
 5. **Page**:
    - Crear `src/pages/Proveedores/Proveedores.tsx` (siguiendo la convención: carpeta con nombre del módulo en español).
    - Exportar componente con `export const Proveedores: React.FC = () => { ... }`.
    - Componer: `<PageHeader>` + `<SearchInput>` + `<Table>` + `<Pagination>` + `<Modal>` (con `<DynamicFormFields>` adentro) + `<ConfirmModal>` para delete.
+   - **Borrado**: el estado del modal va en `useDeleteConfirm` (`src/hooks/useDeleteConfirm.ts`), no en `useState` local de la página.
+   - **Referencias a otras entidades** (proveedor, categoría): declararlas `type: "combobox"` en vez de `select` cuando la lista es grande.
+   - **`mapEntityToForm`**: agregarlo si el DTO trae arrays o campos vacíos (§4.5).
    - Estado local: `useFilter`, `usePagination`. Datos: del store vía hook custom o directo.
 
 6. **Routing**:
@@ -3571,7 +3974,7 @@ Workflow de 7 pasos. Cada paso referencia qué sección del template usar.
 | Service file | `{entity}Service.ts` | `clientService.ts` |
 | Service object | `{entity}Service` (lowercase first) | `clientService` |
 | Hook genérico (reusable) | `use{Name}` sin sufijo | `useFilter`, `usePagination`, `usePermission` |
-| Application hook (caso de uso) | `use{Name}{Action?}` | `useCarrito`, `useVentaForm` |
+| Application hook (caso de uso) | `use{Name}{Action?}` | `useNominaCalculator`, `useEmpleadoForm` |
 | Componente UI | PascalCase, archivo `.tsx` | `Table`, `Pagination`, `Modal` |
 | Componente feature group | PascalCase carpeta + index | `components/Support/ChatWindow.tsx` |
 | Page | PascalCase carpeta + `Page.tsx` | `pages/Clientes/Clientes.tsx` |
@@ -3682,11 +4085,18 @@ catch (err) {
 
 - **`fields: FormField[]` declarativo** — el caller define qué se renderiza, no cómo.
 - **`defaultValues` es la fuente de verdad** del shape de datos. Si agregás un campo, lo agregás a `defaultValues` Y a `fields[]`.
-- **`mapEntityToForm` solo si necesitás lógica custom** (ej. transformar un campo antes de poblar el form). Si no, `pickKeys` extrae solo las claves que están en `defaultValues` — más seguro.
+- **`mapEntityToForm` NO es opcional cuando el DTO y el form no calzan 1:1.** `pickKeys` (el mapper por defecto) copia **superficialmente**: comparte la referencia de los arrays y no normaliza `null`/`undefined`. Obligatorio cuando:
+  - el DTO trae una colección (hay que **clonar** cada ítem, si no el form edita el array del store en vivo) — caso Compras con `items[]`;
+  - el DTO puede devolver un campo vacío (hay que normalizar con `?? ""` / `?? 0` / `?? true`, si no el input controlado queda sin valor y `isDirty` marca el form sucio al abrirlo) — caso Inventario con `categoryId` y `stock`.
+  - Ejemplo canónico: `src/pages/Compras/Compras.tsx` y `src/pages/Inventario/Inventario.tsx`.
+- **`isDirty` se lee del hook, no se calcula en la página**: `form.isDirty` alimenta el `footerStatus`/`dirty` del `Modal`.
+- **Los ids son strings** en toda la app (`editingId: string | null`, `onUpdate(id: string, …)`). El backend usa GUIDs.
 - **Mutaciones NO re-tiran** (ver §4.2) — el error queda en `submitError`.
 - **`setFieldValue(name, value)`** limpia el error de ESE campo en el momento (mejora UX).
 - **Validators built-in**: required, email regex, number min/max/step, file accept con wildcards, string minLength/maxLength.
 - **Custom validator**: `validate?: (value, values) => string | undefined` — devuelve mensaje o `undefined`.
+- **Campos de referencia a otra entidad** (`type: "combobox"`): no usar `<select>` cuando la lista es grande. El `SearchableSelect` busca por `label` y `description` con `normalizeSearch` (ignora acentos y mayúsculas).
+- **El borrado NO es parte del form**: vive en `useDeleteConfirm` (`src/hooks/useDeleteConfirm.ts`). No se fusiona con `useCrudForm`: no comparte `values`, `errors` ni `editingId`.
 
 ## 4.6 Tablas y Paginación `[PRINCIPIO]`
 
@@ -3705,6 +4115,12 @@ catch (err) {
 - **`verbatimModuleSyntax: true`** — siempre `import type { ... }` para tipos.
 - **CSS Modules** (`Component.module.css`) — sin Tailwind, sin CSS-in-JS.
 - **CSS Variables** en `src/styles/variables.css` para colores, spacing, radius. Importado una vez en `App.tsx`.
+- **Sin IA slop.** El código expresa la intención:
+  - **Un comentario existe sólo cuando el *por qué* no es evidente del código, y entonces es una línea.** No para reexplicar lo que el código ya dice. Referencia de casa: `odd/tasks/accounting.md` (backend) §Code conventions.
+  - **Sin narración, sin ensayos, sin reexplicar el código.** El límite de una línea es una regla, no una sugerencia.
+  - **Sin abstracciones gratuitas**: un helper, un hook o un tipo nuevo existe si resuelve algo que se repite o si encapsula una decisión. Un alias o una envoltura sin valor, no.
+  - **Sin ramas "por si acaso"** que nadie pidió.
+  - **Preferir la solución estructural al comentario.** Si el código necesita una explicación para existir, primero hay que ver si el diseño puede hacer la pregunta innecesaria: `--warning: var(--primary)` (una *referencia*, no un valor duplicado) es mejor que un bloque de prosa explicando por qué no existe `--warning`.
 - **No barrel exports** problemáticos: importar desde la ruta del archivo (`../stores/authStore`), NO desde un `index.ts` que reexporte todo.
 - **Excepción única**: `src/components/UI/index.ts` (los primitives se usan en todos lados — vale la pena).
 - **Single quotes** para strings (`'foo'`), **double quotes** para strings visibles al usuario (`"foo"` en toasts/JSX).
@@ -3722,6 +4138,9 @@ catch (err) {
 - **`authService` repite `headers: { "Content-Type": "application/json" }`** en cada método aunque `fetchWithAuth` ya lo setea. **Inofensivo** — es ruido histórico. Si lo "limpiás", no hace diferencia. Pero si lo dejás, mantenelo en AMBOS métodos (consistencia).
 - **`Toast.tsx` exporta `ToastContainer` y `NotificationContainer`** como alias del mismo componente. **`App.tsx` usa `NotificationContainer`** — pero `ToastContainer` está en el barrel por si alguien lo busca.
 - **`Modal` y `ConfirmModal` tienen copy-paste del body-scroll-lock + escape-listener** (~15 líneas). **No extraer a custom hook** porque cada uno llama a `onClose` o `onCancel` respectivamente. Refactorizar agregaría un parámetro que es menos legible.
+- **`useDeleteConfirm` NO se fusiona dentro de `useCrudForm`** — el borrado no comparte estado con el formulario (`values`, `errors`, `editingId`): son dos ejes de estado independientes. Fusionarlos metería un hook con dos ejes que no se tocan y rompería la cohesión de cada uno. Ver `odd/tasks/volterp-frontend-style-skill.md`.
+- **`SearchableSelect` avisa `onChange("", texto)` cuando se tipea a mano** — el texto tipeado no matchea ninguna opción, así que el valor se reporta como vacío en vez de inventar un id. El formulario trata el campo como requerido hasta que se elija una opción de la lista.
+- **El `Modal` tiene dos zonas de cuerpo y dos de footer** (con y sin `onSubmit`) — el `footerStatus` se dibuja en ambas. **No unificar** con un fragmento: el `<form>` necesita envelopar el body para que el submit sea nativo.
 - **`fetchWithAuth` hace `useAuthStore.getState().token`** — acceso directo al state de Zustand sin hook. Es **deliberado**: no queremos que un componente que use `fetchWithAuth` se re-renderice cuando cambia el token.
 - **`new URLSearchParams({ pageNumber: String(pageNumber) })`** — la coerción explícita a `String` es redundante (URLSearchParams ya coerce). **Estilo defensivo**, no remover.
 - **`import.meta.env.VITE_API_URL` con fallback a `"http://localhost:5106"`** — el fallback es el dev default. En prod, el `.env` lo pisa. **Nunca** borrar el fallback (los devs sin `.env` necesitan poder correr la app).
@@ -3752,6 +4171,13 @@ catch (err) {
 - **No mezclar español e inglés en la MISMA entidad**. Si tu entity se llama `client` en el dominio, todos los derivados van en inglés (`clientService`, `clientStore`, `useClientForm`). Si va en español, todo español. **No** `clientService` + `clienteStore`.
 - **No "arreglar" los typos históricos** listados en §4.8 sin entender el impacto. Cada uno tiene un motivo.
 - **No usar `useCrudForm` para login/register**. Auth es un caso especial de 2–5 campos con submit simple. Forzar la abstracción CRUD complica el código sin beneficio. Usar `useState` local.
+- **No usar el mapper por defecto `pickKeys` cuando el DTO trae arrays o campos vacíos** — ver §4.5. Compartir la referencia del array hace que el form edite el array del store en vivo, y no normalizar los `null` rompe `isDirty` (el form aparece sucio al abrirse).
+- **No re-implementar el estado del modal de borrado en la página** (`deleteId` + `showDeleteConfirm` + `confirmDelete`). Usar `useDeleteConfirm`.
+- **No usar `<select>` para referencias a entidades con muchos registros** (proveedores, productos). Declarar el campo como `type: "combobox"`.
+- **No crear un hook en `application/hooks/` sin call site** — un hook sin consumidor es código muerto con tests. El POS de Ventas ya no tiene hooks: su estado vive en los componentes que lo poseen.
+- **No escribir literales de color** (`#hex`, `rgb()`, `rgba()`, `hsl()`) fuera de `src/styles/variables.css`. Si el color no existe como token, **se agrega el token** (§1.5).
+- **No usar `--primary` ni `--text-muted` como color de texto** sobre superficie clara — 1.53:1 y 2.42:1. Son rellenos y metadatos. Para texto: `--text-primary` o `--text-secondary`.
+- **No dejar IA slop**: comentarios que narran lo que el código ya dice, bloques de prosa dentro del código, abstracciones que sólo envuelven una línea, helpers que nadie llama, ramas "por si acaso" que nadie pidió. Si un comentario no evita una pregunta, no va.
 
 ---
 
@@ -3829,13 +4255,15 @@ Para evitar que un lector nuevo tenga que inferir el significado, los términos 
 
 **Hooks genéricos (§2.3):**
 - `useFilter<T>` con `searchFields: (item: T) => string[]` como extension point crítico; `filter?` opcional programático.
-- `useCrudForm<T>` declarativo con `FormField[]`, validators built-in (`email`, `number` con `min`/`max`/`step`, `file` con `accept`), mutaciones no re-throw (catch interno setea `submitError`).
+- `useCrudForm<T>` declarativo con `FormField[]`, validators built-in (`email`, `number` con `min`/`max`/`step`, `file` con `accept`), mutaciones no re-throw (catch interno setea `submitError`), `isDirty` para el estado del footer, y `mapEntityToForm` **obligatorio** cuando el DTO trae arrays o campos vacíos (§4.5).
 - `usePagination` con `getInfo(total)` que delega a `utils/pagination.ts` (no conoce el total internamente).
+- `useDeleteConfirm` para el modal de borrado: estado + toast, sin coupler con el formulario.
 
 **UI primitives (§2.5):**
 - `<Table<T extends { id: TableId }>>` con auto action column cuando hay `onEdit` o `onDelete`.
 - `<Pagination>` retorna `null` si `totalPages <= 1`; usa ellipsis via `-1` en `pages`.
-- `<Modal>` con `createPortal(..., document.body)` + body scroll lock + Escape listener + click-outside cierra.
+- `<Modal>` con `createPortal(..., document.body)` + body scroll lock + Escape listener + click-outside cierra. Es un **shell de tres zonas** (header / body / footer) y el footer lleva el estado de cambios sin guardar (`footerStatus` + `dirty`).
+- `<SearchableSelect>` para referencias buscables a otra entidad: filtra por `label` y `description` con `normalizeSearch`, navegable por teclado, con `role="combobox"`.
 - `<ErrorBoundary>` **es class component** — única excepción justificada a "no class".
 
 **Conventions (§4.7) — todo esto es no negociable:**
@@ -3853,6 +4281,10 @@ Para evitar que un lector nuevo tenga que inferir el significado, los términos 
 - No `useEffect` para sincronizar state derivado (usar `useMemo`).
 - No `useCrudForm` para auth (login/register son casos especiales de 2-5 campos).
 - No mezclar español/inglés en la MISMA entidad.
+- No `pickKeys` con DTOs que traen arrays o campos vacíos.
+- No re-implementar el modal de borrado en la página (usar `useDeleteConfirm`).
+- No `<select>` para referencias con muchos registros (usar `combobox`).
+- No hooks de dominio sin call site.
 
 ### Flexibles (elegir según el stack del proyecto destino)
 

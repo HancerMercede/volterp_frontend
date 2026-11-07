@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Trash2 } from "lucide-react";
-import { SearchableSelect } from "../../../components/UI/SearchableSelect";
+import { SearchableSelect } from "../../../components/UI";
 import type { Product } from "../../../domain/types";
 import styles from "./LineasCompraEditor.module.css";
 
