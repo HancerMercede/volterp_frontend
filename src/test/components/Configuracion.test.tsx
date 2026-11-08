@@ -104,7 +104,7 @@ describe("Configuracion companies tab", () => {
     );
 
     expect(
-      await screen.findByText(`${i18n.t("empresas.form.phone")} es requerido`),
+      await screen.findByText(i18n.t("validation.required")),
     ).toBeInTheDocument();
     expect(companyService.updateCompany).not.toHaveBeenCalled();
   });

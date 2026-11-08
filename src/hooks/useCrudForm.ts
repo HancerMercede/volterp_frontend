@@ -1,4 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 // ─── Field definition ────────────────────────────────────────────────
 export interface FormField {
@@ -90,20 +92,21 @@ type Validator = (
   field: FormField,
   value: unknown,
   values: Record<string, unknown>,
+  t: TFunction,
 ) => string | undefined;
 
 const typeValidators: Partial<Record<FormField["type"], Validator>> = {
-  email: (v) =>
+  email: (_f, v, _values, t) =>
     typeof v === "string" && v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
-      ? "Email inválido"
+      ? t("validation.invalidEmail")
       : undefined,
 
-  number: (f, v) => {
+  number: (f, v, _values, t) => {
     if (typeof v !== "number" || isNaN(v)) return;
     if (f.min !== undefined && v < f.min)
-      return `${f.label} debe ser mayor o igual a ${f.min}`;
+      return t("validation.minNumber", { min: f.min });
     if (f.max !== undefined && v > f.max)
-      return `${f.label} debe ser menor o igual a ${f.max}`;
+      return t("validation.maxNumber", { max: f.max });
     if (f.step !== undefined && f.step > 0) {
       const offset = v - (f.min ?? 0);
       const decimals = (f.step.toString().split('.')[1] || '').length;
@@ -111,11 +114,11 @@ const typeValidators: Partial<Record<FormField["type"], Validator>> = {
       const scaledOffset = Math.round(offset * multiplier);
       const scaledStep = Math.round(f.step * multiplier);
       if (scaledOffset % scaledStep !== 0)
-        return `${f.label} debe ser múltiplo de ${f.step}`;
+        return t("validation.multipleOf", { step: f.step });
     }
   },
 
-  file: (f, v) => {
+  file: (f, v, _values, t) => {
     if (
       typeof v !== "string" ||
       !v.startsWith("data:") ||
@@ -130,7 +133,7 @@ const typeValidators: Partial<Record<FormField["type"], Validator>> = {
       .some((a) =>
         a.endsWith("/*") ? mime.startsWith(a.replace("/*", "")) : a === mime,
       );
-    if (!ok) return `Formato de archivo no válido. Permitidos: ${f.accept}`;
+    if (!ok) return t("validation.invalidFile", { accept: f.accept });
   },
 };
 
@@ -138,23 +141,24 @@ function validateField(
   field: FormField,
   value: unknown,
   values: Record<string, unknown>,
+  t: TFunction,
 ): string | undefined {
   // 1. Required
   if (
     field.required &&
     (value === "" || value === null || value === undefined)
   ) {
-    return `${field.label} es requerido`;
+    return t("validation.required");
   }
   // 2. Type-specific format/range (email, number min/max/step, file accept)
-  const typeErr = typeValidators[field.type]?.(field, value, values);
+  const typeErr = typeValidators[field.type]?.(field, value, values, t);
   if (typeErr !== undefined) return typeErr;
   // 3. String constraints (apply to any string value)
   if (typeof value === "string") {
     if (field.minLength && value.length < field.minLength)
-      return `${field.label} debe tener al menos ${field.minLength} caracteres`;
+      return t("validation.minLength", { min: field.minLength });
     if (field.maxLength && value.length > field.maxLength)
-      return `${field.label} debe tener máximo ${field.maxLength} caracteres`;
+      return t("validation.maxLength", { max: field.maxLength });
   }
   // 4. Custom
   return field.validate?.(value, values);
@@ -163,10 +167,11 @@ function validateField(
 function validateForm<T extends Record<string, unknown>>(
   fields: FormField[],
   values: T,
+  t: TFunction,
 ): Record<string, string> {
   const errors: Record<string, string> = {};
   for (const field of fields) {
-    const err = validateField(field, values[field.name], values);
+    const err = validateField(field, values[field.name], values, t);
     if (err) errors[field.name] = err;
   }
   return errors;
@@ -196,6 +201,7 @@ export function useCrudForm<T extends Record<string, unknown>>(
     onSuccess,
     mapEntityToForm,
   } = config;
+  const { t } = useTranslation();
   const [values, setValues] = useState<T>({ ...defaultValues });
   const [initialValues, setInitialValues] = useState<T>({ ...defaultValues });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -217,7 +223,7 @@ export function useCrudForm<T extends Record<string, unknown>>(
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const validationErrors = validateForm(fields, values);
+      const validationErrors = validateForm(fields, values, t);
       if (Object.keys(validationErrors).length > 0) {
         setErrors(validationErrors);
         return;
@@ -238,13 +244,13 @@ export function useCrudForm<T extends Record<string, unknown>>(
         setInitialValues({ ...defaultValues });
         onSuccess?.();
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Error al guardar";
+        const msg = err instanceof Error ? err.message : t("common.error");
         setSubmitError(msg);
       } finally {
         setIsSubmitting(false);
       }
     },
-    [fields, values, editingId, defaultValues, onSuccess, onUpdate, onCreate],
+    [fields, values, editingId, defaultValues, onSuccess, onUpdate, onCreate, t],
   );
 
   const handleEdit = useCallback(

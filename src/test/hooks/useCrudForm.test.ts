@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { FormEvent } from "react";
+import i18n from "../../i18n";
 import { useCrudForm } from "../../hooks/useCrudForm";
 
 const FIELDS = [
@@ -8,6 +9,14 @@ const FIELDS = [
 ];
 
 const submitEvent = { preventDefault: vi.fn() } as unknown as FormEvent;
+
+beforeAll(async () => {
+  await i18n.changeLanguage("en");
+});
+
+afterAll(async () => {
+  await i18n.changeLanguage("es");
+});
 
 describe("useCrudForm submit", () => {
   it("keeps the server message when the save fails", async () => {
@@ -56,7 +65,37 @@ describe("useCrudForm submit", () => {
     });
 
     expect(onUpdate).not.toHaveBeenCalled();
-    expect(result.current.errors.name).toBe("Name es requerido");
+    expect(result.current.errors.name).toBe("This field is required");
+  });
+
+  it("changes the message when the language changes", async () => {
+    const { result } = renderHook(() =>
+      useCrudForm({
+        fields: [
+          { name: "name", label: "Name", type: "text" as const, required: true },
+        ],
+        defaultValues: { name: "" },
+        onCreate: vi.fn(),
+        onUpdate: vi.fn(),
+      }),
+    );
+
+    act(() => {
+      result.current.handleEdit({ name: "" }, "co-1");
+    });
+    await act(async () => {
+      await result.current.handleSubmit(submitEvent);
+    });
+
+    await act(async () => {
+      await i18n.changeLanguage("es");
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit(submitEvent);
+    });
+
+    expect(result.current.errors.name).toBe("Este campo es requerido");
   });
 });
 

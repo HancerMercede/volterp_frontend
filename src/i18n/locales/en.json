@@ -703,7 +703,11 @@
     "minLength": "Must be at least {{min}} characters",
     "maxLength": "Must be maximum {{max}} characters",
     "positiveNumber": "Must be a positive number",
-    "invalidDate": "Invalid date"
+    "invalidDate": "Invalid date",
+    "minNumber": "Must be at least {{min}}",
+    "maxNumber": "Must be at most {{max}}",
+    "multipleOf": "Must be a multiple of {{step}}",
+    "invalidFile": "Invalid file format. Allowed: {{accept}}"
   },
   "confirm": {
     "deleteTitle": "Delete?",
