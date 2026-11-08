@@ -17,6 +17,10 @@ interface ModalProps {
   subtitle?: string;
   badge?: ReactNode;
   footerStatus?: ReactNode;
+  /** Server-side rejection of the submit. */
+  error?: string | null;
+  /** Lets the form validate on its own instead of the browser blocking the submit. */
+  noValidate?: boolean;
   /** Renders the accent dot next to the footer status. */
   dirty?: boolean;
   submitVariant?: 'primary' | 'dark';
@@ -39,6 +43,8 @@ export function Modal({
   subtitle,
   badge,
   footerStatus,
+  error = null,
+  noValidate = false,
   dirty = false,
   submitVariant = 'primary',
   footerActions,
@@ -95,8 +101,15 @@ export function Modal({
         </header>
 
         {onSubmit ? (
-          <form onSubmit={onSubmit} className={styles.form}>
-            <div className={styles.body}>{children}</div>
+          <form onSubmit={onSubmit} noValidate={noValidate} className={styles.form}>
+            <div className={styles.body}>
+              {error && (
+                <div className={styles.formError} role="alert">
+                  {error}
+                </div>
+              )}
+              {children}
+            </div>
             <footer className={styles.actions}>
               {footerStatus && (
                 <span className={styles.footerStatus}>
@@ -123,7 +136,14 @@ export function Modal({
           </form>
         ) : (
           <>
-            <div className={styles.body}>{children}</div>
+            <div className={styles.body}>
+              {error && (
+                <div className={styles.formError} role="alert">
+                  {error}
+                </div>
+              )}
+              {children}
+            </div>
             <footer className={styles.actions}>
               {footerStatus && (
                 <span className={styles.footerStatus}>

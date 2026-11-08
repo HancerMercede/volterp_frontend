@@ -222,6 +222,8 @@ export function Proveedores() {
           form.isDirty ? t("common.unsavedChanges") : t("common.noPendingChanges")
         }
         dirty={form.isDirty}
+        error={form.submitError}
+        noValidate
         onSubmit={form.handleSubmit}
         submitLabel={form.editingId ? t("common.saveChanges") : t("common.create")}
         submitVariant="dark"

@@ -289,6 +289,8 @@ export function Contabilidad() {
             ? t("contabilidad.editTransaction")
             : t("contabilidad.newTransaction")
         }
+        error={form.submitError}
+        noValidate
         onSubmit={form.handleSubmit}
         submitLabel={form.editingId ? t("common.save") : t("common.create")}
       >

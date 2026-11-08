@@ -2,19 +2,6 @@
   margin-bottom: var(--space-lg);
 }
 
-.formError {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-md);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-sm);
-  background: #FEF2F2;
-  color: #DC2626;
-  font-size: var(--text-sm);
-  font-weight: 600;
-}
-
 .badge {
   padding: 4px 10px;
   border-radius: 20px;

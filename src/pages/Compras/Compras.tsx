@@ -266,6 +266,8 @@ export function Compras() {
             : t("common.noPendingChanges")
         }
         dirty={form.isDirty}
+        error={form.submitError}
+        noValidate
         onSubmit={form.handleSubmit}
         submitLabel={
           form.editingId ? t("common.saveChanges") : t("common.create")
@@ -274,11 +276,6 @@ export function Compras() {
         cancelLabel={t("common.cancel")}
         closeLabel={t("common.close")}
       >
-        {form.submitError && (
-          <div className={styles.formError} role="alert">
-            {form.submitError}
-          </div>
-        )}
         <DynamicFormFields
           fields={COMPRA_FIELDS}
           values={form.values}

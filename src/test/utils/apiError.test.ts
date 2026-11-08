@@ -4,7 +4,24 @@ import {
   createApiRequestError,
   extractErrorMessage,
   isForbidden,
+  parseErrorBody,
 } from "../../utils/apiError";
+
+describe("parseErrorBody", () => {
+  it("keeps a text/plain body as the message", () => {
+    expect(parseErrorBody("name can't be null or empty.")).toBe(
+      "name can't be null or empty.",
+    );
+  });
+
+  it("parses a JSON body", () => {
+    expect(parseErrorBody('{"error":"boom"}')).toEqual({ error: "boom" });
+  });
+
+  it("returns null for an empty body", () => {
+    expect(parseErrorBody("   ")).toBeNull();
+  });
+});
 
 describe("extractErrorMessage", () => {
   it("reads the ErrorResponse shape the accounts endpoints use", () => {
@@ -31,13 +48,13 @@ describe("extractErrorMessage", () => {
     expect(extractErrorMessage(404, 400)).toBe(DEFAULT_ERROR_MESSAGE);
   });
 
-  it("reads a bare JSON string, the shape BadRequest(error.Message) answers", () => {
+  it("reads the plain text body BadRequest(error.Message) answers", () => {
     expect(
       extractErrorMessage("The tax id must be a valid RNC or citizen ID.", 400),
     ).toBe("The tax id must be a valid RNC or citizen ID.");
   });
 
-  it("falls back when a bare JSON string is blank", () => {
+  it("falls back when the plain text body is blank", () => {
     expect(extractErrorMessage("   ", 400)).toBe(DEFAULT_ERROR_MESSAGE);
   });
 

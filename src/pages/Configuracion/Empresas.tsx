@@ -64,9 +64,9 @@ export function Empresas() {
     () => [
       { name: "name", label: t("empresas.form.name"), type: "text", required: true },
       { name: "taxId", label: t("empresas.form.taxId"), type: "text", required: true },
-      { name: "legalName", label: t("empresas.form.legalName"), type: "text" },
-      { name: "email", label: t("empresas.form.email"), type: "email" },
-      { name: "phone", label: t("empresas.form.phone"), type: "tel" },
+      { name: "legalName", label: t("empresas.form.legalName"), type: "text", required: true },
+      { name: "email", label: t("empresas.form.email"), type: "email", required: true },
+      { name: "phone", label: t("empresas.form.phone"), type: "tel", required: true },
       { name: "address", label: t("empresas.form.address"), type: "text" },
       { name: "logoUrl", label: t("empresas.form.logoUrl"), type: "url", placeholder: "https://..." },
       { name: "isActive", label: t("empresas.form.isActive"), type: "checkbox", showOnEdit: true },
@@ -170,6 +170,8 @@ export function Empresas() {
           form.reset();
         }}
         title={form.editingId ? t("empresas.form.titleEdit") : t("empresas.form.title")}
+        error={form.submitError}
+        noValidate
         onSubmit={form.handleSubmit}
         submitLabel={t("empresas.form.save")}
         cancelLabel={t("empresas.form.cancel")}

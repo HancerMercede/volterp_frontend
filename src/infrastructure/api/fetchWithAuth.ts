@@ -1,5 +1,9 @@
 import { useAuthStore } from '../../stores/authStore';
-import { createApiRequestError, extractErrorMessage } from '../../utils/apiError';
+import {
+  createApiRequestError,
+  extractErrorMessage,
+  parseErrorBody,
+} from '../../utils/apiError';
 
 /**
  * Centralized fetch wrapper that:
@@ -31,9 +35,9 @@ export async function fetchWithAuth(
   }
 
   if (!response.ok) {
-    const body: unknown = await response.json().catch(() => null);
+    const raw = await response.text().catch(() => "");
     throw createApiRequestError(
-      extractErrorMessage(body, response.status),
+      extractErrorMessage(parseErrorBody(raw), response.status),
       response.status,
     );
   }

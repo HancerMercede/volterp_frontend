@@ -1,5 +1,6 @@
 /**
- * The backend answers with three error bodies at once: `ErrorResponse`
+ * The backend answers with four error bodies at once: a plain text message
+ * (`BadRequest(error.Message)`, content-type text/plain), `ErrorResponse`
  * { error, details? } (api/accounts, 401/403), an anonymous { message }
  * (api/sales, api/purchases) and RFC 7807 ProblemDetails (5xx, 429).
  * A 5xx body can carry raw database text, so only 4xx bodies are shown as-is.
@@ -26,14 +27,24 @@ export function isForbidden(error: unknown): boolean {
   );
 }
 
+/** `BadRequest(error.Message)` answers text/plain; JSON bodies need parsing. */
+export function parseErrorBody(raw: string): unknown {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return trimmed;
+  }
+}
+
 export function extractErrorMessage(
   body: unknown,
   status: number,
   fallback: string = DEFAULT_ERROR_MESSAGE,
 ): string {
   if (status >= 500) return fallback;
-  // `BadRequest(error.Message)` answers a bare JSON string, and that string IS
-  // the message the backend wants the user to read.
+  // `BadRequest(error.Message)` answers text/plain and that text is the message.
   if (typeof body === "string") return body.trim() || fallback;
   if (!body || typeof body !== "object") return fallback;
 
