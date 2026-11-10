@@ -133,11 +133,16 @@ export function Clientes() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
-    useDeleteConfirm({
-      onDelete: deleteCliente,
-      successMessage: t("clientes.clientDeleted"),
-    });
+  const {
+    showDeleteConfirm,
+    deleteId,
+    handleDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useDeleteConfirm({
+    onDelete: deleteCliente,
+    successMessage: t("clientes.clientDeleted"),
+  });
 
   const pendingClient = clientes.find((c) => c.id === deleteId) ?? null;
 
@@ -152,7 +157,7 @@ export function Clientes() {
             c.imageUrl || c.avatar || `https://i.pravatar.cc/150?img=${c.id}`
           }
           name={c.name}
-          subtext={c.empresa}
+          subtext={c.name}
           type="avatar"
         />
       ),
@@ -220,13 +225,17 @@ export function Clientes() {
             : t("common.newRecordSubtitle")
         }
         footerStatus={
-          form.isDirty ? t("common.unsavedChanges") : t("common.noPendingChanges")
+          form.isDirty
+            ? t("common.unsavedChanges")
+            : t("common.noPendingChanges")
         }
         dirty={form.isDirty}
         error={form.submitError}
         noValidate
         onSubmit={form.handleSubmit}
-        submitLabel={form.editingId ? t("common.saveChanges") : t("common.create")}
+        submitLabel={
+          form.editingId ? t("common.saveChanges") : t("common.create")
+        }
         submitVariant="dark"
         cancelLabel={t("common.cancel")}
         closeLabel={t("common.close")}

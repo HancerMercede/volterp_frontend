@@ -138,11 +138,16 @@ export function Proveedores() {
     setShowForm(true);
   };
 
-  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
-    useDeleteConfirm({
-      onDelete: deleteProveedor,
-      successMessage: t("proveedores.providerDeleted"),
-    });
+  const {
+    showDeleteConfirm,
+    deleteId,
+    handleDelete,
+    confirmDelete,
+    cancelDelete,
+  } = useDeleteConfirm({
+    onDelete: deleteProveedor,
+    successMessage: t("proveedores.providerDeleted"),
+  });
 
   const pendingSupplier = proveedores.find((p) => p.id === deleteId) ?? null;
 
@@ -155,6 +160,7 @@ export function Proveedores() {
         <ImageCell
           src={p.imageUrl || `https://i.pravatar.cc/150?img=${p.id}`}
           name={p.name}
+          subtext={p.name}
         />
       ),
     },
@@ -219,13 +225,17 @@ export function Proveedores() {
             : t("common.newRecordSubtitle")
         }
         footerStatus={
-          form.isDirty ? t("common.unsavedChanges") : t("common.noPendingChanges")
+          form.isDirty
+            ? t("common.unsavedChanges")
+            : t("common.noPendingChanges")
         }
         dirty={form.isDirty}
         error={form.submitError}
         noValidate
         onSubmit={form.handleSubmit}
-        submitLabel={form.editingId ? t("common.saveChanges") : t("common.create")}
+        submitLabel={
+          form.editingId ? t("common.saveChanges") : t("common.create")
+        }
         submitVariant="dark"
         cancelLabel={t("common.cancel")}
         closeLabel={t("common.close")}

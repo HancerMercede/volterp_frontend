@@ -59,7 +59,7 @@ export function VentasList({
               `https://i.pravatar.cc/150?img=${cliente.id}`
             }
             name={v.clienteName || ""}
-            subtext={cliente.empresa}
+            subtext={cliente.name}
             type="avatar"
           />
         ) : (
