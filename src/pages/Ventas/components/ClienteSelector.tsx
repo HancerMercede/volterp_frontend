@@ -72,8 +72,9 @@ export function ClienteSelector({
           emptyLabel={t("ventas.noClientsFound")}
           autoFocus={isPicking}
           onChange={(value) => {
-            onClienteSelect(value || null);
-            if (value) setIsPicking(false);
+            if (!value) return;
+            onClienteSelect(value);
+            setIsPicking(false);
           }}
         />
       </div>

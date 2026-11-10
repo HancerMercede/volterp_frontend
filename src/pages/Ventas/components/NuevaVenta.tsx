@@ -28,7 +28,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
   const { clientes } = useClienteStore();
   const productos = useProductos();
   const { ventas, createVenta, updateVenta } = useVentaStore();
-  const { currentCompany } = useCompanyStore();
+  const { currentCompany, error: companyError } = useCompanyStore();
   const { addToast } = useUIStore();
 
   // Derive editing data from store (ventas loaded by parent before this component mounts via key-remount pattern)
@@ -124,17 +124,13 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     }));
 
   const validateAndSubmit = async (status: "Pending" | "Completed") => {
-    const clienteElegido = selectedCliente;
-    if (!clienteElegido) {
-      addToast(t("ventas.selectClientWarning"), "warning");
-      return;
-    }
     if (carrito.length === 0) {
       addToast(t("ventas.cartEmptyWarning"), "warning");
       return;
     }
-    if (!currentCompany) {
-      addToast(t("ventas.NoCompanySelected"), "error");
+    const clienteElegido = selectedCliente;
+    if (!clienteElegido) {
+      addToast(t("ventas.selectClientWarning"), "warning");
       return;
     }
 
@@ -153,6 +149,10 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
           items: buildSaleItems(),
         } as UpdateSaleRequest);
       } else {
+        if (!currentCompany) {
+          addToast(companyError ?? t("ventas.NoCompanySelected"), "error");
+          return;
+        }
         await createVenta({
           companyId: currentCompany.id,
           clienteId: clienteElegido,
