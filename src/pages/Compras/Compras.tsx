@@ -13,6 +13,7 @@ import {
   ConfirmModal,
   DynamicFormFields,
   VolterpMark,
+  ImageCell,
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
@@ -47,6 +48,9 @@ export function Compras() {
   useEffect(() => {
     fetchCompras(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchCompras]);
+
+  const getSupplierById = (id: string | null) =>
+    id ? proveedores.find((p) => p.id === id) : null;
 
   const COMPRA_FIELDS: FormField[] = useMemo(
     () => [
@@ -182,7 +186,22 @@ export function Compras() {
     {
       key: "supplierName",
       header: t("compras.supplier"),
-      render: (c: PurchaseDto) => c.supplierName,
+      render: (c: PurchaseDto) => {
+        const supplier = getSupplierById(c.supplierId);
+        return supplier ? (
+          <ImageCell
+            src={
+              supplier.imageUrl ||
+              `https://i.pravatar.cc/150?img=${supplier.id}`
+            }
+            name={c.supplierName || ""}
+            subtext={c.supplierName}
+            type="avatar"
+          />
+        ) : (
+          c.supplierName || "-"
+        );
+      },
     },
     {
       key: "total",
