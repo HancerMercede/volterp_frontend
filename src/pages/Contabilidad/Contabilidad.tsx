@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { useTransaccionStore } from "../../stores/transaccionStore";
 import {
   Table,
@@ -10,6 +11,7 @@ import {
   Modal,
   ConfirmModal,
   DynamicFormFields,
+  VolterpMark,
 } from "../../components/UI";
 import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
 import { usePagination } from "../../hooks/usePagination";
@@ -47,14 +49,9 @@ export function Contabilidad() {
     fetchTransacciones(pageNumber, ITEMS_PER_PAGE);
   }, [pageNumber, fetchTransacciones]);
 
-  const TRANSACCION_FIELDS: FormField[] = useMemo(
+  // Tipo, monto y estado los dibuja la pagina; el resto, el componente compartido.
+  const PAGE_FIELDS: FormField[] = useMemo(
     () => [
-      {
-        name: "description",
-        label: t("common.description"),
-        type: "text",
-        required: true,
-      },
       {
         name: "type",
         label: t("common.type"),
@@ -62,20 +59,13 @@ export function Contabilidad() {
         required: true,
         options: [
           { value: "Income", label: t("contabilidad.income") },
-          { value: "Expense", label: t("contabilidad.expenses") },
+          { value: "Expense", label: t("contabilidad.expense") },
         ],
       },
       {
         name: "amount",
         label: t("common.amount"),
         type: "number",
-        required: true,
-      },
-      { name: "date", label: t("common.date"), type: "date", required: true },
-      {
-        name: "category",
-        label: t("common.category"),
-        type: "text",
         required: true,
       },
       {
@@ -92,8 +82,36 @@ export function Contabilidad() {
     [t],
   );
 
+  const SHARED_FIELDS: FormField[] = useMemo(
+    () => [
+      {
+        name: "description",
+        label: t("common.description"),
+        type: "text",
+        required: true,
+        span: 6,
+        placeholder: t("contabilidad.descriptionPlaceholder"),
+      },
+      {
+        name: "date",
+        label: t("common.date"),
+        type: "date",
+        required: true,
+        span: 3,
+      },
+      {
+        name: "category",
+        label: t("common.category"),
+        type: "text",
+        required: true,
+        span: 3,
+      },
+    ],
+    [t],
+  );
+
   const form = useCrudForm({
-    fields: TRANSACCION_FIELDS,
+    fields: [...PAGE_FIELDS, ...SHARED_FIELDS],
     defaultValues: {
       description: "",
       type: "Income",
@@ -289,18 +307,114 @@ export function Contabilidad() {
             ? t("contabilidad.editTransaction")
             : t("contabilidad.newTransaction")
         }
+        icon={<VolterpMark size={40} />}
+        subtitle={
+          form.editingId
+            ? t("contabilidad.editTransactionHint")
+            : t("contabilidad.newTransactionHint")
+        }
+        size="lg"
         error={form.submitError}
         noValidate
         onSubmit={form.handleSubmit}
-        submitLabel={form.editingId ? t("common.save") : t("common.create")}
+        submitLabel={
+          form.editingId ? t("common.save") : t("contabilidad.createTransaction")
+        }
+        submitVariant="dark"
+        cancelLabel={t("common.cancel")}
+        closeLabel={t("common.close")}
       >
-        <DynamicFormFields
-          fields={TRANSACCION_FIELDS}
-          values={form.values}
-          errors={form.errors}
-          editingId={form.editingId}
-          onChange={form.setFieldValue}
-        />
+        <div className={styles.form}>
+          <div className={styles.formField}>
+            <div className={styles.formLabelRow}>
+              <label>
+                {t("common.type")}
+                <span className={styles.required}>*</span>
+              </label>
+            </div>
+            <div className={styles.segmented}>
+              <button
+                type="button"
+                className={`${styles.segment} ${form.values.type === "Income" ? styles.segmentActive : ""}`}
+                onClick={() => form.setFieldValue("type", "Income")}
+              >
+                <ArrowUp size={16} />
+                {t("contabilidad.income")}
+              </button>
+              <button
+                type="button"
+                className={`${styles.segment} ${form.values.type === "Expense" ? styles.segmentActive : ""}`}
+                onClick={() => form.setFieldValue("type", "Expense")}
+              >
+                <ArrowDown size={16} />
+                {t("contabilidad.expense")}
+              </button>
+            </div>
+            {form.errors.type && (
+              <span className={styles.error}>{form.errors.type}</span>
+            )}
+          </div>
+
+          <div className={styles.formField}>
+            <div className={styles.formLabelRow}>
+              <label>
+                {t("common.amount")}
+                <span className={styles.required}>*</span>
+              </label>
+            </div>
+            <div className={styles.amount}>
+              <span className={styles.amountPrefix}>RD$</span>
+              <input
+                type="number"
+                className={styles.amountInput}
+                value={form.values.amount}
+                onChange={(e) =>
+                  form.setFieldValue("amount", Number(e.target.value))
+                }
+                required
+              />
+            </div>
+            {form.errors.amount && (
+              <span className={styles.error}>{form.errors.amount}</span>
+            )}
+          </div>
+
+          <DynamicFormFields
+            fields={SHARED_FIELDS}
+            values={form.values}
+            errors={form.errors}
+            editingId={form.editingId}
+            onChange={form.setFieldValue}
+          />
+
+          <div className={styles.formField}>
+            <div className={styles.formLabelRow}>
+              <label>
+                {t("common.status")}
+                <span className={styles.required}>*</span>
+              </label>
+            </div>
+            <div className={styles.segmented}>
+              <button
+                type="button"
+                className={`${styles.segment} ${form.values.status === "Pending" ? styles.segmentActive : ""}`}
+                onClick={() => form.setFieldValue("status", "Pending")}
+              >
+                {t("contabilidad.pending")}
+              </button>
+              <button
+                type="button"
+                className={`${styles.segment} ${form.values.status === "Reconciled" ? styles.segmentActive : ""}`}
+                onClick={() => form.setFieldValue("status", "Reconciled")}
+              >
+                {t("contabilidad.reconciled")}
+              </button>
+            </div>
+            {form.errors.status && (
+              <span className={styles.error}>{form.errors.status}</span>
+            )}
+          </div>
+        </div>
       </Modal>
 
       <ConfirmModal
