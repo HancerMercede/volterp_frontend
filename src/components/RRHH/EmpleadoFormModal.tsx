@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { Modal } from "../../components/UI";
+import { Button, Modal, VolterpMark } from "../../components/UI";
+import { FORM_STEPS } from "../../application/hooks/useEmpleadoForm";
 import { EmpleadoForm } from "./EmpleadoForm";
 import type { EmployeeRequest } from "../../domain/types";
 
@@ -25,20 +26,57 @@ export function EmpleadoFormModal({
   onSubmit,
 }: Props) {
   const { t } = useTranslation();
+  const isLastStep = currentStep === FORM_STEPS.length;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLastStep) {
+      onStepChange(currentStep + 1);
+      return;
+    }
+    onSubmit(e);
+  };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={editingId ? t("rrhh.editEmployee") : t("rrhh.newEmployee")}
+      icon={<VolterpMark size={40} />}
+      size="lg"
+      subtitle={t("rrhh.stepProgress", {
+        current: currentStep,
+        total: FORM_STEPS.length,
+      })}
+      noValidate
+      onSubmit={handleSubmit}
+      submitLabel={
+        isLastStep
+          ? editingId
+            ? t("rrhh.saveChanges")
+            : t("rrhh.createEmployee")
+          : `${t("common.next")} →`
+      }
+      submitVariant="dark"
+      cancelLabel={t("common.cancel")}
+      closeLabel={t("common.close")}
+      footerActions={
+        currentStep > 1 ? (
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={() => onStepChange(currentStep - 1)}
+          >
+            {t("common.previous")}
+          </Button>
+        ) : null
+      }
     >
       <EmpleadoForm
         formData={formData}
         currentStep={currentStep}
-        editingId={editingId}
         onFieldChange={onFieldChange}
         onStepChange={onStepChange}
-        onSubmit={onSubmit}
       />
     </Modal>
   );
