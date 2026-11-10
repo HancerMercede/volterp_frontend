@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useProyectoStore } from "../../stores/proyectoStore";
 import {
@@ -9,7 +9,11 @@ import {
   SearchInput,
   Modal,
   ConfirmModal,
+  DynamicFormFields,
+  VolterpMark,
 } from "../../components/UI";
+import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
+import { useClientes } from "../../hooks/useColecciones";
 import { useFilter } from "../../hooks/useFilter";
 import { usePagination } from "../../hooks/usePagination";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
@@ -31,7 +35,6 @@ export function Proyectos() {
     deleteProyecto,
   } = useProyectoStore();
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | ProjectStatus>(
     "all",
@@ -39,16 +42,7 @@ export function Proyectos() {
   const { pageNumber, goToPage, getInfo } = usePagination({
     initialPageSize: ITEMS_PER_PAGE,
   });
-  const [formData, setFormData] = useState({
-    name: "",
-    client: "",
-    status: "Pending" as ProjectStatus,
-    budget: 0,
-    spent: 0,
-    startDate: "",
-    endDate: "",
-    progress: 0,
-  });
+  const clientes = useClientes();
 
   const fetchData = useCallback(() => {
     fetchProyectos(pageNumber, ITEMS_PER_PAGE);
@@ -80,24 +74,86 @@ export function Proyectos() {
     }).format(amount);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingId) {
-        await updateProyecto(editingId, formData);
-        setEditingId(null);
-      } else {
-        await addProyecto(formData);
-      }
-      setShowForm(false);
-      resetForm();
-    } catch {
-      // error se maneja en el store
-    }
-  };
+  const GENERAL_FIELDS: FormField[] = useMemo(
+    () => [
+      {
+        name: "name",
+        label: t("proyectos.projectName"),
+        type: "text",
+        required: true,
+        span: 6,
+        section: "proyectos.sectionGeneral",
+        placeholder: t("proyectos.namePlaceholder"),
+      },
+      {
+        name: "client",
+        label: t("common.client"),
+        type: "combobox",
+        required: true,
+        span: 3,
+        section: "proyectos.sectionGeneral",
+        placeholder: t("proyectos.selectClient"),
+        emptyLabel: t("proyectos.noClientsFound"),
+        options: clientes.map((c) => ({
+          value: c.name,
+          label: c.name,
+          keywords: [c.code, c.email].filter(Boolean),
+        })),
+      },
+      {
+        name: "status",
+        label: t("common.status"),
+        type: "select",
+        span: 3,
+        section: "proyectos.sectionGeneral",
+        options: [
+          { value: "Pending", label: t("proyectos.pending") },
+          { value: "InProgress", label: t("proyectos.inProgress") },
+          { value: "Completed", label: t("proyectos.completed") },
+        ],
+      },
+    ],
+    [t, clientes],
+  );
 
-  const resetForm = () => {
-    setFormData({
+  // Presupuesto, gastado y progreso los dibuja la pagina.
+  const LOCAL_FIELDS: FormField[] = useMemo(
+    () => [
+      {
+        name: "budget",
+        label: t("proyectos.budget"),
+        type: "number",
+        required: true,
+      },
+      { name: "spent", label: t("proyectos.spent"), type: "number" },
+      { name: "progress", label: t("proyectos.progress"), type: "number" },
+    ],
+    [t],
+  );
+
+  const CRONOGRAMA_FIELDS: FormField[] = useMemo(
+    () => [
+      {
+        name: "startDate",
+        label: t("proyectos.startDate"),
+        type: "date",
+        span: 3,
+        section: "proyectos.sectionSchedule",
+      },
+      {
+        name: "endDate",
+        label: t("proyectos.endDate"),
+        type: "date",
+        span: 3,
+        section: "proyectos.sectionSchedule",
+      },
+    ],
+    [t],
+  );
+
+  const form = useCrudForm({
+    fields: [...GENERAL_FIELDS, ...LOCAL_FIELDS, ...CRONOGRAMA_FIELDS],
+    defaultValues: {
       name: "",
       client: "",
       status: "Pending",
@@ -106,21 +162,17 @@ export function Proyectos() {
       startDate: "",
       endDate: "",
       progress: 0,
-    });
-  };
+    },
+    onCreate: (data) => addProyecto(data as Partial<Project>),
+    onUpdate: (id, data) => updateProyecto(id, data as Partial<Project>),
+    onSuccess: () => {
+      setShowForm(false);
+      fetchData();
+    },
+  });
 
   const handleEdit = (project: Project) => {
-    setFormData({
-      name: project.name,
-      client: project.client,
-      status: project.status,
-      budget: project.budget,
-      spent: project.spent,
-      startDate: project.startDate,
-      endDate: project.endDate,
-      progress: project.progress,
-    });
-    setEditingId(project.id);
+    form.handleEdit(project, project.id);
     setShowForm(true);
   };
 
@@ -199,8 +251,7 @@ export function Proyectos() {
       >
         <Button
           onClick={() => {
-            resetForm();
-            setEditingId(null);
+            form.reset();
             setShowForm(true);
           }}
         >
@@ -265,102 +316,112 @@ export function Proyectos() {
 
       <Modal
         isOpen={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={() => {
+          setShowForm(false);
+          form.reset();
+        }}
         title={
-          editingId ? t("proyectos.editProject") : t("proyectos.newProject")
+          form.editingId
+            ? t("proyectos.editProject")
+            : t("proyectos.newProject")
         }
-        onSubmit={handleSubmit}
-        submitLabel={editingId ? t("common.save") : t("common.create")}
+        icon={<VolterpMark size={40} />}
+        subtitle={
+          form.editingId
+            ? t("proyectos.editProjectHint")
+            : t("proyectos.newProjectHint")
+        }
+        size="lg"
+        error={form.submitError}
+        noValidate
+        onSubmit={form.handleSubmit}
+        submitLabel={
+          form.editingId ? t("common.save") : t("proyectos.createProject")
+        }
+        submitVariant="dark"
+        cancelLabel={t("common.cancel")}
+        closeLabel={t("common.close")}
       >
-        <div className="formGroup">
-          <label>{t("proyectos.projectName")}</label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
+        <div className={styles.form}>
+          <DynamicFormFields
+            fields={GENERAL_FIELDS}
+            values={form.values}
+            errors={form.errors}
+            editingId={form.editingId}
+            onChange={form.setFieldValue}
           />
-        </div>
-        <div className="formGroup">
-          <label>{t("common.client")}</label>
-          <input
-            type="text"
-            value={formData.client}
-            onChange={(e) =>
-              setFormData({ ...formData, client: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label>{t("common.status")}</label>
-          <select
-            value={formData.status}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                status: e.target.value as ProjectStatus,
-              })
-            }
-          >
-            <option value="Pending">{t("proyectos.pending")}</option>
-            <option value="InProgress">{t("proyectos.inProgress")}</option>
-            <option value="Completed">{t("proyectos.completed")}</option>
-          </select>
-        </div>
-        <div className="formGroup">
-          <label>{t("proyectos.budget")}</label>
-          <input
-            type="number"
-            value={formData.budget}
-            onChange={(e) =>
-              setFormData({ ...formData, budget: Number(e.target.value) })
-            }
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label>{t("proyectos.spent")}</label>
-          <input
-            type="number"
-            value={formData.spent}
-            onChange={(e) =>
-              setFormData({ ...formData, spent: Number(e.target.value) })
-            }
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label>{t("proyectos.progress")}</label>
-          <input
-            type="number"
-            value={formData.progress}
-            onChange={(e) =>
-              setFormData({ ...formData, progress: Number(e.target.value) })
-            }
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label>{t("proyectos.startDate")}</label>
-          <input
-            type="date"
-            value={formData.startDate}
-            onChange={(e) =>
-              setFormData({ ...formData, startDate: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div className="formGroup">
-          <label>{t("proyectos.endDate")}</label>
-          <input
-            type="date"
-            value={formData.endDate}
-            onChange={(e) =>
-              setFormData({ ...formData, endDate: e.target.value })
-            }
-            required
+
+          <section className={styles.section}>
+            <h4 className={styles.sectionTitle}>
+              {t("proyectos.sectionBudget")}
+            </h4>
+            <div className={styles.budgetRow}>
+              <div className={styles.formField}>
+                <div className={styles.formLabelRow}>
+                  <label>
+                    {t("proyectos.budget")}
+                    <span className={styles.required}>*</span>
+                  </label>
+                </div>
+                <div className={styles.amountField}>
+                  <span className={styles.amountPrefix}>RD$</span>
+                  <input
+                    type="number"
+                    className={styles.amountInput}
+                    value={form.values.budget}
+                    onChange={(e) =>
+                      form.setFieldValue("budget", Number(e.target.value))
+                    }
+                    required
+                  />
+                </div>
+                {form.errors.budget && (
+                  <span className={styles.error}>{form.errors.budget}</span>
+                )}
+              </div>
+              <div className={styles.formField}>
+                <div className={styles.formLabelRow}>
+                  <label>{t("proyectos.spent")}</label>
+                </div>
+                <div className={styles.amountField}>
+                  <span className={styles.amountPrefix}>RD$</span>
+                  <input
+                    type="number"
+                    className={styles.amountInput}
+                    value={form.values.spent}
+                    onChange={(e) =>
+                      form.setFieldValue("spent", Number(e.target.value))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+            <div className={styles.formField}>
+              <div className={styles.formLabelRow}>
+                <label>{t("proyectos.progress")}</label>
+                <span className={styles.progressValue}>
+                  {form.values.progress} %
+                </span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                className={styles.range}
+                value={form.values.progress}
+                onChange={(e) =>
+                  form.setFieldValue("progress", Number(e.target.value))
+                }
+              />
+            </div>
+          </section>
+
+          <DynamicFormFields
+            fields={CRONOGRAMA_FIELDS}
+            values={form.values}
+            errors={form.errors}
+            editingId={form.editingId}
+            onChange={form.setFieldValue}
           />
         </div>
       </Modal>
