@@ -75,7 +75,10 @@ export function VentasList({
         const firstItem = v.items[0];
         return (
           <ImageCell
-            src={firstItem.productImageUrl || ""}
+            src={
+              firstItem.productImageUrl ||
+              `https://i.pravatar.cc/150?img=${firstItem.id}`
+            }
             name={firstItem.productName}
             subtext={
               v.items.length > 1
