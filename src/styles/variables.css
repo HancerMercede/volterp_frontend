@@ -16,6 +16,8 @@
   --surface: #ffffff;
   --surface-hover: #F3F4F6;
   --surface-soft: #FEFEFE;
+  --surface-secondary: var(--gray-100);
+  --surface-tertiary: var(--gray-200);
   --surface-blur: rgba(255, 255, 255, 0.85);
   --border: #E5E7EB;
   --border-light: rgba(0, 0, 0, 0.06);
@@ -31,6 +33,9 @@
   --text-primary: #1F2937;
   --text-secondary: #6B7280;
   --text-muted: #9CA3AF;
+  /* Texto sobre el relleno de --primary: contrasta al revés que --text-primary */
+  --text-inverse: var(--dark);
+  --text-inverse-muted: #475569;
   --text-xs: 12px;
   --text-sm: 13px;
   --text-base: 14px;
