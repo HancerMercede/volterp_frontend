@@ -1,5 +1,20 @@
 # Volterp Frontend — Minimalist Design System
 
+> ## ⚠️ ABANDONADO — 2026-11-05. **No usar como fuente de verdad.**
+>
+> Esta dirección (naranja `#FF632B` + shell crema, estilo Coderhouse) **se probó y se abandonó**. Nunca llegó a `development`:
+> - La rama `feature/minimalist-design-system` **no existe** más (sólo `development`, `feature/compras-alta-fix`, `main`).
+> - El trabajo quedó en el stash `stash@{0}` (merge commit `634ab2c`, 57 archivos, +662/−691) — recuperable con `git stash pop` o `git show 634ab2c`.
+> - El guard de tokens `src/test/design-tokens.test.ts` **nunca llegó a existir**.
+> - `index.html` **no carga** ninguna fuente de display.
+>
+> **La paleta viva es la de `src/styles/variables.css`**: shell navy (`--sidebar-bg: #1F2937`) + primario **ámbar** (`--primary: #FACC15`) + glassmorphism. Ese es el sistema homologado.
+>
+> - **Fuente de verdad del código**: `FRONTEND-SKELETON-TEMPLATE.md`.
+> - **Fuente de verdad del diseño**: `src/styles/variables.css` + la sección **"Contrato visual"** de `FRONTEND-SKELETON-TEMPLATE.md`.
+>
+> **Lo que sí se rescató** de este documento —los **principios**, no los valores— quedó en el "Contrato visual" del template: tokenización total del color, contraste AA como contrato y tipografía libre con licencia OFL.
+
 Restyle del FrontEnd de Volterp hacia una estética minimalista inspirada en la referencia de Coderhouse, con `#FF632B` como color primario, shell claro y tokenización total del color.
 **Branch**: `feature/minimalist-design-system` (base `development` @ `692ab4a`) · **Delivery**: `ask-on-risk` · **Test runner**: `vitest` + `tsc -b && vite build` + `eslint .`
 
