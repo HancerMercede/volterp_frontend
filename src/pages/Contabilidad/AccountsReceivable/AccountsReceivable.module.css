@@ -1,0 +1,34 @@
+.container {
+  padding: 0;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--space-lg);
+}
+
+.status {
+  padding: 48px 16px;
+  text-align: center;
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
+.error {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  font-size: var(--text-sm);
+}
+
+.amount {
+  color: var(--text-secondary);
+}
+
+.balance {
+  font-weight: 700;
+  color: var(--text-primary);
+}
