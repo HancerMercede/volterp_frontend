@@ -39,7 +39,7 @@ CRUD completo del catálogo de cuentas, con las reglas del backend espejadas:
 - **El árbol se arma en el front**: no hay endpoint de árbol ni de saldo, y no está en el plan del backend.
 - `GET /api/accounts` **no tiene ORDER BY** → el front ordena.
 - POST/PUT/DELETE exigen rol `Admin` o `SuperAdmin` → el botón de guardar/borrar se gatea por `usePermission`.
-- `GET /api/accounts` devuelve inactivas incluidas → el front filtra.
+- `GET /api/accounts` devuelve inactivas incluidas → el front **las muestra y marca con su estado** y las filtra por tipo; no las oculta, porque tapar data real es peor que mostrarla con su estado.
 
 ### S3 — CxC: read-model sobre `/api/sales`
 > "cuentas por cobrar pagar etc."
@@ -103,6 +103,7 @@ El front lee **sólo `error.error`** (`src/infrastructure/api/fetchWithAuth.ts:3
 | T6 | S2, S3, S4 | Rutas hijas en `App.tsx`, claves i18n de las páginas nuevas, tests de página (patrón `src/test/components/Compras.test.tsx`), seam check: `vitest --pool=threads` + `tsc -b && vite build` + `eslint .` | delegado | PENDIENTE |
 | T7 | S6 | **7 tokens referenciados y nunca declarados**: `--accent-color`, `--color-background`, `--color-primary`, `--surface-secondary`, `--surface-tertiary`, `--text-inverse`, `--text-inverse-muted` | inline | HECHO — los 4 que sí se usan, declarados (`ea606cd`); `--accent-color`, `--color-background` y `--color-primary` no aparecen en `src/`: alias muertos, no hay nada que arreglar |
 | T8 | S3 | `config.ts` apunta a `/api/accounting-transactions`; la ruta del controller es `/api/accountingtransactions` | inline | PENDIENTE — fase de conexión al backend |
+| T9 | S2 | **Espejar las reglas que el front puede comprobar**: auto-padre excluido del combobox, prefijo del código del hijo validado contra el código del padre, borrado bloqueado cuando la cuenta tiene hijas. Más las sondas de regresión del gate quehengas de verificar | delegado | PENDIENTE |
 
 T3+T4 y T5 son unidades independientes con superficies disjuntas → lanzables en paralelo. T1 y T2 son prerrequisitos de ambas.
 
@@ -214,6 +215,21 @@ Decisiones:
 - **Consecuencia**: los hijos de Contabilidad heredan el permiso de lectura del módulo; guardar y borrar cuentas es Admin/SuperAdmin.
 - **Pendiente del backend**: cuando exista el agrupado por cliente/proveedor, el read-model de CxC/CxP deja de agregar una página y hay que avisarlo en la página, porque hoy el saldo mostrado no es el saldo real.
 - **Límite del catálogo**: se pide una página de 200 cuentas y se pagina en memoria sobre el árbol aplanado. Si una empresa supera 200 cuentas, el árbol se trunca.
+
+### L13 — 2026-11-12 — verificación independiente del gate de cuentas
+
+Un verificador read-only (`gentle-ai-verify`) revisó el gate de permisos, el armado del árbol, las reglas espejadas y la cobertura de tests. **0 bloqueantes**; 8 avisos y un FAIL parcial de cobertura.
+
+- **Gate: PASS**. Los cuatro caminos de escritura que existen (botón de nueva, editar/borrar de fila, submit del modal, confirmación de borrado) están detrás de `canManageAccounts`. No hay atajo de teclado ni otro consumidor del store. Sonda observada: con rol `contabilidad`/`ventas`/`inventario`/`rrhh` no aparece ningún control y **el service no es llamado**.
+- **Árbol: PASS**. Huérfanos y ciclos cortan la recursión; no hay cuelgue. Auto-padre cae a raíz.
+- **FAIL parcial — cobertura**: no había test para el rol `superadmin`, ni para `inventario`/`rrhh`, ni para sesión nula, ni aserción negativa de que el service **no** se llame sin permiso, ni para árbol con huérfano o ciclo. → T9.
+- **FAIL parcial — reglas**: de las 7 reglas del backend, el front previene el código vacío; la unicidad, el prefijo del código del hijo y el auto-padre llegaban al backend como mensaje. El borrado con hijos tampoco se bloqueaba, aunque la página ya conoce el número de hijas. → T9.
+- **Avisos que quedan documentados y no se tocan** (son de alcance ajeno a esta feature, o de borde):
+  - **Sin gate de lectura por módulo**: el Sidebar esconde el item, pero la ruta sólo exige autenticación, así que cualquier usuario autenticado que escriba la URL entra a `/contabilidad/cuentas`. Es un hueco **sistémico de la app**, no de esta página; se reporta para una unidad aparte. Si el backend no restringe `GET /api/accounts`, es una fuga de lectura.
+  - **Rol numérico rompe la página**: `usePermission` hace `user.role.toLowerCase()` y `roles.ts` tiene un `normalizeRole` que no se usa. **Preexistente** (el login normaliza), no lo introduce esta rama; se reporta.
+  - **El gate es de presentación**: si el rol cambia con el modal abierto, el submit sigue escribiendo. El backend rechaza con 403; el impacto real es nulo.
+  - **Huérfano y ciclo se muestran como jerarquía válida**: un padre fuera de la página cargada aparece como "Sin cuenta padre". Ocurre sólo con más de 200 cuentas o con data corrupta.
+- **Doc**: "11 tests" era deriva; son 12.
 
 ## Relevant Files
 
