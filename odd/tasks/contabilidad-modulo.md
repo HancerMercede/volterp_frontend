@@ -246,6 +246,16 @@ Un verificador read-only (`gentle-ai-verify`) revisó el gate de permisos, el ar
 - **`TransactionsPanel` se queda** como componente y el padre lo renderiza. No se re-inlinea al padre porque eso sería reescribir 400 líneas (regla: editar, nunca reescribir).
 - **Test**: `src/test/components/Contabilidad.test.tsx` cubre que el padre muestre el reporte de transacciones y que sus tres botones lleven a cada hija.
 
+### L15 — 2026-11-12 — el agrupado de CxC/CxP se queda como está
+
+> "Ok entiendo" · "dejalo asi"
+
+Al explicar `SupplierPayable` (la fila del read-model de CxP, que **no** duplica al `SupplierDto` del domain: es una proyección con saldo, conteo y último documento) quedó a la vista un detalle del agrupado: la clave del grupo es `purchase.supplierId ?? purchase.supplierName`, así que **una compra sin `supplierId` que llega con el nombre puede partir el saldo de un proveedor en dos filas**. En CxC el fallback es `sale.clienteId ?? sale.clienteName ?? sale.code`.
+
+**Decisión del owner: dejarlo así.** El arreglo en el front (resolver el nombre contra la colección de proveedores/clientes) se deja para cuando exista el endpoint de agrupado del backend, que es lo que va a definir la identidad real del grupo.
+
+**Queda anotado** como limitación conocida del read-model, junto con la de L12: el saldo que se muestra cubre una página de 100 filas y no es el saldo real.
+
 ## Relevant Files
 
 - `FRONTEND-SKELETON-TEMPLATE.md` — forma del código (§1.5 = contrato visual).
