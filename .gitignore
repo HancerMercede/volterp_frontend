@@ -39,5 +39,8 @@ temp_hlink_test/
 MEMORY.md
 q
 
+# PowerShell ModuleAnalysisCache written into the repo root by PS sessions
+Microsoft/
+
 # Lockfile — yarn is the package manager
 package-lock.json
