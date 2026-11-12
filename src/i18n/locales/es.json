@@ -400,7 +400,11 @@
       "filterType": "Todos los tipos",
       "empty": "No hay cuentas registradas",
       "deleteConfirm": "Esta acción no se puede deshacer. La cuenta dejará de aparecer en el catálogo.",
-      "deleted": "Cuenta eliminada"
+      "deleted": "Cuenta eliminada",
+      "errorChildCodePrefix": "El código de la cuenta debe empezar con el código de su cuenta padre.",
+      "errorSelfParent": "Una cuenta no puede ser su propia cuenta padre.",
+      "errorHasChildren": "No se puede eliminar una cuenta que tiene cuentas hijas.",
+      "noPermission": "No tienes permiso para modificar las cuentas."
     },
     "accountsReceivable": {
       "title": "Cuentas por cobrar",

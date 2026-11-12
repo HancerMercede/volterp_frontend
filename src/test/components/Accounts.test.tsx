@@ -130,6 +130,24 @@ const submitForm = async () => {
   );
 };
 
+const submitEditForm = async () => {
+  await userEvent.click(
+    screen.getByRole("button", { name: i18n.t("common.saveChanges") }),
+  );
+};
+
+const selectParent = async (name: string) => {
+  const dialog = screen.getByRole("dialog");
+  await userEvent.click(
+    within(dialog).getByRole("combobox", {
+      name: new RegExp(i18n.t("contabilidad.accounts.parent"), "i"),
+    }),
+  );
+  await userEvent.click(
+    within(dialog).getByRole("button", { name: new RegExp(name, "i") }),
+  );
+};
+
 describe("Accounts", () => {
   it("loads the catalog through the account service", async () => {
     renderAccounts();
@@ -166,6 +184,57 @@ describe("Accounts", () => {
       await screen.findByText("Caja", { selector: "span[data-depth]" }),
     ).toHaveAttribute("data-depth", "0");
     expect(accountName("Banco")).toHaveAttribute("data-depth", "1");
+  });
+
+  it("renders an account whose parent is missing as a root", async () => {
+    const ORPHAN: AccountDto = {
+      id: "a9",
+      code: "1300",
+      name: "Orphan account",
+      accountType: "Asset",
+      parentId: "missing-parent",
+      isPostable: true,
+      isActive: true,
+      notes: null,
+    };
+    service.getAccounts.mockResolvedValue(paged([ORPHAN]));
+    renderAccounts();
+
+    expect(
+      await screen.findByText("Orphan account", { selector: "span[data-depth]" }),
+    ).toHaveAttribute("data-depth", "0");
+  });
+
+  it("renders a cycle of accounts without recursing forever", async () => {
+    const CYCLE_A: AccountDto = {
+      id: "c1",
+      code: "2000",
+      name: "Cycle A",
+      accountType: "Asset",
+      parentId: "c2",
+      isPostable: true,
+      isActive: true,
+      notes: null,
+    };
+    const CYCLE_B: AccountDto = {
+      id: "c2",
+      code: "2001",
+      name: "Cycle B",
+      accountType: "Asset",
+      parentId: "c1",
+      isPostable: true,
+      isActive: true,
+      notes: null,
+    };
+    service.getAccounts.mockResolvedValue(paged([CYCLE_A, CYCLE_B]));
+    renderAccounts();
+
+    expect(
+      await screen.findByText("Cycle A", { selector: "span[data-depth]" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Cycle B", { selector: "span[data-depth]" }),
+    ).toBeInTheDocument();
   });
 
   it("lists the inactive accounts and marks them", async () => {
@@ -212,13 +281,27 @@ describe("Accounts", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows the backend rejection when an account with children is deleted", async () => {
-    service.getAccounts.mockResolvedValue(paged([CASH, BANK]));
-    service.deleteAccount.mockRejectedValue(
-      new Error(
-        "The account cannot be deleted because it has child accounts.",
-      ),
+  it("shows the backend rejection when the deletion is rejected", async () => {
+    service.getAccounts.mockResolvedValue(paged([RETIRED]));
+    service.deleteAccount.mockRejectedValue(new Error("Account not found."));
+    renderAccounts();
+    await screen.findByText("Cuenta cerrada", { selector: "span[data-depth]" });
+
+    await userEvent.click(screen.getAllByTitle("Eliminar")[0]);
+    await userEvent.click(
+      screen.getByRole("button", { name: i18n.t("common.confirmDeleteAction") }),
     );
+
+    await waitFor(() =>
+      expect(toasts).toContainEqual({
+        message: "Account not found.",
+        type: "error",
+      }),
+    );
+  });
+
+  it("blocks the deletion of an account with child accounts", async () => {
+    service.getAccounts.mockResolvedValue(paged([CASH, BANK]));
     renderAccounts();
     await screen.findByText("Caja", { selector: "span[data-depth]" });
 
@@ -229,11 +312,79 @@ describe("Accounts", () => {
 
     await waitFor(() =>
       expect(toasts).toContainEqual({
-        message:
-          "The account cannot be deleted because it has child accounts.",
+        message: i18n.t("contabilidad.accounts.errorHasChildren"),
         type: "error",
       }),
     );
+    expect(service.deleteAccount).not.toHaveBeenCalled();
+  });
+
+  it("rejects a child code that does not start with the parent code", async () => {
+    service.getAccounts.mockResolvedValue(paged([CASH, BANK]));
+    renderAccounts();
+    await openCreateForm();
+    await fillCodeAndName("2200", "Other asset");
+    await selectParent("Caja");
+    await submitForm();
+
+    expect(
+      within(screen.getByRole("dialog")).getByText(
+        i18n.t("contabilidad.accounts.errorChildCodePrefix"),
+      ),
+    ).toBeInTheDocument();
+    expect(service.createAccount).not.toHaveBeenCalled();
+  });
+
+  it("creates a child account whose code starts with the parent code", async () => {
+    service.getAccounts.mockResolvedValue(paged([CASH, BANK]));
+    renderAccounts();
+    await openCreateForm();
+    await fillCodeAndName("1100-01", "Cash in hand");
+    await selectParent("Caja");
+    await submitForm();
+
+    await waitFor(() =>
+      expect(service.createAccount).toHaveBeenCalledWith(
+        expect.objectContaining({ code: "1100-01", parentId: "a1" }),
+      ),
+    );
+  });
+
+  it("keeps the edited account out of the parent options", async () => {
+    service.getAccounts.mockResolvedValue(paged([CASH, BANK]));
+    renderAccounts();
+    await screen.findByText("Caja", { selector: "span[data-depth]" });
+
+    await userEvent.click(screen.getAllByTitle("Editar")[0]);
+    const dialog = screen.getByRole("dialog");
+    await userEvent.click(
+      within(dialog).getByRole("combobox", {
+        name: new RegExp(i18n.t("contabilidad.accounts.parent"), "i"),
+      }),
+    );
+
+    expect(
+      within(dialog).queryByRole("option", { name: new RegExp("Caja", "i") }),
+    ).toBeNull();
+    expect(
+      within(dialog).getByRole("option", { name: new RegExp("Banco", "i") }),
+    ).toBeInTheDocument();
+  });
+
+  it("rejects an account that is set as its own parent", async () => {
+    service.getAccounts.mockResolvedValue(paged([{ ...CASH, parentId: CASH.id }]));
+    renderAccounts();
+    await screen.findByText("Caja", { selector: "span[data-depth]" });
+
+    await userEvent.click(screen.getAllByTitle("Editar")[0]);
+    await submitEditForm();
+
+    expect(
+      within(screen.getByRole("dialog")).getByText(
+        i18n.t("contabilidad.accounts.errorSelfParent"),
+      ),
+    ).toBeInTheDocument();
+    expect(service.updateAccount).not.toHaveBeenCalled();
   });
 
   it("shows the save actions for an admin", async () => {

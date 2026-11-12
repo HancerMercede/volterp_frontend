@@ -161,6 +161,15 @@ export function Accounts() {
         type: "text",
         required: true,
         span: 3,
+        validate: (value, values) => {
+          const parent = accounts.find(
+            (account) => account.id === String(values.parentId ?? ""),
+          );
+          if (!parent) return undefined;
+          return String(value ?? "").startsWith(parent.code)
+            ? undefined
+            : t("contabilidad.accounts.errorChildCodePrefix");
+        },
       },
       {
         name: "name",
@@ -238,12 +247,41 @@ export function Accounts() {
     fields,
     defaultValues: DEFAULT_VALUES,
     mapEntityToForm,
-    onCreate: async (data) => addAccount(toAccountRequest(data)),
-    onUpdate: async (id, data) => updateAccount(id, toAccountRequest(data)),
+    onCreate: async (data) => {
+      if (!canManageAccounts)
+        throw new Error(t("contabilidad.accounts.noPermission"));
+      return addAccount(toAccountRequest(data));
+    },
+    onUpdate: async (id, data) => {
+      if (!canManageAccounts)
+        throw new Error(t("contabilidad.accounts.noPermission"));
+      if (data.parentId === id) {
+        throw new Error(t("contabilidad.accounts.errorSelfParent"));
+      }
+      return updateAccount(id, toAccountRequest(data));
+    },
     onSuccess: () => {
       setShowForm(false);
     },
   });
+
+  // An account cannot be its own parent, so the edited one leaves the parent options.
+  const visibleFields = useMemo(
+    () =>
+      form.editingId === null
+        ? fields
+        : fields.map((field) =>
+            field.name === "parentId"
+              ? {
+                  ...field,
+                  options: field.options?.filter(
+                    (option) => option.value !== form.editingId,
+                  ),
+                }
+              : field,
+          ),
+    [fields, form.editingId],
+  );
 
   const searchFields = useCallback(
     (account: AccountDto) => [account.code, account.name],
@@ -380,7 +418,14 @@ export function Accounts() {
     confirmDelete,
     cancelDelete,
   } = useDeleteConfirm({
-    onDelete: deleteAccount,
+    onDelete: async (id: string) => {
+      if (!canManageAccounts)
+        throw new Error(t("contabilidad.accounts.noPermission"));
+      if ((childCounts.get(id) ?? 0) > 0) {
+        throw new Error(t("contabilidad.accounts.errorHasChildren"));
+      }
+      await deleteAccount(id);
+    },
     successMessage: t("contabilidad.accounts.deleted"),
   });
 
@@ -485,7 +530,7 @@ export function Accounts() {
         closeLabel={t("common.close")}
       >
         <DynamicFormFields
-          fields={fields}
+          fields={visibleFields}
           values={form.values}
           errors={form.errors}
           editingId={form.editingId}

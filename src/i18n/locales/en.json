@@ -397,7 +397,11 @@
       "filterType": "All types",
       "empty": "No accounts registered",
       "deleteConfirm": "This action cannot be undone. The account will no longer appear in the chart.",
-      "deleted": "Account deleted"
+      "deleted": "Account deleted",
+      "errorChildCodePrefix": "The child code must start with the parent code.",
+      "errorSelfParent": "An account cannot be its own parent.",
+      "errorHasChildren": "An account cannot be deleted because it has child accounts.",
+      "noPermission": "You do not have permission to modify accounts."
     },
     "accountsReceivable": {
       "title": "Accounts receivable",
