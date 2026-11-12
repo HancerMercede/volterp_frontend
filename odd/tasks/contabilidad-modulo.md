@@ -105,6 +105,7 @@ El front lee **sólo `error.error`** (`src/infrastructure/api/fetchWithAuth.ts:3
 | T8 | S3 | `config.ts` apunta a `/api/accounting-transactions`; la ruta del controller es `/api/accountingtransactions` | inline | PENDIENTE — fase de conexión al backend |
 | T9 | S2 | **Espejar las reglas que el front puede comprobar**: auto-padre excluido del combobox, prefijo del código del hijo validado contra el código del padre, borrado bloqueado cuando la cuenta tiene hijas. Más las sondas de regresión del gate quehengas de verificar | delegado | HECHO — 3 reglas previenen en el front, gate endurecido en el camino de escritura, 25 tests verdes |
 | T10 | S1 | **Se cae la hija de transacciones**: el padre queda con el reporte de transacciones y las hijas son Cuentas, CxC y CxP | inline | HECHO — página, lazy, ruta, botón de navegación y 3 claves i18n levantados; el padre sigue renderizando `TransactionsPanel` |
+| T11 | S4 | **Imagen del proveedor en CxP**: la fila busca el proveedor en la colección (`useProveedores()`) por su `supplierId` real y muestra su `imageUrl` con `ImageCell` | inline | HECHO — `supplierId` aparte en la fila del read-model + columna con `ImageCell` y fallback a pravatar |
 
 T3+T4 y T5 son unidades independientes con superficies disjuntas → lanzables en paralelo. T1 y T2 son prerrequisitos de ambas.
 
@@ -255,6 +256,16 @@ Al explicar `SupplierPayable` (la fila del read-model de CxP, que **no** duplica
 **Decisión del owner: dejarlo así.** El arreglo en el front (resolver el nombre contra la colección de proveedores/clientes) se deja para cuando exista el endpoint de agrupado del backend, que es lo que va a definir la identidad real del grupo.
 
 **Queda anotado** como limitación conocida del read-model, junto con la de L12: el saldo que se muestra cubre una página de 100 filas y no es el saldo real.
+
+### L16 — 2026-11-12 — la imagen del proveedor en CxP
+
+> "valida como busco el supplier en cuentas por pagar" · "ya lo hice pero no sale la imagen" · "listo champ"
+
+- **Cómo se busca el proveedor**: el precedente es la columna de proveedor de **Compras** (`Compras.tsx:40,52-53,190-200`): `useProveedores()` + `find(p => p.id === supplierId)` + `ImageCell` con `supplier.imageUrl`, fallback a `pravatar` y, si el proveedor no está, el nombre en texto. La búsqueda va en la **página**, no en el hook: el read-model queda como read-model.
+- **El bug que lo dejó sin imagen**: el `render` de la columna recibía la fila (`SupplierPayable`) pero estaba tipado como `PurchaseDto`, así que `c.supplierId` era `undefined` → `getSupplierById(undefined)` → `null` → el fallback de texto. TypeScript lo marking (`TS2322`) pero Vite no typechequea, así que la página renderizaba igual.
+- **El fix**: la fila del read-model ahora lleva **`supplierId: string | null` aparte** de la clave del grupo (`id`). Hace falta porque la clave del grupo puede ser el nombre del proveedor o `doc:COM-001`, no el id real — buscar por `id` sólo funcionaba en las compras que traen `supplierId`.
+- **Límite del approach**: `useColecciones()` carga la **primera página de 100** proveedores (`useColecciones.ts:7`), así que los que no estén en esa página salen sin foto. Es el mismo comportamiento que Compras hoy.
+- **Drift de formato**: el editor del owner guarda con comillas dobles (prettier); la convención del repo (§4.7) es comillas simples en código. Queda pendiente normalizar (encaja con la migración del repo a inglés).
 
 ## Relevant Files
 

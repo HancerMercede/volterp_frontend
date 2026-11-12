@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
-import { purchaseService } from '../../infrastructure/api/purchaseService';
-import type { PurchaseDto } from '../../domain/types';
+import { useEffect, useMemo, useState } from "react";
+import { purchaseService } from "../../infrastructure/api/purchaseService";
+import type { PurchaseDto } from "../../domain/types";
 
 /** A supplier with the purchases it still has to be paid. */
 export interface SupplierPayable {
   id: string;
+  supplierId: string | null;
   supplierName: string;
   balance: number;
   purchaseCount: number;
@@ -19,7 +20,7 @@ function groupBySupplier(purchases: PurchaseDto[]): SupplierPayable[] {
   const bySupplier = new Map<string, SupplierPayable>();
 
   for (const purchase of purchases) {
-    if (purchase.status !== 'Pending') continue;
+    if (purchase.status !== "Pending") continue;
 
     const id = purchase.supplierId ?? purchase.supplierName;
     const group = bySupplier.get(id);
@@ -27,6 +28,7 @@ function groupBySupplier(purchases: PurchaseDto[]): SupplierPayable[] {
     if (!group) {
       bySupplier.set(id, {
         id,
+        supplierId: purchase.supplierId,
         supplierName: purchase.supplierName || purchase.code,
         balance: purchase.total,
         purchaseCount: 1,
@@ -61,7 +63,9 @@ export function useAccountsPayable() {
         setError(null);
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Failed to fetch purchases');
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch purchases",
+        );
       })
       .finally(() => {
         setLoading(false);
