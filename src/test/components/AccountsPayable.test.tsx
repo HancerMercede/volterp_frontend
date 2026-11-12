@@ -10,9 +10,33 @@ vi.mock('../../infrastructure/api/purchaseService', () => ({
   },
 }));
 
+vi.mock('../../infrastructure/api/supplierService', () => ({
+  supplierService: {
+    getSuppliers: vi.fn(),
+  },
+}));
+
 import { purchaseService } from '../../infrastructure/api/purchaseService';
+import { supplierService } from '../../infrastructure/api/supplierService';
+import { useProveedorStore } from '../../stores/proveedorStore';
+import { useAuthStore } from '../../stores/authStore';
 import { AccountsPayable } from '../../pages/Contabilidad/AccountsPayable/AccountsPayable';
-import type { PagedResult, PurchaseDto } from '../../domain/types';
+import type { PagedResult, PurchaseDto, SupplierDto } from '../../domain/types';
+
+const PROVIDER: SupplierDto = {
+  id: 'su1',
+  code: 'SUP-001',
+  name: 'Distribuidora Aurora',
+  email: 'compras@aurora.do',
+  phone: '809-555-1201',
+  address: 'Calle 1',
+  category: 'Distribuidora',
+  contactPerson: 'Ana Perez',
+  imageUrl: 'https://cdn.volterp.do/aurora.png',
+  isActive: true,
+  createdAt: null,
+  updatedAt: null,
+};
 
 const purchase = (overrides: Partial<PurchaseDto> = {}): PurchaseDto => ({
   id: 'p1',
@@ -84,6 +108,8 @@ const rowOf = (supplierName: string): HTMLElement => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  useProveedorStore.setState({ proveedores: [] });
+  useAuthStore.setState({ token: 'test-token' });
 });
 
 describe('AccountsPayable', () => {
@@ -117,6 +143,38 @@ describe('AccountsPayable', () => {
       within(rowOf('Lácteos del Norte')).getByText('RD$ 300.00'),
     ).toBeInTheDocument();
     expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(3);
+  });
+
+  it('shows the image of the supplier when it is in the collection', async () => {
+    vi.mocked(purchaseService.getPurchases).mockResolvedValue(paged([AURORA_OLD]));
+    vi.mocked(supplierService.getSuppliers).mockResolvedValue({
+      rowCount: 1,
+      pageNumber: 1,
+      pageSize: 100,
+      pageCount: 1,
+      items: [PROVIDER],
+    });
+
+    renderPage();
+
+    const image = await screen.findByRole('img');
+    expect(image).toHaveAttribute('src', 'https://cdn.volterp.do/aurora.png');
+  });
+
+  it('falls back to the name when the supplier is not in the collection', async () => {
+    vi.mocked(purchaseService.getPurchases).mockResolvedValue(paged([AURORA_OLD]));
+    vi.mocked(supplierService.getSuppliers).mockResolvedValue({
+      rowCount: 0,
+      pageNumber: 1,
+      pageSize: 100,
+      pageCount: 0,
+      items: [],
+    });
+
+    renderPage();
+
+    expect(await screen.findByText('Distribuidora Aurora')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).toBeNull();
   });
 
   it('leaves out the purchases that are not pending', async () => {
