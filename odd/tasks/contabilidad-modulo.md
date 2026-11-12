@@ -11,13 +11,13 @@ Objetivo: que **Contabilidad** sea un tab principal con hijos navegables, homolo
 ### S1 — Contabilidad como tab principal con hijos
 > "lo que pretendo hacer en el front es hijos del tab principal como Contabilidad -> CxC -> ..."
 
-Cuatro hijos: **Transacciones**, **Cuentas**, **CxC**, **CxP**.
+Tres hijos: **Cuentas**, **CxC**, **CxP**. El padre **es** el reporte de transacciones.
 
 - El **Sidebar conserva un solo item** "Contabilidad" → `/contabilidad`. No se agregan items al menú lateral.
-- Los hijos son **rutas hermanas** `/contabilidad/cuentas`, `/contabilidad/cxc`, `/contabilidad/cxp`, `/contabilidad/transacciones`.
+- Los hijos son **rutas hermanas** `/contabilidad/cuentas`, `/contabilidad/cxc`, `/contabilidad/cxp`.
 - Patrón **homólogo a RRHH** (`src/pages/RRHH/RRHH.tsx:112-125`): la página padre muestra botones en el `PageHeader` que hacen `navigate()` a las rutas hijas, y cada hija tiene su botón de volver.
 - **Motivo de la decisión**: el Sidebar deriva la URL del `key` del módulo (`src/components/Layout/Sidebar.tsx:87` → `to={`/${item.key === "dashboard" ? "" : item.key}`}`), así que un item nuevo saldría en `/cuentas`, nunca en `/contabilidad/cuentas`. El Sidebar es plano, de un solo nivel, sin hijos ni accordion. Y `NavLink` sin `end` ya marca activo `/contabilidad` para cualquier sub-ruta.
-- `/contabilidad` **conserva su contenido actual** (transacciones) y suma los botones hacia las hijas. Nada de rutas rotas.
+- `/contabilidad` **conserva su contenido actual** (la tabla de transacciones, su formulario y las 3 cards de ingresos/egresos/balance) y suma los botones hacia las hijas. **No hay hija de transacciones**: renderizaba el mismo componente que el padre (L14).
 
 ### S2 — Cuentas contra `/api/accounts`
 CRUD completo del catálogo de cuentas, con las reglas del backend espejadas:
@@ -96,14 +96,15 @@ El front lee **sólo `error.error`** (`src/infrastructure/api/fetchWithAuth.ts:3
 | ID | S# | Alcance | Ruta | Estado |
 |---|---|---|---|---|
 | T1 | S6, S7 | `src/styles/variables.css`: tokens semánticos de estado. `fetchWithAuth.ts` + `utils/apiError.ts` + `types.ts`: normalizar `error` / `message` / `ProblemDetails` en una forma interna | inline | HECHO — `f6b0e3e` (errores) + `5cc7a8d` (tokens); verificados presentes en esta rama |
-| T2 | S1, S9 | Sub-navegación: rutas hijas en `App.tsx`, botones en el `PageHeader` del padre, botón de volver en cada hija, claves i18n del padre | delegado | HECHO — `57bae43` (botones del padre + `TransactionsPanel` + página `Transactions` + 7 claves i18n). Las rutas en `App.tsx` entran en T6: el padre edita ese archivo |
+| T2 | S1, S9 | Sub-navegación: rutas hijas en `App.tsx`, botones en el `PageHeader` del padre, botón de volver en cada hija, claves i18n del padre | delegado | HECHO — `d131101` (botones del padre + `TransactionsPanel` + página `Transactions` + 7 claves i18n). La página de transacciones se levantó en T10 por duplicar al padre; las rutas en `App.tsx` las edita el padre |
 | T3 | S2 | `AccountDto`/`AccountRequest` en `domain/types`, `ACCOUNTS` en `config.ts`, `accountService.ts`, store de cuentas | delegado | HECHO — `AccountDto`/`AccountType`/`AccountRequest` (sin `companyId`), `ACCOUNTS: "/api/accounts"`, `accountService` con la forma canónica, `accountStore` con el shape universal |
 | T4 | S2 | Página `pages/Contabilidad/Accounts/` — árbol de cuentas, CRUD con `useCrudForm`, reglas del backend espejadas | delegado | HECHO — árbol armado y ordenado en el front, `mapEntityToForm`, `combobox` para el padre, mensajes del backend verbatim, gate Admin/SuperAdmin (ver L12), 11 tests |
 | T5 | S3, S4 | `CxC` y `CxP` como read-models: services sobre `/api/sales` y `/api/purchases`, agrupación por cliente/proveedor | delegado | HECHO — `083d14b` (`useAccountsReceivable`/`useAccountsPayable` + páginas `AccountsReceivable`/`AccountsPayable`, 16 tests) |
 | T6 | S2, S3, S4 | Rutas hijas en `App.tsx`, claves i18n de las páginas nuevas, tests de página (patrón `src/test/components/Compras.test.tsx`), seam check: `vitest --pool=threads` + `tsc -b && vite build` + `eslint .` | delegado | PENDIENTE |
 | T7 | S6 | **7 tokens referenciados y nunca declarados**: `--accent-color`, `--color-background`, `--color-primary`, `--surface-secondary`, `--surface-tertiary`, `--text-inverse`, `--text-inverse-muted` | inline | HECHO — los 4 que sí se usan, declarados (`ea606cd`); `--accent-color`, `--color-background` y `--color-primary` no aparecen en `src/`: alias muertos, no hay nada que arreglar |
 | T8 | S3 | `config.ts` apunta a `/api/accounting-transactions`; la ruta del controller es `/api/accountingtransactions` | inline | PENDIENTE — fase de conexión al backend |
-| T9 | S2 | **Espejar las reglas que el front puede comprobar**: auto-padre excluido del combobox, prefijo del código del hijo validado contra el código del padre, borrado bloqueado cuando la cuenta tiene hijas. Más las sondas de regresión del gate quehengas de verificar | delegado | PENDIENTE |
+| T9 | S2 | **Espejar las reglas que el front puede comprobar**: auto-padre excluido del combobox, prefijo del código del hijo validado contra el código del padre, borrado bloqueado cuando la cuenta tiene hijas. Más las sondas de regresión del gate quehengas de verificar | delegado | HECHO — 3 reglas previenen en el front, gate endurecido en el camino de escritura, 25 tests verdes |
+| T10 | S1 | **Se cae la hija de transacciones**: el padre queda con el reporte de transacciones y las hijas son Cuentas, CxC y CxP | inline | HECHO — página, lazy, ruta, botón de navegación y 3 claves i18n levantados; el padre sigue renderizando `TransactionsPanel` |
 
 T3+T4 y T5 son unidades independientes con superficies disjuntas → lanzables en paralelo. T1 y T2 son prerrequisitos de ambas.
 
@@ -230,6 +231,20 @@ Un verificador read-only (`gentle-ai-verify`) revisó el gate de permisos, el ar
   - **El gate es de presentación**: si el rol cambia con el modal abierto, el submit sigue escribiendo. El backend rechaza con 403; el impacto real es nulo.
   - **Huérfano y ciclo se muestran como jerarquía válida**: un padre fuera de la página cargada aparece como "Sin cuenta padre". Ocurre sólo con más de 200 cuentas o con data corrupta.
 - **Doc**: "11 tests" era deriva; son 12.
+
+### L14 — 2026-11-12 — se cae la hija de transacciones
+
+> "champa transacciones y contabilidad estan basicamente en lo mismo"
+
+> "osea son el mismo componente?"
+
+> "contabilidad ya es basicamente lo que informa todo las otras pestanas si se necesitan"
+
+- **Verificado**: el padre y la hija renderizaban **el mismo componente** (`<TransactionsPanel />`); sólo cambiaba la cabecera. La duplicación era real, y venía de S1 ("el padre conserva su contenido actual"), que hoy no se sostiene.
+- **Decisión**: se cae la hija `/contabilidad/transacciones`. El padre `/contabilidad` **es** el reporte del módulo (transacciones + las 3 cards de ingresos/egresos/balance) y las hijas quedan **Cuentas**, **CxC** y **CxP** (3, no 4).
+- **Qué se levantó**: la página `src/pages/Contabilidad/Transactions/`, su lazy en `App.tsx`, su ruta, su botón de navegación y las claves `navTransactions`, `transactionsTitle` y `transactionsSubtitle`. `backToAccounting` se queda: la usan las tres hijas.
+- **`TransactionsPanel` se queda** como componente y el padre lo renderiza. No se re-inlinea al padre porque eso sería reescribir 400 líneas (regla: editar, nunca reescribir).
+- **Test**: `src/test/components/Contabilidad.test.tsx` cubre que el padre muestre el reporte de transacciones y que sus tres botones lleven a cada hija.
 
 ## Relevant Files
 

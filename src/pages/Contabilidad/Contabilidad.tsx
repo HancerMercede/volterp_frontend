@@ -9,10 +9,6 @@ export function Contabilidad() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const handleNavigateTransactions = useCallback(() => {
-    navigate('/contabilidad/transacciones');
-  }, [navigate]);
-
   const handleNavigateAccounts = useCallback(() => {
     navigate('/contabilidad/cuentas');
   }, [navigate]);
@@ -31,9 +27,6 @@ export function Contabilidad() {
         title={t('contabilidad.title')}
         subtitle={t('contabilidad.subtitle')}
       >
-        <Button variant='secondary' onClick={handleNavigateTransactions}>
-          {t('contabilidad.navTransactions')}
-        </Button>
         <Button variant='secondary' onClick={handleNavigateAccounts}>
           {t('contabilidad.navAccounts')}
         </Button>

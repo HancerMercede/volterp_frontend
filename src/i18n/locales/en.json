@@ -336,12 +336,9 @@
   "contabilidad": {
     "title": "Accounting",
     "subtitle": "Financial and accounting management",
-    "navTransactions": "Transactions",
     "navAccounts": "Accounts",
     "navAccountsReceivable": "Accounts receivable",
     "navAccountsPayable": "Accounts payable",
-    "transactionsTitle": "Transactions",
-    "transactionsSubtitle": "Income and expense management",
     "backToAccounting": "Back to Accounting",
     "newTransaction": "New Transaction",
     "editTransaction": "Edit Transaction",

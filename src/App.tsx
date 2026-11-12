@@ -58,11 +58,6 @@ const Contabilidad = lazy(() =>
     default: m.Contabilidad,
   })),
 );
-const Transactions = lazy(() =>
-  import("./pages/Contabilidad/Transactions/Transactions").then((m) => ({
-    default: m.Transactions,
-  })),
-);
 const Accounts = lazy(() =>
   import("./pages/Contabilidad/Accounts/Accounts").then((m) => ({
     default: m.Accounts,
@@ -133,10 +128,6 @@ function AppRoutes() {
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/proveedores" element={<Proveedores />} />
           <Route path="/contabilidad" element={<Contabilidad />} />
-          <Route
-            path="/contabilidad/transacciones"
-            element={<Transactions />}
-          />
           <Route path="/contabilidad/cuentas" element={<Accounts />} />
           <Route path="/contabilidad/cxc" element={<AccountsReceivable />} />
           <Route path="/contabilidad/cxp" element={<AccountsPayable />} />

@@ -340,12 +340,9 @@
   "contabilidad": {
     "title": "Contabilidad",
     "subtitle": "Gestión financiera y contable",
-    "navTransactions": "Transacciones",
     "navAccounts": "Cuentas",
     "navAccountsReceivable": "Cuentas por cobrar",
     "navAccountsPayable": "Cuentas por pagar",
-    "transactionsTitle": "Transacciones",
-    "transactionsSubtitle": "Gestión de ingresos y egresos",
     "backToAccounting": "Volver a Contabilidad",
     "newTransaction": "Nueva Transacción",
     "editTransaction": "Editar Transacción",
