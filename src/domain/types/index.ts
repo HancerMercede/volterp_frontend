@@ -347,3 +347,27 @@ export interface InviteUserRequest {
 }
 
 export type UpdateUserRequest = Partial<UserDto>;
+
+// Account DTOs (from backend)
+export type AccountType =
+  | "Asset"
+  | "Liability"
+  | "Equity"
+  | "Income"
+  | "Expense";
+
+export interface AccountDto {
+  id: string;
+  code: string;
+  name: string;
+  accountType: AccountType;
+  parentId: string | null;
+  isPostable: boolean;
+  isActive: boolean;
+  notes: string | null;
+}
+
+export type Account = AccountDto;
+
+// The backend takes the company from the JWT: the request never carries it.
+export type AccountRequest = Omit<AccountDto, "id">;
