@@ -1,7 +1,7 @@
 # Contabilidad — módulo con sub-navegación (Cuentas, CxC, CxP, Transacciones)
 
 Objetivo: que **Contabilidad** sea un tab principal con hijos navegables, homologando el sistema con lo que el backend expone hoy.
-**Branch**: `feature/compras-alta-fix` (base `development`) · **Delivery**: `ask-on-risk` · **Test runner**: `vitest` (`npx vitest run --pool=threads`) + `tsc -b && vite build` + `eslint .`
+**Branch**: `feature/contabilidad-modulo` (base `development` @ `82f91a7`) · **Delivery**: `ask-on-risk` · **Test runner**: `vitest` (`npx vitest run --pool=threads`) + `tsc -b && vite build` + `eslint .`
 
 > **Estado del backend (auditoría read-only 2026-11-07, `feature/accounting` @ `27a1170`)**:
 > lo único contable real expuesto por HTTP es el **catálogo de cuentas** (`api/accounts`). El resto es el ledger legacy plano `AccountingTransaction` (sin `AccountId`, sin partida doble), que T8 retirará. **Cero `JournalEntry`/`JournalLine`/`CostCenter`/`AccountBalance` en todo el repo.**
@@ -21,6 +21,8 @@ Cuatro hijos: **Transacciones**, **Cuentas**, **CxC**, **CxP**.
 
 ### S2 — Cuentas contra `/api/accounts`
 CRUD completo del catálogo de cuentas, con las reglas del backend espejadas:
+
+**Frontend primero** (L9): el front se escribe contra este contrato; hasta que el backend esté desplegado la página queda con estado vacío. **Sin capa mock**: no hay datos simulados que haya que borrar después.
 
 | Regla del backend | Mensaje exacto | HTTP |
 |---|---|---|
@@ -42,12 +44,17 @@ CRUD completo del catálogo de cuentas, con las reglas del backend espejadas:
 ### S3 — CxC: read-model sobre `/api/sales`
 > "cuentas por cobrar pagar etc."
 
+**Frontend primero** (L9): sin capa mock; el read-model se arma sobre el contrato de `SaleDto`/`PurchaseDto` y queda vacío hasta que el backend responda.
+
 - "Cuentas por cobrar" = **ventas pendientes de cobro, agrupadas por cliente**, con su saldo.
-- Se apoya en `SaleDto`, que trae `subtotal`, `itbis`, `documentType`, `receptorTaxId`, `total`, `status`, `items[].taxCode`.
+- Se apoya en `SaleDto`, que **en el front no trae `subtotal`, `itbis`, `documentType`, `receptorTaxId` ni `items[].taxCode`**: el DTO real del front es `id, code, companyId, clienteId, clienteName, status ("Pending" | "Completed"), total, notes, createdAt, updatedAt, items[]`. El saldo se calcula sumando `total` (L12).
+- **No hay endpoint que agrupe**: cada read-model agrega una página (100 filas) y el saldo cubre sólo esas filas. El filtro de pendientes es del cliente, sobre `status`.
 - **Alcance honesto**: es un read-model de saldos por cliente. **No** hay facturas, no hay aplicación de pagos, no hay antigüedad real: eso llega con el diario de partida doble (T2+) del backend.
 
 ### S4 — CxP: read-model sobre `/api/purchases`
 - "Cuentas por pagar" = **compras pendientes de pago, agrupadas por proveedor**, con su saldo.
+
+**Frontend primero** (L9): sin capa mock; mismo contrato que S3.
 - `PurchaseDto` **no tiene `subtotal` ni `itbis`** → hoy **no se puede calcular el 606**. Esa es la razón de fondo por la que el backend difiere las postings de compra (task F5).
 - Mismo alcance honesto que S3: saldos por proveedor, sin facturas ni pagos aplicados.
 
@@ -59,6 +66,8 @@ CRUD completo del catálogo de cuentas, con las reglas del backend espejadas:
 - **El código lleva intención**: cada decisión no obvia documenta *por qué*, no *qué*.
 - **Sin IA slop** (§4.7 del template): un comentario existe sólo cuando el *por qué* no es evidente del código, y entonces es **una línea**. Sin narración, sin ensayos, sin abstracciones gratuitas, sin ramas "por si acaso" que nadie pidió. Y preferí siempre la **solución estructural** al comentario: si el código necesita una explicación para existir, primero hay que ver si el diseño puede hacer la pregunta innecesaria.
 - Services: `export const xService = { async methodName(...) }`. Stores: shape universal `items[]/loading/error/totalCount/pageCount`. Formularios: `useCrudForm` + `DynamicFormFields` + `useDeleteConfirm`.
+- **La forma sale del `FRONTEND-SKELETON-TEMPLATE.md`**, que es la autoridad sobre el shape y sobre las reglas de trabajo: **§3.2** (workflow de 7 pasos para agregar una entidad/página), **§4.7** (convenciones), **§4.8** (decisiones intencionales: los quirks se preservan), **§4.9** (anti-patrones), **§4.10** (precedencia: PRINCIPIO > STACK > quirk), **§4.11** (no negociables).
+- **El código nuevo va en inglés** (L10): carpetas, componentes, DTOs, services, stores, hooks, clases CSS, claves i18n y comentarios.
 
 ### S6 — Homología visual
 > "seguir el diseno, paleta de colores tipografia y todo eso, el sistema debe estar homologo"
@@ -86,19 +95,22 @@ El front lee **sólo `error.error`** (`src/infrastructure/api/fetchWithAuth.ts:3
 
 | ID | S# | Alcance | Ruta | Estado |
 |---|---|---|---|---|
-| T1 | S6, S7 | `src/styles/variables.css`: tokens semánticos de estado. `fetchWithAuth.ts` + `utils/apiError.ts` + `types.ts`: normalizar `error` / `message` / `ProblemDetails` en una sola forma interna | inline | HECHO — `f6b0e3e` (errores) + `5cc7a8d` (tokens). 35 archivos / 271 tests verde, `tsc -b` limpio, eslint limpio sobre lo tocado |
-| T2 | S1, S9 | Sub-navegación: rutas hijas en `App.tsx`, botones en el `PageHeader` de `Contabilidad.tsx`, claves i18n `sidebar`/`contabilidad` | inline | PENDIENTE |
-| T3 | S2 | `AccountDto`/`AccountRequest` en `domain/types`, `ACCOUNTS` en `config.ts`, `accountService.ts`, `accountStore.ts` | delegado | PENDIENTE |
-| T4 | S2 | Página `pages/Contabilidad/Cuentas/` — árbol de cuentas, CRUD con `useCrudForm`, reglas del backend espejadas | delegado | PENDIENTE |
-| T5 | S3, S4 | `CxC` y `CxP` como read-models: services sobre `/api/sales` y `/api/purchases`, agrupación por cliente/proveedor | delegado | PENDIENTE |
-| T6 | S2, S3, S4 | Tests de página (patrón `src/test/components/Compras.test.tsx`), seam check: `vitest --pool=threads` + `tsc -b && vite build` + `eslint .` | inline | PENDIENTE |
-| T7 | S6 | **7 tokens referenciados y nunca declarados**: `--accent-color`, `--color-background`, `--color-primary`, `--surface-secondary`, `--surface-tertiary`, `--text-inverse`, `--text-inverse-muted`. Una custom property sin declarar resuelve a valor inválido, así que **la regla CSS que la usa no se aplica hoy**. Son alias de tokens existentes: hay que apuntarlos al canónico, no inventar un valor | delegado | PENDIENTE |
+| T1 | S6, S7 | `src/styles/variables.css`: tokens semánticos de estado. `fetchWithAuth.ts` + `utils/apiError.ts` + `types.ts`: normalizar `error` / `message` / `ProblemDetails` en una forma interna | inline | HECHO — `f6b0e3e` (errores) + `5cc7a8d` (tokens); verificados presentes en esta rama |
+| T2 | S1, S9 | Sub-navegación: rutas hijas en `App.tsx`, botones en el `PageHeader` del padre, botón de volver en cada hija, claves i18n del padre | delegado | HECHO — `57bae43` (botones del padre + `TransactionsPanel` + página `Transactions` + 7 claves i18n). Las rutas en `App.tsx` entran en T6: el padre edita ese archivo |
+| T3 | S2 | `AccountDto`/`AccountRequest` en `domain/types`, `ACCOUNTS` en `config.ts`, `accountService.ts`, store de cuentas | delegado | HECHO — `AccountDto`/`AccountType`/`AccountRequest` (sin `companyId`), `ACCOUNTS: "/api/accounts"`, `accountService` con la forma canónica, `accountStore` con el shape universal |
+| T4 | S2 | Página `pages/Contabilidad/Accounts/` — árbol de cuentas, CRUD con `useCrudForm`, reglas del backend espejadas | delegado | HECHO — árbol armado y ordenado en el front, `mapEntityToForm`, `combobox` para el padre, mensajes del backend verbatim, gate Admin/SuperAdmin (ver L12), 11 tests |
+| T5 | S3, S4 | `CxC` y `CxP` como read-models: services sobre `/api/sales` y `/api/purchases`, agrupación por cliente/proveedor | delegado | HECHO — `083d14b` (`useAccountsReceivable`/`useAccountsPayable` + páginas `AccountsReceivable`/`AccountsPayable`, 16 tests) |
+| T6 | S2, S3, S4 | Rutas hijas en `App.tsx`, claves i18n de las páginas nuevas, tests de página (patrón `src/test/components/Compras.test.tsx`), seam check: `vitest --pool=threads` + `tsc -b && vite build` + `eslint .` | delegado | PENDIENTE |
+| T7 | S6 | **7 tokens referenciados y nunca declarados**: `--accent-color`, `--color-background`, `--color-primary`, `--surface-secondary`, `--surface-tertiary`, `--text-inverse`, `--text-inverse-muted` | inline | HECHO — los 4 que sí se usan, declarados (`ea606cd`); `--accent-color`, `--color-background` y `--color-primary` no aparecen en `src/`: alias muertos, no hay nada que arreglar |
+| T8 | S3 | `config.ts` apunta a `/api/accounting-transactions`; la ruta del controller es `/api/accountingtransactions` | inline | PENDIENTE — fase de conexión al backend |
 
 T3+T4 y T5 son unidades independientes con superficies disjuntas → lanzables en paralelo. T1 y T2 son prerrequisitos de ambas.
 
-**Delivery**: `ask-on-risk` (default). El running count medido en la rama `feature/compras-alta-fix` es de **~1.083 líneas authored** en 6 commits, y **uno solo (`4afd1a0`, Compras) se lleva 900** — muy por encima del corte de ~400. Ese commit debería ser su propio PR encadenado; la estrategia de cadena hay que decidirla antes del primer push.
+**Regla de i18n para las unidades delegadas**: cada unidad usa su propio namespace (`contabilidad.cuentas.*`, `contabilidad.cxc.*`, `contabilidad.cxp.*`) y **no edita `src/i18n/locales/`**: reporta la lista exacta de claves que usó y el padre las agrega en T6. Así las unidades no se pisan el mismo archivo.
 
-**Commits en la rama** (todos en `feature/compras-alta-fix`): `4afd1a0` Compras (proveedor buscable + editor de líneas) · `2ae51f7` VentaDetail (código de negocio) · `7413757` RRHH (reordenamiento) · `ea7c60f` Inventario (reformateo) · `f6b0e3e` error del API · `5cc7a8d` tokens de estado.
+**Delivery**: `ask-on-risk` (default). Esta rama arranca de `development` @ `82f91a7` y se entrega en commits de unidad de trabajo de ~400 líneas authored: T2 (sub-navegación) · T3+T4 (cuentas) · T5 (CxC/CxP) · T6 (i18n + tests + seam check).
+
+**Commits heredados de `development`** (la rama vieja `feature/compras-alta-fix` ya no existe, pero sus commits entraron a `development`): `4afd1a0` Compras (proveedor buscable + editor de líneas) · `2ae51f7` VentaDetail (código de negocio) · `7413757` RRHH (reordenamiento) · `ea7c60f` Inventario (reformateo) · `f6b0e3e` error del API · `5cc7a8d` tokens de estado.
 
 ## Log
 
@@ -156,6 +168,52 @@ Quedó escrita en:
 - Engram `convention/reglas-duras-frontend`.
 
 La aplicación práctica que quedó: **preferir la solución estructural al comentario**. El caso de T1 es el ejemplo — en vez de un bloque de 8 líneas explicando por qué no existía `--warning`, se declaró `--warning: var(--primary)`, una referencia que no puede divergir y hace la pregunta innecesaria.
+
+### L9 — 2026-11-12 — el frontend primero, el backend después
+
+> "Ok perfecto vamos a implementar el plan para contabilidad y posteriormente lo conectamos al backend. pero ya tendremos el frontend armado, seria Padre = Contabilidad. Hijos = cxc, etc"
+
+> "espera champ eso vamos a hacerlo en una feature branch aparte para no ensuciar development"
+
+Decisiones:
+
+- **Rama `feature/contabilidad-modulo`**, base `development` @ `82f91a7`. La línea `Branch: feature/compras-alta-fix` de la cabecera quedó vieja: esa rama ya no existe, aunque sus commits **sí están en `development`**.
+- **Solo el contrato real, sin mock**: los services y stores se escriben contra `/api/accounts`, `/api/sales` y `/api/purchases`. Las páginas quedan completas pero con estado vacío hasta que el backend esté desplegado. No hay capa de datos simulados que borrar después.
+- **No se lee el repo `Volterp`**: este doc es la fuente del contrato.
+- **Estructura confirmada**: padre `/contabilidad` con 4 hijos — `/contabilidad/transacciones`, `/contabilidad/cuentas`, `/contabilidad/cxc`, `/contabilidad/cxp`.
+- **T7 cerrado**: los 4 tokens que sí se usan quedaron declarados (`ea606cd`); los 3 restantes no aparecen en `src/` → alias muertos.
+- **T8 nuevo**: `config.ts` apunta a `/api/accounting-transactions` y la ruta del controller es `/api/accountingtransactions` (404 preexistente). Queda para la fase de conexión al backend.
+- **Tests RED del chat de soporte** (`src/test/components/Support/`): pausados con extensión `.paused` para que no rompan la suite mientras el chat está en pausa.
+- **El `FRONTEND-SKELETON-TEMPLATE.md` es la autoridad** sobre el shape y sobre las reglas de trabajo, no sólo un catálogo de snippets: §3.2 (workflow de 7 pasos), §4.7 (convenciones), §4.8 (quirks con motivo), §4.9 (anti-patrones), §4.10 (precedencia PRINCIPIO > STACK > quirk), §4.11 (no negociables). Tres decisiones que salen de leerlo: (1) la entidad nueva va **en inglés** (`AccountDto`, `accountService`, `accountStore`) mientras la carpeta de la página va en español (§3.2 paso 5); (2) `AccountDto` trae `parentId` y `notes` nulables → **`mapEntityToForm` es obligatorio** (§4.5); (3) el gate de guardar/borrar **no puede ser `usePermission.isAdmin`** (§4.8: ese flag es sólo SUPER_ADMIN y el backend acepta Admin y SuperAdmin) → se deriva de la matriz de `contabilidad`.
+
+### L10 — 2026-11-12 — el código nuevo va en inglés
+
+> "en un futuro vamos a cambiar por completo todo al ingles a nivel del codigo lo nuevo ponlo todo en ingles"
+
+- **Todo lo nuevo en inglés**: carpetas, componentes, DTOs, services, stores, hooks, clases CSS, claves i18n y comentarios. El repo se migra completo al inglés más adelante; lo nuevo no crea más español.
+- **Las rutas NO se renombran**: `/contabilidad/transacciones`, `/contabilidad/cuentas`, `/contabilidad/cxc`, `/contabilidad/cxp` son superficie de producto y están fijadas en S1. Lo que va en inglés es el código, no la URL.
+- **Los valores de `es.json` siguen en español** (es copy); lo que va en inglés son las **claves**.
+- **Lo existente no se renombra**: ni claves i18n actuales, ni identificadores previos (`filteredTransacciones`, `handleEdit`, `transaccionStore`). Sólo lo nuevo.
+- Nombres derivados de la spec: `Accounts` (Cuentas), `AccountsReceivable` (CxC), `AccountsPayable` (CxP), `Transactions` (Transacciones).
+
+### L11 — 2026-11-12 — T2 entregada
+
+- Commit `57bae43`: los cuatro botones de navegación del padre, la extracción de `TransactionsPanel` (la UI de transacciones sale de la página y la comparten el padre y la hija) y la página hija `Transactions` con su vuelta a `/contabilidad`.
+- El padre bajó de 460 a 50 líneas: la UI de transacciones no quedó duplicada.
+- Rutas en español, código en inglés: `TransactionsPanel`, `Transactions`, `navTransactions`, `navAccounts`, `navAccountsReceivable`, `navAccountsPayable`, `transactionsTitle`, `transactionsSubtitle`, `backToAccounting`.
+- Verificación del worker: `vitest` focal de Compras 9/9 verde, `eslint` limpio sobre lo tocado, `git diff --check` limpio.
+- **Sin test propio**: la superficie autorizada de T2 no incluía `src/test/**`. El test de navegación del padre queda en T6.
+- **Riesgo declarado en el commit**: el botón "Nueva transacción" se movió del `PageHeader` a la fila de filtros, para que el padre y la hija lo tengan los dos. Ningún test cubre la posición de un control.
+- **El commit se amendó**: `d131101`. El worker declaró los valores del formulario como `interface TransactionFormValues`, y una `interface` no tiene index signature implícita → no satisface el `T extends Record<string, unknown>` de `useCrudForm` ni el `values: Record<string, unknown>` de `DynamicFormFields`. **Los valores de formulario que pasan por `useCrudForm` se declaran con `type`, nunca con `interface`.** La rama queda sin commits que no compilan.
+
+### L12 — 2026-11-12 — la matriz de permisos no alcanza para el gate de cuentas
+
+- **El backend acepta sólo Admin y SuperAdmin** en POST/PUT/DELETE de `/api/accounts`. La matriz del front dice `contabilidad: { read: true, write: true, delete: false }` para el rol `contabilidad` → con el gate derivado de la matriz, ese rol veía el botón de guardar y se comía un 403.
+- **La matriz no puede expresar la regla**: su granularidad es por módulo, y la del backend es por endpoint. El rol `contabilidad` **sí** puede escribir transacciones (el backend se lo permite a cualquier rol) → tocar la matriz para bloquear las cuentas bloquearía también las transacciones.
+- **Decisión**: el gate de la página de cuentas se deriva del **rol** (`Rol.ADMIN` o `Rol.SUPER_ADMIN`), que es la traducción exacta de lo que acepta el endpoint. La matriz compartida no se tocó.
+- **Consecuencia**: los hijos de Contabilidad heredan el permiso de lectura del módulo; guardar y borrar cuentas es Admin/SuperAdmin.
+- **Pendiente del backend**: cuando exista el agrupado por cliente/proveedor, el read-model de CxC/CxP deja de agregar una página y hay que avisarlo en la página, porque hoy el saldo mostrado no es el saldo real.
+- **Límite del catálogo**: se pide una página de 200 cuentas y se pagina en memoria sobre el árbol aplanado. Si una empresa supera 200 cuentas, el árbol se trunca.
 
 ## Relevant Files
 
