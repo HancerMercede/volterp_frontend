@@ -1,445 +1,51 @@
-import { useState, useMemo, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { ArrowDown, ArrowUp } from "lucide-react";
-import { useTransaccionStore } from "../../stores/transaccionStore";
-import {
-  Table,
-  Button,
-  PageHeader,
-  Pagination,
-  SearchInput,
-  Modal,
-  ConfirmModal,
-  DynamicFormFields,
-  VolterpMark,
-} from "../../components/UI";
-import { useCrudForm, type FormField } from "../../hooks/useCrudForm";
-import { usePagination } from "../../hooks/usePagination";
-import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
-import type {
-  AccountingTransactionDto,
-  AccountingTransactionRequest,
-} from "../../domain/types";
-import styles from "./Contabilidad.module.css";
-import { ITEMS_PER_PAGE } from "../../config/pagination";
-import { useFilter } from "../../hooks/useFilter";
-import { money } from "../../utils/currency";
+import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { Button, PageHeader } from '../../components/UI';
+import { TransactionsPanel } from './components/TransactionsPanel';
+import styles from './Contabilidad.module.css';
 
 export function Contabilidad() {
   const { t } = useTranslation();
-  const {
-    transacciones,
-    totalCount,
-    fetchTransacciones,
-    addTransaccion,
-    updateTransaccion,
-    deleteTransaccion,
-  } = useTransaccionStore();
+  const navigate = useNavigate();
 
-  type typeStatus = "todos" | "Income" | "Expense";
+  const handleNavigateTransactions = useCallback(() => {
+    navigate('/contabilidad/transacciones');
+  }, [navigate]);
 
-  const [showForm, setShowForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterTipo, setFilterTipo] = useState<typeStatus>("todos");
-  const { pageNumber, goToPage, getInfo } = usePagination({
-    initialPageSize: ITEMS_PER_PAGE,
-  });
+  const handleNavigateAccounts = useCallback(() => {
+    navigate('/contabilidad/cuentas');
+  }, [navigate]);
 
-  useEffect(() => {
-    fetchTransacciones(pageNumber, ITEMS_PER_PAGE);
-  }, [pageNumber, fetchTransacciones]);
+  const handleNavigateAccountsReceivable = useCallback(() => {
+    navigate('/contabilidad/cxc');
+  }, [navigate]);
 
-  // Tipo, monto y estado los dibuja la pagina; el resto, el componente compartido.
-  const PAGE_FIELDS: FormField[] = useMemo(
-    () => [
-      {
-        name: "type",
-        label: t("common.type"),
-        type: "select",
-        required: true,
-        options: [
-          { value: "Income", label: t("contabilidad.income") },
-          { value: "Expense", label: t("contabilidad.expense") },
-        ],
-      },
-      {
-        name: "amount",
-        label: t("common.amount"),
-        type: "number",
-        required: true,
-      },
-      {
-        name: "status",
-        label: t("common.status"),
-        type: "select",
-        required: true,
-        options: [
-          { value: "Pending", label: t("contabilidad.pending") },
-          { value: "Reconciled", label: t("contabilidad.reconciled") },
-        ],
-      },
-    ],
-    [t],
-  );
-
-  const SHARED_FIELDS: FormField[] = useMemo(
-    () => [
-      {
-        name: "description",
-        label: t("common.description"),
-        type: "text",
-        required: true,
-        span: 6,
-        placeholder: t("contabilidad.descriptionPlaceholder"),
-      },
-      {
-        name: "date",
-        label: t("common.date"),
-        type: "date",
-        required: true,
-        span: 3,
-      },
-      {
-        name: "category",
-        label: t("common.category"),
-        type: "text",
-        required: true,
-        span: 3,
-      },
-    ],
-    [t],
-  );
-
-  const form = useCrudForm({
-    fields: [...PAGE_FIELDS, ...SHARED_FIELDS],
-    defaultValues: {
-      description: "",
-      type: "Income",
-      amount: 0,
-      date: "",
-      category: "",
-      status: "Pending",
-    },
-    onCreate: (data) => addTransaccion(data as AccountingTransactionRequest),
-    onUpdate: (id, data) =>
-      updateTransaccion(id, data as AccountingTransactionRequest),
-    onSuccess: () => {
-      setShowForm(false);
-      fetchTransacciones(pageNumber, ITEMS_PER_PAGE);
-    },
-  });
-
-  const filteredTransacciones = useFilter({
-    data: transacciones,
-    searchTerm,
-    searchFields: (t) => [t.description, t.category, t.code],
-    filter: (t) => filterTipo === "todos" || t.type == filterTipo,
-  });
-
-  const paginationInfo = getInfo(totalCount);
-
-  const totalIngresos = transacciones
-    .filter((t) => t.type === "Income")
-    .reduce((acc, t) => acc + t.amount, 0);
-  const totalEgresos = transacciones
-    .filter((t) => t.type === "Expense")
-    .reduce((acc, t) => acc + t.amount, 0);
-  const balance = totalIngresos - totalEgresos;
-
-  const handleEdit = (t: AccountingTransactionDto) => {
-    form.handleEdit(t, t.id);
-    setShowForm(true);
-  };
-
-  const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
-    useDeleteConfirm({
-      onDelete: deleteTransaccion,
-      successMessage: t("contabilidad.transactionDeleted"),
-    });
-
-  const pendingTransaction = transacciones.find((x) => x.id === deleteId) ?? null;
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-DO", {
-      style: "currency",
-      currency: "DOP",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const columns = [
-    { key: "id", header: t("common.id") },
-    {
-      key: "descripcion",
-      header: t("common.description"),
-      render: (tr: AccountingTransactionDto) => tr.description,
-    },
-    {
-      key: "tipo",
-      header: t("common.type"),
-      render: (tr: AccountingTransactionDto) => (
-        <span
-          className={`${styles.badge} ${tr.type === "Income" ? styles.ingreso : styles.egreso}`}
-        >
-          {tr.type === "Income"
-            ? t("contabilidad.income")
-            : t("contabilidad.expense")}
-        </span>
-      ),
-    },
-    {
-      key: "monto",
-      header: t("common.amount"),
-      render: (tr: AccountingTransactionDto) => (
-        <span
-          className={tr.type === "Income" ? styles.positivo : styles.negativo}
-        >
-          {tr.type === "Income" ? "+" : "-"}
-          {formatCurrency(tr.amount)}
-        </span>
-      ),
-    },
-    {
-      key: "categoria",
-      header: t("common.category"),
-      render: (tr: AccountingTransactionDto) => tr.category,
-    },
-    {
-      key: "fecha",
-      header: t("common.date"),
-      render: (tr: AccountingTransactionDto) => tr.date,
-    },
-    {
-      key: "estado",
-      header: t("common.status"),
-      render: (tr: AccountingTransactionDto) => (
-        <span
-          className={`${styles.badge} ${tr.status === "Reconciled" ? styles.conciliada : styles.pendiente}`}
-        >
-          {tr.status === "Reconciled"
-            ? t("contabilidad.reconciled")
-            : t("contabilidad.pending")}
-        </span>
-      ),
-    },
-  ];
+  const handleNavigateAccountsPayable = useCallback(() => {
+    navigate('/contabilidad/cxp');
+  }, [navigate]);
 
   return (
     <div className={styles.container}>
       <PageHeader
-        title={t("contabilidad.title")}
-        subtitle={t("contabilidad.subtitle")}
+        title={t('contabilidad.title')}
+        subtitle={t('contabilidad.subtitle')}
       >
-        <Button
-          onClick={() => {
-            form.reset();
-            setShowForm(true);
-          }}
-        >
-          + {t("contabilidad.newTransaction")}
+        <Button variant='secondary' onClick={handleNavigateTransactions}>
+          {t('contabilidad.navTransactions')}
+        </Button>
+        <Button variant='secondary' onClick={handleNavigateAccounts}>
+          {t('contabilidad.navAccounts')}
+        </Button>
+        <Button variant='secondary' onClick={handleNavigateAccountsReceivable}>
+          {t('contabilidad.navAccountsReceivable')}
+        </Button>
+        <Button variant='secondary' onClick={handleNavigateAccountsPayable}>
+          {t('contabilidad.navAccountsPayable')}
         </Button>
       </PageHeader>
 
-      <div className={styles.summaryCards}>
-        <div className={styles.card}>
-          <span className={styles.cardLabel}>{t("contabilidad.income")}</span>
-          <span className={`${styles.cardValue} ${styles.positivo}`}>
-            {formatCurrency(totalIngresos)}
-          </span>
-        </div>
-        <div className={styles.card}>
-          <span className={styles.cardLabel}>{t("contabilidad.expenses")}</span>
-          <span className={`${styles.cardValue} ${styles.negativo}`}>
-            {formatCurrency(totalEgresos)}
-          </span>
-        </div>
-        <div className={styles.card}>
-          <span className={styles.cardLabel}>{t("contabilidad.balance")}</span>
-          <span
-            className={`${styles.cardValue} ${balance >= 0 ? styles.positivo : styles.negativo}`}
-          >
-            {formatCurrency(balance)}
-          </span>
-        </div>
-      </div>
-
-      <div className={styles.filters}>
-        <SearchInput
-          value={searchTerm}
-          onChange={(value) => {
-            setSearchTerm(value);
-            goToPage(1);
-          }}
-          placeholder={t("contabilidad.searchTransaction")}
-          width="240px"
-        />
-        <select
-          value={filterTipo}
-          onChange={(e) => {
-            setFilterTipo(e.target.value as typeof filterTipo);
-            goToPage(1);
-          }}
-          className={styles.select}
-        >
-          <option value="todos">{t("contabilidad.filterAll")}</option>
-          <option value="Income">{t("contabilidad.income")}</option>
-          <option value="Expense">{t("contabilidad.expenses")}</option>
-        </select>
-      </div>
-
-      <Table
-        columns={columns}
-        data={filteredTransacciones}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
-      <Pagination pagination={paginationInfo} onPageChange={goToPage} />
-
-      <Modal
-        isOpen={showForm}
-        onClose={() => {
-          setShowForm(false);
-          form.reset();
-        }}
-        title={
-          form.editingId
-            ? t("contabilidad.editTransaction")
-            : t("contabilidad.newTransaction")
-        }
-        icon={<VolterpMark size={40} />}
-        subtitle={
-          form.editingId
-            ? t("contabilidad.editTransactionHint")
-            : t("contabilidad.newTransactionHint")
-        }
-        size="lg"
-        error={form.submitError}
-        noValidate
-        onSubmit={form.handleSubmit}
-        submitLabel={
-          form.editingId ? t("common.save") : t("contabilidad.createTransaction")
-        }
-        submitVariant="dark"
-        cancelLabel={t("common.cancel")}
-        closeLabel={t("common.close")}
-      >
-        <div className={styles.form}>
-          <div className={styles.formField}>
-            <div className={styles.formLabelRow}>
-              <label>
-                {t("common.type")}
-                <span className={styles.required}>*</span>
-              </label>
-            </div>
-            <div className={styles.segmented}>
-              <button
-                type="button"
-                className={`${styles.segment} ${form.values.type === "Income" ? styles.segmentActive : ""}`}
-                onClick={() => form.setFieldValue("type", "Income")}
-              >
-                <ArrowUp size={16} />
-                {t("contabilidad.income")}
-              </button>
-              <button
-                type="button"
-                className={`${styles.segment} ${form.values.type === "Expense" ? styles.segmentActive : ""}`}
-                onClick={() => form.setFieldValue("type", "Expense")}
-              >
-                <ArrowDown size={16} />
-                {t("contabilidad.expense")}
-              </button>
-            </div>
-            {form.errors.type && (
-              <span className={styles.error}>{form.errors.type}</span>
-            )}
-          </div>
-
-          <div className={styles.formField}>
-            <div className={styles.formLabelRow}>
-              <label>
-                {t("common.amount")}
-                <span className={styles.required}>*</span>
-              </label>
-            </div>
-            <div className={styles.amount}>
-              <span className={styles.amountPrefix}>RD$</span>
-              <input
-                type="number"
-                className={styles.amountInput}
-                value={form.values.amount}
-                onChange={(e) =>
-                  form.setFieldValue("amount", Number(e.target.value))
-                }
-                required
-              />
-            </div>
-            {form.errors.amount && (
-              <span className={styles.error}>{form.errors.amount}</span>
-            )}
-          </div>
-
-          <DynamicFormFields
-            fields={SHARED_FIELDS}
-            values={form.values}
-            errors={form.errors}
-            editingId={form.editingId}
-            onChange={form.setFieldValue}
-          />
-
-          <div className={styles.formField}>
-            <div className={styles.formLabelRow}>
-              <label>
-                {t("common.status")}
-                <span className={styles.required}>*</span>
-              </label>
-            </div>
-            <div className={styles.segmented}>
-              <button
-                type="button"
-                className={`${styles.segment} ${form.values.status === "Pending" ? styles.segmentActive : ""}`}
-                onClick={() => form.setFieldValue("status", "Pending")}
-              >
-                {t("contabilidad.pending")}
-              </button>
-              <button
-                type="button"
-                className={`${styles.segment} ${form.values.status === "Reconciled" ? styles.segmentActive : ""}`}
-                onClick={() => form.setFieldValue("status", "Reconciled")}
-              >
-                {t("contabilidad.reconciled")}
-              </button>
-            </div>
-            {form.errors.status && (
-              <span className={styles.error}>{form.errors.status}</span>
-            )}
-          </div>
-        </div>
-      </Modal>
-
-      <ConfirmModal
-        isOpen={showDeleteConfirm}
-        onConfirm={confirmDelete}
-        onCancel={cancelDelete}
-        title={`${t("common.delete")} ${t("common.transaction")}`}
-        message={t("contabilidad.deleteConfirm")}
-        confirmLabel={t("common.confirmDeleteAction")}
-        cancelLabel={t("common.cancel")}
-        context={
-          pendingTransaction
-            ? {
-                title: `${t("common.transaction")} #${pendingTransaction.code}`,
-                subtitle: [
-                  pendingTransaction.description,
-                  pendingTransaction.category,
-                ]
-                  .filter(Boolean)
-                  .join(" · "),
-                amount: money(pendingTransaction.amount),
-              }
-            : undefined
-        }
-      />
+      <TransactionsPanel />
     </div>
   );
 }

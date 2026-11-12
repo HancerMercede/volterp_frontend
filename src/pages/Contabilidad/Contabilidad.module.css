@@ -51,6 +51,10 @@
   margin-bottom: var(--space-lg);
 }
 
+.newTransaction {
+  margin-left: auto;
+}
+
 .select {
   padding: 10px 16px;
   border: 1px solid var(--border-light);
