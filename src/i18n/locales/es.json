@@ -103,6 +103,10 @@
     "soporte": "Soporte"
   },
   "auth": {
+    "brandSubtitle": "Sistema de gestión empresarial integral",
+    "featureSales": "Gestión de ventas e inventario",
+    "featurePayroll": "Control de nómina y recursos humanos",
+    "featureReports": "Reportes y análisis en tiempo real",
     "login": "Iniciar Sesión",
     "logout": "Cerrar Sesión",
     "username": "Usuario",

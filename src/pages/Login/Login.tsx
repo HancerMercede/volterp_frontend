@@ -75,7 +75,7 @@ export function Login() {
             VOLT<span className={styles.brandTitleAccent}> ERP</span>
           </h1>
           <p className={styles.brandSubtitle}>
-            Sistema de gestión empresarial integral
+            {t("auth.brandSubtitle")}
           </p>
 
           <div className={styles.features}>
@@ -85,7 +85,7 @@ export function Login() {
               >
                 <Zap size={20} strokeWidth={1.8} />
               </span>
-              <span>Gestión de ventas e inventario</span>
+              <span>{t("auth.featureSales")}</span>
             </div>
             <div className={styles.feature}>
               <span
@@ -93,7 +93,7 @@ export function Login() {
               >
                 <Diamond size={20} strokeWidth={1.8} />
               </span>
-              <span>Control de nómina y recursos humanos</span>
+              <span>{t("auth.featurePayroll")}</span>
             </div>
             <div className={styles.feature}>
               <span
@@ -101,7 +101,7 @@ export function Login() {
               >
                 <BarChart3 size={20} strokeWidth={1.8} />
               </span>
-              <span>Reportes y análisis en tiempo real</span>
+              <span>{t("auth.featureReports")}</span>
             </div>
           </div>
         </div>

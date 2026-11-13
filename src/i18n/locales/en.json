@@ -102,6 +102,10 @@
     "soporte": "Support"
   },
   "auth": {
+    "brandSubtitle": "Comprehensive business management system",
+    "featureSales": "Sales and inventory management",
+    "featurePayroll": "Payroll and human resources control",
+    "featureReports": "Real-time reports and analytics",
     "login": "Login",
     "logout": "Logout",
     "username": "Username",
