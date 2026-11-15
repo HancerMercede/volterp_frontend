@@ -2,7 +2,7 @@
 
 > **Propósito**: punto de partida único y obligatorio para crear cualquier frontend del ecosistema Volterp (o proyectos derivados) siguiendo el estilo del usuario. Separa **SKELETON** (la forma del proyecto) de **TEMPLATE** (qué código va en cada archivo). Después de leerlo, se puede generar un proyecto nuevo sin tener que explicar Clean Architecture adaptada a React, hooks de UI, auth wrapper, ni stores otra vez.
 >
-> **Origen**: extraído del proyecto Volterp ERP frontend. React 18 + TypeScript + Vite + Zustand + CSS Modules + react-i18next + React Router v6.
+> **Origen**: extraído del proyecto Volterp ERP frontend. React 19 + TypeScript + Vite + Zustand + CSS Modules + react-i18next + React Router v7.
 
 ---
 
@@ -11,11 +11,11 @@
 | Item | Value |
 |---|---|
 | Skill domain | React + TypeScript frontend |
-| Runtime | Vite 5, Node 20+ |
-| UI | React 18 + TypeScript 5 (strict) |
+| Runtime | Vite 8, Node 20+ |
+| UI | React 19 + TypeScript 6 (strict) |
 | State | Zustand (global) + React local state (per-form/per-page) |
 | Styling | CSS Modules + CSS Variables (no Tailwind) |
-| Routing | React Router v6 |
+| Routing | React Router v7 |
 | HTTP | native `fetch` envuelto en `fetchWithAuth` |
 | i18n | react-i18next |
 | Forms | custom `useCrudForm` hook (declarativo) |
@@ -23,6 +23,7 @@
 | Architecture | Clean Architecture-inspired (`infrastructure` → `stores` → `application` → `components`/`pages`) |
 | Source language | English (artifacts), Spanish (conversational docs) |
 | Last synced with code | **2026-11-07** — `useCrudForm`, `useDeleteConfirm`, `useColecciones`, `Modal`, `ConfirmModal`, `DynamicFormFields`, `SearchableSelect`, contrato visual (§1.5), flujo de invitación y recuperación de cuenta (§2.8) |
+| Stack re-synced | **2026-11-15** — pins de stack contra `package.json` real: React 19, React Router 7, Zustand 5, Vite 8, Vitest 4, TypeScript 6 |
 
 ---
 
@@ -235,7 +236,7 @@ pages ──► components ──► application ──► infrastructure
 
 ## 1.3 Configuración base
 
-### package.json — dependencias clave `[STACK: Vite 5 / React 18 / Zustand 4]`
+### package.json — dependencias clave `[STACK: Vite 8 / React 19 / Zustand 5]`
 
 ```json
 {
@@ -252,34 +253,34 @@ pages ──► components ──► application ──► infrastructure
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
-    "i18next": "^23.x",
-    "lucide-react": "^0.x",
-    "react": "^18.x",
-    "react-dom": "^18.x",
-    "react-i18next": "^14.x",
-    "react-router-dom": "^6.x",
-    "recharts": "^2.x",
-    "zustand": "^4.x"
+    "i18next": "^26.x",
+    "lucide-react": "^1.x",
+    "react": "^19.x",
+    "react-dom": "^19.x",
+    "react-i18next": "^17.x",
+    "react-router-dom": "^7.x",
+    "recharts": "^3.x",
+    "zustand": "^5.x"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.x",
-    "@testing-library/react": "^14.x",
-    "@types/react": "^18.x",
-    "@types/react-dom": "^18.x",
-    "@vitejs/plugin-react": "^4.x",
-    "eslint": "^8.x",
-    "eslint-plugin-react-hooks": "^4.x",
+    "@testing-library/react": "^16.x",
+    "@types/react": "^19.x",
+    "@types/react-dom": "^19.x",
+    "@vitejs/plugin-react": "^6.x",
+    "eslint": "^10.x",
+    "eslint-plugin-react-hooks": "^7.x",
     "eslint-plugin-react-refresh": "^0.x",
-    "jsdom": "^23.x",
-    "typescript": "^5.x",
-    "typescript-eslint": "^7.x",
-    "vite": "^5.x",
-    "vitest": "^1.x"
+    "jsdom": "^29.x",
+    "typescript": "^6.x",
+    "typescript-eslint": "^8.x",
+    "vite": "^8.x",
+    "vitest": "^4.x"
   }
 }
 ```
 
-> **Razón del set**: Vite 5 + Vitest 1 comparten config y por eso el `vitest.config` puede extender `vite.config`. React 18 con `react-i18next` 14 y `zustand` 4 son las versiones estables que conviven sin peer-dep warnings.
+> **Razón del set**: Vite 8 + Vitest 4 comparten configuración y por eso el bloque `test` vive dentro de `vite.config.ts` (el proyecto no usa un `vitest.config` aparte). React 19 con `react-i18next` 17 y `zustand` 5 son las versiones estables que conviven sin peer-dep warnings.
 
 ### tsconfig.app.json — strict + features de Vite `[STACK]`
 
@@ -3721,7 +3722,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 ---
 
-## 2.9 Pages y routing `[STACK: React Router v6 + lazy loading]`
+## 2.9 Pages y routing `[STACK: React Router v7 + lazy loading]`
 
 ### App.tsx (root)
 
@@ -4120,7 +4121,7 @@ catch (err) {
 Este MD mezcla dos niveles que es importante separar:
 
 - **`[PRINCIPIO]`** — patrón/regla transferible a cualquier stack React/TS. El próximo dev puede aplicarlo en otro proyecto (con Redux en vez de Zustand, Tailwind en vez de CSS Modules, TanStack Query en vez de fetch propio) sin que el principio cambie.
-- **`[STACK]`** — decisión atada al stack actual del proyecto (Zustand, CSS Modules, react-i18next con detección custom, Vite 5, etc.). Es detalle de implementación, no regla general. En otro proyecto se reemplaza.
+- **`[STACK]`** — decisión atada al stack actual del proyecto (Zustand, CSS Modules, react-i18next con detección custom, Vite 8, etc.). Es detalle de implementación, no regla general. En otro proyecto se reemplaza.
 
 ### Ejemplos de cada nivel
 
@@ -4139,7 +4140,7 @@ Este MD mezcla dos niveles que es importante separar:
 - CSS Modules + `styles/variables.css` → en otro proyecto puede ser Tailwind, styled-components, CSS-in-JS, etc.
 - `fetchWithAuth` propio con `window.dispatchEvent(new CustomEvent(...))` → en otro proyecto puede ser Axios + interceptors, TanStack Query, RTK Query, etc.
 - `react-i18next` con detección custom (sin `i18next-browser-languagedetector`) → en otro proyecto puede ser `next-intl`, `react-intl`, i18next con detector estándar.
-- Vite 5 + Vitest 1 → en otro proyecto puede ser Next.js, Remix, Webpack, Jest, etc.
+- Vite 8 + Vitest 4 → en otro proyecto puede ser Next.js, Remix, Webpack, Jest, etc.
 - `useState` local para auth (Login/Register) en vez de `useCrudForm` — quirk de este proyecto, decisión intencional.
 
 ### Cómo leer las secciones etiquetadas
@@ -4226,12 +4227,12 @@ Para evitar que un lector nuevo tenga que inferir el significado, los términos 
 
 | Concepto | Este proyecto | Alternativas comunes |
 |---|---|---|
-| Estado global *(pattern §2.2)* | Zustand 4 + `persist` middleware + storage dual local/session | Redux Toolkit, Jotai, TanStack Query, Recoil, MobX |
+| Estado global *(pattern §2.2)* | Zustand 5 + `persist` middleware + storage dual local/session | Redux Toolkit, Jotai, TanStack Query, Recoil, MobX |
 | Fetch + auth wrapper *(pattern §2.1)* | `fetchWithAuth` + 401 → custom event + `fetchWithAuthJson<T>` | **Adapter interno** (1 archivo, 0 services): `fetch` → `axios` · `ky` · `ofetch`. **Wrapper entero** (reescribir services): TanStack Query · RTK Query · SWR · urql |
 | Estilos *(pattern §4.7)* | CSS Modules + `styles/variables.css` | Tailwind, styled-components, Emotion, Linaria, Vanilla Extract |
 | i18n | `react-i18next` con detección custom (sin `i18next-browser-languagedetector`) | `next-intl`, `react-intl`, i18next con detector estándar, FormatJS |
-| Bundler + tests | Vite 5 + Vitest 1 (mismo config, `globals: true`) | Next.js, Remix, Webpack, Jest, Vitest con CRA |
-| Routing | React Router v6 con `BrowserRouter` + `<Routes>` | TanStack Router, Next.js App Router, Remix, Wouter |
+| Bundler + tests | Vite 8 + Vitest 4 (mismo config, `globals: true`) | Next.js, Remix, Webpack, Jest, Vitest con CRA |
+| Routing | React Router v7 con `BrowserRouter` + `<Routes>` | TanStack Router, Next.js App Router, Remix, Wouter |
 | Iconos | `lucide-react` (SVG inline) | `react-icons`, `@heroicons/react`, SVGs propios |
 | Formularios *(pattern §4.5)* | `useCrudForm` declarativo + `DynamicFormFields` | React Hook Form, Formik, TanStack Form, Final Form |
 | Tablas *(pattern §2.5)* | Custom `<Table<T>>` con paginación client-side | TanStack Table, Material Table, AG Grid, MUI DataGrid |
