@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getTokenExpiry } from '../utils/jwt';
+import { usePermissionStore } from './permissionStore';
 
 export interface User {
   username: string;
@@ -51,11 +52,16 @@ export const useAuthStore = create<AuthStore>()(
         localStorage.setItem("auth-remember", String(rememberMe));
         const expiresAt = getTokenExpiry(token);
         set({ user: userData, token, expiresAt, isAuthenticated: true });
+
+        // The permissions of the caller come from the API: they are asked
+        // once, here, and not on every screen that needs them.
+        void usePermissionStore.getState().load();
       },
 
       logout: () => {
         localStorage.removeItem("auth-remember");
         set({ user: null, token: null, expiresAt: null, isAuthenticated: false });
+        usePermissionStore.getState().reset();
       },
 
       setHasHydrated: (state) => set({ hasHydrated: state }),

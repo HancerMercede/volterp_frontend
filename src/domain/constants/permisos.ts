@@ -1,5 +1,8 @@
-import { Rol, Permiso } from './roles';
+import { Permiso } from './roles';
 
+// The modules of the ERP. The keys are the ones the API uses for its
+// permissions: the permission of a module and an action is
+// "<modulo>.<accion>" (for example, "ventas.read").
 export type Modulo =
   | 'dashboard'
   | 'ventas'
@@ -11,93 +14,14 @@ export type Modulo =
   | 'rrhh'
   | 'proyectos'
   | 'reportes'
-  | 'configuracion';
+  | 'configuracion'
+  | 'facturacion'
+  | 'pos';
 
 export type PermisosModulo = Record<Permiso, boolean>;
 
-export type MatrizPermisos = Record<Rol, Record<Modulo, PermisosModulo>>;
-
-export const MATRIZ_PERMISOS: MatrizPermisos = {
-  [Rol.SUPER_ADMIN]: {
-    dashboard: { read: true, write: true, delete: true },
-    ventas: { read: true, write: true, delete: true },
-    compras: { read: true, write: true, delete: true },
-    inventario: { read: true, write: true, delete: true },
-    clientes: { read: true, write: true, delete: true },
-    proveedores: { read: true, write: true, delete: true },
-    contabilidad: { read: true, write: true, delete: true },
-    rrhh: { read: true, write: true, delete: true },
-    proyectos: { read: true, write: true, delete: true },
-    reportes: { read: true, write: true, delete: true },
-    configuracion: { read: true, write: true, delete: true },
-  },
-  [Rol.ADMIN]: {
-    dashboard: { read: true, write: true, delete: true },
-    ventas: { read: true, write: true, delete: true },
-    compras: { read: true, write: true, delete: true },
-    inventario: { read: true, write: true, delete: true },
-    clientes: { read: true, write: true, delete: true },
-    proveedores: { read: true, write: true, delete: true },
-    contabilidad: { read: true, write: true, delete: true },
-    rrhh: { read: true, write: true, delete: true },
-    proyectos: { read: true, write: true, delete: true },
-    reportes: { read: true, write: true, delete: true },
-    configuracion: { read: true, write: true, delete: true },
-  },
-  [Rol.VENTAS]: {
-    dashboard: { read: true, write: true, delete: false },
-    ventas: { read: true, write: true, delete: false },
-    compras: { read: false, write: false, delete: false },
-    inventario: { read: false, write: false, delete: false },
-    clientes: { read: true, write: false, delete: false },
-    proveedores: { read: true, write: false, delete: false },
-    contabilidad: { read: false, write: false, delete: false },
-    rrhh: { read: false, write: false, delete: false },
-    proyectos: { read: false, write: false, delete: false },
-    reportes: { read: true, write: false, delete: false },
-    configuracion: { read: false, write: false, delete: false },
-  },
-  [Rol.INVENTARIO]: {
-    dashboard: { read: true, write: true, delete: false },
-    ventas: { read: false, write: false, delete: false },
-    compras: { read: true, write: true, delete: false },
-    inventario: { read: true, write: true, delete: false },
-    clientes: { read: false, write: false, delete: false },
-    proveedores: { read: true, write: true, delete: false },
-    contabilidad: { read: false, write: false, delete: false },
-    rrhh: { read: false, write: false, delete: false },
-    proyectos: { read: false, write: false, delete: false },
-    reportes: { read: true, write: false, delete: false },
-    configuracion: { read: false, write: false, delete: false },
-  },
-  [Rol.CONTABILIDAD]: {
-    dashboard: { read: true, write: true, delete: false },
-    ventas: { read: false, write: false, delete: false },
-    compras: { read: false, write: false, delete: false },
-    inventario: { read: false, write: false, delete: false },
-    clientes: { read: false, write: false, delete: false },
-    proveedores: { read: false, write: false, delete: false },
-    contabilidad: { read: true, write: true, delete: false },
-    rrhh: { read: false, write: false, delete: false },
-    proyectos: { read: false, write: false, delete: false },
-    reportes: { read: true, write: false, delete: false },
-    configuracion: { read: false, write: false, delete: false },
-  },
-  [Rol.RRHH]: {
-    dashboard: { read: true, write: true, delete: false },
-    ventas: { read: false, write: false, delete: false },
-    compras: { read: false, write: false, delete: false },
-    inventario: { read: false, write: false, delete: false },
-    clientes: { read: false, write: false, delete: false },
-    proveedores: { read: false, write: false, delete: false },
-    contabilidad: { read: false, write: false, delete: false },
-    rrhh: { read: true, write: true, delete: false },
-    proyectos: { read: false, write: false, delete: false },
-    reportes: { read: true, write: false, delete: false },
-    configuracion: { read: false, write: false, delete: false },
-  },
-};
-
+// The modules the menu walks through. The key of a module is the one the
+// API uses for its permissions.
 export const MODULOS: { key: Modulo; label: string; icon: string }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: '📊' },
   { key: 'ventas', label: 'Ventas', icon: '💰' },
@@ -111,3 +35,7 @@ export const MODULOS: { key: Modulo; label: string; icon: string }[] = [
   { key: 'reportes', label: 'Reportes', icon: '📑' },
   { key: 'configuracion', label: 'Configuración', icon: '⚙️' },
 ];
+
+// The matrix of the roles does not live here any more: the API answers what
+// each caller may do (GET /api/permissions/me) and the server resolves the
+// union of the permissions of the roles.

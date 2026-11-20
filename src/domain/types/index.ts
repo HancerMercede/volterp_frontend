@@ -340,6 +340,15 @@ export interface UserDto {
   companyId: string;
 }
 
+/**
+ * What the caller may do. The API resolves the union of the permissions of
+ * the roles the caller holds.
+ */
+export interface MePermissionsDto {
+  roles: string[];
+  permissions: string[];
+}
+
 export interface InviteUserRequest {
   email: string;
   fullName: string;

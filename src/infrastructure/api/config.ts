@@ -12,6 +12,7 @@ export const API_CONFIG = {
     CATEGORIES: "/api/categories",
     COMPANIES: "/api/companies",
     USERS: "/api/users",
+    PERMISSIONS: "/api/permissions",
     SALES: "/api/sales",
     SUPPLIERS: "/api/suppliers",
     PURCHASES: "/api/purchases",

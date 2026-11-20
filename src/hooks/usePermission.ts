@@ -1,10 +1,7 @@
 import { useMemo } from "react";
 import { useAuthStore } from "../stores/authStore";
-import {
-  MATRIZ_PERMISOS,
-  type Modulo,
-  type PermisosModulo,
-} from "../domain/constants/permisos";
+import { usePermissionStore } from "../stores/permissionStore";
+import { type Modulo, type PermisosModulo } from "../domain/constants/permisos";
 import { Permiso, Rol, normalizeRoles } from "../domain/constants/roles";
 
 interface UsePermissionResult {
@@ -19,10 +16,14 @@ interface UsePermissionResult {
   /** Every role the user holds. */
   userRoles: Rol[];
   hasRole: (role: Rol) => boolean;
+  /** The permissions are not in yet: the caller may do nothing. */
+  isLoading: boolean;
 }
 
 export function usePermission(): UsePermissionResult {
   const { user } = useAuthStore();
+  const permissions = usePermissionStore((state) => state.permissions);
+  const status = usePermissionStore((state) => state.status);
 
   const userRoles = useMemo(
     () => normalizeRoles(user?.roles ?? []),
@@ -31,10 +32,10 @@ export function usePermission(): UsePermissionResult {
   const userRole = userRoles[0] ?? null;
   const isAdmin = userRoles.includes(Rol.SUPER_ADMIN);
 
-  // The permissions of a user with N roles are the UNION of the permissions
-  // of those roles.
+  // The permissions come from the API, already united by the server: the
+  // front asks what the caller may do, it does not decide it.
   const hasPermission = (modulo: Modulo, permiso: Permiso): boolean =>
-    userRoles.some((rol) => MATRIZ_PERMISOS[rol]?.[modulo]?.[permiso] ?? false);
+    permissions.has(`${modulo}.${permiso}`);
 
   const canRead = (modulo: Modulo): boolean =>
     hasPermission(modulo, Permiso.READ);
@@ -44,17 +45,15 @@ export function usePermission(): UsePermissionResult {
     hasPermission(modulo, Permiso.DELETE);
 
   const getModulePermissions = (modulo: Modulo): PermisosModulo | undefined => {
-    const granted = userRoles
-      .map((rol) => MATRIZ_PERMISOS[rol]?.[modulo])
-      .filter((permisos): permisos is PermisosModulo => permisos !== undefined);
-
-    if (granted.length === 0) return undefined;
-
-    return {
-      read: granted.some((permisos) => permisos.read),
-      write: granted.some((permisos) => permisos.write),
-      delete: granted.some((permisos) => permisos.delete),
+    const granted = {
+      read: canRead(modulo),
+      write: canWrite(modulo),
+      delete: canDelete(modulo),
     };
+
+    if (!granted.read && !granted.write && !granted.delete) return undefined;
+
+    return granted;
   };
 
   const hasRole = (role: Rol): boolean => userRoles.includes(role);
@@ -69,5 +68,6 @@ export function usePermission(): UsePermissionResult {
     userRole,
     userRoles,
     hasRole,
+    isLoading: status === 'idle' || status === 'loading',
   };
 }

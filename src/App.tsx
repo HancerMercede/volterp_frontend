@@ -1,7 +1,8 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "./components/Layout/Layout";
 import { useAuthStore } from "./stores/authStore";
+import { usePermissionStore } from "./stores/permissionStore";
 import { ErrorBoundary, NotificationContainer } from "./components/UI";
 import "./i18n";
 import "./styles/variables.css";
@@ -99,6 +100,17 @@ const Soporte = lazy(() =>
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, hasHydrated } = useAuthStore();
+  const permissionStatus = usePermissionStore((state) => state.status);
+  const loadPermissions = usePermissionStore((state) => state.load);
+
+  // The permissions of the caller are asked once per session: the login
+  // already asks them, and a session that comes back from the storage has to
+  // ask for them again.
+  useEffect(() => {
+    if (isAuthenticated && permissionStatus === 'idle') {
+      void loadPermissions();
+    }
+  }, [isAuthenticated, permissionStatus, loadPermissions]);
 
   if (!hasHydrated) return null;
   if (!isAuthenticated) return <Navigate to="/login" replace />;

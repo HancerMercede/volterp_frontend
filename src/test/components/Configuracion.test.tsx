@@ -13,6 +13,7 @@ vi.mock("../../infrastructure/api/companyService", () => ({
 import i18n from "../../i18n";
 import { companyService } from "../../infrastructure/api/companyService";
 import { useAuthStore } from "../../stores/authStore";
+import { usePermissionStore } from "../../stores/permissionStore";
 import { useCompanyStore } from "../../stores/companyStore";
 import { useUIStore } from "../../stores/uiStore";
 import { Configuracion } from "../../pages/Configuracion/Configuracion";
@@ -30,7 +31,7 @@ const COMPANY: CompanyDto = {
   email: "contacto@hm.do",
 };
 
-const signIn = (role: string) => {
+const signIn = (role: string, permissions: string[] = []) => {
   useAuthStore.setState({
     token: "token-1",
     user: {
@@ -41,6 +42,13 @@ const signIn = (role: string) => {
       companyId: "co-1",
     },
   });
+
+  // The permissions come from the API now: the test says what the caller may
+  // do, the same way the API would answer it.
+  usePermissionStore.setState({
+    permissions: new Set(permissions),
+    status: "ready",
+  });
 };
 
 beforeAll(async () => {
@@ -50,20 +58,21 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   useAuthStore.setState({ token: null, user: null });
+  usePermissionStore.setState({ permissions: new Set<string>(), status: "idle" });
   useCompanyStore.setState({ currentCompany: null, loading: false });
   useUIStore.setState({ toasts: [], modals: [], isLoading: false });
 });
 
 describe("Configuracion admin tabs", () => {
   it("gives the users tab to an admin", () => {
-    signIn("admin");
+    signIn("admin", ["configuracion.read"]);
     render(<Configuracion />);
 
     expect(screen.getByRole("button", { name: "Users" })).toBeInTheDocument();
   });
 
   it("keeps the companies tab for the super admin", () => {
-    signIn("superadmin");
+    signIn("superadmin", ["configuracion.read"]);
     render(<Configuracion />);
 
     expect(screen.getByRole("button", { name: "Users" })).toBeInTheDocument();
@@ -90,7 +99,7 @@ describe("Configuracion companies tab", () => {
       pageCount: 1,
       items: [COMPANY],
     });
-    signIn("superadmin");
+    signIn("superadmin", ["configuracion.read"]);
     render(<Configuracion />);
 
     await userEvent.click(screen.getByRole("button", { name: "Companies" }));
@@ -116,7 +125,7 @@ describe("Configuracion company form", () => {
     vi.mocked(companyService.updateCompany).mockRejectedValue(
       new Error("name can't be null or empty."),
     );
-    signIn("superadmin");
+    signIn("superadmin", ["configuracion.read"]);
     render(<Configuracion />);
 
     // The first Save button belongs to the company form, the second one to the inert general settings.
