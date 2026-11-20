@@ -371,3 +371,8 @@ export type Account = AccountDto;
 
 // The backend takes the company from the JWT: the request never carries it.
 export type AccountRequest = Omit<AccountDto, "id">;
+
+// Electronic invoicing (e-CF) contract. It lives in its own module because it
+// is the only contract with this many entities, and it is re-exported here so
+// the import surface of `domain/types` stays the same for every module.
+export * from "./electronicInvoicing";
