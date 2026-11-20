@@ -96,6 +96,41 @@ const Configuracion = lazy(() =>
 const Soporte = lazy(() =>
   import("./pages/Soporte/Soporte").then((m) => ({ default: m.Soporte })),
 );
+const FacturacionElectronica = lazy(() =>
+  import("./pages/FacturacionElectronica/FacturacionElectronica").then((m) => ({
+    default: m.FacturacionElectronica,
+  })),
+);
+const EcfIssuers = lazy(() =>
+  import("./pages/FacturacionElectronica/Issuers/Issuers").then((m) => ({
+    default: m.Issuers,
+  })),
+);
+const EcfRanges = lazy(() =>
+  import("./pages/FacturacionElectronica/Ranges/Ranges").then((m) => ({
+    default: m.Ranges,
+  })),
+);
+const EcfCertificates = lazy(() =>
+  import("./pages/FacturacionElectronica/Certificates/Certificates").then(
+    (m) => ({ default: m.Certificates }),
+  ),
+);
+const EcfInvoices = lazy(() =>
+  import("./pages/FacturacionElectronica/Invoices/Invoices").then((m) => ({
+    default: m.Invoices,
+  })),
+);
+const EcfReception = lazy(() =>
+  import("./pages/FacturacionElectronica/Reception/Reception").then((m) => ({
+    default: m.Reception,
+  })),
+);
+const EcfSettings = lazy(() =>
+  import("./pages/FacturacionElectronica/Settings/Settings").then((m) => ({
+    default: m.Settings,
+  })),
+);
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, hasHydrated } = useAuthStore();
@@ -138,6 +173,13 @@ function AppRoutes() {
           <Route path="/reportes" element={<Reportes />} />
           <Route path="/configuracion" element={<Configuracion />} />
           <Route path="/soporte" element={<Soporte />} />
+          <Route path="/facturacion" element={<FacturacionElectronica />} />
+          <Route path="/facturacion/emisores" element={<EcfIssuers />} />
+          <Route path="/facturacion/rangos" element={<EcfRanges />} />
+          <Route path="/facturacion/certificados" element={<EcfCertificates />} />
+          <Route path="/facturacion/comprobantes" element={<EcfInvoices />} />
+          <Route path="/facturacion/recepcion" element={<EcfReception />} />
+          <Route path="/facturacion/configuracion" element={<EcfSettings />} />
         </Route>
       </Routes>
     </Suspense>

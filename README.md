@@ -112,6 +112,13 @@ Most CRUD pages go through a store. Three deliberate exceptions exist:
 | `/proyectos` | Projects | API (`projectService`, CRUD) |
 | `/reportes` | Reports | Local projection of current stores |
 | `/configuracion` | Settings / Company config | API (`companyService`, `userService`) |
+| `/facturacion` | Hub de facturación electrónica | API (8 services de e-CF) |
+| `/facturacion/emisores` | Emisores del tenant | API (`companyIssuerService`) |
+| `/facturacion/rangos` | Rangos de e-NCF | API (`electronicInvoiceSequenceService`) |
+| `/facturacion/certificados` | Certificados de firma | API (`companyCertificateService`) |
+| `/facturacion/comprobantes` | Comprobantes emitidos, veredicto, QR y reintento | API (`electronicInvoiceService`) |
+| `/facturacion/recepcion` | Decisión comercial de comprobantes recibidos | API (`receivedElectronicInvoiceService`) |
+| `/facturacion/configuracion` | Modo de emisión, contingencia, credenciales y secuencias normales | API (`companyEmissionModeService`, `apiCredentialService`, `normalFiscalSequenceService`) |
 | `/soporte` | Support / Chat | Local, no backend |
 
 The POS is an overlay inside `/ventas` (full-screen catalog, cart, ITBIS/total, draft and checkout), not a separate route.
@@ -189,6 +196,7 @@ The frontend is API-backed for most modules, but a few areas are still local or 
 - CxC / CxP aggregate the first 100 sales / purchases; Accounts loads 200 records and paginates the tree in memory.
 - The Accounts write gate is derived from the role, not from the shared permission matrix.
 - There is no frontend multi-tenancy: company scoping is enforced by the backend.
+- **Facturación electrónica** consume el contrato e-CF del backend con el JWT del tenant. Dos huecos del backend quedan visibles en la UI y no se maquillan: no existe `GET /api/electronic-invoices/{id}` (el detalle sale de la superficie de estado `GET /api/electronic-invoices/state`) ni listado de comprobantes recibidos para navegador (la recepción real exige mTLS, sólo hay `POST /api/ElectronicInvoiceReception/{id}/commercial-approval`). El backend tampoco expone DELETE de emisores, rangos ni certificados.
 
 Detail and evidence live in [`docs/audit/multi-tenancy-frontend-investigation.md`](docs/audit/multi-tenancy-frontend-investigation.md).
 
