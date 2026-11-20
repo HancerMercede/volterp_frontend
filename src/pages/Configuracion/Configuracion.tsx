@@ -15,13 +15,13 @@ import type { CompanyDto } from "../../domain/types";
 
 export function Configuracion() {
   const { t } = useTranslation();
-  const { canRead, userRole } = usePermission();
+  const { canRead, hasRole } = usePermission();
   const [activeTab, setActiveTab] = useState<"general" | "users" | "companies">(
     "general",
   );
 
   const canManageConfig = canRead("configuracion");
-  const isSuperAdmin = userRole === Rol.SUPER_ADMIN;
+  const isSuperAdmin = hasRole(Rol.SUPER_ADMIN);
 
   const { user } = useAuthStore();
   const {

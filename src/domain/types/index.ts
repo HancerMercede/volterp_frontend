@@ -333,7 +333,8 @@ export interface UserDto {
   username: string;
   email: string;
   fullName: string;
-  role: string | number;
+  /** The roles the user holds (the backend sends the names of its enum). */
+  roles: string[];
   isActive: boolean;
   status?: UserStatus;
   companyId: string;
@@ -342,8 +343,11 @@ export interface UserDto {
 export interface InviteUserRequest {
   email: string;
   fullName: string;
-  role: string;
+  /** The roles the user is created with (the vocabulary of the front). */
+  roles: string[];
   username?: string;
+  /** The password the user starts with: the backend needs one to create it. */
+  password: string;
 }
 
 export type UpdateUserRequest = Partial<UserDto>;

@@ -705,6 +705,8 @@
       "inviteSuccess": "Invitación enviada",
       "inviteError": "No se pudo enviar la invitación",
       "usernameHint": "Opcional. Si lo dejás vacío, se genera desde el correo.",
+      "password": "Contraseña",
+      "passwordHint": "La contraseña con la que el usuario entra por primera vez.",
       "resendInvite": "Reenviar invitación",
       "resendInviteSuccess": "Invitación reenviada",
       "resendInviteError": "No se pudo reenviar la invitación",

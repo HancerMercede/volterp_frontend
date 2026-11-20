@@ -6,7 +6,9 @@ export interface User {
   username: string;
   email: string;
   fullName: string;
-  role: string;
+  // The roles the user holds. The permissions of the user are the union of
+  // the permissions of its roles.
+  roles: string[];
   companyId: string;
 }
 
@@ -61,6 +63,20 @@ export const useAuthStore = create<AuthStore>()(
     {
       name: 'auth-storage',
       storage: authStorage,
+      // A session persisted before the multi-role contract carries a single
+      // `role`: it is migrated to the `roles` it became.
+      version: 2,
+      migrate: (persisted, version) => {
+        const state = persisted as {
+          user?: { role?: string; roles?: string[] };
+        };
+
+        if (version < 2 && state?.user && !state.user.roles && state.user.role) {
+          return { ...state, user: { ...state.user, roles: [state.user.role] } };
+        }
+
+        return state;
+      },
       onRehydrateStorage: () => (state) => {
         if (state?.expiresAt && Date.now() > state.expiresAt) {
           state.logout();

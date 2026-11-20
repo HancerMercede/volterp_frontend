@@ -9,7 +9,7 @@ vi.mock("../../infrastructure/api/userService", () => ({
     inviteUser: vi.fn(),
     resendInvitation: vi.fn(),
     sendPasswordReset: vi.fn(),
-    updateUserRole: vi.fn(),
+    updateUserRoles: vi.fn(),
     updateUserStatus: vi.fn(),
     deleteUser: vi.fn(),
   },
@@ -28,7 +28,7 @@ const USER: UserDto = {
   username: "jdoe",
   email: "jdoe@example.com",
   fullName: "Jane Doe",
-  role: "ventas",
+  roles: ["ventas"],
   isActive: true,
   companyId: "co-1",
 };
@@ -39,7 +39,7 @@ const INVITED_USER: UserDto = {
   username: "pending",
   email: "pending@example.com",
   fullName: "Pending Person",
-  role: "ventas",
+  roles: ["ventas"],
   isActive: false,
   status: "invited",
   companyId: "co-1",
@@ -73,7 +73,7 @@ beforeEach(() => {
       username: "admin",
       email: "admin@example.com",
       fullName: "Admin",
-      role: "admin",
+      roles: ["admin"],
       companyId: "co-1",
     },
   });
@@ -145,6 +145,10 @@ describe("UserManagement invite flow", () => {
     await userEvent.type(within(dialog).getByLabelText("Email"), "new@example.com");
     await userEvent.type(within(dialog).getByLabelText("Name"), "New Person");
     await userEvent.selectOptions(within(dialog).getByRole("combobox"), "admin");
+    await userEvent.type(
+      within(dialog).getByLabelText("Password"),
+      "Passw0rd!",
+    );
     await userEvent.click(
       within(dialog).getByRole("button", { name: "Send invitation" }),
     );
@@ -153,8 +157,9 @@ describe("UserManagement invite flow", () => {
       expect(userService.inviteUser).toHaveBeenCalledWith({
         email: "new@example.com",
         fullName: "New Person",
-        role: "admin",
+        roles: ["admin"],
         username: undefined,
+        password: "Passw0rd!",
       }),
     );
     await waitFor(() => {

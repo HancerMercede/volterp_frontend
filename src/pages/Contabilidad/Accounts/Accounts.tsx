@@ -138,10 +138,9 @@ export function Accounts() {
     updateAccount,
     deleteAccount,
   } = useAccountStore();
-  const { userRole } = usePermission();
+  const { hasRole } = usePermission();
   // The accounts endpoints only accept Admin and SuperAdmin; the "contabilidad" role writes the module but not the accounts.
-  const canManageAccounts =
-    userRole === Rol.ADMIN || userRole === Rol.SUPER_ADMIN;
+  const canManageAccounts = hasRole(Rol.ADMIN) || hasRole(Rol.SUPER_ADMIN);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<AccountType | "all">("all");

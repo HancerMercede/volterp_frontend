@@ -45,7 +45,7 @@ export function Login() {
         username: response.username,
         email: response.email,
         fullName: response.fullName,
-        role: response.role.toLowerCase(),
+        roles: response.roles.map((role) => role.toLowerCase()),
         companyId: response.companyId,
       };
 

@@ -8,7 +8,8 @@ export interface LoginResponse {
   username: string;
   email: string;
   fullName: string;
-  role: string;
+  // The roles the user holds (the backend sends the names of its enum).
+  roles: string[];
   companyId: string;
 }
 

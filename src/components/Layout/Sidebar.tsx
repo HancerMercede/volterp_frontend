@@ -55,7 +55,7 @@ const MODULE_TRANSLATIONS: Record<string, string> = {
 export function Sidebar() {
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
-  const { canRead } = usePermission();
+  const { canRead, userRoles } = usePermission();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -124,8 +124,8 @@ export function Sidebar() {
                 t("auth.username")}
             </p>
             <span className={styles.userRole}>
-              {user?.role
-                ? ROL_LABELS[user.role as keyof typeof ROL_LABELS] || user.role
+              {userRoles.length > 0
+                ? userRoles.map((rol) => ROL_LABELS[rol]).join(", ")
                 : "Usuario"}
             </span>
           </div>

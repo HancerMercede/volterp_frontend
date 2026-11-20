@@ -53,3 +53,28 @@ export function normalizeRole(role: string | number): Rol {
   const normalized = role.toLowerCase() as Rol;
   return Object.values(Rol).includes(normalized) ? normalized : Rol.VENTAS;
 }
+
+// The backend sends the names of its roles in PascalCase ("SuperAdmin").
+// A name that is not a role of the catalog is unknown, not "ventas".
+export function roleFromBackend(name: string): Rol | null {
+  const normalized = name.toLowerCase() as Rol;
+  return Object.values(Rol).includes(normalized) ? normalized : null;
+}
+
+// The roles a user holds. An unknown role is dropped and never turned into
+// "ventas": that would grant permissions the user does not have.
+export function normalizeRoles(names: string[]): Rol[] {
+  return names
+    .map(roleFromBackend)
+    .filter((role): role is Rol => role !== null);
+}
+
+// The name the backend expects on the wire.
+export const ROL_TO_BACKEND: Record<Rol, string> = {
+  [Rol.SUPER_ADMIN]: "SuperAdmin",
+  [Rol.ADMIN]: "Admin",
+  [Rol.VENTAS]: "Ventas",
+  [Rol.INVENTARIO]: "Inventario",
+  [Rol.CONTABILIDAD]: "Contabilidad",
+  [Rol.RRHH]: "RRHH",
+};

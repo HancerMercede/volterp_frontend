@@ -1,6 +1,7 @@
 import { API_CONFIG } from '../api/config';
 import { fetchWithAuthJson } from './fetchWithAuth';
 import type { PagedResult, UserDto, InviteUserRequest } from '../../domain/types';
+import { ROL_TO_BACKEND, type Rol } from '../../domain/constants/roles';
 
 export const userService = {
   async getUsers(
@@ -22,12 +23,20 @@ export const userService = {
     );
   },
 
+  // The backend creates the user with a password: there is no invitation
+  // endpoint, the user is created and starts with that password.
   async inviteUser(data: InviteUserRequest): Promise<UserDto> {
     return fetchWithAuthJson(
-      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/invite`,
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}`,
       {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          username: data.username,
+          password: data.password,
+          email: data.email,
+          fullName: data.fullName,
+          roles: data.roles.map((rol) => ROL_TO_BACKEND[rol as Rol]),
+        }),
       }
     );
   },
@@ -50,12 +59,16 @@ export const userService = {
     );
   },
 
-  async updateUserRole(userId: string, role: string): Promise<UserDto> {
+  // The endpoint sets the COMPLETE set of roles of the user: the screen
+  // picks one, and that one becomes the whole set.
+  async updateUserRoles(userId: string, roles: string[]): Promise<UserDto> {
     return fetchWithAuthJson(
-      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${userId}/role`,
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USERS}/${userId}/roles`,
       {
         method: 'PUT',
-        body: JSON.stringify({ role }),
+        body: JSON.stringify({
+          roles: roles.map((rol) => ROL_TO_BACKEND[rol as Rol]),
+        }),
       }
     );
   },

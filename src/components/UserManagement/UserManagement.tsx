@@ -9,7 +9,7 @@ import {
   ROL_LABELS,
   ROL_COLORS,
   Rol,
-  normalizeRole,
+  normalizeRoles,
 } from '../../domain/constants/roles';
 import {
   Button,
@@ -46,8 +46,9 @@ const ALL_ROLES = [
 const INITIAL_INVITE: InviteUserRequest = {
   email: '',
   fullName: '',
-  role: 'ventas',
+  roles: ['ventas'],
   username: '',
+  password: '',
 };
 
 const STATUS_LABEL_KEY: Record<UserStatus, string> = {
@@ -68,9 +69,10 @@ export function UserManagement() {
   const { addToast } = useUIStore();
 
   // Get current user role (normalized to lowercase)
-  const currentRole = user?.role?.toLowerCase();
-  console.log(currentRole);
-  const isSuperAdmin = currentRole === Rol.SUPER_ADMIN;
+  // The roles the caller holds: the permissions of the caller are the
+  // union of the permissions of its roles.
+  const currentRoles = normalizeRoles(user?.roles ?? []);
+  const isSuperAdmin = currentRoles.includes(Rol.SUPER_ADMIN);
 
   // SuperAdmin can assign all roles, Admin can only assign basic roles
   const availableRoles = isSuperAdmin ? ALL_ROLES : BASIC_ROLES;
@@ -126,8 +128,9 @@ export function UserManagement() {
       await userService.inviteUser({
         email: invite.email,
         fullName: invite.fullName,
-        role: invite.role,
+        roles: invite.roles,
         username: invite.username?.trim() || undefined,
+        password: invite.password,
       });
       setShowInviteModal(false);
       setInvite(INITIAL_INVITE);
@@ -144,7 +147,8 @@ export function UserManagement() {
   async function handleRoleChange(userId: string, newRole: string) {
     if (!token) return;
     try {
-      const updated = await userService.updateUserRole(userId, newRole);
+      // The endpoint sets the complete set of roles: the screen picks one.
+      const updated = await userService.updateUserRoles(userId, [newRole]);
       setUsers(users.map((u) => (u.id === userId ? updated : u)));
     } catch (err) {
       setError(describeError(err, 'Error updating role'));
@@ -235,9 +239,10 @@ export function UserManagement() {
             <tbody>
               {users.map((user) => {
                 const status = resolveUserStatus(user);
-                const role = normalizeRole(user.role);
+                const roles = normalizeRoles(user.roles);
+                const role = roles[0] ?? Rol.VENTAS;
                 const isProtected =
-                  role === Rol.ADMIN || role === Rol.SUPER_ADMIN;
+                  roles.includes(Rol.ADMIN) || roles.includes(Rol.SUPER_ADMIN);
                 const isInvited = status === UserStatus.INVITED;
 
                 return (
@@ -342,8 +347,8 @@ export function UserManagement() {
           </label>
           <select
             id="invite-role"
-            value={invite.role}
-            onChange={(e) => setInvite({ ...invite, role: e.target.value })}
+            value={invite.roles[0]}
+            onChange={(e) => setInvite({ ...invite, roles: [e.target.value] })}
             required
           >
             {availableRoles.map((availableRole) => (
@@ -365,6 +370,23 @@ export function UserManagement() {
           />
           <span className={styles.hint}>
             {t('configuracion.userManagement.usernameHint')}
+          </span>
+        </div>
+        <div className={styles.formGroup}>
+          <label htmlFor="invite-password">
+            {t('configuracion.userManagement.password')}
+          </label>
+          <input
+            id="invite-password"
+            type="password"
+            value={invite.password ?? ''}
+            onChange={(e) =>
+              setInvite({ ...invite, password: e.target.value })
+            }
+            required
+          />
+          <span className={styles.hint}>
+            {t('configuracion.userManagement.passwordHint')}
           </span>
         </div>
       </Modal>
@@ -394,7 +416,12 @@ export function UserManagement() {
           pendingUser
             ? {
                 title: `${t('common.user')} ${pendingUser.fullName}`,
-                subtitle: [pendingUser.username, String(pendingUser.role)]
+                subtitle: [
+                  pendingUser.username,
+                  normalizeRoles(pendingUser.roles)
+                    .map((rol) => ROL_LABELS[rol])
+                    .join(', '),
+                ]
                   .filter(Boolean)
                   .join(' · '),
               }
