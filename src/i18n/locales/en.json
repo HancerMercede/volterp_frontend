@@ -4,6 +4,7 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
+    "detail": "Detail",
     "search": "Search",
     "loading": "Loading...",
     "confirm": "Confirm",
@@ -245,7 +246,16 @@
     "linesCount":"Lines",
     "productCount":"products",
     "downloadPdf":"Download PDF",
-    "copyId":"Copy ID"
+    "copyId":"Copy ID",
+    "fiscalState":"Fiscal state",
+    "fiscalDetails":"Fiscal details",
+    "documentType":"Document type",
+    "issuerTaxId":"Issuer tax ID",
+    "receptorTaxId":"Receiver tax ID",
+    "fiscalNote":"Fiscal note",
+    "noFiscalData":"This sale has no fiscal data.",
+    "viewInvoice":"View invoice",
+    "emptyValue":"—"
   },
   "compras": {
     "title": "Purchases",

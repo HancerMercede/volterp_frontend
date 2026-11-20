@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import i18n from "../../i18n";
 import { VentasList } from "../../pages/Ventas/components/VentasList";
 import type { SaleDto } from "../../domain/types";
@@ -42,16 +43,18 @@ function VentasListHarness({
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
-    <VentasList
-      ventas={ventas}
-      totalCount={totalCount}
-      onVentaClick={vi.fn()}
-      onDelete={vi.fn()}
-      searchTerm={searchTerm}
-      onSearchChange={setSearchTerm}
-      pageNumber={pageNumber}
-      onPageChange={vi.fn()}
-    />
+    <MemoryRouter>
+      <VentasList
+        ventas={ventas}
+        totalCount={totalCount}
+        onVentaClick={vi.fn()}
+        onDelete={vi.fn()}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        pageNumber={pageNumber}
+        onPageChange={vi.fn()}
+      />
+    </MemoryRouter>
   );
 }
 
@@ -116,5 +119,67 @@ describe("VentasList", () => {
     expect(screen.getByText("Cliente 11")).toBeInTheDocument();
     expect(screen.getByText("Cliente 20")).toBeInTheDocument();
     expect(screen.queryByText("Cliente 1")).not.toBeInTheDocument();
+  });
+
+  it("shows the fiscal state the backend sent", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({
+            id: "1",
+            code: "Vent-001",
+            fiscalState: "Rejected",
+          }),
+        ]}
+      />,
+    );
+
+    expect(
+      screen.getByRole("columnheader", { name: i18n.t("ventas.fiscalState") }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Rejected")).toBeInTheDocument();
+  });
+
+  it("shows the empty fiscal state when the backend sends a value outside the contract", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({
+            id: "1",
+            code: "Vent-001",
+            fiscalState:
+              "NotAFiscalState" as unknown as SaleDto["fiscalState"],
+          }),
+        ]}
+      />,
+    );
+
+    expect(screen.getByText(i18n.t("ventas.emptyValue"))).toBeInTheDocument();
+    expect(screen.queryByText("NotAFiscalState")).not.toBeInTheDocument();
+  });
+
+  it("links to the comprobantes module only for a sale with an electronic invoice", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({
+            id: "1",
+            code: "Vent-001",
+            electronicInvoiceId: "inv-1",
+          }),
+          createVenta({
+            id: "2",
+            code: "Vent-002",
+            electronicInvoiceId: null,
+          }),
+        ]}
+      />,
+    );
+
+    const link = screen.getByRole("link", {
+      name: i18n.t("ventas.viewInvoice"),
+    });
+    expect(link).toHaveAttribute("href", "/facturacion/comprobantes");
+    expect(screen.getAllByRole("link")).toHaveLength(1);
   });
 });

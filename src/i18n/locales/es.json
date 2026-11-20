@@ -4,6 +4,7 @@
     "cancel": "Cancelar",
     "delete": "Eliminar",
     "edit": "Editar",
+    "detail": "Detalle",
     "search": "Buscar",
     "loading": "Cargando...",
     "confirm": "Confirmar",
@@ -246,7 +247,16 @@
     "linesCount":"Líneas",
     "productCount":"productos",
     "downloadPdf":"Descargar PDF",
-    "copyId":"Copiar ID"
+    "copyId":"Copiar ID",
+    "fiscalState":"Estado fiscal",
+    "fiscalDetails":"Datos fiscales",
+    "documentType":"Tipo de comprobante",
+    "issuerTaxId":"RNC emisor",
+    "receptorTaxId":"RNC receptor",
+    "fiscalNote":"Nota fiscal",
+    "noFiscalData":"Esta venta no tiene datos fiscales.",
+    "viewInvoice":"Ver comprobante",
+    "emptyValue":"—"
   },
   "compras": {
     "title": "Compras",

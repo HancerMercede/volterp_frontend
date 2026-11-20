@@ -1,4 +1,8 @@
 import type { UserStatus } from '../constants/userStatus';
+import type {
+  EcfDocumentType,
+  EcfFiscalState,
+} from '../constants/electronicInvoicing';
 
 export interface Direccion {
   calle: string;
@@ -60,6 +64,15 @@ export interface SaleDto {
   createdAt: string;
   updatedAt: string | null;
   items: SaleItemDto[];
+  // Fiscal side of the sale: the backend owns the e-CF it emits for it.
+  documentType: EcfDocumentType | null;
+  receptorTaxId: string | null;
+  issuerTaxId: string | null;
+  subtotal: number | null;
+  itbis: number | null;
+  electronicInvoiceId: string | null;
+  fiscalState: EcfFiscalState | null;
+  fiscalNote: string | null;
 }
 
 export interface CreateSaleItemRequest {

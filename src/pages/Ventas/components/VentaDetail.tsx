@@ -1,10 +1,16 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { Check, Clock, Copy, Package } from "lucide-react";
 import { Button, Modal, VolterpMark } from "../../../components/UI";
 import { useClienteStore } from "../../../stores/clienteStore";
 import { initialsOf } from "../../../utils/initials";
 import { money } from "../../../utils/currency";
+import {
+  parseEcfDocumentType,
+  parseEcfFiscalState,
+} from "../../../domain/constants/electronicInvoicing";
 import type { SaleDto } from "../../../domain/types";
+import { COMPROBANTES_ROUTE } from "./comprobantesRoute";
 import styles from "./VentaDetail.module.css";
 
 interface Props {
@@ -38,6 +44,31 @@ export function VentaDetail({ venta, clienteId, onClose }: Props) {
   const copyId = () => {
     navigator.clipboard?.writeText(venta.id);
   };
+
+  const fiscalRows = [
+    {
+      label: t("ventas.documentType"),
+      value: parseEcfDocumentType(venta.documentType),
+    },
+    { label: t("ventas.issuerTaxId"), value: venta.issuerTaxId },
+    { label: t("ventas.receptorTaxId"), value: venta.receptorTaxId },
+    {
+      label: t("common.subtotal"),
+      value: venta.subtotal !== null ? money(venta.subtotal) : null,
+    },
+    {
+      label: t("common.itbis"),
+      value: venta.itbis !== null ? money(venta.itbis) : null,
+    },
+    {
+      label: t("ventas.fiscalState"),
+      value: parseEcfFiscalState(venta.fiscalState),
+    },
+  ];
+  const hasFiscalData =
+    fiscalRows.some((row) => row.value !== null) ||
+    Boolean(venta.fiscalNote) ||
+    Boolean(venta.electronicInvoiceId);
 
   // TODO: the PDF action still goes through the print dialog; replace it with
   // the project PDF utility (template, pagination, branding) built for reports.
@@ -155,6 +186,40 @@ export function VentaDetail({ venta, clienteId, onClose }: Props) {
               <p className={styles.notes}>{venta.notes}</p>
             </section>
           )}
+
+          <section className={styles.section}>
+            <h4 className={styles.eyebrow}>{t("ventas.fiscalDetails")}</h4>
+            {hasFiscalData ? (
+              <div className={styles.fiscalCard}>
+                {fiscalRows.map((row) => (
+                  <div key={row.label} className={styles.fiscalRow}>
+                    <span>{row.label}</span>
+                    <span className={styles.fiscalValue}>
+                      {row.value ?? t("ventas.emptyValue")}
+                    </span>
+                  </div>
+                ))}
+                {venta.fiscalNote && (
+                  <div className={styles.fiscalNote}>
+                    <span className={styles.fiscalNoteLabel}>
+                      {t("ventas.fiscalNote")}
+                    </span>
+                    <p>{venta.fiscalNote}</p>
+                  </div>
+                )}
+                {venta.electronicInvoiceId && (
+                  <Link
+                    to={COMPROBANTES_ROUTE}
+                    className={styles.fiscalLink}
+                  >
+                    {t("ventas.viewInvoice")}
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <p className={styles.fiscalEmpty}>{t("ventas.noFiscalData")}</p>
+            )}
+          </section>
         </div>
 
         <aside className={styles.side}>

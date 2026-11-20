@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import "../../i18n";
 import { NuevaVenta } from "../../pages/Ventas/components/NuevaVenta";
@@ -120,7 +121,11 @@ describe("NuevaVenta", () => {
     const fetchClientes = vi.fn();
     useClienteStore.setState({ fetchClientes });
 
-    render(<Ventas />);
+    render(
+      <MemoryRouter>
+        <Ventas />
+      </MemoryRouter>,
+    );
 
     expect(fetchClientes).toHaveBeenCalledWith(1, 100);
   });

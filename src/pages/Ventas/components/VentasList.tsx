@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import {
   Table,
   ImageCell,
@@ -8,7 +9,9 @@ import {
 import { ITEMS_PER_PAGE } from "../../../config/pagination";
 import { useFilter } from "../../../hooks/useFilter";
 import { useClienteStore } from "../../../stores/clienteStore";
+import { parseEcfFiscalState } from "../../../domain/constants/electronicInvoicing";
 import type { SaleDto } from "../../../domain/types";
+import { COMPROBANTES_ROUTE } from "./comprobantesRoute";
 import styles from "./VentasList.module.css";
 
 interface Props {
@@ -112,6 +115,25 @@ export function VentasList({
             : t("ventas.pending")}
         </span>
       ),
+    },
+    {
+      key: "fiscalState",
+      header: t("ventas.fiscalState"),
+      render: (v: SaleDto) => {
+        const fiscalState = parseEcfFiscalState(v.fiscalState);
+        return (
+          <span className={styles.fiscalCell}>
+            <span className={styles.fiscalChip}>
+              {fiscalState ?? t("ventas.emptyValue")}
+            </span>
+            {v.electronicInvoiceId ? (
+              <Link to={COMPROBANTES_ROUTE} className={styles.fiscalLink}>
+                {t("ventas.viewInvoice")}
+              </Link>
+            ) : null}
+          </span>
+        );
+      },
     },
   ];
 
