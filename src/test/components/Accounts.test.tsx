@@ -59,7 +59,7 @@ const ADMIN = {
   username: "admin",
   email: "admin@erp.com",
   fullName: "Admin",
-  role: "admin",
+  roles: ["admin"],
   companyId: "c1",
 };
 
@@ -401,7 +401,7 @@ describe("Accounts", () => {
   });
 
   it("hides the save actions for a role that cannot manage accounts", async () => {
-    useAuthStore.setState({ user: { ...ADMIN, role: "ventas" } });
+    useAuthStore.setState({ user: { ...ADMIN, roles: ["ventas"] } });
     service.getAccounts.mockResolvedValue(paged([CASH]));
     renderAccounts();
     await screen.findByText("Caja", { selector: "span[data-depth]" });
@@ -415,7 +415,7 @@ describe("Accounts", () => {
   });
 
   it("hides the save actions for the contabilidad role, which the accounts endpoints reject", async () => {
-    useAuthStore.setState({ user: { ...ADMIN, role: "contabilidad" } });
+    useAuthStore.setState({ user: { ...ADMIN, roles: ["contabilidad"] } });
     service.getAccounts.mockResolvedValue(paged([CASH]));
     renderAccounts();
     await screen.findByText("Caja", { selector: "span[data-depth]" });
@@ -429,7 +429,7 @@ describe("Accounts", () => {
   });
 
   it("hides the delete action for a role without delete permission on contabilidad", async () => {
-    useAuthStore.setState({ user: { ...ADMIN, role: "contabilidad" } });
+    useAuthStore.setState({ user: { ...ADMIN, roles: ["contabilidad"] } });
     service.getAccounts.mockResolvedValue(paged([CASH]));
     renderAccounts();
     await screen.findByText("Caja", { selector: "span[data-depth]" });

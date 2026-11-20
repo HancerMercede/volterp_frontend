@@ -44,7 +44,7 @@ const userWithRole = (role: string) => ({
   username: "user",
   email: "user@erp.com",
   fullName: "User",
-  role,
+  roles: [role],
   companyId: "c1",
 });
 

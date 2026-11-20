@@ -128,14 +128,14 @@ describe("UserManagement delete flow", () => {
 });
 
 describe("UserManagement invite flow", () => {
-  it("opens the invite modal without asking for a password", async () => {
+  it("opens the invite modal asking for the password the user starts with", async () => {
     render(<UserManagement />);
 
     const dialog = await openInviteModal();
 
     expect(within(dialog).getByLabelText("Email")).toBeInTheDocument();
     expect(within(dialog).getByLabelText("Name")).toBeInTheDocument();
-    expect(dialog.querySelector('input[type="password"]')).toBeNull();
+    expect(within(dialog).getByLabelText("Password")).toBeInTheDocument();
   });
 
   it("invites the user with the entered payload and reports success", async () => {
@@ -179,6 +179,10 @@ describe("UserManagement invite flow", () => {
     const dialog = await openInviteModal();
     await userEvent.type(within(dialog).getByLabelText("Email"), "new@example.com");
     await userEvent.type(within(dialog).getByLabelText("Name"), "New Person");
+    await userEvent.type(
+      within(dialog).getByLabelText("Password"),
+      "Passw0rd!",
+    );
     await userEvent.click(
       within(dialog).getByRole("button", { name: "Send invitation" }),
     );

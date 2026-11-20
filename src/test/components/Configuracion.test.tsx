@@ -37,7 +37,7 @@ const signIn = (role: string) => {
       username: "user",
       email: "user@example.com",
       fullName: "User",
-      role,
+      roles: [role],
       companyId: "co-1",
     },
   });
