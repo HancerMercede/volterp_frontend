@@ -78,6 +78,93 @@ El frontend no reimprime reglas de la DGII: el tipo de comprobante, el estado de
 
 Su **maintenance rule** también obliga: si el módulo cambia un archivo que tiene snippet en el template (`config.ts` con los `ENDPOINTS` ✓, `fetchWithAuth` ✓, los services ✓, los stores ✓, los primitivos ✓, `App.tsx` ✓), el snippet se actualiza **en el mismo commit** ✓.
 
+## Contrato de API (backend → frontend)
+
+Fuente: `Volterp.Api/Controllers/**` y `Volterp.Application/DTOs/**` del backend. El backend manda en el contrato ✓ (S1 ✓).
+
+### Reglas globales
+
+- JSON **camelCase** ✓ · enums como **string** (`JsonStringEnumConverter` global ✓ → parseo case-insensitive ✓) · sin envoltura: el body es el DTO pelado ✓.
+- Errores: `{ "error": "...", "details": null }` (`ErrorResponse` ✓ → ya tipado en el front como `ApiError` ✓).
+- Listas: `PagedResult<T>` = `{rowCount, pageNumber, pageSize, pageCount, items}` ✓ (ya tipado en el front ✓) con query `?pageNumber=1&pageSize=10` ✓.
+- `companyId` **sale del token** ✓ → los requests **no** lo mandan ✓ (S6 ✓).
+- `[Authorize]` de clase acepta **JWT Bearer** ✓ y `ApiKey` ✓ → el front usa **JWT** ✓ (S2 ✓); los endpoints con `[Authorize(Roles=…)]` son Admin/SuperAdmin ✓.
+- Los endpoints `/fe/*` de recepción exigen **certificado cliente TLS (mTLS)** ✓ → **no son del navegador** ✓ (S3 ✓).
+
+### Enums (nombre exacto en el wire)
+
+| Enum | Valores |
+|------|---------|
+| `EcfDocumentType` | FiscalCredit · Consumer · DebitNote · CreditNote · Purchase · MinorExpenses · SpecialRegimes · Governmental · Exportation · ExternalPayments |
+| `EcfStatus` | Draft · Signed · Sent · InProcess · Accepted · AcceptedConditionally · Rejected · Annulled |
+| `EcfFiscalState` | PendingEmission · InProcess · Rejected · RequiresReview |
+| `EntityStatus` | Active · Inactive · Pending · Completed · OnLeave · Cancelled |
+| `CompanyEmissionMode` | Electronic · Normal |
+| `CompanyContingencyStatus` | None · Total · Partial |
+| `NormalFiscalDocumentType` | FiscalCredit · Consumer · DebitNote · CreditNote |
+| `ReceivedElectronicInvoiceApprovalStatus` | Received · Approved · Rejected |
+
+### Endpoints
+
+| Verbo + ruta | Request | Response |
+|---|---|---|
+| `GET /api/company-issuers` (paged) | — | `PagedResult<CompanyIssuerDto>` |
+| `GET /api/company-issuers/{id}` | — | `CompanyIssuerDto` |
+| `POST /api/company-issuers` (roles) | `{taxId, legalName}` | `CompanyIssuerDto` (201) |
+| `PUT /api/company-issuers/{id}` (roles) | `{legalName, isActive}` | `CompanyIssuerDto` |
+| `GET /api/electronic-invoices/state?limit=50` | — | `ElectronicInvoiceStateSurfaceDto` |
+| `POST /api/electronic-invoices/{id}/retry` | — | `ElectronicInvoiceDto` |
+| `GET /api/electronic-invoices/{id}/qr.svg` | — | `image/svg+xml` (blob) |
+| `GET /api/electronic-invoices/{id}/qr.png` | — | `image/png` (blob) |
+| `GET /api/electronic-invoice-sequences` (paged) | — | `PagedResult<ElectronicInvoiceSequenceDto>` |
+| `GET /api/electronic-invoice-sequences/{id}` | — | `ElectronicInvoiceSequenceDto` |
+| `POST /api/electronic-invoice-sequences` (roles) | `{issuerTaxId, documentType, from, to, expiresAt, position}` | `ElectronicInvoiceSequenceDto` (201) |
+| `PUT /api/electronic-invoice-sequences/{id}` (roles) | ídem | `ElectronicInvoiceSequenceDto` |
+| `POST /api/electronic-invoice-sequences/{id}/annul` (roles) | — | `RangeAnnulmentResult` |
+| `GET /api/electronic-invoice-print/{id}` | — | `text/html` (blob) |
+| `GET /api/company-certificates` (paged) | — | `PagedResult<CompanyCertificateDto>` |
+| `GET /api/company-certificates/{id}` | — | `CompanyCertificateDto` |
+| `POST /api/company-certificates` (roles) | `{name, taxId, expiresAt, credential}` | `CompanyCertificateDto` (201) |
+| `GET /api/company-emission-mode` | — | `CompanyEmissionModeDto` |
+| `PUT /api/company-emission-mode/contingency` (roles) | `{status, startsAt, endsAt}` | `CompanyEmissionModeDto` |
+| `PUT /api/company-emission-mode` (roles) | `{emissionMode}` | `CompanyEmissionModeDto` |
+| `GET /api/api-credentials` (paged, roles) | — | `PagedResult<ApiCredentialDto>` |
+| `POST /api/api-credentials` (roles) | `{name, expiresAt}` | `IssuedApiCredentialDto` (**el `secret` viaja una sola vez** ✓) |
+| `DELETE /api/api-credentials/{id}` (roles) | — | **204** ✓ |
+| `GET /api/normal-fiscal-sequences` (paged) | — | `PagedResult<NormalFiscalSequenceDto>` |
+| `GET /api/normal-fiscal-sequences/{id}` | — | `NormalFiscalSequenceDto` |
+| `POST /api/normal-fiscal-sequences` (roles) | `{issuerTaxId, documentType, from, to, expiresAt, position}` | `NormalFiscalSequenceDto` (201) |
+| `PUT /api/normal-fiscal-sequences/{id}` (roles) | ídem | `NormalFiscalSequenceDto` |
+| `POST /api/ElectronicInvoiceReception/{id}/commercial-approval` | `{approved, reason}` | `ReceivedElectronicInvoiceDto` |
+
+### DTOs (campos exactos)
+
+- `CompanyIssuerDto`: `id, companyId: Guid` · `taxId, legalName: string` · `isActive: boolean` ✓
+- `ElectronicInvoiceStateSurfaceDto`: `counts: ElectronicInvoiceStateCounts` · `invoices: ElectronicInvoiceStateDto[]` ✓
+- `ElectronicInvoiceStateCounts`: `pendingEmission, inProcess, rejected, requiresReview, total: number` ✓ (`total` calculada ✓)
+- `ElectronicInvoiceStateDto`: `id, saleId: Guid` · `encf: string` · `documentType: EcfDocumentType` · `fiscalState: EcfFiscalState | null` · `status: EcfStatus` · `verdictNote, rawResponse, lastError: string | null` · `requiresReview: boolean` · `sentAt, nextCheckAt, receivedAt: Date | null` · `statusCheckCount: number` · `sequenceConsumed: boolean | null` ✓
+- `ElectronicInvoiceDto`: `id, companyId, saleId: Guid` · `encf: string` · `documentType: EcfDocumentType` · `issuerTaxId: string` · `receiverTaxId: string | null` · `subtotal, itbis, total: number` · `status: EcfStatus` · `trackId, securityCode, qrUrl, verdictNote: string | null` · `requiresReview: boolean` · `signedAt, sentAt: Date | null` ✓
+- `ElectronicInvoiceSequenceDto`: `id, companyId: Guid` · `issuerTaxId: string` · `documentType: EcfDocumentType` · `from, to, currentSequence: number` · `expiresAt: Date | null` · `hasRoom: boolean` ✓
+- `SaveElectronicInvoiceSequenceDto`: `issuerTaxId: string` · `documentType: EcfDocumentType` · `from, to, position: number` · `expiresAt: Date | null` (+ `requiresExpiry: boolean` **calculada y de solo lectura** ✓ → viene en la respuesta ✓)
+- `RangeAnnulmentResult`: `code, name: string | null` · `messages: string[]` · `annulledAt: Date | null` ✓
+- `CompanyCertificateDto`: `id, companyId: Guid` · `name, taxId: string` · `expiresAt: Date` · `status: EntityStatus` · `isExpired: boolean` ✓
+- `CreateCompanyCertificateDto`: `name, taxId: string` · `expiresAt: Date` · `credential: string` (credencial opaca ✓ → se cifra server-side ✓) ✓
+- `CompanyEmissionModeDto`: `emissionMode: CompanyEmissionMode` · `contingencyStatus: CompanyContingencyStatus` · `contingencyStartsAt, contingencyEndsAt: Date | null` ✓
+- `UpdateCompanyContingencyDto`: `status: CompanyContingencyStatus` · `startsAt, endsAt: Date | null` ✓
+- `UpdateCompanyEmissionModeDto`: `emissionMode: CompanyEmissionMode` ✓
+- `ApiCredentialDto`: `id: Guid` · `name, keyId: string` · `status: EntityStatus` · `expiresAt, updatedAt: Date | null` · `isExpired: boolean` · `createdAt: Date` ✓
+- `IssuedApiCredentialDto`: `id: Guid` · `name, keyId, secret: string` · `expiresAt: Date | null` ✓
+- `NormalFiscalSequenceDto`: `id, companyId: Guid` · `issuerTaxId: string` · `documentType: NormalFiscalDocumentType` · `from, to, currentSequence: number` · `expiresAt: Date | null` · `hasRoom: boolean` ✓
+- `SaveNormalFiscalSequenceDto`: `issuerTaxId: string` · `documentType: NormalFiscalDocumentType` · `from, to, position: number` · `expiresAt: Date | null` ✓
+- `ReceivedElectronicInvoiceDto`: `id: Guid` · `issuerTaxId, receiverTaxId, encf: string` · `documentType: EcfDocumentType` · `signedAt, receivedAt: Date` · `approvalStatus: ReceivedElectronicInvoiceApprovalStatus` · `approvalDecidedBy: string | null` · `approvalDecidedAt: Date | null` · `approvalReason: string | null` · `alreadyReceived: boolean` ✓ (`companyId` es `[JsonIgnore]` ✓)
+- `CommercialApprovalDecisionRequest`: `approved: boolean` · `reason: string` ✓
+
+### Notas del contrato que el front tiene que respetar
+
+1. `fetchWithAuth` fuerza `Content-Type: application/json` en la **request** ✓ → si algún día hay FormData hay que overridear el header ✓.
+2. No existe helper de `response.blob()` en el front ✓ → hay que agregarlo para el QR y la representación impresa ✓.
+3. Los DTOs sin `[Required]` no son "required" en el binder ✓ → si falta un `string` llega `null` ✓, un `bool` llega `false` ✓ y un enum llega `0` (valor **inválido** en `EcfDocumentType` ✓) → el front no debe asumir que un enum recibido es válido ✓.
+
 ## Tasks
 
 | ID | Specs | Ruta | Commit |
