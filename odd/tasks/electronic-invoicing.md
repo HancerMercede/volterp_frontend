@@ -169,19 +169,34 @@ Fuente: `Volterp.Api/Controllers/**` y `Volterp.Application/DTOs/**` del backend
 
 | ID | Specs | Ruta | Commit |
 |----|-------|------|--------|
-| T1 | S4, S11 | writer — tipos de dominio de e-CF (§3.2 paso 1 ✓) | `TBD` |
-| T2 | S4, S11 | writer — services de e-CF + `ENDPOINTS` (§3.2 paso 2 ✓) | `TBD` |
-| T3 | S4, S11 | writer — stores de e-CF (§3.2 paso 3 ✓) | `TBD` |
-| T4 | S5 | writer — la venta muestra su estado fiscal | `TBD` |
-| T5 | S3, S6, S7, S11 | writer — emisores del tenant (§3.2 pasos 4-7 ✓) | `TBD` |
-| T6 | S3, S6, S11 | writer — rangos de e-NCF (§3.2 pasos 4-7 ✓) | `TBD` |
-| T7 | S3, S6, S11 | writer — certificados del emisor (§3.2 pasos 4-7 ✓) | `TBD` |
-| T8 | S3, S7, S8, S9, S11 | writer — comprobantes: lista, veredicto, QR, retry, print (§3.2 pasos 4-7 ✓) | `TBD` |
-| T9 | S3, S6, S11 | writer — recepción de comprobantes de terceros (§3.2 pasos 4-7 ✓) | `TBD` |
-| T10 | S3, S6, S11 | writer — modo de emisión, credenciales y secuencias normales (§3.2 pasos 4-7 ✓) | `TBD` |
-| T11 | S6 | inline (parent) — permisos del módulo en `MATRIZ_PERMISOS` | `TBD` |
-| T12 | S1, S4 | inline (parent) — huecos reales del backend, documentados y no maquetados | `TBD` |
-| T13 | S11 | inline (parent) — snippets del template actualizados en el mismo commit | `TBD` |
+| T1 | S4, S11 | writer — tipos de dominio de e-CF (§3.2 paso 1 ✓) | `b0fab79` (enums) · `3503e79` (DTOs) |
+| T2 | S4, S11 | writer — services de e-CF + `ENDPOINTS` (§3.2 paso 2 ✓) | `f8d08ff` |
+| T3 | S4, S11 | writer — stores de e-CF (§3.2 paso 3 ✓) | `dbd7a86` (configuración fiscal) · `d40a103` (operación) |
+| T4 | S5 | writer — la venta muestra su estado fiscal | `474c19c` |
+| T5 | S3, S6, S7, S11 | writer — emisores del tenant (§3.2 pasos 4-7 ✓) | `e40b414` |
+| T6 | S3, S6, S11 | writer — rangos de e-NCF (§3.2 pasos 4-7 ✓) | `e40b414` |
+| T7 | S3, S6, S11 | writer — certificados del emisor (§3.2 pasos 4-7 ✓) | `adbbe83` |
+| T8 | S3, S7, S8, S9, S11 | writer — comprobantes: lista, veredicto, QR, retry, print (§3.2 pasos 4-7 ✓) | `544ce22` |
+| T9 | S3, S6, S11 | writer — recepción de comprobantes de terceros (§3.2 pasos 4-7 ✓) | `adbbe83` |
+| T10 | S3, S6, S11 | writer — modo de emisión, credenciales y secuencias normales (§3.2 pasos 4-7 ✓) | `544ce22` |
+| T11 | S6 | inline (parent) — permisos del módulo en `MATRIZ_PERMISOS` | `6252b03` · `b513fd3` · `79b380c` |
+| T12 | S1, S4 | inline (parent) — huecos reales del backend, documentados y no maquetados | Log L7 y L8 |
+| T13 | S11 | inline (parent) — snippets del template actualizados en el mismo commit | `f8d08ff` (config.ts + fetchWithAuth) · `6aa4fa2` (App.tsx) |
+
+## Slices de entrega (PRs encadenados)
+
+El owner eligió **PRs encadenados por módulo** (2026-11-19) → cada slice se abre como un PR propio y encadenado sobre el anterior, con el bootstrap en el primero.
+
+| Slice | Contenido | Tasks | Estado |
+|-------|-----------|-------|--------|
+| PR 1 — base | tipos, services, stores, permisos, i18n, hub, rutas y snippets | T1, T2, T3, T11, T12, T13 | listo (`b0fab79`…`6aa4fa2`) |
+| PR 2 — emisores y rangos | las dos pantallas de configuración del emisor | T5, T6 | listo (`e40b414`) |
+| PR 3 — certificados, comprobantes y ventas | firma del emisor, cola de emisión y estado fiscal de la venta | T7, T8, T4 | listo (`adbbe83`, `544ce22`, `474c19c`) |
+| PR 4 — recepción y configuración fiscal | comprobantes de terceros, modo de emisión, credenciales y secuencias normales | T9, T10 | listo (mismos dos commits de arriba) |
+
+- El work-unit commit vive **dentro** del slice: ningún PR es un commit gigante.
+- `push`, apertura de PR y merge siguen siendo decisiones del owner.
+
 
 ## Log
 
@@ -219,3 +234,71 @@ Fuente: `Volterp.Api/Controllers/**` y `Volterp.Application/DTOs/**` del backend
 Su **maintenance rule** también obliga: si se toca un archivo con snippet (p. ej. `config.ts` con los `ENDPOINTS` ✓), el snippet se actualiza en el **mismo commit** ✓ (T13 ✓).
 
 **Ojo**: `MEMORY.md` está **desactualizado** ✓ (habla de React 18 ✓, React Router v6 ✓, Context ✓ y `src/api/` ✓ → el código real es React 19 ✓, Router v7 ✓, Zustand 5 ✓ y `src/infrastructure/api/` ✓) → **no es fuente** ✓.
+
+### L5 — 2026-11-19 — decisiones de entrega y de permisos
+
+> "PRs encadenados por módulo"
+
+> "El role ventas por el momento, sera quien haga uso de la facturacion electronica y normal, tambien los admins y el superadmin lo hara, en un futuro vamos a implementar el role de cajero o cajera el cual vivira bajo el mismo permiso de ventas."
+
+- **Entrega**: PRs encadenados por módulo (PR 1 base · PR 2 emisores y rangos · PR 3 certificados, comprobantes y ventas · PR 4 recepción y configuración fiscal) ✓ → los límites de slice están en la sección **Slices de entrega** ✓.
+- **Permisos**: el módulo `facturacion` existe para `SUPER_ADMIN`, `ADMIN` y `VENTAS` con `read`/`write`/`delete` ✓; `INVENTARIO`, `CONTABILIDAD` y `RRHH` quedan afuera ✓.
+- El rol **cajero** que se viene implementará vivirá bajo el mismo permiso que `VENTAS` ✓ → el módulo no debe hardcodear el rol, se apoya en `MATRIZ_PERMISOS` ✓.
+
+### L6 — 2026-11-19 — avance: el contrato ya está en código
+
+- `b0fab79` — enums del contrato con parseo case-insensitive (`src/domain/constants/electronicInvoicing.ts`) ✓ → un enum fuera de rango llega como ordinal y el parser devuelve `null` en vez de inventar un valor ✓.
+- `3503e79` — DTOs del contrato (`src/domain/types/electronicInvoicing.ts`) ✓ → se re-exportan desde `src/domain/types/index.ts` para no cambiar la superficie de import de ningún módulo ✓.
+- `f8d08ff` — los 8 services + `fetchWithAuthBlob` ✓ → el snippet de `config.ts` y el de `fetchWithAuth` se actualizaron en el mismo commit (maintenance rule ✓) → de paso se resincronizó el snippet de `fetchWithAuth` con el archivo vivo (el del template tiraba `Error` pelado y el real usa `ApiRequestError` con `status`) ✓.
+- `dbd7a86` / `d40a103` — los 8 stores ✓ (4 de configuración fiscal + 4 de operación) ✓ → los lectores dejan el error en el estado y las mutaciones lo re-tiran ✓.
+- `6252b03` — el módulo en `MATRIZ_PERMISOS` + el namespace `facturacion` en `es.json`/`en.json` ✓.
+
+**Decisiones de diseño que quedan registradas**:
+1. Las fechas viajan como **string ISO 8601** (la representación JSON del `Date` del backend y la que ya usa el resto del front) ✓.
+2. El veredicto y el estado se muestran con el **valor crudo del backend**, con el parser como guarda contra enums inválidos → S7 (no se traduce el significado de la DGII) ✓.
+3. Los tipos del contrato se quedan en un módulo propio (`domain/types/electronicInvoicing.ts`) re-exportado desde el barrel → una sola razón para cambiar ✓ y el diff se puede revisar por partes ✓.
+4. `fetchWithAuthBlob` se suma al wrapper porque el QR y la representación impresa son respuestas binarias y no había helper ✓.
+
+### L7 — 2026-11-19 — hueco real del backend detectado al tipar
+
+Al implementarlo contra el contrato aparecen dos huecos que **no se maquetan** (S1):
+
+1. **No hay `GET /api/electronic-invoices/{id}`**: el detalle de un comprobante se resuelve con la superficie de estado (`GET /api/electronic-invoices/state?limit=50`) + los artefactos (`qr.svg`, `qr.png`, `electronicinvoiceprint`). Los campos `subtotal`/`itbis`/`total`/`trackId`/`securityCode` de un comprobante sólo vuelven en la respuesta del **reintento**; el resto de los datos los trae la venta (`SaleDto.subtotal`, `SaleDto.itbis`) ✓ → la UI no inventa un endpoint ✓.
+2. **No hay listado de comprobantes recibidos accesible desde el navegador**: la recepción real (`/fe/*`) exige certificado cliente TLS (mTLS) y el único endpoint de navegador es `POST /api/ElectronicInvoiceReception/{id}/commercial-approval` → la pantalla de recepción (T9) registra la decisión sobre el **id** que el usuario trae, y muestra el DTO que devuelve el backend ✓; no se finge una lista ✓.
+3. El backend **no expone DELETE** de emisores, rangos ni certificados → esas pantallas sólo ofrecen crear/editar (y anular, en el caso del rango) ✓; el único DELETE es el de credenciales ✓.
+
+### L8 — 2026-11-19 — el módulo armado de punta a punta
+
+**Commits de la feature** (rama `feature/electronic-invoicing`):
+
+| Commit | Task | Qué |
+|--------|------|-----|
+| `b0fab79` | T1 | Enums del contrato con parseo case-insensitive (`null` ante enum inválido) |
+| `3503e79` | T1 | DTOs del contrato e-CF (`domain/types/electronicInvoicing.ts`) |
+| `f8d08ff` | T2 | Los 8 services + `fetchWithAuthBlob` + snippets de `config.ts` y `fetchWithAuth` |
+| `dbd7a86` | T3 | Stores de configuración fiscal (emisores, rangos, certificados, secuencias normales) |
+| `d40a103` | T3 | Stores de operación (comprobantes, modo de emisión, credenciales, recepción) |
+| `6252b03` | T11 | Módulo en `MATRIZ_PERMISOS` + namespace `facturacion` en es/en |
+| `b513fd3` | T11 | Guard: la matriz tiene una fila por módulo para cada rol |
+| `e348ebe` | — | `MEMORY.md` con el stack real (ya no era fuente) |
+| `6aa4fa2` | T5-T10 | Hub del módulo + las 7 rutas en `App.tsx` + guard de claves i18n + README |
+| `e40b414` | T5, T6 | Emisores y rangos de e-NCF |
+| `474c19c` | T4 | La venta muestra su estado fiscal |
+| `adbbe83` | T7, T9 | Certificados y recepción de comprobantes de terceros |
+| `544ce22` | T8, T10 | Comprobantes (veredicto, QR, reintento, print) y configuración fiscal |
+| `79b380c` | T8, T10 | Correcciones de la revisión: el backend manda en la fila y en el reintento |
+
+**Huecos del backend que aparecieron al implementar** (documentados, **no maquillados**):
+
+1. **Los endpoints de escritura exigen `Admin`/`SuperAdmin`**: el backend protege `POST`/`PUT` de emisores y rangos y el `annul` con `[Authorize(Roles = "Admin,SuperAdmin")]`. La matriz del front da `write` al rol `VENTAS` (decisión del owner) → un usuario de Ventas ve los botones y recibe **403**. El front muestra el error del backend tal cual; **el contrato de roles entre front y back queda para que lo definan** (S1).
+2. **`ElectronicInvoiceSequenceDto` no expone el estado "anulado"**: el dominio tiene `IsAnnulled` y el listado no lo filtra → después de anular, el backend sigue devolviendo el rango. La UI no puede distinguir uno anulado de uno vivo (no se refetchea tras anular para no volver a ofrecerlo).
+3. **`RequiresExpiry` sólo viene en la respuesta del save**: el front no puede saber si un tipo de comprobante exige fecha de vencimiento → manda `expiresAt: null` cuando el campo está vacío y deja que el error del backend aparezca en el modal.
+4. **El `PUT` de un rango no puede cambiar emisor, tipo ni `from`, y la posición no puede retroceder** → en edición esos campos van deshabilitados y `position` se inicializa con `currentSequence`.
+5. **La venta no carga el e-NCF, el `trackId` ni el `securityCode`**: en ventas sólo se puede mostrar el estado fiscal y el enlace al módulo de comprobantes.
+6. **`EcfFiscalState` no es el veredicto de la DGII**: `SaleDto.fiscalState` sólo puede ser `PendingEmission | InProcess | Rejected | RequiresReview`; "Accepted" es de `EcfStatus` y vive en la superficie de estado de e-CF → el veredicto literal se muestra en el módulo de comprobantes (S7 ✓).
+7. **El `SaleDto` real del backend no está en el contrato escrito** de este plan: los campos fiscales se tomaron del tipo del front. Queda como verificación pendiente contra el backend.
+8. **Copy hardcodeado en componentes compartidos**: `ActionButtons` ("Eliminar", "Activar/Desactivar") y `DynamicFormFields` ("Seleccionar …") están en español y fuera de i18n. No se tocaron (son compartidos y ajenos a la feature); las pantallas de e-CF los esquivan pasando su propio label.
+9. **Landmine de `useCrudForm`**: el hook valida **todos** los campos declarados, incluidos los que `DynamicFormFields` oculta por `showOnEdit`/`showOnCreate` → un campo required oculto bloquea el submit. Hoy sólo lo sufrirían páginas con `showOnCreate` + required (las de e-CF lo evitan declarando los campos por modo). **No se cambió el hook compartido** en esta feature (sería código compartido con riesgo de regresión): queda como deuda técnica con el test que la destapa.
+10. **Rutas del módulo duplicadas**: la venta enlaza a `/facturacion/comprobantes` mediante `src/pages/Ventas/components/comprobantesRoute.ts` y el `App.tsx` la declara por su cuenta → si la ruta cambia, hay que tocar los dos lados.
+
+
