@@ -14,7 +14,7 @@ import type {
 import { ClienteSelector } from "./ClienteSelector";
 import { Carrito } from "./Carrito";
 import { SelectorProducto } from "./SelectorProducto";
-import { ResumenVenta } from "./ResumenVenta";
+import { ResumenVenta, type DocumentoVenta } from "./ResumenVenta";
 import styles from "./NuevaVenta.module.css";
 
 interface Props {
@@ -27,7 +27,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
   const { t } = useTranslation();
   const { clientes } = useClienteStore();
   const productos = useProductos();
-  const { ventas, createVenta, updateVenta } = useVentaStore();
+  const { ventas, createVenta, updateVenta, completeVenta } = useVentaStore();
   const { currentCompany, error: companyError } = useCompanyStore();
   const { addToast } = useUIStore();
 
@@ -53,9 +53,12 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
   const [selectedCliente, setSelectedCliente] = useState<string | null>(
     editingVenta?.clienteId ?? null,
   );
-  const [ventaEstado, setVentaEstado] = useState<"pendiente" | "completada">(
-    editingVenta?.status === "Completed" ? "completada" : "pendiente",
-  );
+  // The document of the sale. When the seller does not pick one, the
+  // client decides: a fiscal credit needs a tax id, a consumption one does not.
+  const [documentoElegido, setDocumentoElegido] = useState<DocumentoVenta | null>(null);
+  const clienteConRnc = clientes.find((c) => c.id === selectedCliente)?.taxId;
+  const documento: DocumentoVenta =
+    documentoElegido ?? (clienteConRnc ? "credito" : "consumo");
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
   const [productSearch, setProductSearch] = useState("");
 
@@ -123,7 +126,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
       subtotal: item.subtotal,
     }));
 
-  const validateAndSubmit = async (status: "Pending" | "Completed") => {
+  const validateAndSubmit = async (completar: boolean) => {
     if (carrito.length === 0) {
       addToast(t("ventas.cartEmptyWarning"), "warning");
       return;
@@ -138,35 +141,52 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
 
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
 
+    // A commercial invoice leaves without a fiscal document (it is only for
+    // the taxpayer that invoices in the normal mode). The other two are the
+    // document the backend issues.
+    const esComercial = documento === "comercial";
+    const documentType = documento === "credito" ? "FiscalCredit" : "Consumer";
+
     try {
       if (editingSaleId) {
         await updateVenta(editingSaleId, {
           clienteId: clienteElegido,
           clienteName: clienteData?.name || null,
-          status,
+          status: "Pending",
           total,
           notes: null,
           items: buildSaleItems(),
+          documentType,
         } as UpdateSaleRequest);
+
+        if (completar) {
+          await completeVenta(editingSaleId, esComercial);
+        }
       } else {
         if (!currentCompany) {
           addToast(companyError ?? t("ventas.NoCompanySelected"), "error");
           return;
         }
-        await createVenta({
+
+        const creada = await createVenta({
           companyId: currentCompany.id,
           clienteId: clienteElegido,
           clienteName: clienteData?.name || null,
-          status,
+          status: "Pending",
           total,
           notes: null,
           items: buildSaleItems(),
+          documentType,
         } as CreateSaleRequest);
+
+        // The sale is created pending and completed right away: the
+        // completion is what issues the document.
+        if (completar && creada) {
+          await completeVenta(creada.id, esComercial);
+        }
       }
       addToast(
-        status === "Completed"
-          ? t("ventas.saleCompleted")
-          : t("ventas.draftSaved"),
+        completar ? t("ventas.saleCompleted") : t("ventas.draftSaved"),
         "success",
       );
       onSave();
@@ -219,14 +239,10 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
               subtotal={totales.subtotal}
               itbis={totales.itbis}
               total={totales.total}
-              ventaEstado={ventaEstado}
-              onEstadoChange={setVentaEstado}
-              onCompletarVenta={() =>
-                validateAndSubmit(
-                  ventaEstado === "completada" ? "Completed" : "Pending",
-                )
-              }
-              onGuardarBorrador={() => validateAndSubmit("Pending")}
+              documento={documento}
+              onDocumentoChange={setDocumentoElegido}
+              onCompletarVenta={() => validateAndSubmit(true)}
+              onGuardarBorrador={() => validateAndSubmit(false)}
               onCancelar={onCancel}
             />
           </div>

@@ -9,7 +9,7 @@ import { useCompanyStore } from "../../stores/companyStore";
 import { useProductoStore } from "../../stores/productoStore";
 import { useUIStore } from "../../stores/uiStore";
 import { useVentaStore } from "../../stores/ventaStore";
-import type { Client, Company, Product } from "../../domain/types";
+import type { Client, Company, Product, SaleDto } from "../../domain/types";
 
 const PRODUCT: Product = {
   id: "p1",
@@ -98,6 +98,77 @@ describe("NuevaVenta", () => {
 
     expect(createVenta).toHaveBeenCalledWith(
       expect.objectContaining({ clienteId: "c1", clienteName: "Acme Corp" }),
+    );
+  });
+
+
+  it("creates the sale pending and completes it right away when the sale is checked out", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    const completeVenta = vi.fn();
+    useVentaStore.setState({ createVenta, completeVenta });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(createVenta).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "Pending" }),
+    );
+    expect(completeVenta).toHaveBeenCalledWith(
+      "sale-1",
+      false,
+    );
+  });
+
+  it("leaves the sale pending when the draft is saved", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    const completeVenta = vi.fn();
+    useVentaStore.setState({ createVenta, completeVenta });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: "Save Draft" }));
+
+    expect(createVenta).toHaveBeenCalledTimes(1);
+    expect(completeVenta).not.toHaveBeenCalled(
+      "a draft is a pending sale: the seller completes it later",
+    );
+  });
+
+  it("issues a fiscal credit when the client has a tax id", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    useVentaStore.setState({ createVenta });
+    useClienteStore.setState({
+      clientes: [{ ...CLIENT, taxId: "101500018" }],
+    });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(createVenta).toHaveBeenCalledWith(
+      expect.objectContaining({ documentType: "FiscalCredit" }),
+    );
+  });
+
+  it("issues a consumption document when the client has no tax id", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    useVentaStore.setState({ createVenta });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(createVenta).toHaveBeenCalledWith(
+      expect.objectContaining({ documentType: "Consumer" }),
     );
   });
 

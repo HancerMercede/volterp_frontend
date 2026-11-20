@@ -20,9 +20,9 @@ interface VentaStore {
     pageNumber?: number,
     pageSize?: number,
   ) => Promise<void>;
-  createVenta: (data: CreateSaleRequest) => Promise<void>;
+  createVenta: (data: CreateSaleRequest) => Promise<SaleDto | undefined>;
   updateVenta: (id: string, data: UpdateSaleRequest) => Promise<void>;
-  completeVenta: (id: string) => Promise<void>;
+  completeVenta: (id: string, asCommercialInvoice?: boolean) => Promise<void>;
   deleteVenta: (id: string) => Promise<void>;
   clearError: () => void;
 }
@@ -120,6 +120,9 @@ export const useVentaStore = create<VentaStore>()(
             totalCount: state.totalCount + 1,
             loading: false,
           }));
+
+          // The sale is returned so the caller can complete it right away.
+          return nuevaVenta;
         } catch (err) {
           set({ error: (err as Error).message, loading: false });
           throw err;
@@ -145,7 +148,7 @@ export const useVentaStore = create<VentaStore>()(
         }
       },
 
-      completeVenta: async (id: string) => {
+      completeVenta: async (id: string, asCommercialInvoice = false) => {
         const token = useAuthStore.getState().token;
         if (!token) {
           set({ error: "No autenticado" });
@@ -153,7 +156,7 @@ export const useVentaStore = create<VentaStore>()(
         }
         set({ loading: true, error: null });
         try {
-          const completada = await saleService.completeSale(id);
+          const completada = await saleService.completeSale(id, asCommercialInvoice);
           set((state) => ({
             ventas: state.ventas.map((v) => (v.id === id ? completada : v)),
             loading: false,

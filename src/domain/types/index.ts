@@ -73,6 +73,12 @@ export interface CreateSaleItemRequest {
   subtotal: number;
 }
 
+/**
+ * The document the sale leaves with. The backend issues a fiscal credit
+ * (E31) when the client has a tax id and a consumer one (E32) otherwise.
+ */
+export type TipoDocumentoVenta = "Consumer" | "FiscalCredit";
+
 export interface CreateSaleRequest {
   companyId: string;
   clienteId: string | null;
@@ -81,6 +87,7 @@ export interface CreateSaleRequest {
   total: number;
   notes: string | null;
   items: CreateSaleItemRequest[];
+  documentType?: TipoDocumentoVenta;
 }
 
 export interface UpdateSaleRequest {
@@ -90,6 +97,7 @@ export interface UpdateSaleRequest {
   total: number;
   notes: string | null;
   items: CreateSaleItemRequest[];
+  documentType?: TipoDocumentoVenta;
 }
 
 // ========================
@@ -100,6 +108,8 @@ export interface ClientDto {
   code: string;
   name: string;
   email: string;
+  /** The RNC of the client: a fiscal credit (E31) needs it. */
+  taxId?: string | null;
   phone: string;
   address: string;
   isActive: boolean;

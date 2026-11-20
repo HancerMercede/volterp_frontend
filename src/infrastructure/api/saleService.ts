@@ -74,11 +74,14 @@ export const saleService = {
     );
   },
 
-  async completeSale(id: string): Promise<SaleDto> {
+  // The commercial invoice is the sale that leaves without a fiscal
+  // document: it is only for the taxpayer that invoices in the normal mode.
+  async completeSale(id: string, asCommercialInvoice = false): Promise<SaleDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}/complete`,
       {
         method: "PUT",
+        body: JSON.stringify({ asCommercialInvoice }),
       },
     );
   },

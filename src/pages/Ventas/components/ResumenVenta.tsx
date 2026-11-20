@@ -4,12 +4,14 @@ import { Button } from "../../../components/UI";
 import { money } from "../../../utils/currency";
 import styles from "./ResumenVenta.module.css";
 
+export type DocumentoVenta = "consumo" | "credito" | "comercial";
+
 interface Props {
   subtotal: number;
   itbis: number;
   total: number;
-  ventaEstado: "pendiente" | "completada";
-  onEstadoChange: (estado: "pendiente" | "completada") => void;
+  documento: DocumentoVenta;
+  onDocumentoChange: (documento: DocumentoVenta) => void;
   onCompletarVenta: () => void;
   onGuardarBorrador: () => void;
   onCancelar: () => void;
@@ -19,8 +21,8 @@ export function ResumenVenta({
   subtotal,
   itbis,
   total,
-  ventaEstado,
-  onEstadoChange,
+  documento,
+  onDocumentoChange,
   onCompletarVenta,
   onGuardarBorrador,
   onCancelar,
@@ -47,16 +49,18 @@ export function ResumenVenta({
       </div>
 
       <div className={styles.formGroup}>
-        <label>{t("common.status")}</label>
+        <label>{t("ventas.documentType")}</label>
         <select
-          value={ventaEstado}
+          value={documento}
           onChange={(e) =>
-            onEstadoChange(e.target.value as "pendiente" | "completada")
+            onDocumentoChange(e.target.value as DocumentoVenta)
           }
         >
-          <option value="pendiente">{t("ventas.pending")}</option>
-          <option value="completada">{t("ventas.completed")}</option>
+          <option value="consumo">{t("ventas.documentConsumption")}</option>
+          <option value="credito">{t("ventas.documentFiscalCredit")}</option>
+          <option value="comercial">{t("ventas.documentCommercial")}</option>
         </select>
+        <span className={styles.hint}>{t("ventas.documentHint")}</span>
       </div>
 
       <Button onClick={onCompletarVenta} className={styles.completeBtn}>
