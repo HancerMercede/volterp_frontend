@@ -70,20 +70,31 @@ Desde el detalle del comprobante se abre el QR (`qr.svg` / `qr.png`) y la repres
 
 El frontend no reimprime reglas de la DGII: el tipo de comprobante, el estado del veredicto y la validez del documento son los que el backend y la biblioteca devuelven. Si la UI necesita un dato que la API no da, es un hueco del backend (S1), no una interpretación del front.
 
+### S11 — El template del frontend es la autoridad
+
+> "lee el template del front no reinventes"
+
+`FRONTEND-SKELETON-TEMPLATE.md` es el esqueleto y la plantilla oficiales del proyecto: la forma de las carpetas (§1.1 ✓), la regla de dependencias entre capas (§1.2 ✓), el `fetchWithAuth` y los services (§2.1 ✓), el store canónico (§2.2 ✓), los hooks genéricos (§2.3 ✓), los primitivos de UI (§2.5 ✓), el routing (§2.9 ✓) y el **workflow de 7 pasos para agregar una entidad/página** (§3.2 ✓). Ninguna pantalla de e-CF se diseña desde cero: se sigue ese workflow (tipos → service → store → hook si hace falta → page → routing → i18n ✓).
+
+Su **maintenance rule** también obliga: si el módulo cambia un archivo que tiene snippet en el template (`config.ts` con los `ENDPOINTS` ✓, `fetchWithAuth` ✓, los services ✓, los stores ✓, los primitivos ✓, `App.tsx` ✓), el snippet se actualiza **en el mismo commit** ✓.
+
 ## Tasks
 
 | ID | Specs | Ruta | Commit |
 |----|-------|------|--------|
-| T1 | S4 | inline (parent) — tipos del dominio de e-CF | `TBD` |
-| T2 | S4 | inline (parent) — capa de servicios de e-CF (JWT, multipart, QR/print) | `TBD` |
-| T3 | S5 | inline (parent) — la venta muestra su estado fiscal | `TBD` |
-| T4 | S3, S6, S7 | inline (parent) — pantalla de emisores del tenant | `TBD` |
-| T5 | S3, S6 | inline (parent) — pantalla de rangos de e-NCF (habilitar / anular) | `TBD` |
-| T6 | S3, S6 | inline (parent) — pantalla de certificados del emisor | `TBD` |
-| T7 | S3, S7, S8, S9 | inline (parent) — comprobantes: lista, veredicto, QR, retry, print | `TBD` |
-| T8 | S3, S6 | inline (parent) — recepción de comprobantes de terceros (multipart) | `TBD` |
-| T9 | S3, S6 | inline (parent) — modo de emisión, credenciales de API y secuencias fiscales normales | `TBD` |
-| T10 | S1, S4 | inline (parent) — huecos reales que el backend no cubre (documentados, no maquetados) | `TBD` |
+| T1 | S4, S11 | writer — tipos de dominio de e-CF (§3.2 paso 1 ✓) | `TBD` |
+| T2 | S4, S11 | writer — services de e-CF + `ENDPOINTS` (§3.2 paso 2 ✓) | `TBD` |
+| T3 | S4, S11 | writer — stores de e-CF (§3.2 paso 3 ✓) | `TBD` |
+| T4 | S5 | writer — la venta muestra su estado fiscal | `TBD` |
+| T5 | S3, S6, S7, S11 | writer — emisores del tenant (§3.2 pasos 4-7 ✓) | `TBD` |
+| T6 | S3, S6, S11 | writer — rangos de e-NCF (§3.2 pasos 4-7 ✓) | `TBD` |
+| T7 | S3, S6, S11 | writer — certificados del emisor (§3.2 pasos 4-7 ✓) | `TBD` |
+| T8 | S3, S7, S8, S9, S11 | writer — comprobantes: lista, veredicto, QR, retry, print (§3.2 pasos 4-7 ✓) | `TBD` |
+| T9 | S3, S6, S11 | writer — recepción de comprobantes de terceros (§3.2 pasos 4-7 ✓) | `TBD` |
+| T10 | S3, S6, S11 | writer — modo de emisión, credenciales y secuencias normales (§3.2 pasos 4-7 ✓) | `TBD` |
+| T11 | S6 | inline (parent) — permisos del módulo en `MATRIZ_PERMISOS` | `TBD` |
+| T12 | S1, S4 | inline (parent) — huecos reales del backend, documentados y no maquetados | `TBD` |
+| T13 | S11 | inline (parent) — snippets del template actualizados en el mismo commit | `TBD` |
 
 ## Log
 
@@ -111,3 +122,13 @@ El frontend no reimprime reglas de la DGII: el tipo de comprobante, el estado de
 - El acceso es con **JWT** ✓ (S2 ✓); `ApiKey` queda para después ✓.
 - El objetivo es que la e-CF **se haga desde el frontend** ✓ (S3 ✓).
 - Los huecos preexistentes del contrato (`/api/accounts`, `/api/projects`, los endpoints públicos de auth, `invite`/`reset-password` de usuarios) **no** son parte de esta feature ✓: los contracted por `odd/tasks/auth-invitation-flow.md` ✓ (su mitad de backend sigue pendiente ✓) y los demás se documentan en T10 ✓.
+
+### L4 — 2026-11-19 — el template del frontend es la autoridad
+
+> "lee el template del front no reinventes"
+
+`FRONTEND-SKELETON-TEMPLATE.md` (4270 líneas ✓) manda sobre cualquier criterio propio: estructura de carpetas (§1.1 ✓) · `fetchWithAuth` + `API_CONFIG`/`ENDPOINTS` (§2.1 ✓) · store canónico (§2.2 ✓) · hooks genéricos (§2.3 ✓) · primitivos de UI (§2.5 ✓) · routing (§2.9 ✓) · y el **workflow de 7 pasos** para agregar una entidad/página (§3.2 ✓) → cada pantalla de e-CF se arma con esos 7 pasos ✓ (tipos → service → store → hook si hace falta → page → routing → i18n ✓).
+
+Su **maintenance rule** también obliga: si se toca un archivo con snippet (p. ej. `config.ts` con los `ENDPOINTS` ✓), el snippet se actualiza en el **mismo commit** ✓ (T13 ✓).
+
+**Ojo**: `MEMORY.md` está **desactualizado** ✓ (habla de React 18 ✓, React Router v6 ✓, Context ✓ y `src/api/` ✓ → el código real es React 19 ✓, Router v7 ✓, Zustand 5 ✓ y `src/infrastructure/api/` ✓) → **no es fuente** ✓.
