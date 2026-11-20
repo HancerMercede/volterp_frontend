@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getTokenExpiry } from '../utils/jwt';
 import { usePermissionStore } from './permissionStore';
+import { roleFromBackend } from '../domain/constants/roles';
 
 export interface User {
   username: string;
@@ -85,6 +86,12 @@ export const useAuthStore = create<AuthStore>()(
       },
       onRehydrateStorage: () => (state) => {
         if (state?.expiresAt && Date.now() > state.expiresAt) {
+          state.logout();
+        } else if (
+          state?.user?.roles?.some((role) => !roleFromBackend(role))
+        ) {
+          // A session persisted before the rename of the roles carries names
+          // the catalog no longer knows: the user has to log in again.
           state.logout();
         }
         state?.setHasHydrated(true);

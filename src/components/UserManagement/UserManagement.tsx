@@ -27,9 +27,9 @@ import styles from './UserManagement.module.css';
 // Basic roles that all admins can assign
 const BASIC_ROLES = [
   Rol.ADMIN,
-  Rol.VENTAS,
+  Rol.VENDEDOR,
   Rol.INVENTARIO,
-  Rol.CONTABILIDAD,
+  Rol.CONTADOR,
   Rol.RRHH,
 ] as const;
 
@@ -37,9 +37,9 @@ const BASIC_ROLES = [
 const ALL_ROLES = [
   Rol.SUPER_ADMIN,
   Rol.ADMIN,
-  Rol.VENTAS,
+  Rol.VENDEDOR,
   Rol.INVENTARIO,
-  Rol.CONTABILIDAD,
+  Rol.CONTADOR,
   Rol.RRHH,
 ] as const;
 
@@ -240,7 +240,7 @@ export function UserManagement() {
               {users.map((user) => {
                 const status = resolveUserStatus(user);
                 const roles = normalizeRoles(user.roles);
-                const role = roles[0] ?? Rol.VENTAS;
+                const role = roles[0] ?? Rol.VENDEDOR;
                 const isProtected =
                   roles.includes(Rol.ADMIN) || roles.includes(Rol.SUPER_ADMIN);
                 const isInvited = status === UserStatus.INVITED;

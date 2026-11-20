@@ -1,9 +1,9 @@
 export const Rol = {
   SUPER_ADMIN: "superadmin",
   ADMIN: "admin",
-  VENTAS: "ventas",
+  VENDEDOR: "vendedor",
   INVENTARIO: "inventario",
-  CONTABILIDAD: "contabilidad",
+  CONTADOR: "contador",
   RRHH: "rrhh",
 } as const;
 
@@ -17,21 +17,24 @@ export const Permiso = {
 
 export type Permiso = (typeof Permiso)[keyof typeof Permiso];
 
+// The name the user sees for each role. A role is the function of a person
+// (who sells, who counts) and not a module of the ERP (ventas, contabilidad):
+// the roles were renamed so the two no longer look like the same thing.
 export const ROL_LABELS: Record<Rol, string> = {
   [Rol.SUPER_ADMIN]: "Root",
   [Rol.ADMIN]: "Administrador",
-  [Rol.VENTAS]: "Ventas",
+  [Rol.VENDEDOR]: "Vendedor",
   [Rol.INVENTARIO]: "Inventario",
-  [Rol.CONTABILIDAD]: "Contabilidad",
+  [Rol.CONTADOR]: "Contador",
   [Rol.RRHH]: "Recursos Humanos",
 };
 
 export const ROL_COLORS: Record<Rol, string> = {
   [Rol.SUPER_ADMIN]: "#EF4444", // Red for super admin
   [Rol.ADMIN]: "#FACC15",
-  [Rol.VENTAS]: "#10B981",
+  [Rol.VENDEDOR]: "#10B981",
   [Rol.INVENTARIO]: "#3B82F6",
-  [Rol.CONTABILIDAD]: "#8B5CF6",
+  [Rol.CONTADOR]: "#8B5CF6",
   [Rol.RRHH]: "#EC4899",
 };
 
@@ -39,30 +42,21 @@ export const ROL_COLORS: Record<Rol, string> = {
 export const ROLE_NUMBER_TO_STRING: Record<number, Rol> = {
   1: Rol.SUPER_ADMIN,
   2: Rol.ADMIN,
-  3: Rol.VENTAS,
+  3: Rol.VENDEDOR,
   4: Rol.INVENTARIO,
-  5: Rol.CONTABILIDAD,
+  5: Rol.CONTADOR,
   6: Rol.RRHH,
 };
 
-// Helper to normalize role (number from DB or string to lowercase string)
-export function normalizeRole(role: string | number): Rol {
-  if (typeof role === "number") {
-    return ROLE_NUMBER_TO_STRING[role] || Rol.VENTAS;
-  }
-  const normalized = role.toLowerCase() as Rol;
-  return Object.values(Rol).includes(normalized) ? normalized : Rol.VENTAS;
-}
-
 // The backend sends the names of its roles in PascalCase ("SuperAdmin").
-// A name that is not a role of the catalog is unknown, not "ventas".
+// A name that is not a role of the catalog is unknown, not "vendedor".
 export function roleFromBackend(name: string): Rol | null {
   const normalized = name.toLowerCase() as Rol;
   return Object.values(Rol).includes(normalized) ? normalized : null;
 }
 
 // The roles a user holds. An unknown role is dropped and never turned into
-// "ventas": that would grant permissions the user does not have.
+// "vendedor": that would grant permissions the user does not have.
 export function normalizeRoles(names: string[]): Rol[] {
   return names
     .map(roleFromBackend)
@@ -73,8 +67,8 @@ export function normalizeRoles(names: string[]): Rol[] {
 export const ROL_TO_BACKEND: Record<Rol, string> = {
   [Rol.SUPER_ADMIN]: "SuperAdmin",
   [Rol.ADMIN]: "Admin",
-  [Rol.VENTAS]: "Ventas",
+  [Rol.VENDEDOR]: "Vendedor",
   [Rol.INVENTARIO]: "Inventario",
-  [Rol.CONTABILIDAD]: "Contabilidad",
+  [Rol.CONTADOR]: "Contador",
   [Rol.RRHH]: "RRHH",
 };
