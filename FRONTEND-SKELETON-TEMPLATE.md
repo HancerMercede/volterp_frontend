@@ -484,16 +484,21 @@ src/i18n/
 - TODOS los services importan este wrapper. Nunca `fetch` directo en services.
 - 401 → `useAuthStore.getState().logout()` + `window.dispatchEvent(new CustomEvent('auth:session-expired'))` + `throw new Error('SESSION_EXPIRED')`.
 - `fetchWithAuthJson<T>` es la versión que también parsea el body. Usar por defecto salvo que el endpoint devuelva `204 No Content` (donde se usa `fetchWithAuth` y se ignora el body).
+- `fetchWithAuthBlob` es la versión para respuestas binarias (el QR del e-CF y la representación impresa de un comprobante).
 - Headers: `'Content-Type': 'application/json'` se aplica por defecto. Cualquier header del caller pisa el default.
 - **NO** se importa React ni hooks aquí. Solo `useAuthStore.getState()` (acceso directo al state de Zustand).
 - **Errores**: el backend usa **tres** cuerpos de error a la vez (`ErrorResponse{error,details?}`, anónimo `{message}` y RFC 7807 `ProblemDetails`). El wrapper NO lee el body: lo pasa a `extractErrorMessage` (`src/utils/apiError.ts`), que es quien sabe cuál trae un mensaje que el usuario puede actuar. Un 5xx conserva el mensaje genérico porque su body puede llevar texto crudo de base de datos.
-- **Hexagonal — port vs adapter**: `fetchWithAuth` es el **port** (interfaz pública: `(url, options) => Response` y la variante `fetchWithAuthJson<T>`). La función `fetch` nativa adentro es el **adapter** actual. Si querés cambiar de HTTP client (`axios`, `ky`, `ofetch`, etc.), reescribís SOLO el cuerpo de las dos funciones — los ~12 services que importan este wrapper no se enteran porque el contrato público no cambia. Esta es la razón principal de existir del wrapper.
+- **Hexagonal — port vs adapter**: `fetchWithAuth` es el **port** (interfaz pública: `(url, options) => Response` y las variantes `fetchWithAuthJson<T>` y `fetchWithAuthBlob`). La función `fetch` nativa adentro es el **adapter** actual. Si querés cambiar de HTTP client (`axios`, `ky`, `ofetch`, etc.), reescribís SOLO el cuerpo de las tres funciones — los services que importan este wrapper no se enteran porque el contrato público no cambia. Esta es la razón principal de existir del wrapper.
 
 **Snippet:**
 
 ```typescript
 import { useAuthStore } from '../../stores/authStore';
-import { extractErrorMessage } from '../../utils/apiError';
+import {
+  createApiRequestError,
+  extractErrorMessage,
+  parseErrorBody,
+} from '../../utils/apiError';
 
 /**
  * Centralized fetch wrapper that:
@@ -525,8 +530,11 @@ export async function fetchWithAuth(
   }
 
   if (!response.ok) {
-    const body: unknown = await response.json().catch(() => null);
-    throw new Error(extractErrorMessage(body, response.status));
+    const raw = await response.text().catch(() => "");
+    throw createApiRequestError(
+      extractErrorMessage(parseErrorBody(raw), response.status),
+      response.status,
+    );
   }
 
   if (response.status === 204) return response;
@@ -544,6 +552,18 @@ export async function fetchWithAuthJson<T>(
   const response = await fetchWithAuth(url, options);
   if (response.status === 204) return null as T;
   return response.json();
+}
+
+/**
+ * Convenience wrapper for binary responses (the e-CF QR code and the printable
+ * representation of a comprobante).
+ */
+export async function fetchWithAuthBlob(
+  url: string,
+  options: RequestInit = {}
+): Promise<Blob> {
+  const response = await fetchWithAuth(url, options);
+  return response.blob();
 }
 ```
 
@@ -642,6 +662,15 @@ export const API_CONFIG = {
     CLIENTS: "/api/clients",
     PROJECTS: "/api/projects",
     DASHBOARD: "/api/dashboard",
+    COMPANY_ISSUERS: "/api/company-issuers",
+    ELECTRONIC_INVOICES: "/api/electronic-invoices",
+    ELECTRONIC_INVOICE_SEQUENCES: "/api/electronic-invoice-sequences",
+    ELECTRONIC_INVOICE_PRINT: "/api/electronicinvoiceprint",
+    COMPANY_CERTIFICATES: "/api/company-certificates",
+    COMPANY_EMISSION_MODE: "/api/company-emission-mode",
+    API_CREDENTIALS: "/api/api-credentials",
+    NORMAL_FISCAL_SEQUENCES: "/api/normal-fiscal-sequences",
+    ELECTRONIC_INVOICE_RECEPTION: "/api/ElectronicInvoiceReception",
   },
 };
 ```
