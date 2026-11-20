@@ -11,7 +11,8 @@ export type Modulo =
   | 'rrhh'
   | 'proyectos'
   | 'reportes'
-  | 'configuracion';
+  | 'configuracion'
+  | 'facturacion';
 
 export type PermisosModulo = Record<Permiso, boolean>;
 
@@ -30,6 +31,7 @@ export const MATRIZ_PERMISOS: MatrizPermisos = {
     proyectos: { read: true, write: true, delete: true },
     reportes: { read: true, write: true, delete: true },
     configuracion: { read: true, write: true, delete: true },
+    facturacion: { read: true, write: true, delete: true },
   },
   [Rol.ADMIN]: {
     dashboard: { read: true, write: true, delete: true },
@@ -43,6 +45,7 @@ export const MATRIZ_PERMISOS: MatrizPermisos = {
     proyectos: { read: true, write: true, delete: true },
     reportes: { read: true, write: true, delete: true },
     configuracion: { read: true, write: true, delete: true },
+    facturacion: { read: true, write: true, delete: true },
   },
   [Rol.VENTAS]: {
     dashboard: { read: true, write: true, delete: false },
@@ -56,6 +59,7 @@ export const MATRIZ_PERMISOS: MatrizPermisos = {
     proyectos: { read: false, write: false, delete: false },
     reportes: { read: true, write: false, delete: false },
     configuracion: { read: false, write: false, delete: false },
+    facturacion: { read: true, write: true, delete: true },
   },
   [Rol.INVENTARIO]: {
     dashboard: { read: true, write: true, delete: false },
@@ -69,6 +73,7 @@ export const MATRIZ_PERMISOS: MatrizPermisos = {
     proyectos: { read: false, write: false, delete: false },
     reportes: { read: true, write: false, delete: false },
     configuracion: { read: false, write: false, delete: false },
+    facturacion: { read: false, write: false, delete: false },
   },
   [Rol.CONTABILIDAD]: {
     dashboard: { read: true, write: true, delete: false },
@@ -82,6 +87,7 @@ export const MATRIZ_PERMISOS: MatrizPermisos = {
     proyectos: { read: false, write: false, delete: false },
     reportes: { read: true, write: false, delete: false },
     configuracion: { read: false, write: false, delete: false },
+    facturacion: { read: false, write: false, delete: false },
   },
   [Rol.RRHH]: {
     dashboard: { read: true, write: true, delete: false },
@@ -95,6 +101,7 @@ export const MATRIZ_PERMISOS: MatrizPermisos = {
     proyectos: { read: false, write: false, delete: false },
     reportes: { read: true, write: false, delete: false },
     configuracion: { read: false, write: false, delete: false },
+    facturacion: { read: false, write: false, delete: false },
   },
 };
 
@@ -110,4 +117,5 @@ export const MODULOS: { key: Modulo; label: string; icon: string }[] = [
   { key: 'proyectos', label: 'Proyectos', icon: '📋' },
   { key: 'reportes', label: 'Reportes', icon: '📑' },
   { key: 'configuracion', label: 'Configuración', icon: '⚙️' },
+  { key: 'facturacion', label: 'Facturación', icon: '🧾' },
 ];
