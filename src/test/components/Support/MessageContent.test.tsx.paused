@@ -1,0 +1,50 @@
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { MessageContent } from '../../../components/Support/MessageContent';
+
+describe('MessageContent', () => {
+  it('renders a numbered procedure as an ordered list with a badge per step', () => {
+    render(
+      <MessageContent
+        content={'Para gestionar empleados en Volterp:\n\n1. Ve al módulo `RRHH` en el menú lateral\n2. Haz clic en `+ Nuevo Empleado`'}
+      />
+    );
+
+    expect(screen.getByRole('list')).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('renders inline code as a code chip', () => {
+    render(<MessageContent content="Ve al módulo `RRHH` en el menú lateral" />);
+
+    expect(screen.getByText('RRHH').tagName).toBe('CODE');
+  });
+
+  it('renders nested bullets as a sub list of their step', () => {
+    render(
+      <MessageContent
+        content={'2. Encontrarás:\n   - Resumen de ventas y compras\n   - Productos más vendidos'}
+      />
+    );
+
+    expect(screen.getAllByRole('list')).toHaveLength(2);
+    expect(screen.getByText('Resumen de ventas y compras')).toBeInTheDocument();
+    expect(screen.getByText('Productos más vendidos')).toBeInTheDocument();
+  });
+
+  it('renders plain paragraphs as text', () => {
+    render(<MessageContent content={'Hola! Soy el asistente de soporte de Volterp.\n\n¿En qué puedo ayudarte hoy?'} />);
+
+    expect(screen.getByText(/Hola! Soy el asistente/)).toBeInTheDocument();
+    expect(screen.getByText('¿En qué puedo ayudarte hoy?')).toBeInTheDocument();
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+  });
+
+  it('renders a flat bullet list', () => {
+    render(<MessageContent content={'Puedo asistirte con temas como:\n- Inventario y productos\n- Ventas y compras'} />);
+
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
+});

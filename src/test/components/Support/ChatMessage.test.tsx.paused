@@ -1,0 +1,61 @@
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, expect, it } from 'vitest';
+import { ChatMessage } from '../../../components/Support/ChatMessage';
+
+const assistantMessage = {
+  id: 'm1',
+  role: 'assistant' as const,
+  content: 'Para gestionar empleados en Volterp:\n\n1. Ve al módulo `RRHH` en el menú lateral',
+  timestamp: new Date('2026-11-10T10:13:00'),
+};
+
+function renderInRouter(ui: React.ReactElement) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
+
+describe('ChatMessage', () => {
+  it('renders the assistant answer as a procedure', () => {
+    renderInRouter(<ChatMessage message={assistantMessage} />);
+
+    expect(screen.getByText('Para gestionar empleados en Volterp:')).toBeInTheDocument();
+    expect(screen.getByRole('list')).toBeInTheDocument();
+    expect(screen.getByText('RRHH').tagName).toBe('CODE');
+  });
+
+  it('renders the action link when the answer carries one', () => {
+    renderInRouter(
+      <ChatMessage
+        message={{ ...assistantMessage, action: { label: 'Abrir RRHH →', to: '/rrhh' } }}
+      />
+    );
+
+    const link = screen.getByRole('link', { name: /Abrir RRHH/ });
+    expect(link).toHaveAttribute('href', '/rrhh');
+  });
+
+  it('renders no action link when the answer has none', () => {
+    renderInRouter(<ChatMessage message={assistantMessage} />);
+
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('renders a user message as plain text without the assistant procedure', () => {
+    renderInRouter(
+      <ChatMessage
+        message={{ ...assistantMessage, role: 'user', content: '¿Cómo crear y gestionar empleados?' }}
+      />
+    );
+
+    expect(screen.getByText('¿Cómo crear y gestionar empleados?')).toBeInTheDocument();
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+  });
+
+  it('offers copy and feedback controls on assistant answers', () => {
+    renderInRouter(<ChatMessage message={assistantMessage} />);
+
+    expect(screen.getByRole('button', { name: /copiar/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /útil/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /no útil/i })).toBeInTheDocument();
+  });
+});
