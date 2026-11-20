@@ -49,7 +49,7 @@ export const MATRIZ_PERMISOS: MatrizPermisos = {
     ventas: { read: true, write: true, delete: false },
     compras: { read: false, write: false, delete: false },
     inventario: { read: false, write: false, delete: false },
-    clientes: { read: true, write: true, delete: false },
+    clientes: { read: true, write: false, delete: false },
     proveedores: { read: true, write: false, delete: false },
     contabilidad: { read: false, write: false, delete: false },
     rrhh: { read: false, write: false, delete: false },
