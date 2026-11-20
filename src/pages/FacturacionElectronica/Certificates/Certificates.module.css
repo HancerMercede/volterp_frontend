@@ -1,0 +1,41 @@
+.container {
+  padding: 0;
+}
+
+.searchBar {
+  margin-bottom: var(--space-lg);
+}
+
+.empty {
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.expiresCell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.expiredBadge {
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.status {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.statusUnknown {
+  font-weight: 600;
+  color: var(--warning-text);
+}
