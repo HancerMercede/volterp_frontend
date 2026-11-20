@@ -119,6 +119,10 @@ export const Invoices: React.FC = () => {
     async (invoice: ElectronicInvoiceStateDto) => {
       try {
         await retryInvoice(invoice.id);
+        // The answer of the retry does not carry the whole state of the
+        // comprobante (lastError, fiscalState, nextCheckAt), so the surface is
+        // read again: the backend is the one that says how it really is.
+        await fetchStateSurface(STATE_SURFACE_LIMIT);
         addToast(t("facturacion.invoices.retrySuccess"), "success");
       } catch (err) {
         addToast(
@@ -127,7 +131,7 @@ export const Invoices: React.FC = () => {
         );
       }
     },
-    [retryInvoice, addToast, t],
+    [retryInvoice, fetchStateSurface, addToast, t],
   );
 
   const handleViewQr = useCallback(

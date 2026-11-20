@@ -52,23 +52,11 @@ export const useApiCredentialStore = create<ApiCredentialStore>((set) => ({
     set({ loading: true, error: null });
     try {
       const issued = await apiCredentialService.createCredential(name, expiresAt);
-      set((state) => ({
-        credentials: [
-          ...state.credentials,
-          {
-            id: issued.id,
-            name: issued.name,
-            keyId: issued.keyId,
-            status: "Active",
-            expiresAt: issued.expiresAt,
-            updatedAt: null,
-            isExpired: false,
-            createdAt: new Date().toISOString(),
-          },
-        ],
-        totalCount: state.totalCount + 1,
-        loading: false,
-      }));
+      // The list is not touched here: `IssuedApiCredentialDto` does not carry
+      // the status or the creation date of the credential, so the row would
+      // be invented. The caller refreshes the list and the backend is the
+      // one that says how the credential really came out.
+      set({ loading: false });
       return issued;
     } catch (error) {
       set({

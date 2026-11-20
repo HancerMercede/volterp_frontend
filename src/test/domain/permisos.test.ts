@@ -1,33 +1,31 @@
 import { describe, expect, it } from "vitest";
-import { MATRIZ_PERMISOS, MODULOS } from "../../domain/constants/permisos";
-import { Rol } from "../../domain/constants/roles";
+import { MODULOS, type Modulo } from "../../domain/constants/permisos";
 
-describe("matriz de permisos", () => {
-  it("da la facturación a los roles que la usan", () => {
-    const fullAccess = { read: true, write: true, delete: true };
+/**
+ * The permission matrix is moving to the backend: the front consumes the
+ * permissions it receives and keeps only its own vocabulary (which modules
+ * exist and how they are presented). These tests pin that vocabulary, not
+ * the rows of the matrix, which stop being a front decision.
+ */
+const FACTURACION: Modulo = "facturacion";
 
-    expect(MATRIZ_PERMISOS[Rol.SUPER_ADMIN].facturacion).toEqual(fullAccess);
-    expect(MATRIZ_PERMISOS[Rol.ADMIN].facturacion).toEqual(fullAccess);
-    expect(MATRIZ_PERMISOS[Rol.VENTAS].facturacion).toEqual(fullAccess);
+describe("modulos de la aplicacion", () => {
+  it("declara el modulo de facturacion en el tipo de modulos", () => {
+    // If the module left the union, this file would not compile.
+    expect(FACTURACION).toBe("facturacion");
   });
 
-  it("no da la facturación a los roles que no la usan", () => {
-    const noAccess = { read: false, write: false, delete: false };
+  it("deja el modulo de facturacion en el menu", () => {
+    const modulo = MODULOS.find((item) => item.key === FACTURACION);
 
-    expect(MATRIZ_PERMISOS[Rol.INVENTARIO].facturacion).toEqual(noAccess);
-    expect(MATRIZ_PERMISOS[Rol.CONTABILIDAD].facturacion).toEqual(noAccess);
-    expect(MATRIZ_PERMISOS[Rol.RRHH].facturacion).toEqual(noAccess);
+    expect(modulo).toBeDefined();
+    expect(modulo?.label).toBeTruthy();
+    expect(modulo?.icon).toBeTruthy();
   });
 
-  it("deja el módulo de facturación en el menú", () => {
-    expect(MODULOS.some((modulo) => modulo.key === "facturacion")).toBe(true);
-  });
+  it("no repite modulos en el menu", () => {
+    const keys = MODULOS.map((modulo) => modulo.key);
 
-  it("da a cada rol una fila por cada módulo", () => {
-    const moduleKeys = MODULOS.map((modulo) => modulo.key).sort();
-
-    for (const rol of Object.values(Rol)) {
-      expect(Object.keys(MATRIZ_PERMISOS[rol]).sort()).toEqual(moduleKeys);
-    }
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });

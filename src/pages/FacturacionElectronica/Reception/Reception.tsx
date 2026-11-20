@@ -117,7 +117,7 @@ export const Reception: FC = () => {
           value: lastDecision.issuerTaxId,
         },
         {
-          label: t("facturacion.common.taxId"),
+          label: t("facturacion.common.receiverTaxId"),
           value: lastDecision.receiverTaxId,
         },
         { label: t("facturacion.common.encf"), value: lastDecision.encf },
@@ -126,7 +126,7 @@ export const Reception: FC = () => {
           value: lastDecision.documentType,
         },
         {
-          label: t("common.date"),
+          label: t("facturacion.common.signedAt"),
           value: formatDateTime(lastDecision.signedAt),
         },
         {
