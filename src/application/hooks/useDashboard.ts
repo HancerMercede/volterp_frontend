@@ -9,6 +9,10 @@ const ACTIVITY_TYPES = ['sale', 'payment', 'purchase', 'info'] as const;
 /** Shown when the API reports no comparable previous period. */
 const UNDEFINED_CHANGE = '—';
 
+/** Empty arrays with a stable reference: the memoized values do not change. */
+const EMPTY_SALES_CHART: SalesChartData[] = [];
+const EMPTY_CATEGORIES: CategoryData[] = [];
+
 const formatChange = (change: number | null): string => {
   if (change === null) return UNDEFINED_CHANGE;
   return `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`;
@@ -92,8 +96,8 @@ export function useDashboard() {
   }, [dashboard]);
 
   const dashboardStats: DashboardStats | null = dashboard?.stats ?? null;
-  const salesChartData: SalesChartData[] = dashboard?.salesChart ?? [];
-  const categoryData: CategoryData[] = dashboard?.categories ?? [];
+  const salesChartData: SalesChartData[] = dashboard?.salesChart ?? EMPTY_SALES_CHART;
+  const categoryData: CategoryData[] = dashboard?.categories ?? EMPTY_CATEGORIES;
   const categoryTotal = (dashboard?.categories ?? []).reduce(
     (total, category) => total + category.total,
     0,

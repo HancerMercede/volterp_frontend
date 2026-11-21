@@ -13,12 +13,26 @@ const COLORS = {
   grid: '#F3F4F6',
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+/** The entry of the tooltip: the bar, its label and its unit. */
+interface TooltipEntry {
+  name: string;
+  value: number | string;
+  color: string;
+  unit?: string;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className={styles.customTooltip}>
         <p className={styles.tooltipLabel}>{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index) => (
           <p key={index} style={{ color: entry.color }}>
             {entry.name}: <strong>{entry.value}{entry.unit || ''}</strong>
           </p>

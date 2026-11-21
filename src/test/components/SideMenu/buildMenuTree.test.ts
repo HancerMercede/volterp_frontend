@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { buildMenuTree } from "../../../components/SideMenu";
-import type { RouteDef } from "../../../components/SideMenu";
 
 describe("buildMenuTree", () => {
   it("cada segmento del path crea un nivel", () => {

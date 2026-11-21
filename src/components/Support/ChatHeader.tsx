@@ -1,11 +1,7 @@
 import { LifeBuoy } from 'lucide-react';
 import styles from './ChatHeader.module.css';
 
-interface ChatHeaderProps {
-  onClose?: () => void;
-}
-
-export function ChatHeader(_props: ChatHeaderProps) {
+export function ChatHeader() {
   return (
     <div className={styles.container}>
       <div className={styles.info}>

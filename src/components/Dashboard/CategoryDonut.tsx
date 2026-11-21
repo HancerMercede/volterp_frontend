@@ -7,9 +7,20 @@ interface CategoryDonutProps {
   totalLabel: string;
 }
 
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    const entry = payload[0].payload;
+/** The entry of the tooltip: the datum of the chart, with its colors. */
+interface TooltipEntry {
+  payload?: CategoryData;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipEntry[];
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+  const entry = payload?.[0]?.payload;
+
+  if (active && entry) {
     return (
       <div style={{
         background: 'white',

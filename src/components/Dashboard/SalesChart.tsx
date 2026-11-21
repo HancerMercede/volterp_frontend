@@ -25,7 +25,20 @@ const REFERENCE_BUCKETS = 7;
 const MAX_BAR_SIZE = 28;
 const MIN_BAR_SIZE = 4;
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+/** The entry of the tooltip: the bar and its label. */
+interface TooltipEntry {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div style={{
@@ -37,7 +50,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         fontSize: '12px'
       }}>
         <p style={{ fontWeight: 600, margin: '0 0 6px 0', color: '#292524' }}>{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index) => (
           <p key={index} style={{ margin: '2px 0', color: entry.color }}>
             {entry.name}: <strong>${entry.value.toLocaleString()}</strong>
           </p>
