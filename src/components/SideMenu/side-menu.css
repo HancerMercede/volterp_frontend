@@ -1,0 +1,139 @@
+/*
+ * The styles of the side menu.
+ *
+ * Every color and every measure comes from a "--sm-" variable: the theme is
+ * changed by overriding the variables in the ".sm" container, never by
+ * editing a selector. Every selector keeps the ".sm-" prefix to avoid
+ * collisions with the rest of the app.
+ */
+
+.sm {
+  --sm-bg: #ffffff;
+  --sm-hover: #f1f5f9;
+  --sm-text: #475569;
+  --sm-strong: #0f172a;
+  --sm-accent: #2563eb;
+  --sm-indent: 14px;
+  --sm-border: #e2e8f0;
+  --sm-muted: #94a3b8;
+  --sm-radius: 8px;
+  --sm-gap: 2px;
+  --sm-duration: 150ms;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--sm-gap);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: var(--sm-gap);
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--sm-bg);
+  color: var(--sm-text);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.sm *,
+.sm *::before,
+.sm *::after {
+  box-sizing: inherit;
+}
+
+.sm-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sm-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sm-item {
+  min-width: 0;
+}
+
+.sm-group,
+.sm-leaf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--sm-radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--sm-duration) ease,
+    color var(--sm-duration) ease;
+}
+
+.sm-group:hover,
+.sm-leaf:hover {
+  background: var(--sm-hover);
+  color: var(--sm-strong);
+}
+
+/* The focus is always visible, even with the mouse. */
+.sm-group:focus-visible,
+.sm-leaf:focus-visible {
+  outline: 2px solid var(--sm-accent);
+  outline-offset: 2px;
+}
+
+.sm-group:disabled,
+.sm-leaf--disabled {
+  color: var(--sm-muted);
+  cursor: not-allowed;
+}
+
+.sm-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sm-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.sm-badge {
+  flex: 0 0 auto;
+}
+
+/* The active leaf is the page the user is on. */
+.sm-leaf--active {
+  background: var(--sm-hover);
+  color: var(--sm-strong);
+  font-weight: 600;
+}
+
+.sm-panel {
+  overflow: hidden;
+}
+
+/* A closed panel is out of the way: its children never take the focus. */
+.sm-panel--closed {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sm,
+  .sm *,
+  .sm *::before,
+  .sm *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
