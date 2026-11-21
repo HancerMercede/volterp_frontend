@@ -49,8 +49,9 @@ export function ResumenVenta({
       </div>
 
       <div className={styles.formGroup}>
-        <label>{t("ventas.documentType")}</label>
+        <label htmlFor="venta-documento">{t("ventas.documentType")}</label>
         <select
+          id="venta-documento"
           value={documento}
           onChange={(e) =>
             onDocumentoChange(e.target.value as DocumentoVenta)

@@ -35,6 +35,126 @@ export interface PagedResult<T> {
   items: T[];
 }
 
+// ========================
+// Electronic invoice (fiscal document)
+// ========================
+
+/**
+ * The lifecycle of an e-CF: the first three are ours, before the document
+ * exists for the DGII; the rest are the verdicts the DGII gives.
+ */
+export type ElectronicInvoiceStatus =
+  | "Draft"
+  | "Signed"
+  | "Sent"
+  | "InProcess"
+  | "Accepted"
+  | "AcceptedConditionally"
+  | "Rejected"
+  | "Annulled";
+
+export interface ElectronicInvoiceDto {
+  id: string;
+  companyId: string;
+  saleId: string;
+  encf: string;
+  documentType: string;
+  issuerTaxId: string;
+  receiverTaxId: string | null;
+  subtotal: number;
+  itbis: number;
+  total: number;
+  status: ElectronicInvoiceStatus;
+  trackId: string | null;
+  securityCode: string | null;
+  qrUrl: string | null;
+  verdictNote: string | null;
+  requiresReview: boolean;
+  signedAt: string | null;
+  sentAt: string | null;
+}
+
+/**
+ * What the tenant sees of a document: the states that are still open. A
+ * closed verdict (accepted or annulled) is not one of them, because there is
+ * nothing left to do about it.
+ */
+export type SaleFiscalState =
+  | "PendingEmission"
+  | "InProcess"
+  | "Rejected"
+  | "RequiresReview";
+
+/** The colour that carries a fiscal state. */
+export type FiscalStateColor =
+  | "green"
+  | "amber"
+  | "red"
+  | "grey"
+  | "blue"
+  | "slate";
+
+export interface FiscalStateVocabulary {
+  /** The i18n key of the label, under the `ventas` namespace. */
+  labelKey: string;
+  color: FiscalStateColor;
+}
+
+/**
+ * The vocabulary of the DGII, in one place: the label the user reads and
+ * the colour that carries it. The state of the payment is a different thing
+ * and it never shares this table.
+ */
+export const FISCAL_STATE_VOCABULARY: Record<
+  ElectronicInvoiceStatus,
+  FiscalStateVocabulary
+> = {
+  Draft: { labelKey: "ventas.fiscalStatus.draft", color: "slate" },
+  Signed: { labelKey: "ventas.fiscalStatus.signed", color: "blue" },
+  Sent: { labelKey: "ventas.fiscalStatus.sent", color: "grey" },
+  InProcess: { labelKey: "ventas.fiscalStatus.inProcess", color: "grey" },
+  Accepted: { labelKey: "ventas.fiscalStatus.accepted", color: "green" },
+  AcceptedConditionally: {
+    labelKey: "ventas.fiscalStatus.acceptedConditionally",
+    color: "amber",
+  },
+  Rejected: { labelKey: "ventas.fiscalStatus.rejected", color: "red" },
+  Annulled: { labelKey: "ventas.fiscalStatus.annulled", color: "slate" },
+};
+
+/**
+ * The coarse state of a sale, in the same vocabulary. The states the DGII
+ * closed share the entry of the document they come from.
+ */
+export const SALE_FISCAL_STATE_VOCABULARY: Record<
+  SaleFiscalState,
+  FiscalStateVocabulary
+> = {
+  PendingEmission: {
+    labelKey: "ventas.fiscalStatus.pendingEmission",
+    color: "blue",
+  },
+  InProcess: FISCAL_STATE_VOCABULARY.InProcess,
+  Rejected: FISCAL_STATE_VOCABULARY.Rejected,
+  RequiresReview: {
+    labelKey: "ventas.fiscalStatus.requiresReview",
+    color: "amber",
+  },
+};
+
+/** The paint of every colour of the vocabulary. */
+export const FISCAL_STATE_PALETTE: Record<
+  FiscalStateColor,
+  { background: string; color: string }
+> = {
+  green: { background: "#D1FAE5", color: "#065F46" },
+  amber: { background: "#FEF3C7", color: "#92400E" },
+  red: { background: "#FEE2E2", color: "#991B1B" },
+  grey: { background: "#E5E7EB", color: "#374151" },
+  blue: { background: "#DBEAFE", color: "#1E40AF" },
+  slate: { background: "#E2E8F0", color: "#334155" },
+};
+
 // Sale types - centralizados
 export interface SaleItemDto {
   id: string;
@@ -60,6 +180,14 @@ export interface SaleDto {
   createdAt: string;
   updatedAt: string | null;
   items: SaleItemDto[];
+  /** The fiscal document of the sale, when it has one. */
+  electronicInvoiceId?: string | null;
+  /** The coarse fiscal state of the sale (null when nothing is open). */
+  fiscalState?: SaleFiscalState | null;
+  /** The fine state of the document of the sale, as the DGII named it. */
+  fiscalStatus?: ElectronicInvoiceStatus | null;
+  /** The note of the verdict of the DGII. */
+  fiscalNote?: string | null;
 }
 
 export interface CreateSaleItemRequest {

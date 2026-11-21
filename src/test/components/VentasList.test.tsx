@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import i18n from "../../i18n";
 import { VentasList } from "../../pages/Ventas/components/VentasList";
@@ -59,6 +59,15 @@ const search = (term: string) => {
   fireEvent.change(screen.getByRole("textbox"), { target: { value: term } });
 };
 
+const rowOf = (code: string): HTMLElement => {
+  const row = within(screen.getByRole("table"))
+    .getAllByRole("row")
+    .find((candidate) => within(candidate).queryByText(code));
+
+  if (!row) throw new Error(`No row for ${code}`);
+  return row;
+};
+
 describe("VentasList", () => {
   it("finds a sale by its business code", () => {
     render(<VentasListHarness ventas={VENTAS} />);
@@ -100,6 +109,134 @@ describe("VentasList", () => {
 
     const editAction = screen.getByTitle(i18n.t("common.edit"));
     expect(editAction).toHaveAttribute("data-action", "edit");
+  });
+
+  it("shows the fiscal state of the sale in its own column, with the vocabulary of the DGII", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({
+            id: "1",
+            code: "Vent-001",
+            electronicInvoiceId: "inv-1",
+            fiscalState: "Rejected",
+          }),
+          createVenta({
+            id: "2",
+            code: "Vent-002",
+            electronicInvoiceId: "inv-2",
+            fiscalState: "InProcess",
+          }),
+        ]}
+      />,
+    );
+
+    expect(screen.getByText(i18n.t("ventas.fiscalState"))).toBeInTheDocument();
+    expect(
+      within(rowOf("Vent-001")).getByText(
+        i18n.t("ventas.fiscalStatus.rejected"),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(rowOf("Vent-002")).getByText(
+        i18n.t("ventas.fiscalStatus.inProcess"),
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the fiscal state apart from the payment status of the sale", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({
+            id: "1",
+            code: "Vent-001",
+            status: "Completed",
+            electronicInvoiceId: "inv-1",
+            fiscalState: "Rejected",
+          }),
+        ]}
+      />,
+    );
+
+    const row = rowOf("Vent-001");
+    expect(
+      within(row).getByText(i18n.t("ventas.completed")),
+    ).toBeInTheDocument();
+    expect(
+      within(row).getByText(i18n.t("ventas.fiscalStatus.rejected")),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the state of the document of a sale that the DGII already accepted", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({
+            id: "1",
+            code: "Vent-001",
+            electronicInvoiceId: "inv-1",
+            fiscalState: null,
+            fiscalStatus: "Accepted",
+          }),
+        ]}
+      />,
+    );
+
+    const row = rowOf("Vent-001");
+    expect(
+      within(row).getByText(i18n.t("ventas.fiscalStatus.accepted")),
+    ).toBeInTheDocument();
+  });
+
+  it("falls back to the coarse state while the document is still in flight", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({
+            id: "1",
+            code: "Vent-001",
+            electronicInvoiceId: "inv-1",
+            fiscalState: "PendingEmission",
+            fiscalStatus: null,
+          }),
+        ]}
+      />,
+    );
+
+    const row = rowOf("Vent-001");
+    expect(
+      within(row).getByText(i18n.t("ventas.fiscalStatus.pendingEmission")),
+    ).toBeInTheDocument();
+  });
+
+  it("shows nothing in the fiscal column for a sale without a document", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({
+            id: "1",
+            code: "Vent-001",
+            electronicInvoiceId: null,
+            fiscalState: null,
+          }),
+        ]}
+      />,
+    );
+
+    const row = rowOf("Vent-001");
+    expect(
+      within(row).queryByText(i18n.t("ventas.fiscalStatus.rejected")),
+    ).not.toBeInTheDocument();
+    expect(
+      within(row).queryByText(i18n.t("ventas.fiscalStatus.inProcess")),
+    ).not.toBeInTheDocument();
+    expect(
+      within(row).queryByText(i18n.t("ventas.fiscalStatus.pendingEmission")),
+    ).not.toBeInTheDocument();
+    expect(
+      within(row).queryByText(i18n.t("ventas.fiscalStatus.accepted")),
+    ).not.toBeInTheDocument();
   });
 
   it("renders every row of the page it receives, even on page 2", () => {

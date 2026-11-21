@@ -53,12 +53,12 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
   const [selectedCliente, setSelectedCliente] = useState<string | null>(
     editingVenta?.clienteId ?? null,
   );
-  // The document of the sale. When the seller does not pick one, the
-  // client decides: a fiscal credit needs a tax id, a consumption one does not.
+  // The document of the sale. The default is the consumption one (the
+  // "factura sin valor fiscal", valid at any amount: the DGII models have
+  // one for a total over and one under DOP 250 mil). A fiscal credit is
+  // for a client that needs it, and it needs the tax id of the client.
   const [documentoElegido, setDocumentoElegido] = useState<DocumentoVenta | null>(null);
-  const clienteConRnc = clientes.find((c) => c.id === selectedCliente)?.taxId;
-  const documento: DocumentoVenta =
-    documentoElegido ?? (clienteConRnc ? "credito" : "consumo");
+  const documento: DocumentoVenta = documentoElegido ?? "consumo";
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
   const [productSearch, setProductSearch] = useState("");
 
@@ -138,6 +138,13 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     }
 
     const clienteData = clientes.find((c) => c.id === clienteElegido);
+
+    // A fiscal credit needs the tax id of the client: without it the
+    // backend refuses to complete the sale.
+    if (documento === "credito" && !clienteData?.taxId) {
+      addToast(t("ventas.fiscalCreditNeedsTaxId"), "warning");
+      return;
+    }
 
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
 

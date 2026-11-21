@@ -8,7 +8,12 @@ import {
 import { ITEMS_PER_PAGE } from "../../../config/pagination";
 import { useFilter } from "../../../hooks/useFilter";
 import { useClienteStore } from "../../../stores/clienteStore";
-import type { SaleDto } from "../../../domain/types";
+import {
+  FISCAL_STATE_PALETTE,
+  FISCAL_STATE_VOCABULARY,
+  SALE_FISCAL_STATE_VOCABULARY,
+  type SaleDto,
+} from "../../../domain/types";
 import styles from "./VentasList.module.css";
 
 interface Props {
@@ -112,6 +117,32 @@ export function VentasList({
             : t("ventas.pending")}
         </span>
       ),
+    },
+    {
+      // The fiscal state travels in its own column: it is not the state of
+      // the payment, and a rejected document does not cancel a paid sale.
+      // The fine state of the document wins; while the document is still in
+      // flight, the coarse state of the sale is the only thing there is.
+      key: "fiscalState",
+      header: t("ventas.fiscalState"),
+      render: (v: SaleDto) => {
+        const state = v.fiscalStatus
+          ? FISCAL_STATE_VOCABULARY[v.fiscalStatus]
+          : v.fiscalState
+            ? SALE_FISCAL_STATE_VOCABULARY[v.fiscalState]
+            : null;
+        if (!state) return null;
+
+        const palette = FISCAL_STATE_PALETTE[state.color];
+        return (
+          <span
+            className={styles.badge}
+            style={{ background: palette.background, color: palette.color }}
+          >
+            {t(state.labelKey)}
+          </span>
+        );
+      },
     },
   ];
 
