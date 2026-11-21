@@ -11,6 +11,7 @@ import type {
   CartItem,
   Product,
 } from "../../../domain/types";
+import { calculateSaleTotals, TaxCode } from "../../../domain/constants/taxCodes";
 import { ClienteSelector } from "./ClienteSelector";
 import { Carrito } from "./Carrito";
 import { SelectorProducto } from "./SelectorProducto";
@@ -37,6 +38,17 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     [editingSaleId, ventas],
   );
 
+  // The tax code of a line: the one the backend stored with it, or the one
+  // of the product in the catalogue when the line comes from a response
+  // that did not carry it (the store keeps an old copy of the sales).
+  const taxCodeOfLine = (item: {
+    productId: string;
+    taxCode?: TaxCode;
+  }): TaxCode =>
+    item.taxCode ??
+    productos.find((p) => p.id === item.productId)?.taxCode ??
+    TaxCode.ItbisTasa1;
+
   // Local form state — key remount pattern ensures fresh state on editingSaleId change
   const [carrito, setCarrito] = useState<CartItem[]>(
     editingVenta
@@ -47,6 +59,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
           unitPrice: item.unitPrice,
           quantity: item.quantity,
           subtotal: item.subtotal,
+          taxCode: taxCodeOfLine(item),
         }))
       : [],
   );
@@ -76,13 +89,21 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
   const [productSearch, setProductSearch] = useState("");
 
+  // The totals of the cart are the ones the backend computes when the sale
+  // is created: the ITBIS of every line with the tax code of its product.
   const totales = useMemo(() => {
-    const subtotal = carrito.reduce((acc, item) => acc + item.subtotal, 0);
+    const { subtotal, itbis, total } = calculateSaleTotals(carrito);
     return {
       subtotal,
-      itbis: subtotal * 0.18,
-      total: subtotal * 1.18,
+      itbis,
+      total,
       totalItems: carrito.reduce((acc, item) => acc + item.quantity, 0),
+      // The label names the rate only when the whole cart pays it: a cart
+      // with an exempt line or with two rates pays several, and saying
+      // "18%" would be a lie.
+      itbisRateIsUniform:
+        carrito.length > 0 &&
+        carrito.every((item) => item.taxCode === TaxCode.ItbisTasa1),
     };
   }, [carrito]);
 
@@ -108,6 +129,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
           unitPrice: producto.price,
           quantity: 1,
           subtotal: producto.price,
+          taxCode: producto.taxCode ?? TaxCode.ItbisTasa1,
         },
       ];
     });
@@ -260,6 +282,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
               subtotal={totales.subtotal}
               itbis={totales.itbis}
               total={totales.total}
+              itbisRateIsUniform={totales.itbisRateIsUniform}
               documento={documento}
               estado={editingVenta?.status === "Completed" ? "completada" : "pendiente"}
               onDocumentoChange={cambiarDocumento}

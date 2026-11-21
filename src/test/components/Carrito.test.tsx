@@ -11,6 +11,7 @@ const ITEM: CartItem = {
   unitPrice: 32,
   quantity: 2,
   subtotal: 64,
+  taxCode: "ItbisTasa1",
 };
 
 describe("Carrito", () => {

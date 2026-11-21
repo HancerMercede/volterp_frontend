@@ -1,4 +1,5 @@
 import type { UserStatus } from '../constants/userStatus';
+import type { TaxCode } from '../constants/taxCodes';
 import type {
   EcfDocumentType,
   EcfFiscalState,
@@ -170,6 +171,13 @@ export interface SaleItemDto {
   quantity: number;
   unitPrice: number;
   subtotal: number;
+  /**
+   * The tax code the backend stored with the line: the one it used to
+   * compute the ITBIS of the sale. It is optional only because the sale
+   * store keeps a persisted copy of the sales: a sale cached before this
+   * field existed has none.
+   */
+  taxCode?: TaxCode;
 }
 
 export interface SaleDto {
@@ -271,6 +279,15 @@ export interface ProductDto {
   category: string;
   description: string | null;
   price: number;
+  /**
+   * The tax code of the product: the ITBIS it pays. The API sends it (the
+   * backend DTO declares it) and the backend computes the totals of the
+   * sale with it. It is optional only because the product store keeps a
+   * persisted copy of the catalogue: a product cached before this field
+   * existed has none, and then the default of the backend applies
+   * (`ItbisTasa1`).
+   */
+  taxCode?: TaxCode;
   stock: number;
   categoryId: string | null;
   categoryName: string | null;
@@ -336,6 +353,11 @@ export interface CartItem {
   unitPrice: number;
   quantity: number;
   subtotal: number;
+  /**
+   * The tax code of the product of the line: it is what decides the ITBIS
+   * of the line, the same way it decides it in the backend.
+   */
+  taxCode: TaxCode;
 }
 
 // Supplier DTOs (from backend)

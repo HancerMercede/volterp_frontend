@@ -27,6 +27,24 @@ const PRODUCT: Product = {
   imageUrl: null,
   createdAt: "2026-11-01T10:00:00Z",
   updatedAt: null,
+  taxCode: "ItbisTasa1",
+};
+
+const EXEMPT_PRODUCT: Product = {
+  ...PRODUCT,
+  id: "p2",
+  code: "PRD-002",
+  name: "Pan de huevo",
+  taxCode: "Exento",
+};
+
+const RATE_TWO_PRODUCT: Product = {
+  ...PRODUCT,
+  id: "p3",
+  code: "PRD-003",
+  name: "Refresco",
+  price: 50,
+  taxCode: "ItbisTasa2",
 };
 
 const CLIENT: Client = {
@@ -85,6 +103,73 @@ describe("NuevaVenta", () => {
     await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
 
     expect(screen.getByText("1 item")).toBeInTheDocument();
+  });
+
+  it("shows the ITBIS the backend computes for a cart taxed at 18%", async () => {
+    renderPos();
+
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+
+    // The backend rounds the ITBIS of the line to two decimals and adds it
+    // to the subtotal: the cart shows the same three numbers.
+    expect(screen.getByText("Subtotal").nextElementSibling).toHaveTextContent(
+      "RD$ 32.00",
+    );
+    expect(screen.getByText("ITBIS (18%)").nextElementSibling).toHaveTextContent(
+      "RD$ 5.76",
+    );
+    expect(screen.getByText("TOTAL").nextElementSibling).toHaveTextContent(
+      "RD$ 37.76",
+    );
+  });
+
+  it("shows no ITBIS for a cart with an exempt product", async () => {
+    useProductoStore.setState({
+      productos: [EXEMPT_PRODUCT],
+      fetchProductos: vi.fn(),
+    });
+
+    renderPos();
+
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+
+    // The label does not name a rate that the cart does not pay.
+    expect(screen.getByText("ITBIS")).toBeInTheDocument();
+    expect(screen.queryByText("ITBIS (18%)")).toBeNull();
+    expect(screen.getByText("ITBIS").nextElementSibling).toHaveTextContent(
+      "RD$ 0.00",
+    );
+    expect(screen.getByText("TOTAL").nextElementSibling).toHaveTextContent(
+      "RD$ 32.00",
+    );
+  });
+
+  it("adds the ITBIS of every line when the cart mixes rates", async () => {
+    useProductoStore.setState({
+      productos: [PRODUCT, RATE_TWO_PRODUCT],
+      fetchProductos: vi.fn(),
+    });
+
+    renderPos();
+
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "Add to cart" })[0],
+    );
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "Add to cart" })[1],
+    );
+
+    // RD$ 32.00 at 18% is RD$ 5.76 and RD$ 50.00 at 16% is RD$ 8.00.
+    expect(screen.getByText("Subtotal").nextElementSibling).toHaveTextContent(
+      "RD$ 82.00",
+    );
+    expect(screen.getByText("ITBIS").nextElementSibling).toHaveTextContent(
+      "RD$ 13.76",
+    );
+    expect(screen.getByText("TOTAL").nextElementSibling).toHaveTextContent(
+      "RD$ 95.76",
+    );
+    expect(screen.queryByText("ITBIS (18%)")).toBeNull();
   });
 
   it("creates the sale with the client id and the denormalized client name", async () => {

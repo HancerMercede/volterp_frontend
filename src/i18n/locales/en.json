@@ -215,6 +215,7 @@
     "categories": "Categories",
     "subtotal": "Subtotal",
     "itbisLabel": "ITBIS (18%)",
+    "itbisLabelGeneric": "ITBIS",
     "totalAmount": "TOTAL",
     "orderCompleted": "Sale completed",
     "orderCancelled": "Sale cancelled",

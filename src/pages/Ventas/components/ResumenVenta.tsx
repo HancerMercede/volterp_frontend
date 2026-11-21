@@ -10,6 +10,12 @@ interface Props {
   subtotal: number;
   itbis: number;
   total: number;
+  /**
+   * True when every line of the cart pays the 18% rate, so the label can
+   * name it. A cart with an exempt line or with two rates pays several,
+   * and the label says so.
+   */
+  itbisRateIsUniform: boolean;
   documento: DocumentoVenta;
   /** The state of the sale: a pending sale is a draft, it can keep growing. */
   estado: "pendiente" | "completada";
@@ -23,6 +29,7 @@ export function ResumenVenta({
   subtotal,
   itbis,
   total,
+  itbisRateIsUniform,
   documento,
   estado,
   onDocumentoChange,
@@ -42,7 +49,11 @@ export function ResumenVenta({
           <span>{money(subtotal)}</span>
         </div>
         <div className={styles.totalRow}>
-          <span>{t("ventas.itbisLabel")}</span>
+          <span>
+            {itbisRateIsUniform
+              ? t("ventas.itbisLabel")
+              : t("ventas.itbisLabelGeneric")}
+          </span>
           <span>{money(itbis)}</span>
         </div>
         <div className={`${styles.totalRow} ${styles.totalFinal}`}>
