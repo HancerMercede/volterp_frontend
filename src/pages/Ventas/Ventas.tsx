@@ -87,6 +87,7 @@ export function Ventas() {
       {showForm && (
         <NuevaVenta
           key={editingSaleId ?? "new"}
+          variant="overlay"
           editingSaleId={editingSaleId}
           onSave={handleFormSave}
           onCancel={handleFormCancel}

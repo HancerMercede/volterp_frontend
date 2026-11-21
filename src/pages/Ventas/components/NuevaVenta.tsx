@@ -22,9 +22,20 @@ interface Props {
   editingSaleId: string | null;
   onSave: () => void;
   onCancel: () => void;
+  /**
+   * Como se dibuja el POS: "overlay" lo monta encima de la pantalla de
+   * ventas y "page" lo dibuja como una pagina completa (la ruta "/pos").
+   * El cuerpo del POS es el mismo en los dos casos.
+   */
+  variant?: "overlay" | "page";
 }
 
-export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
+export function NuevaVenta({
+  editingSaleId,
+  onSave,
+  onCancel,
+  variant = "overlay",
+}: Props) {
   const { t } = useTranslation();
   const { clientes } = useClienteStore();
   const productos = useProductos();
@@ -238,61 +249,65 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
     }
   };
 
-  return (
-    <div className={styles.modalFull}>
-      <div className={styles.posContainer}>
-        <SelectorProducto
-          productos={productos}
-          onAddProduct={agregarAlCarrito}
-          categoriaFilter={categoriaFilter}
-          onCategoriaChange={setCategoriaFilter}
-          searchTerm={productSearch}
-          onSearchChange={setProductSearch}
-        />
-        <aside className={styles.rail}>
-          <div className={styles.railHeader}>
-            <h3>{t("ventas.currentSale")}</h3>
-            <div className={styles.railHeaderActions}>
-              <span className={styles.itemCount}>
-                {t("ventas.itemCount", { count: totales.totalItems })}
-              </span>
-              <button
-                className={styles.railClear}
-                onClick={() => setCarrito([])}
-                disabled={carrito.length === 0}
-              >
-                {t("ventas.emptyCart")}
-              </button>
-            </div>
+  // El cuerpo del POS es uno solo: lo montan igual el overlay de las ventas
+  // y la pagina "/pos". Lo que cambia es el marco que lo rodea.
+  const cuerpo = (
+    <div className={styles.posContainer}>
+      <SelectorProducto
+        productos={productos}
+        onAddProduct={agregarAlCarrito}
+        categoriaFilter={categoriaFilter}
+        onCategoriaChange={setCategoriaFilter}
+        searchTerm={productSearch}
+        onSearchChange={setProductSearch}
+      />
+      <aside className={styles.rail}>
+        <div className={styles.railHeader}>
+          <h3>{t("ventas.currentSale")}</h3>
+          <div className={styles.railHeaderActions}>
+            <span className={styles.itemCount}>
+              {t("ventas.itemCount", { count: totales.totalItems })}
+            </span>
+            <button
+              className={styles.railClear}
+              onClick={() => setCarrito([])}
+              disabled={carrito.length === 0}
+            >
+              {t("ventas.emptyCart")}
+            </button>
           </div>
-          <div className={styles.railBody}>
-            <ClienteSelector
-              clientes={clientes}
-              selectedClienteId={selectedCliente}
-              onClienteSelect={setSelectedCliente}
-            />
-            <Carrito
-              items={carrito}
-              onQuantityChange={actualizarCantidad}
-              onRemoveItem={eliminarDelCarrito}
-            />
-          </div>
-          <div className={styles.railFooter}>
-            <ResumenVenta
-              subtotal={totales.subtotal}
-              itbis={totales.itbis}
-              total={totales.total}
-              itbisRateIsUniform={totales.itbisRateIsUniform}
-              documento={documento}
-              estado={editingVenta?.status === "Completed" ? "completada" : "pendiente"}
-              onDocumentoChange={cambiarDocumento}
-              onCompletarVenta={() => validateAndSubmit(true)}
-              onGuardarBorrador={() => validateAndSubmit(false)}
-              onCancelar={onCancel}
-            />
-          </div>
-        </aside>
-      </div>
+        </div>
+        <div className={styles.railBody}>
+          <ClienteSelector
+            clientes={clientes}
+            selectedClienteId={selectedCliente}
+            onClienteSelect={setSelectedCliente}
+          />
+          <Carrito
+            items={carrito}
+            onQuantityChange={actualizarCantidad}
+            onRemoveItem={eliminarDelCarrito}
+          />
+        </div>
+        <div className={styles.railFooter}>
+          <ResumenVenta
+            subtotal={totales.subtotal}
+            itbis={totales.itbis}
+            total={totales.total}
+            itbisRateIsUniform={totales.itbisRateIsUniform}
+            documento={documento}
+            estado={editingVenta?.status === "Completed" ? "completada" : "pendiente"}
+            onDocumentoChange={cambiarDocumento}
+            onCompletarVenta={() => validateAndSubmit(true)}
+            onGuardarBorrador={() => validateAndSubmit(false)}
+            onCancelar={onCancel}
+          />
+        </div>
+      </aside>
     </div>
   );
+
+  if (variant === "page") return cuerpo;
+
+  return <div className={styles.modalFull}>{cuerpo}</div>;
 }

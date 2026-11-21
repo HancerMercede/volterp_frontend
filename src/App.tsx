@@ -38,6 +38,9 @@ const InvalidLink = lazy(() =>
 const Ventas = lazy(() =>
   import("./pages/Ventas/Ventas").then((m) => ({ default: m.Ventas })),
 );
+const Pos = lazy(() =>
+  import("./pages/POS/Pos").then((m) => ({ default: m.Pos })),
+);
 const Compras = lazy(() =>
   import("./pages/Compras/Compras").then((m) => ({ default: m.Compras })),
 );
@@ -170,6 +173,7 @@ function AppRoutes() {
         >
           <Route path="/" element={<Dashboard />} />
           <Route path="/ventas" element={<Ventas />} />
+          <Route path="/pos" element={<Pos />} />
           <Route path="/compras" element={<Compras />} />
           <Route path="/inventario" element={<Inventario />} />
           <Route path="/clientes" element={<Clientes />} />

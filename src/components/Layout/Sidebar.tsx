@@ -1,72 +1,72 @@
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink, useNavigate } from "react-router-dom";
-import {
-  LayoutDashboard,
-  ShoppingCart,
-  ShoppingBag,
-  Package,
-  Users,
-  Truck,
-  TrendingUp,
-  UserCog,
-  FolderKanban,
-  FileBarChart,
-  Settings,
-  Receipt,
-  LifeBuoy,
-  LogOut,
-  type LucideIcon,
-} from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import { usePermission } from "../../hooks/usePermission";
-import { MODULOS } from "../../domain/constants/permisos";
+import { usePermissionStore } from "../../stores/permissionStore";
 import { ROL_LABELS } from "../../domain/constants/roles";
 import { getFirstName } from "../../utils/name";
+import { SideMenu, useMenuTree, type LeafProps } from "../SideMenu";
+import { useMenuItems } from "../../application/hooks/useMenuItems";
 import styles from "./Sidebar.module.css";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  dashboard: LayoutDashboard,
-  ventas: ShoppingCart,
-  compras: ShoppingBag,
-  inventario: Package,
-  clientes: Users,
-  proveedores: Truck,
-  contabilidad: TrendingUp,
-  rrhh: UserCog,
-  proyectos: FolderKanban,
-  reportes: FileBarChart,
-  configuracion: Settings,
-  facturacion: Receipt,
-  soporte: LifeBuoy,
-};
-
-const MODULE_TRANSLATIONS: Record<string, string> = {
-  dashboard: "sidebar.dashboard",
-  ventas: "sidebar.ventas",
-  compras: "sidebar.compras",
-  inventario: "sidebar.inventario",
-  clientes: "sidebar.clientes",
-  proveedores: "sidebar.proveedores",
-  contabilidad: "sidebar.contabilidad",
-  rrhh: "sidebar.rrhh",
-  proyectos: "sidebar.proyectos",
-  reportes: "sidebar.reportes",
-  configuracion: "sidebar.configuracion",
-  facturacion: "sidebar.facturacion",
-};
 
 export function Sidebar() {
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
-  const { canRead, userRoles } = usePermission();
+  const { userRoles } = usePermission();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  // Los permisos del llamante: el menu lateral los filtra (los modulos sin
+  // permiso desaparecen, y con ellos sus grupos), la app no los filtra otra
+  // vez.
+  const granted = usePermissionStore((state) => state.permissions);
+  const permissions = useMemo(() => [...granted], [granted]);
+
+  const { routes, groups } = useMenuItems();
+  const { items, activeId } = useMenuTree(routes, { pathname, groups });
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  const visibleNavItems = MODULOS.filter((modulo) => canRead(modulo.key));
+  // Las hojas las dibuja la app con su propio router: el modulo no conoce
+  // ningun router.
+  const renderLeaf = ({ item, active, disabled }: LeafProps) => {
+    const content = (
+      <>
+        <span className={styles.navIcon}>{item.icon}</span>
+        {item.label}
+      </>
+    );
+
+    if (disabled) {
+      return (
+        <span
+          className={`${styles.navLink} ${styles.navLinkDisabled}`}
+          aria-disabled="true"
+        >
+          {content}
+        </span>
+      );
+    }
+
+    return (
+      <NavLink
+        to={item.href ?? "/"}
+        // Cada hoja es una pantalla exacta: sin esto el enlace de un grupo
+        // ("/contabilidad") tambien se markaria activo dentro de "/contabilidad/cuentas".
+        end
+        className={({ isActive }) =>
+          `${styles.navLink} ${isActive || active ? styles.navLinkActive : ""}`
+        }
+      >
+        {content}
+      </NavLink>
+    );
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -80,39 +80,16 @@ export function Sidebar() {
           VOLT<span className={styles.logoTextAccent}> ERP</span>
         </span>
       </div>
-      <nav className={styles.navScroll}>
-        <nav className={styles.nav}>
-          {visibleNavItems.map((item) => {
-            const Icon = ICON_MAP[item.key];
-            return (
-              <NavLink
-                key={item.key}
-                to={`/${item.key === "dashboard" ? "" : item.key}`}
-                className={({ isActive }) =>
-                  `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
-                }
-                end={item.key === "dashboard"}
-              >
-                <span className={styles.navIcon}>
-                  {Icon && <Icon size={20} strokeWidth={1.8} />}
-                </span>
-                {t(MODULE_TRANSLATIONS[item.key] || item.key)}
-              </NavLink>
-            );
-          })}
-          <NavLink
-            to="/soporte"
-            className={({ isActive }) =>
-              `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
-            }
-          >
-            <span className={styles.navIcon}>
-              <LifeBuoy size={20} strokeWidth={1.8} />
-            </span>
-            {t("sidebar.soporte")}
-          </NavLink>
-        </nav>
-      </nav>
+      <div className={styles.navScroll}>
+        <SideMenu
+          items={items}
+          activeId={activeId}
+          permissions={permissions}
+          renderLeaf={renderLeaf}
+          ariaLabel={t("sidebar.menuLabel")}
+          className={styles.navMenu}
+        />
+      </div>
       <div className={styles.userSection}>
         <div className={styles.user}>
           <img
