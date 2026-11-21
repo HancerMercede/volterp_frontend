@@ -1,0 +1,111 @@
+/* The state of the taxpayer and the reasons it cannot bill right now.
+   The colours of the tone live here: the component only says which state
+   it is showing. */
+
+/* ─── Compact (the point of sale) ─────────────────────────────────── */
+
+.compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: var(--text-sm);
+}
+
+.headline {
+  font-weight: 700;
+}
+
+/* ─── Full (the configuration) ────────────────────────────────────── */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.badge {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+.reasonsTitle {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 20px;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+  font-size: var(--text-sm);
+}
+
+.factName {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.factValue {
+  color: var(--text-primary);
+}
+
+.note {
+  color: var(--text-secondary);
+}
+
+.typesTitle {
+  margin-top: var(--space-sm);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.typeName {
+  margin-left: 6px;
+  color: var(--text-secondary);
+}
+
+/* ─── The tone of the state ───────────────────────────────────────── */
+
+.toneReady {
+  background: var(--success-soft);
+  color: var(--success-text);
+}
+
+.toneNotReady {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.toneUnverified {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+}

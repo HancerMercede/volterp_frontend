@@ -13,3 +13,8 @@ export { ConfirmModal } from './ConfirmModal';
 export { DynamicFormFields } from './DynamicFormFields';
 export { VolterpMark } from './VolterpMark';
 export { ErrorBoundary } from './ErrorBoundary';
+export { ReadinessChecklist } from './ReadinessChecklist';
+export type {
+  ReadinessChecklistProps,
+  ReadinessVariant,
+} from './ReadinessChecklist';

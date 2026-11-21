@@ -14,6 +14,7 @@ export const API_CONFIG = {
     USERS: "/api/users",
     PERMISSIONS: "/api/permissions",
     SALES: "/api/sales",
+    SALES_READINESS: "/api/sales/readiness",
     ELECTRONIC_INVOICES: "/api/ElectronicInvoices",
     SUPPLIERS: "/api/suppliers",
     PURCHASES: "/api/purchases",

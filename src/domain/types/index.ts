@@ -555,6 +555,63 @@ export type Account = AccountDto;
 // The backend takes the company from the JWT: the request never carries it.
 export type AccountRequest = Omit<AccountDto, "id">;
 
+// ========================
+// Fiscal readiness
+// ========================
+
+/**
+ * Why the taxpayer cannot bill right now. The code is what the front
+ * translates: the message of the backend is in English and the screen of
+ * the cashier is not.
+ */
+export interface FiscalBlockerDto {
+  /** "certificate-missing" | "range-missing" | "range-expired" | "range-exhausted" | "range-annulled" | "range-without-expiry" */
+  code: string;
+  /** The message of the backend, in English: for the logs, not for the screen. */
+  message: string;
+  /**
+   * The code of the type the blocker speaks of ("B02"), or null when it
+   * speaks of no type (the certificate one). The front matches it with the
+   * types of the answer: the message of the backend is never read to know
+   * which type it is.
+   */
+  documentTypeCode: string | null;
+}
+
+/** One type the taxpayer can issue on the path its sale takes today. */
+export interface FiscalReadinessDocumentTypeDto {
+  /** The code the taxpayer knows: "E32" in the electronic path, "B02" in the paper one. */
+  code: string;
+  documentType: number;
+  name: string;
+  isIssuable: boolean;
+  /** The numbers the range has left. */
+  remaining: number;
+  rangeExpiresAt: string | null;
+  /** The same codes as the blockers, or null when the type can be issued. */
+  blockerCode: string | null;
+  blocker: string | null;
+}
+
+/**
+ * Whether the taxpayer can bill right now: the path the sale takes today
+ * (electronic or paper), the certificate that signs it and the room the
+ * ranges have left.
+ */
+export interface FiscalReadinessDto {
+  /** "Electronic" | "Normal" */
+  emissionMode: string;
+  /** The path the sale takes right now: false in the normal mode and inside a contingency. */
+  usesElectronicEmission: boolean;
+  isInContingency: boolean;
+  hasValidCertificate: boolean;
+  certificateExpiresAt: string | null;
+  /** The taxpayer can bill right now. */
+  isReady: boolean;
+  blockers: FiscalBlockerDto[];
+  documentTypes: FiscalReadinessDocumentTypeDto[];
+}
+
 // Electronic invoicing (e-CF) contract. It lives in its own module because it
 // is the only contract with this many entities, and it is re-exported here so
 // the import surface of `domain/types` stays the same for every module.

@@ -12,9 +12,11 @@ import {
   Modal,
   PageHeader,
   Pagination,
+  ReadinessChecklist,
   SearchInput,
   Table,
 } from "../../../components/UI";
+import { useFiscalReadiness } from "../../../application/hooks/useFiscalReadiness";
 import { useCrudForm, type FormField } from "../../../hooks/useCrudForm";
 import { useDeleteConfirm } from "../../../hooks/useDeleteConfirm";
 import { useFilter } from "../../../hooks/useFilter";
@@ -80,6 +82,14 @@ export const Settings: React.FC = () => {
   const { t } = useTranslation();
   const { canWrite, canDelete } = usePermission();
   const { addToast } = useUIStore();
+
+  // Si el contribuyente puede facturar hoy: es la pantalla donde se declara
+  // el modo de emision, asi que es donde se mira que falta para facturar.
+  const {
+    readiness,
+    loading: readinessLoading,
+    error: readinessError,
+  } = useFiscalReadiness();
 
   const {
     emissionMode,
@@ -492,6 +502,13 @@ export const Settings: React.FC = () => {
           onSave={handleSaveContingency}
         />
       </div>
+
+      <ReadinessChecklist
+        variant="full"
+        readiness={readiness}
+        loading={readinessLoading}
+        error={readinessError}
+      />
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>

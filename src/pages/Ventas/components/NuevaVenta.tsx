@@ -5,6 +5,8 @@ import { useVentaStore } from "../../../stores/ventaStore";
 import { useCompanyStore } from "../../../stores/companyStore";
 import { useUIStore } from "../../../stores/uiStore";
 import { useProductos } from "../../../hooks/useColecciones";
+import { useFiscalReadiness } from "../../../application/hooks/useFiscalReadiness";
+import { ReadinessChecklist } from "../../../components/UI";
 import type {
   CreateSaleRequest,
   UpdateSaleRequest,
@@ -23,9 +25,8 @@ interface Props {
   onSave: () => void;
   onCancel: () => void;
   /**
-   * Como se dibuja el POS: "overlay" lo monta encima de la pantalla de
-   * ventas y "page" lo dibuja como una pagina completa (la ruta "/pos").
-   * El cuerpo del POS es el mismo en los dos casos.
+   * Como se dibuja el POS: "overlay" encima de la pantalla de ventas y
+   * "page" como pagina completa (la ruta "/pos"). El cuerpo es el mismo.
    */
   variant?: "overlay" | "page";
 }
@@ -42,6 +43,13 @@ export function NuevaVenta({
   const { ventas, createVenta, updateVenta, completeVenta } = useVentaStore();
   const { currentCompany, error: companyError } = useCompanyStore();
   const { addToast } = useUIStore();
+
+  // Si el contribuyente puede facturar hoy: la venta nunca espera por esto.
+  const {
+    readiness,
+    loading: readinessLoading,
+    error: readinessError,
+  } = useFiscalReadiness();
 
   // Derive editing data from store (ventas loaded by parent before this component mounts via key-remount pattern)
   const editingVenta = useMemo(
@@ -249,8 +257,7 @@ export function NuevaVenta({
     }
   };
 
-  // El cuerpo del POS es uno solo: lo montan igual el overlay de las ventas
-  // y la pagina "/pos". Lo que cambia es el marco que lo rodea.
+  // El cuerpo es uno solo: lo montan el overlay de las ventas y la pagina.
   const cuerpo = (
     <div className={styles.posContainer}>
       <SelectorProducto
@@ -277,6 +284,12 @@ export function NuevaVenta({
             </button>
           </div>
         </div>
+        <ReadinessChecklist
+          variant="compact"
+          readiness={readiness}
+          loading={readinessLoading}
+          error={readinessError}
+        />
         <div className={styles.railBody}>
           <ClienteSelector
             clientes={clientes}

@@ -5,6 +5,7 @@ import type {
   SaleDto,
   CreateSaleRequest,
   UpdateSaleRequest,
+  FiscalReadinessDto,
 } from "../../domain/types";
 
 export const saleService = {
@@ -45,6 +46,15 @@ export const saleService = {
     });
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/pending?${params}`,
+    );
+  },
+
+  // Whether the taxpayer can bill right now: the path the sale takes, the
+  // certificate that signs it and the room the ranges have left. The seller
+  // asks it before charging, so it lives with the sales.
+  async getReadiness(): Promise<FiscalReadinessDto> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES_READINESS}`,
     );
   },
 
