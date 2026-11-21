@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { FileText, CheckCircle, Save } from "lucide-react";
-import { Button } from "../../../components/UI";
+import { Button, SearchableSelect } from "../../../components/UI";
 import { money } from "../../../utils/currency";
 import styles from "./ResumenVenta.module.css";
 
@@ -55,18 +55,17 @@ export function ResumenVenta({
         <span className={styles.estadoBadge}>
           {estado === "completada" ? t("ventas.completed") : t("ventas.pending")}
         </span>
-        <label htmlFor="venta-documento">{t("ventas.documentType")}</label>
-        <select
+        <SearchableSelect
           id="venta-documento"
+          label={t("ventas.documentType")}
+          options={[
+            { value: "consumo", label: t("ventas.documentConsumption") },
+            { value: "credito", label: t("ventas.documentFiscalCredit") },
+            { value: "comercial", label: t("ventas.documentCommercial") },
+          ]}
           value={documento}
-          onChange={(e) =>
-            onDocumentoChange(e.target.value as DocumentoVenta)
-          }
-        >
-          <option value="consumo">{t("ventas.documentConsumption")}</option>
-          <option value="credito">{t("ventas.documentFiscalCredit")}</option>
-          <option value="comercial">{t("ventas.documentCommercial")}</option>
-        </select>
+          onChange={(value) => onDocumentoChange(value as DocumentoVenta)}
+        />
         <span className={styles.hint}>{t("ventas.documentHint")}</span>
       </div>
 

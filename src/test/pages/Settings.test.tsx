@@ -171,6 +171,19 @@ beforeEach(() => {
   });
 });
 
+import { usePermissionStore } from "../../stores/permissionStore";
+
+// Los permisos ahora los da la API: el test declara lo que el llamador
+// puede hacer, como lo haria el servidor.
+usePermissionStore.setState({
+  permissions: new Set([
+    "facturacion.read",
+    "facturacion.write",
+    "facturacion.delete",
+  ]),
+  status: "ready",
+});
+
 describe("Settings", () => {
   it("muestra el modo de emision y la contingencia actuales", async () => {
     renderPage();

@@ -34,6 +34,7 @@ export const MODULOS: { key: Modulo; label: string; icon: string }[] = [
   { key: 'proyectos', label: 'Proyectos', icon: '📋' },
   { key: 'reportes', label: 'Reportes', icon: '📑' },
   { key: 'configuracion', label: 'Configuración', icon: '⚙️' },
+  { key: 'facturacion', label: 'Facturación', icon: '🧾' },
 ];
 
 // The matrix of the roles does not live here any more: the API answers what

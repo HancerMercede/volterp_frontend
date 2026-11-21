@@ -165,17 +165,20 @@ describe("NuevaVenta", () => {
     const addToast = vi.fn();
     useVentaStore.setState({ createVenta });
     useUIStore.setState({ addToast });
+    useClienteStore.setState({ clientes: [{ ...CLIENT, taxId: null }] });
 
     renderPos();
 
     await chooseClient();
     await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
-    await userEvent.selectOptions(
+    await userEvent.click(
       screen.getByRole("combobox", { name: "Document type" }),
-      "credito",
     );
-    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /fiscal credit/i }),
+    );
 
+    // The choice was refused: the sale never became a fiscal credit.
     expect(createVenta).not.toHaveBeenCalled();
     expect(addToast).toHaveBeenCalledWith(
       "A fiscal credit needs the client tax id.",

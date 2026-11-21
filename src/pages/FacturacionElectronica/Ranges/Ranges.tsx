@@ -20,7 +20,7 @@ import { usePagination } from "../../../hooks/usePagination";
 import { usePermission } from "../../../hooks/usePermission";
 import { ITEMS_PER_PAGE } from "../../../config/pagination";
 import {
-  ECF_DOCUMENT_TYPES,
+  ISSUABLE_DOCUMENT_TYPES,
   parseEcfDocumentType,
   type EcfDocumentType,
 } from "../../../domain/constants/electronicInvoicing";
@@ -41,8 +41,13 @@ type RangeFormValues = {
   expiresAt: string;
 };
 
-/** The type of comprobante travels as the backend names it (spec S7/S10). */
-const DOCUMENT_TYPE_OPTIONS = ECF_DOCUMENT_TYPES.map((value) => ({
+/**
+ * The type of comprobante travels as the backend names it (spec S7/S10).
+ *
+ * Only the types this company issues have a range: the reception types are
+ * the sequences of the supplier.
+ */
+const DOCUMENT_TYPE_OPTIONS = ISSUABLE_DOCUMENT_TYPES.map((value) => ({
   value,
   label: value,
 }));

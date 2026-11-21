@@ -36,7 +36,7 @@ describe("e-CF services contract", () => {
     await companyIssuerService.getIssuers(2, 20);
 
     expect(jsonMock).toHaveBeenCalledWith(
-      expect.stringContaining("/api/company-issuers?pageNumber=2&pageSize=20"),
+      expect.stringContaining("/api/CompanyIssuers?pageNumber=2&pageSize=20"),
     );
   });
 
@@ -44,7 +44,7 @@ describe("e-CF services contract", () => {
     await companyIssuerService.getIssuerById("issuer-1");
 
     expect(jsonMock).toHaveBeenCalledWith(
-      expect.stringContaining("/api/company-issuers/issuer-1"),
+      expect.stringContaining("/api/CompanyIssuers/issuer-1"),
     );
   });
 
@@ -55,7 +55,7 @@ describe("e-CF services contract", () => {
     });
 
     const [url, options] = jsonMock.mock.calls[0];
-    expect(url).toEqual(expect.stringContaining("/api/company-issuers"));
+    expect(url).toEqual(expect.stringContaining("/api/CompanyIssuers"));
     expect(options?.method).toBe("POST");
     expect(JSON.parse(String(options?.body))).toEqual({
       taxId: "101010101",
@@ -70,7 +70,7 @@ describe("e-CF services contract", () => {
     });
 
     const [url, options] = jsonMock.mock.calls[0];
-    expect(url).toEqual(expect.stringContaining("/api/company-issuers/issuer-1"));
+    expect(url).toEqual(expect.stringContaining("/api/CompanyIssuers/issuer-1"));
     expect(options?.method).toBe("PUT");
     expect(JSON.parse(String(options?.body))).toEqual({
       legalName: "Empresa Demo",
@@ -82,7 +82,7 @@ describe("e-CF services contract", () => {
     await electronicInvoiceService.getStateSurface();
 
     expect(jsonMock).toHaveBeenCalledWith(
-      expect.stringContaining("/api/electronic-invoices/state?limit=50"),
+      expect.stringContaining("/api/ElectronicInvoices/state?limit=50"),
     );
   });
 
@@ -91,7 +91,7 @@ describe("e-CF services contract", () => {
 
     const [url, options] = jsonMock.mock.calls[0];
     expect(url).toEqual(
-      expect.stringContaining("/api/electronic-invoices/invoice-1/retry"),
+      expect.stringContaining("/api/ElectronicInvoices/invoice-1/retry"),
     );
     expect(options?.method).toBe("POST");
   });
@@ -103,15 +103,15 @@ describe("e-CF services contract", () => {
 
     expect(blobMock).toHaveBeenNthCalledWith(
       1,
-      expect.stringContaining("/api/electronic-invoices/invoice-1/qr.svg"),
+      expect.stringContaining("/api/ElectronicInvoices/invoice-1/qr.svg"),
     );
     expect(blobMock).toHaveBeenNthCalledWith(
       2,
-      expect.stringContaining("/api/electronic-invoices/invoice-1/qr.png"),
+      expect.stringContaining("/api/ElectronicInvoices/invoice-1/qr.png"),
     );
     expect(blobMock).toHaveBeenNthCalledWith(
       3,
-      expect.stringContaining("/api/electronicinvoiceprint/invoice-1"),
+      expect.stringContaining("/api/ElectronicInvoicePrint/invoice-1"),
     );
   });
 
@@ -119,7 +119,7 @@ describe("e-CF services contract", () => {
     await electronicInvoiceSequenceService.getSequences();
     expect(jsonMock).toHaveBeenCalledWith(
       expect.stringContaining(
-        "/api/electronic-invoice-sequences?pageNumber=1&pageSize=10",
+        "/api/ElectronicInvoiceSequences?pageNumber=1&pageSize=10",
       ),
     );
 
@@ -145,7 +145,7 @@ describe("e-CF services contract", () => {
     await electronicInvoiceSequenceService.annulSequence("range-1");
     const [annulUrl, annulOptions] = jsonMock.mock.calls[2];
     expect(annulUrl).toEqual(
-      expect.stringContaining("/api/electronic-invoice-sequences/range-1/annul"),
+      expect.stringContaining("/api/ElectronicInvoiceSequences/range-1/annul"),
     );
     expect(annulOptions?.method).toBe("POST");
   });
@@ -160,7 +160,7 @@ describe("e-CF services contract", () => {
 
     const [url, options] = jsonMock.mock.calls[0];
     expect(url).toEqual(
-      expect.stringContaining("/api/company-certificates"),
+      expect.stringContaining("/api/CompanyCertificates"),
     );
     expect(options?.method).toBe("POST");
     expect(JSON.parse(String(options?.body))).toEqual({
@@ -174,7 +174,7 @@ describe("e-CF services contract", () => {
   it("reads and updates the emission mode of the company", async () => {
     await companyEmissionModeService.getEmissionMode();
     expect(jsonMock).toHaveBeenCalledWith(
-      expect.stringContaining("/api/company-emission-mode"),
+      expect.stringContaining("/api/CompanyEmissionMode"),
     );
 
     await companyEmissionModeService.updateEmissionMode({
@@ -182,7 +182,7 @@ describe("e-CF services contract", () => {
     });
     const [modeUrl, modeOptions] = jsonMock.mock.calls[1];
     expect(modeUrl).toEqual(
-      expect.stringContaining("/api/company-emission-mode"),
+      expect.stringContaining("/api/CompanyEmissionMode"),
     );
     expect(modeOptions?.method).toBe("PUT");
     expect(JSON.parse(String(modeOptions?.body))).toEqual({
@@ -196,7 +196,7 @@ describe("e-CF services contract", () => {
     });
     const [contingencyUrl, contingencyOptions] = jsonMock.mock.calls[2];
     expect(contingencyUrl).toEqual(
-      expect.stringContaining("/api/company-emission-mode/contingency"),
+      expect.stringContaining("/api/CompanyEmissionMode/contingency"),
     );
     expect(contingencyOptions?.method).toBe("PUT");
     expect(JSON.parse(String(contingencyOptions?.body))).toEqual({
@@ -209,7 +209,7 @@ describe("e-CF services contract", () => {
   it("issues an API credential and revokes it with a DELETE", async () => {
     await apiCredentialService.createCredential("Integración POS", null);
     const [url, options] = jsonMock.mock.calls[0];
-    expect(url).toEqual(expect.stringContaining("/api/api-credentials"));
+    expect(url).toEqual(expect.stringContaining("/api/ApiCredentials"));
     expect(options?.method).toBe("POST");
     expect(JSON.parse(String(options?.body))).toEqual({
       name: "Integración POS",
@@ -219,7 +219,7 @@ describe("e-CF services contract", () => {
     await apiCredentialService.deleteCredential("credential-1");
     const [deleteUrl, deleteOptions] = rawMock.mock.calls[0];
     expect(deleteUrl).toEqual(
-      expect.stringContaining("/api/api-credentials/credential-1"),
+      expect.stringContaining("/api/ApiCredentials/credential-1"),
     );
     expect(deleteOptions?.method).toBe("DELETE");
     expect(deleteOptions?.body).toBeUndefined();
@@ -229,7 +229,7 @@ describe("e-CF services contract", () => {
     await normalFiscalSequenceService.getNormalSequences();
     expect(jsonMock).toHaveBeenCalledWith(
       expect.stringContaining(
-        "/api/normal-fiscal-sequences?pageNumber=1&pageSize=10",
+        "/api/NormalFiscalSequences?pageNumber=1&pageSize=10",
       ),
     );
 
@@ -262,7 +262,7 @@ describe("e-CF services contract", () => {
     });
     const [updateUrl, updateOptions] = jsonMock.mock.calls[2];
     expect(updateUrl).toEqual(
-      expect.stringContaining("/api/normal-fiscal-sequences/normal-1"),
+      expect.stringContaining("/api/NormalFiscalSequences/normal-1"),
     );
     expect(updateOptions?.method).toBe("PUT");
   });

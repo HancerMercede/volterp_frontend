@@ -59,6 +59,20 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
   // for a client that needs it, and it needs the tax id of the client.
   const [documentoElegido, setDocumentoElegido] = useState<DocumentoVenta | null>(null);
   const documento: DocumentoVenta = documentoElegido ?? "consumo";
+
+  // A fiscal credit needs the tax id of the client: without it the backend
+  // refuses to complete the sale. The picker cannot disable the option, so
+  // the choice is taken back and said out loud.
+  const cambiarDocumento = (nuevo: DocumentoVenta) => {
+    if (nuevo === "credito") {
+      const clienteData = clientes.find((c) => c.id === selectedCliente);
+      if (!clienteData?.taxId) {
+        addToast(t("ventas.fiscalCreditNeedsTaxId"), "warning");
+        return;
+      }
+    }
+    setDocumentoElegido(nuevo);
+  };
   const [categoriaFilter, setCategoriaFilter] = useState("todos");
   const [productSearch, setProductSearch] = useState("");
 
@@ -248,7 +262,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
               total={totales.total}
               documento={documento}
               estado={editingVenta?.status === "Completed" ? "completada" : "pendiente"}
-              onDocumentoChange={setDocumentoElegido}
+              onDocumentoChange={cambiarDocumento}
               onCompletarVenta={() => validateAndSubmit(true)}
               onGuardarBorrador={() => validateAndSubmit(false)}
               onCancelar={onCancel}

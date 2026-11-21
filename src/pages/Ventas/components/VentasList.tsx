@@ -8,12 +8,14 @@ import {
 import { ITEMS_PER_PAGE } from "../../../config/pagination";
 import { useFilter } from "../../../hooks/useFilter";
 import { useClienteStore } from "../../../stores/clienteStore";
+import { Link } from "react-router-dom";
 import {
   FISCAL_STATE_PALETTE,
   FISCAL_STATE_VOCABULARY,
   SALE_FISCAL_STATE_VOCABULARY,
   type SaleDto,
 } from "../../../domain/types";
+import { COMPROBANTES_ROUTE } from "./comprobantesRoute";
 import styles from "./VentasList.module.css";
 
 interface Props {
@@ -131,15 +133,31 @@ export function VentasList({
           : v.fiscalState
             ? SALE_FISCAL_STATE_VOCABULARY[v.fiscalState]
             : null;
-        if (!state) return null;
 
-        const palette = FISCAL_STATE_PALETTE[state.color];
-        return (
+        const badge = state ? (
           <span
             className={styles.badge}
-            style={{ background: palette.background, color: palette.color }}
+            style={{
+              background: FISCAL_STATE_PALETTE[state.color].background,
+              color: FISCAL_STATE_PALETTE[state.color].color,
+            }}
           >
             {t(state.labelKey)}
+          </span>
+        ) : (
+          <span className={styles.emptyValue}>{t("ventas.emptyValue")}</span>
+        );
+
+        // A sale that has a document can go to the comprobantes module; one
+        // without it has nothing to show there.
+        if (!v.electronicInvoiceId) return badge;
+
+        return (
+          <span className={styles.fiscalCell}>
+            {badge}
+            <Link to={COMPROBANTES_ROUTE} className={styles.comprobanteLink}>
+              {t("ventas.viewInvoice")}
+            </Link>
           </span>
         );
       },

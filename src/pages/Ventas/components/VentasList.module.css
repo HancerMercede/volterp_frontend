@@ -48,3 +48,20 @@
 .fiscalLink:hover {
   color: var(--text-primary);
 }
+
+/* La celda fiscal: el estado y, cuando hay, el acceso al comprobante. */
+.fiscalCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.emptyValue {
+  color: var(--text-muted);
+}
+
+.comprobanteLink {
+  font-size: 12px;
+  color: var(--primary);
+  text-decoration: underline;
+}

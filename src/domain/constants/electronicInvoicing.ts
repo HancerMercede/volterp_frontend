@@ -30,6 +30,22 @@ export type EcfDocumentType = (typeof EcfDocumentType)[keyof typeof EcfDocumentT
 export const ECF_DOCUMENT_TYPES: readonly EcfDocumentType[] =
   Object.values(EcfDocumentType);
 
+/**
+ * The types this company can issue: the ones the backend issues from a sale.
+ *
+ * The reception types (purchases, minor expenses, special regimes, the
+ * government, exports and payments abroad) are the sequences of the supplier,
+ * not ours, and the notes need the document they modify. The catalogue stays
+ * complete, so the day the business issues one of them it is one line here
+ * and no migration.
+ */
+export const ISSUABLE_DOCUMENT_TYPES: readonly EcfDocumentType[] = [
+  EcfDocumentType.Consumer,
+  EcfDocumentType.FiscalCredit,
+  EcfDocumentType.DebitNote,
+  EcfDocumentType.CreditNote,
+];
+
 /** `EcfStatus` — lifecycle of the document inside the backend queue. */
 export const EcfStatus = {
   Draft: "Draft",

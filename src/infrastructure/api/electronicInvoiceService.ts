@@ -66,7 +66,7 @@ export const electronicInvoiceService = {
     );
   },
 
-  async getPrintableInvoice(id: string): Promise<Blob {
+  async getPrintableInvoice(id: string): Promise<Blob> {
     return fetchWithAuthBlob(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.ELECTRONIC_INVOICE_PRINT}/${id}`,
     );
