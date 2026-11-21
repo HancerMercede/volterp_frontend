@@ -1,63 +1,44 @@
 /**
- * La declaracion del menu de la aplicacion.
- *
- * Solo datos: aqui no hay React ni traducciones. Las etiquetas y los iconos
- * se nombran por CLAVE (la app tiene dos idiomas y sus propios iconos) y el
- * hook que convierte esta declaracion en las rutas que consume el menu
- * lateral los resuelve (src/application/hooks/useMenuItems.ts).
- *
- * Los paths son los paths del router: el guard de deriva
- * (src/test/pages/menuRoutes.test.ts) revisa que los dos no se separen, para
- * que el menu nunca prometa una pantalla que no existe.
+ * La declaracion del menu de la aplicacion: solo datos, sin React ni
+ * traducciones. Las etiquetas y los iconos viajan por CLAVE y useMenuItems
+ * los resuelve. Los paths son los del router y el guard de deriva
+ * (menuRoutes.test.ts) revisa que los dos no se separen.
  */
 
-/** Una pantalla de la aplicacion. */
 export interface MenuRoute {
-  /** El path de la ruta ("/ventas"). */
   path: string;
   /** La clave i18n de la etiqueta ("sidebar.ventas"). */
   labelKey: string;
   /** La clave del icono de la app ("ventas"). */
   iconKey: string;
-  /** El permiso que el llamante necesita para verla ("ventas.read"). */
   permission?: string;
   /** El orden dentro de su padre: ascendente. */
   order: number;
   /** Una pantalla oculta no llega al menu. */
   hidden?: boolean;
   /**
-   * El prefijo del grupo del que cuelga la pantalla ("/ventas"). La
-   * pantalla cuelga de ese grupo aunque su propio path no este debajo: el
-   * POS vive en "/pos" y pertenece a "/ventas".
+   * El prefijo del grupo del que cuelga la pantalla ("/ventas"), nunca un id.
+   * La pantalla cuelga de ese grupo aunque su path no este debajo: el POS
+   * vive en "/pos" y pertenece a "/ventas".
    */
   parent?: string;
 }
 
-/** Un grupo de pantallas: el modulo que tiene mas de una pantalla. */
 export interface MenuGroup {
-  /** El prefijo del path del grupo ("/ventas"). */
   prefix: string;
-  /** La clave i18n de la etiqueta del grupo ("sidebar.ventas"). */
   labelKey: string;
-  /** La clave del icono del grupo ("ventas"). */
   iconKey: string;
-  /** El permiso que el llamante necesita para ver el grupo. */
   permission?: string;
   /** El orden del grupo dentro del menu: ascendente. */
   order: number;
-  /**
-   * La clave i18n de la etiqueta del enlace del grupo que tambien es una
-   * ruta (la pantalla principal del modulo).
-   */
+  /** La clave i18n de la etiqueta del enlace del grupo que tambien es una ruta. */
   indexLabelKey?: string;
 }
 
 /**
- * Las pantallas de la app, en el orden en que el menu las dibuja.
- *
- * La lista de modulos no cambia: lo que cambia es como se dibuja. Un
- * modulo con mas de una pantalla se dibuja como grupo (sus hijos se
- * indetan) y un modulo con una sola pantalla sigue siendo una hoja plana.
+ * La lista de modulos no cambia: lo que cambia es como se dibuja. Un modulo
+ * con mas de una pantalla se dibuja como grupo y uno con una sola pantalla
+ * sigue siendo una hoja plana.
  */
 export const MENU_ROUTES: MenuRoute[] = [
   {
@@ -75,8 +56,7 @@ export const MENU_ROUTES: MenuRoute[] = [
     order: 20,
   },
   {
-    // El POS vive dentro de ventas: cuelga del grupo aunque su path no
-    // este debajo de el.
+    // El POS vive dentro de ventas: cuelga del grupo aunque su path no este debajo.
     path: '/pos',
     labelKey: 'sidebar.pos',
     iconKey: 'pos',
@@ -240,11 +220,7 @@ export const MENU_ROUTES: MenuRoute[] = [
   },
 ];
 
-/**
- * Los grupos del menu: los modulos que tienen mas de una pantalla. El
- * grupo se dibuja como un boton que abre y cierra, y sus hijos se
- * indetan.
- */
+/** Los grupos del menu: los modulos que tienen mas de una pantalla. */
 export const MENU_GROUPS: MenuGroup[] = [
   {
     prefix: '/ventas',

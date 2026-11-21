@@ -4,24 +4,18 @@ import type { GroupMeta, RouteDef } from "../../components/SideMenu";
 import { ICON_MAP } from "../../domain/constants/icons";
 import { MENU_GROUPS, MENU_ROUTES } from "../../domain/constants/menuRoutes";
 
-/** El tamano y el grosor de los iconos del menu lateral. */
 const ICON_SIZE = 20;
 const ICON_STROKE = 1.8;
 
 export interface MenuItems {
-  /** Las rutas del menu, listas para useMenuTree. */
   routes: RouteDef[];
-  /** Los grupos del menu, indexados por su prefijo de path. */
   groups: Record<string, GroupMeta>;
 }
 
 /**
- * Convierte la declaracion del menu (src/domain/constants/menuRoutes.ts) en
- * lo que el menu lateral consume: las etiquetas ya traducidas y los iconos
- * ya resueltos.
- *
- * El resultado es estable: el menu lateral reconstruye el arbol solo cuando
- * las rutas cambian, no en cada render.
+ * Convierte la declaracion del menu en lo que el menu lateral consume: las
+ * etiquetas ya traducidas y los iconos ya resueltos. El resultado es
+ * estable: el arbol se reconstruye solo cuando las rutas cambian.
  */
 export function useMenuItems(): MenuItems {
   const { t } = useTranslation();

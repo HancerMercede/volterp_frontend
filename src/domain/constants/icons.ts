@@ -29,11 +29,8 @@ import {
 } from "lucide-react";
 
 /**
- * Los iconos del menu, por clave.
- *
- * La declaracion del menu (src/domain/constants/menuRoutes.ts) nombra el
- * icono por clave y el hook que arma el menu (useMenuItems) lo busca aqui:
- * hay un solo mapa de iconos en la app.
+ * Los iconos del menu por clave: la declaracion del menu nombra el icono
+ * por clave y useMenuItems lo busca aqui, en el unico mapa de iconos.
  */
 export const ICON_MAP: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,

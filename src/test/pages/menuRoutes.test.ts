@@ -5,10 +5,7 @@ import { MENU_GROUPS, MENU_ROUTES } from "../../domain/constants/menuRoutes";
 
 const APP_FILE = join(process.cwd(), "src", "App.tsx");
 
-/**
- * The paths the router really serves: the "path" of every <Route> of
- * App.tsx.
- */
+/** The "path" of every <Route> of App.tsx. */
 const readRouterPaths = (): string[] => {
   const content = readFileSync(APP_FILE, "utf8");
   const pattern = /<Route\s+path="([^"]+)"/g;
@@ -22,10 +19,8 @@ const readRouterPaths = (): string[] => {
 };
 
 /**
- * The routes that are not in the menu, with the reason why. Every route of
- * the router is either in the menu or here: the menu never promises a
- * screen that does not exist, and a route that leaves the menu has to say
- * why.
+ * The routes that are not in the menu, with the reason why: every route of
+ * the router is either in the menu or here.
  */
 const OUT_OF_MENU: Record<string, string> = {
   "/login": "es publica: el menu es de las pantallas protegidas",

@@ -6,7 +6,6 @@ import { Sidebar } from "../../components/Layout/Sidebar";
 import { useAuthStore } from "../../stores/authStore";
 import { usePermissionStore } from "../../stores/permissionStore";
 
-/** Los permisos que tiene el llamante: los que el API le devolvio. */
 const PERMISOS = [
   "dashboard.read",
   "ventas.read",

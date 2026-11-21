@@ -1,7 +1,4 @@
-/**
- * The public API of the side menu. Nothing outside this module imports an
- * internal file: everything goes through here.
- */
+/** Nothing outside this module imports an internal file: everything goes through here. */
 export { SideMenu } from "./SideMenu";
 export { useMenuTree } from "./useMenuTree";
 export type { MenuTree, UseMenuTreeOptions } from "./useMenuTree";

@@ -1,19 +1,13 @@
 import type { ReactNode } from "react";
 import type { GroupMeta, MenuItem, RouteDef } from "./types";
 
-/**
- * The suffix a group gets when the group is also a route: the group does
- * not navigate and its own link becomes the first child.
- */
+/** The suffix a group gets when the group is also a route. */
 export const GROUP_SUFFIX = "::group";
 
-/** The label of the link of a group that is also a route, when nobody gives one. */
 const DEFAULT_INDEX_LABEL = "Resumen";
 
 interface BuildNode {
-  /** The prefix of the node inside the tree ("/ventas", "/ventas/pos"). */
   prefix: string;
-  /** The path of the route the node points to, when the node is a route. */
   path?: string;
   label?: string;
   icon?: ReactNode;
@@ -22,34 +16,22 @@ interface BuildNode {
   permission?: string;
   disabled?: boolean;
   indexLabel?: string;
-  /** The node is the target of a route. */
   isRoute: boolean;
-  /** The node is the link of a group that is also a route. */
   isIndexLink: boolean;
-  /** The children of the node, indexed by their prefix. */
   children: Map<string, BuildNode>;
-  /** The order of declaration, used when nobody gives an order. */
   seq: number;
 }
 
 /**
  * Builds the tree of the menu out of the flat routes of the app.
  *
- * The rules:
- * 1. Every segment of a path creates a level and the id of a node is its
- *    accumulated prefix ("/ventas/pos").
- * 2. The routes with a parameter (":id"), with a wildcard ("*") or hidden
- *    do not reach the menu.
- * 3. The label is inferred from the segment when the route does not give
- *    one. The inference does not add accents: give the label explicitly
- *    when it has them.
- * 4. The order is the "order" of the route, ascending; the routes without
- *    an order keep the order of declaration.
- * 5. A group that is also a route gets the id "<prefix>::group" and its own
- *    link becomes the first child ("Resumen" or the "indexLabel").
- *
- * The routes with a "parent" hang from the group of that prefix even when
- * their own path is not under it.
+ * 1. Every segment of a path is a level and the id is the accumulated prefix.
+ * 2. The routes with ":param", with "*" or hidden do not reach the menu.
+ * 3. The label is inferred from the segment; the inference adds no accents.
+ * 4. The order is the "order" of the route; without it, the declaration order.
+ * 5. A group that is also a route does not navigate: its link is the first child.
+ * 6. The routes with a "parent" hang from the group of that prefix even when
+ *    their own path is not under it.
  */
 export function buildMenuTree(
   routes: RouteDef[],
@@ -66,12 +48,9 @@ export function buildMenuTree(
     seq,
   });
 
-  // The key of a node inside the children of its parent: the path of the
-  // route it points to, or its prefix when it is not a route.
+  // The key of a node inside its parent: the path it points to, or its prefix.
   const keyOf = (node: BuildNode): string => node.path ?? node.prefix;
 
-  // Creates the node of a prefix and the chain of its ancestors, when they
-  // do not exist yet.
   const ensureNode = (
     prefix: string,
     seq: number,
@@ -112,7 +91,6 @@ export function buildMenuTree(
     node.seq = seq;
   };
 
-  // The routes that do not reach the menu.
   const entries = routes
     .map((route, index) => ({ route, index }))
     .filter(({ route }) => {
@@ -121,14 +99,12 @@ export function buildMenuTree(
       return true;
     });
 
-  // 1. The natural tree: every segment of the path creates a level.
   for (const { route, index } of entries) {
     if (route.parent) continue;
     const path = normalizePath(route.path);
     const segments = path.split("/").filter(Boolean);
     let node: BuildNode | undefined;
     if (segments.length === 0) {
-      // The root path ("/"): a leaf at the root of the menu.
       node = createNode("/", index);
       byPrefix.set("/", node);
       roots.set(keyOf(node), node);
@@ -142,8 +118,6 @@ export function buildMenuTree(
     if (node) applyRoute(node, route, path, index);
   }
 
-  // 2. The routes that hang from another group: the prefix of the group is
-  //    resolved to the group node here, the app never writes an id.
   for (const { route, index } of entries) {
     if (!route.parent) continue;
     const mount = normalizePath(route.parent);
@@ -159,7 +133,6 @@ export function buildMenuTree(
     group.children.set(keyOf(node), node);
   }
 
-  // 3. The metadata of the groups that are not routes.
   for (const [prefix, meta] of Object.entries(groups)) {
     const node = byPrefix.get(normalizePath(prefix));
     if (!node) continue;
@@ -172,8 +145,6 @@ export function buildMenuTree(
     node.indexLabel ??= meta.indexLabel;
   }
 
-  // 4. A group that is also a route does not navigate: its own link
-  //    becomes the first child.
   const finalize = (node: BuildNode): void => {
     for (const child of node.children.values()) finalize(child);
     if (node.children.size === 0 || !node.isRoute || !node.path) return;
@@ -195,7 +166,6 @@ export function buildMenuTree(
   };
   for (const root of roots.values()) finalize(root);
 
-  // 5. The tree of MenuItem.
   const usedIds = new Set<string>();
   const claimId = (preferred: string, fallback: string): string => {
     if (!usedIds.has(preferred)) {
@@ -247,7 +217,7 @@ export function buildMenuTree(
 }
 
 /**
- * The id of the leaf that the pathname points at: the href with the longest
+ * The id of the leaf the pathname points at: the href with the longest
  * prefix that matches wins. The root ("/") only matches exactly.
  */
 export function matchActiveId(
@@ -277,13 +247,11 @@ export function matchActiveId(
   return best ? best.id : null;
 }
 
-/** Whether the pathname is the href itself or hangs from it. */
 const matchesPathname = (pathname: string, href: string): boolean => {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
 };
 
-/** The order of the children of a group. */
 const compareNodes = (a: BuildNode, b: BuildNode): number => {
   if (a.isIndexLink !== b.isIndexLink) return a.isIndexLink ? -1 : 1;
   const orderA = a.order ?? Number.POSITIVE_INFINITY;
@@ -292,7 +260,6 @@ const compareNodes = (a: BuildNode, b: BuildNode): number => {
   return a.seq - b.seq;
 };
 
-/** The paths of the routes and of the groups are compared without noise. */
 const normalizePath = (path: string): string => {
   const trimmed = path.trim();
   if (!trimmed) return "/";
@@ -303,11 +270,6 @@ const normalizePath = (path: string): string => {
   return withSlash;
 };
 
-/**
- * The label of a node without one: the last segment of its path. The
- * inference does not add accents: give the label explicitly when it has
- * them.
- */
 const inferLabel = (value: string): string => {
   const segments = value.split("/").filter(Boolean);
   const last = segments[segments.length - 1];

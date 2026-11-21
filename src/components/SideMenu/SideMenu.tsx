@@ -5,21 +5,15 @@ import type { LeafProps, MenuItem, SideMenuProps } from "./types";
 import "./side-menu.css";
 
 interface MenuContext {
-  /** The id of the active leaf, when there is one. */
   activeId: string | null;
-  /** The ids of the groups that are open. */
   openIds: Set<string>;
-  /** Opens or closes a group. */
   toggle: (id: string) => void;
-  /** Draws a leaf: the app passes its own router link here. */
   renderLeaf?: (props: LeafProps) => ReactNode;
 }
 
 /**
- * The side menu.
- *
- * The tree comes from useMenuTree, the pathname and the permissions come
- * from the app: this component knows no router and no translation.
+ * The side menu: the tree comes from useMenuTree and the permissions from
+ * the app. The module knows no router, no translation and no domain.
  */
 export function SideMenu({
   items,
@@ -41,8 +35,9 @@ export function SideMenu({
     () => new Set(defaultOpenIds ?? []),
   );
 
-  // With an active id the menu follows it and keeps open the groups that
-  // hold the active leaf. Without it the menu keeps its own state.
+  // The open/closed state of the groups lives here. With an active id the
+  // menu follows it and keeps open the groups that hold it; without it the
+  // menu keeps its own state.
   const controlled = activeId !== undefined;
   const activeAncestors = useMemo(
     () => (activeId ? ancestorIds(visible, activeId) : []),
@@ -208,9 +203,7 @@ function NodeContent({ item }: { item: MenuItem }) {
   );
 }
 
-/** The id of the panel of a group: it is the target of aria-controls. */
 const panelIdOf = (id: string): string => `sm-panel-${encodeURIComponent(id)}`;
 
-/** Every level is indented the same measure, taken from the theme. */
 const indentOf = (level: number): string =>
   `calc(var(--sm-indent) * ${level})`;

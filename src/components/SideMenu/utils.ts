@@ -1,9 +1,6 @@
 import type { MenuItem } from "./types";
 
-/**
- * The chain of nodes that goes from the root to the node with the given id.
- * An empty array means the tree does not hold that id.
- */
+/** The chain of nodes from the root to the node; empty when the tree does not hold it. */
 export function findPath(items: MenuItem[], id: string): MenuItem[] {
   for (const item of items) {
     if (item.id === id) return [item];
@@ -14,27 +11,20 @@ export function findPath(items: MenuItem[], id: string): MenuItem[] {
   return [];
 }
 
-/**
- * The ids of the ancestors of a node: the groups that have to be open for
- * the node to be seen. The node itself is not one of them.
- */
+/** The ids of the ancestors of a node (the node itself is not one of them). */
 export function ancestorIds(items: MenuItem[], id: string): string[] {
   return findPath(items, id)
     .slice(0, -1)
     .map((item) => item.id);
 }
 
-/** Whether the tree holds a node with the given id. */
 export function containsId(items: MenuItem[], id: string): boolean {
   return findPath(items, id).length > 0;
 }
 
 /**
- * Prunes the nodes the caller may not see.
- *
- * Without permissions every node stays. A node with a permission stays only
- * when the caller holds it, and it takes its whole subtree with it when it
- * goes. A group left without children goes too.
+ * Prunes the nodes the caller may not see: a node with a permission stays
+ * only when the caller holds it, and it takes its whole subtree with it.
  */
 export function filterByPermission(
   items: MenuItem[],

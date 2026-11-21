@@ -33,10 +33,7 @@ const collectKeys = (files: string[]): string[] => {
   return [...keys].sort();
 };
 
-/**
- * The keys the declaration of the menu names: the menu is written with
- * keys, not with the words of a language.
- */
+/** The keys the menu declaration names: the menu travels by key, not by words. */
 const collectDeclaredKeys = (): string[] => {
   const keys = new Set<string>();
 

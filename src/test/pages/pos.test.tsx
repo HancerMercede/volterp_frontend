@@ -53,7 +53,6 @@ const renderEn = (ruta: string) =>
     </MemoryRouter>,
   );
 
-/** El cuerpo del POS: el mismo en la pagina y en el overlay. */
 const esperarCuerpoDelPos = () => {
   expect(
     screen.getByRole("heading", { name: "Productos" }),
