@@ -40,13 +40,9 @@ export interface PagedResult<T> {
   items: T[];
 }
 
-// ========================
-// Electronic invoice (fiscal document)
-// ========================
-
 /**
- * The lifecycle of an e-CF: the first three are ours, before the document
- * exists for the DGII; the rest are the verdicts the DGII gives.
+ * The lifecycle of an e-CF: the first three are ours (before the document
+ * exists for the DGII), the rest are the verdicts the DGII gives.
  */
 export type ElectronicInvoiceStatus =
   | "Draft"
@@ -81,8 +77,8 @@ export interface ElectronicInvoiceDto {
 
 /**
  * What the tenant sees of a document: the states that are still open. A
- * closed verdict (accepted or annulled) is not one of them, because there is
- * nothing left to do about it.
+ * closed verdict (accepted or annulled) is not one of them: there is nothing
+ * left to do about it.
  */
 export type SaleFiscalState =
   | "PendingEmission"
@@ -90,7 +86,6 @@ export type SaleFiscalState =
   | "Rejected"
   | "RequiresReview";
 
-/** The colour that carries a fiscal state. */
 export type FiscalStateColor =
   | "green"
   | "amber"
@@ -100,15 +95,13 @@ export type FiscalStateColor =
   | "slate";
 
 export interface FiscalStateVocabulary {
-  /** The i18n key of the label, under the `ventas` namespace. */
   labelKey: string;
   color: FiscalStateColor;
 }
 
 /**
- * The vocabulary of the DGII, in one place: the label the user reads and
- * the colour that carries it. The state of the payment is a different thing
- * and it never shares this table.
+ * The vocabulary of the DGII, in one place: the label the user reads and the
+ * colour that carries it. The state of the payment never shares this table.
  */
 export const FISCAL_STATE_VOCABULARY: Record<
   ElectronicInvoiceStatus,
@@ -147,7 +140,6 @@ export const SALE_FISCAL_STATE_VOCABULARY: Record<
   },
 };
 
-/** The paint of every colour of the vocabulary. */
 export const FISCAL_STATE_PALETTE: Record<
   FiscalStateColor,
   { background: string; color: string }
@@ -160,7 +152,6 @@ export const FISCAL_STATE_PALETTE: Record<
   slate: { background: "#E2E8F0", color: "#334155" },
 };
 
-// Sale types - centralizados
 export interface SaleItemDto {
   id: string;
   productId: string;
@@ -198,13 +189,9 @@ export interface SaleDto {
   issuerTaxId?: string | null;
   subtotal?: number | null;
   itbis?: number | null;
-  /** The fiscal document of the sale, when it has one. */
   electronicInvoiceId?: string | null;
-  /** The coarse fiscal state of the sale (null when nothing is open). */
   fiscalState?: EcfFiscalState | null;
-  /** The fine state of the document of the sale, as the DGII named it. */
   fiscalStatus?: ElectronicInvoiceStatus | null;
-  /** The note of the verdict of the DGII. */
   fiscalNote?: string | null;
 }
 
@@ -246,9 +233,6 @@ export interface UpdateSaleRequest {
   documentType?: TipoDocumentoVenta;
 }
 
-// ========================
-// Client DTOs (from backend)
-// ========================
 export interface ClientDto {
   id: string;
   code: string;
@@ -267,7 +251,6 @@ export interface ClientDto {
   empresa?: string;
 }
 
-// Cliente - mismo tipo para UI y API
 export type Client = ClientDto;
 
 export type ClientRequest = Partial<ClientDto>;
@@ -345,7 +328,6 @@ export interface Project {
   progress: number;
 }
 
-// Cart types
 export interface CartItem {
   productId: string;
   productName: string;
@@ -353,14 +335,10 @@ export interface CartItem {
   unitPrice: number;
   quantity: number;
   subtotal: number;
-  /**
-   * The tax code of the product of the line: it is what decides the ITBIS
-   * of the line, the same way it decides it in the backend.
-   */
+  /** The tax code of the line: it decides the ITBIS of the line, as the backend does. */
   taxCode: TaxCode;
 }
 
-// Supplier DTOs (from backend)
 export interface SupplierDto {
   id: string;
   code: string;
@@ -376,10 +354,9 @@ export interface SupplierDto {
   updatedAt: string | null;
 }
 
-// Supplier request — Partial cubre create (viene completo del form) y update
+// Partial cubre create (viene completo del form) y update.
 export type SupplierRequest = Partial<SupplierDto>;
 
-// Purchase DTOs (from backend)
 export interface PurchaseItemDto {
   id: string;
   productId: string;
@@ -405,7 +382,6 @@ export interface PurchaseDto {
 
 export type PurchaseRequest = Partial<PurchaseDto>;
 
-// Employee DTOs (from backend)
 export interface EmployeeDto {
   id: string;
   code: string;
@@ -448,7 +424,6 @@ export interface EmployeeDto {
 
 export type EmployeeRequest = Partial<EmployeeDto>;
 
-// Accounting Transaction DTOs (from backend)
 export interface AccountingTransactionDto {
   id: string;
   code: string;
@@ -466,7 +441,6 @@ export interface AccountingTransactionDto {
 
 export type AccountingTransactionRequest = Partial<AccountingTransactionDto>;
 
-// Company DTOs (from backend)
 export interface CompanyDto {
   id: string;
   name: string;
@@ -483,7 +457,6 @@ export interface CompanyDto {
 
 export type CompanyRequest = Partial<CompanyDto>;
 
-// Category DTOs (from backend)
 export interface CategoryDto {
   id: string;
   code: string;
@@ -496,7 +469,6 @@ export interface CategoryDto {
 
 export type CategoryRequest = Partial<CategoryDto>;
 
-// User DTOs (from backend)
 export interface UserDto {
   id: string;
   code: string;
@@ -510,10 +482,7 @@ export interface UserDto {
   companyId: string;
 }
 
-/**
- * What the caller may do. The API resolves the union of the permissions of
- * the roles the caller holds.
- */
+/** What the caller may do: the API resolves the union of the permissions of the roles it holds. */
 export interface MePermissionsDto {
   roles: string[];
   permissions: string[];
@@ -531,7 +500,6 @@ export interface InviteUserRequest {
 
 export type UpdateUserRequest = Partial<UserDto>;
 
-// Account DTOs (from backend)
 export type AccountType =
   | "Asset"
   | "Liability"
@@ -555,10 +523,6 @@ export type Account = AccountDto;
 // The backend takes the company from the JWT: the request never carries it.
 export type AccountRequest = Omit<AccountDto, "id">;
 
-// ========================
-// Fiscal readiness
-// ========================
-
 /**
  * Why the taxpayer cannot bill right now. The code is what the front
  * translates: the message of the backend is in English and the screen of
@@ -572,8 +536,7 @@ export interface FiscalBlockerDto {
   /**
    * The code of the type the blocker speaks of ("B02"), or null when it
    * speaks of no type (the certificate one). The front matches it with the
-   * types of the answer: the message of the backend is never read to know
-   * which type it is.
+   * types of the answer: the message is never read to know the type.
    */
   documentTypeCode: string | null;
 }
@@ -585,7 +548,6 @@ export interface FiscalReadinessDocumentTypeDto {
   documentType: number;
   name: string;
   isIssuable: boolean;
-  /** The numbers the range has left. */
   remaining: number;
   rangeExpiresAt: string | null;
   /** The same codes as the blockers, or null when the type can be issued. */
@@ -606,7 +568,6 @@ export interface FiscalReadinessDto {
   isInContingency: boolean;
   hasValidCertificate: boolean;
   certificateExpiresAt: string | null;
-  /** The taxpayer can bill right now. */
   isReady: boolean;
   blockers: FiscalBlockerDto[];
   documentTypes: FiscalReadinessDocumentTypeDto[];

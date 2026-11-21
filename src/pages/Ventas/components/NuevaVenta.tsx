@@ -51,7 +51,6 @@ export function NuevaVenta({
     error: readinessError,
   } = useFiscalReadiness();
 
-  // Derive editing data from store (ventas loaded by parent before this component mounts via key-remount pattern)
   const editingVenta = useMemo(
     () => (editingSaleId ? ventas.find((v) => v.id === editingSaleId) : null),
     [editingSaleId, ventas],
@@ -68,7 +67,7 @@ export function NuevaVenta({
     productos.find((p) => p.id === item.productId)?.taxCode ??
     TaxCode.ItbisTasa1;
 
-  // Local form state — key remount pattern ensures fresh state on editingSaleId change
+  // Estado local del formulario: el remount por key deja el estado limpio cuando cambia el editingSaleId.
   const [carrito, setCarrito] = useState<CartItem[]>(
     editingVenta
       ? editingVenta.items.map((item) => ({
@@ -88,7 +87,7 @@ export function NuevaVenta({
   // The document of the sale. The default is the consumption one (the
   // "factura sin valor fiscal", valid at any amount: the DGII models have
   // one for a total over and one under DOP 250 mil). A fiscal credit is
-  // for a client that needs it, and it needs the tax id of the client.
+  // for a client that needs it.
   const [documentoElegido, setDocumentoElegido] = useState<DocumentoVenta | null>(null);
   const documento: DocumentoVenta = documentoElegido ?? "consumo";
 
@@ -117,9 +116,8 @@ export function NuevaVenta({
       itbis,
       total,
       totalItems: carrito.reduce((acc, item) => acc + item.quantity, 0),
-      // The label names the rate only when the whole cart pays it: a cart
-      // with an exempt line or with two rates pays several, and saying
-      // "18%" would be a lie.
+      // The label names the rate only when the whole cart pays it: with an
+      // exempt line or with two rates it pays several, and "18%" would be a lie.
       itbisRateIsUniform:
         carrito.length > 0 &&
         carrito.every((item) => item.taxCode === TaxCode.ItbisTasa1),
@@ -194,8 +192,6 @@ export function NuevaVenta({
 
     const clienteData = clientes.find((c) => c.id === clienteElegido);
 
-    // A fiscal credit needs the tax id of the client: without it the
-    // backend refuses to complete the sale.
     if (documento === "credito" && !clienteData?.taxId) {
       addToast(t("ventas.fiscalCreditNeedsTaxId"), "warning");
       return;
@@ -241,8 +237,7 @@ export function NuevaVenta({
           documentType,
         } as CreateSaleRequest);
 
-        // The sale is created pending and completed right away: the
-        // completion is what issues the document.
+        // The sale is created pending and completed right away: the completion is what issues the document.
         if (completar && creada) {
           await completeVenta(creada.id, esComercial);
         }

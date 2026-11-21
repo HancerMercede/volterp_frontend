@@ -12,19 +12,16 @@ export type ReadinessVariant = "compact" | "full";
 export interface ReadinessChecklistProps {
   /** "compact" for the POS (one line), "full" for the configuration. */
   variant: ReadinessVariant;
-  /** What the backend answered: null while it has not answered yet. */
   readiness: FiscalReadinessDto | null;
   loading?: boolean;
   error?: string | null;
 }
 
-/** The state the checklist shows: it is known, it is bad, or it is unknown. */
 type ReadinessState = "loading" | "ready" | "notReady" | "unverified";
 
 /**
- * The class that carries the colour of the state of the checklist. The
- * colours live in the module of the component: the component only says which
- * state it is showing.
+ * The class that carries the colour of the state: the colours live in the
+ * module of the component, the component only says which state it shows.
  */
 function toneClass(state: ReadinessState): string {
   switch (state) {
@@ -37,10 +34,7 @@ function toneClass(state: ReadinessState): string {
   }
 }
 
-/**
- * The day an ISO instant names, as the day it is: the hour never moves the
- * date to another day.
- */
+/** The day an ISO instant names, as the day it is: the hour never moves the date to another day. */
 function formatDay(value: string): string {
   const day = /^(\d{4}-\d{2}-\d{2})/.exec(value);
   if (day) return day[1];
@@ -56,12 +50,11 @@ interface ReadinessRow {
 }
 
 /**
- * Whether the taxpayer can bill right now.
- *
- * The component does not fetch anything: the data comes from the hook of the
- * case (`useFiscalReadiness`) and the variant is the one the screen asks
- * for. The message of the backend is never shown: the code of the blocker is
- * translated here and the sentence is built with the data the DTO carries.
+ * Whether the taxpayer can bill right now. The component does not fetch
+ * anything: the data comes from the hook of the case (`useFiscalReadiness`)
+ * and the variant is the one the screen asks for. The message of the backend
+ * is never shown: the code of the blocker is translated here and the sentence
+ * is built with the data the DTO carries.
  */
 export function ReadinessChecklist({
   variant,
@@ -93,16 +86,12 @@ export function ReadinessChecklist({
     return t("ventas.readiness.fullUnverified");
   })();
 
-  // The kind of the ranges of the path the sale takes today: the electronic
-  // one asks for e-NCF and the paper one for NCF.
+  // The kind of the ranges of the path the sale takes today: e-NCF for the electronic one, NCF for the paper one.
   const kind = readiness?.usesElectronicEmission
     ? t("ventas.readiness.kindElectronic")
     : t("ventas.readiness.kindPaper");
 
-  /**
-   * The sentence of a blocker: the code is translated and the data of the
-   * type builds it. The message of the backend is never shown.
-   */
+  /** The sentence of a blocker: the code is translated and the data of the type builds it. */
   const sentenceOf = (
     code: string,
     type?: FiscalReadinessDocumentTypeDto,
@@ -157,9 +146,8 @@ export function ReadinessChecklist({
   };
 
   /**
-   * The type a blocker speaks of. The backend names the type in the blocker
-   * itself (`documentTypeCode`), so the type is found by its code: the
-   * message of the backend is never read to know which type it is.
+   * The type a blocker speaks of: the backend names it in the blocker itself
+   * (`documentTypeCode`), so the type is found by its code.
    */
   const typeOfBlocker = (
     blocker: FiscalBlockerDto,

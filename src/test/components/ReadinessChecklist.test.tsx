@@ -19,7 +19,6 @@ const CONSUMPTION: FiscalReadinessDocumentTypeDto = {
   blocker: null,
 };
 
-/** El mismo tipo, con el rango agotado: el backend dice por que y en ingles. */
 const CONSUMPTION_WITHOUT_ROOM: FiscalReadinessDocumentTypeDto = {
   ...CONSUMPTION,
   isIssuable: false,
