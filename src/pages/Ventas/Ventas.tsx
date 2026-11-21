@@ -17,7 +17,8 @@ import { money } from "../../utils/currency";
 
 export function Ventas() {
   const { t } = useTranslation();
-  const { ventas, totalCount, fetchVentas, deleteVenta } = useVentaStore();
+  const { ventas, totalCount, fetchVentas, deleteVenta, cancelVenta } =
+    useVentaStore();
   const { currentCompany, fetchCurrentCompany } = useCompanyStore();
   const { user } = useAuthStore();
   const { addToast } = useUIStore();
@@ -46,6 +47,12 @@ export function Ventas() {
       setViewingSaleId(venta.id);
       return;
     }
+    // Una venta cancelada no se edita: el stock ya volvio al inventario.
+    if (venta.status === "Cancelled") {
+      addToast(t("ventas.cancelledViewOnly"), "info");
+      setViewingSaleId(venta.id);
+      return;
+    }
     // La venta pendiente se edita en la misma pagina de la venta nueva.
     navigate(`/nueva-venta?venta=${venta.id}`);
   };
@@ -56,7 +63,21 @@ export function Ventas() {
       successMessage: t("ventas.saleDeleted"),
     });
 
+  // The cashier closes a pending sale: the sale stays on record and the
+  // stock it reserved comes back, so the action asks before it undoes it.
+  const {
+    showDeleteConfirm: showCancelConfirm,
+    deleteId: cancelId,
+    handleDelete: handleCancel,
+    confirmDelete: confirmCancel,
+    cancelDelete: cancelCancel,
+  } = useDeleteConfirm({
+    onDelete: cancelVenta,
+    successMessage: t("ventas.saleCancelled"),
+  });
+
   const pendingSale = ventas.find((v) => v.id === deleteId) ?? null;
+  const saleToCancel = ventas.find((v) => v.id === cancelId) ?? null;
 
   // Get sale being viewed for VentaDetail
   const viewingVenta = viewingSaleId
@@ -83,6 +104,7 @@ export function Ventas() {
         totalCount={totalCount}
         onVentaClick={handleVentaClick}
         onDelete={handleDelete}
+        onCancel={handleCancel}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         pageNumber={pageNumber}
@@ -107,6 +129,30 @@ export function Ventas() {
                   .filter(Boolean)
                   .join(" · "),
                 amount: money(pendingSale.total),
+              }
+            : undefined
+        }
+      />
+      <ConfirmModal
+        isOpen={showCancelConfirm}
+        onConfirm={confirmCancel}
+        onCancel={cancelCancel}
+        title={t("ventas.cancelSaleTitle")}
+        message={t("ventas.cancelSaleMessage")}
+        confirmLabel={t("ventas.confirmCancelSale")}
+        cancelLabel={t("common.cancel")}
+        variant="warning"
+        context={
+          saleToCancel
+            ? {
+                title: `${t("ventas.sale")} #${saleToCancel.code}`,
+                subtitle: [
+                  saleToCancel.clienteName,
+                  `${saleToCancel.items.length} ${t("ventas.productCount")}`,
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
+                amount: money(saleToCancel.total),
               }
             : undefined
         }

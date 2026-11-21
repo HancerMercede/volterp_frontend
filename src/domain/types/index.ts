@@ -177,7 +177,7 @@ export interface SaleDto {
   companyId: string;
   clienteId: string | null;
   clienteName: string | null;
-  status: "Pending" | "Completed";
+  status: "Pending" | "Completed" | "Cancelled";
   total: number;
   notes: string | null;
   createdAt: string;

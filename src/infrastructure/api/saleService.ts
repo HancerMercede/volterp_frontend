@@ -96,6 +96,17 @@ export const saleService = {
     );
   },
 
+  // The cashier closes the sale: it stays on record as cancelled and the
+  // stock it reserved comes back.
+  async cancelSale(id: string): Promise<SaleDto> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}/cancel`,
+      {
+        method: "PUT",
+      },
+    );
+  },
+
   async deleteSale(id: string): Promise<void> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}`,

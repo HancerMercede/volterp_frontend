@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { Button, ConfirmModal } from "../../../components/UI";
+import { useDeleteConfirm } from "../../../hooks/useDeleteConfirm";
 import { useClienteStore } from "../../../stores/clienteStore";
 import { useVentaStore } from "../../../stores/ventaStore";
 import { useCompanyStore } from "../../../stores/companyStore";
@@ -32,7 +34,8 @@ export function NuevaVenta({
   const { t } = useTranslation();
   const { clientes } = useClienteStore();
   const productos = useProductos();
-  const { ventas, createVenta, updateVenta, completeVenta } = useVentaStore();
+  const { ventas, createVenta, updateVenta, completeVenta, cancelVenta } =
+    useVentaStore();
   const { currentCompany, error: companyError } = useCompanyStore();
   const { addToast } = useUIStore();
 
@@ -40,6 +43,31 @@ export function NuevaVenta({
     () => (editingSaleId ? ventas.find((v) => v.id === editingSaleId) : null),
     [editingSaleId, ventas],
   );
+
+  // The screen opens to edit a pending sale (a completed one is seen in the
+  // detail), so discarding it is closing it: the sale stays on record and
+  // the stock it reserved comes back.
+  const sePuedeDescartar =
+    editingSaleId !== null &&
+    (!editingVenta || editingVenta.status === "Pending");
+
+  const {
+    showDeleteConfirm: showCancelConfirm,
+    handleDelete: handleCancel,
+    confirmDelete: confirmCancel,
+    cancelDelete: cancelCancel,
+  } = useDeleteConfirm({
+    onDelete: async (id: string) => {
+      await cancelVenta(id);
+      onCancel();
+    },
+    successMessage: t("ventas.saleCancelled"),
+  });
+
+  const descartar = () => {
+    if (!editingSaleId) return;
+    handleCancel(editingSaleId);
+  };
 
   // The tax code of a line: the one the backend stored with it, or the one
   // of the product in the catalogue when the line comes from a response
@@ -277,6 +305,13 @@ export function NuevaVenta({
           />
         </div>
         <div className={styles.railFooter}>
+          {sePuedeDescartar && (
+            <div className={styles.descartarAccion}>
+              <Button variant="ghost" size="small" onClick={descartar}>
+                {t("ventas.discardSale")}
+              </Button>
+            </div>
+          )}
           <ResumenVenta
             subtotal={totales.subtotal}
             itbis={totales.itbis}
@@ -294,5 +329,19 @@ export function NuevaVenta({
     </div>
   );
 
-  return cuerpo;
+  return (
+    <>
+      {cuerpo}
+      <ConfirmModal
+        isOpen={showCancelConfirm}
+        onConfirm={confirmCancel}
+        onCancel={cancelCancel}
+        title={t("ventas.cancelSaleTitle")}
+        message={t("ventas.cancelSaleMessage")}
+        confirmLabel={t("ventas.confirmCancelSale")}
+        cancelLabel={t("common.cancel")}
+        variant="warning"
+      />
+    </>
+  );
 }

@@ -4,6 +4,7 @@ import {
   ImageCell,
   Pagination,
   SearchInput,
+  Button,
 } from "../../../components/UI";
 import { ITEMS_PER_PAGE } from "../../../config/pagination";
 import { useFilter } from "../../../hooks/useFilter";
@@ -23,17 +24,27 @@ interface Props {
   totalCount: number;
   onVentaClick: (venta: SaleDto) => void;
   onDelete: (id: string) => void;
+  onCancel: (id: string) => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   pageNumber: number;
   onPageChange: (page: number) => void;
 }
 
+/**
+ * The state of the sale as the backend sent it. The DTO of the front only
+ * declares "Pending" and "Completed", but the backend closes a pending sale
+ * with "Cancelled": the row has to show the state that arrived and not the
+ * one the type promises.
+ */
+const estadoDe = (venta: SaleDto): string => venta.status as string;
+
 export function VentasList({
   ventas,
   totalCount,
   onVentaClick,
   onDelete,
+  onCancel,
   searchTerm,
   onSearchChange,
   pageNumber,
@@ -110,15 +121,31 @@ export function VentasList({
     {
       key: "estado",
       header: t("common.status"),
-      render: (v: SaleDto) => (
-        <span
-          className={`${styles.badge} ${styles[v.status === "Completed" ? "completada" : "pendiente"]}`}
-        >
-          {v.status === "Completed"
-            ? t("ventas.completed")
-            : t("ventas.pending")}
-        </span>
-      ),
+      render: (v: SaleDto) => {
+        const estado = estadoDe(v);
+
+        if (estado === "Cancelled") {
+          return (
+            <span
+              className={styles.badge}
+              style={{
+                background: FISCAL_STATE_PALETTE.slate.background,
+                color: FISCAL_STATE_PALETTE.slate.color,
+              }}
+            >
+              {t("ventas.cancelled")}
+            </span>
+          );
+        }
+
+        return (
+          <span
+            className={`${styles.badge} ${styles[estado === "Completed" ? "completada" : "pendiente"]}`}
+          >
+            {estado === "Completed" ? t("ventas.completed") : t("ventas.pending")}
+          </span>
+        );
+      },
     },
     {
       // The fiscal state travels in its own column: it is not the state of
@@ -161,6 +188,18 @@ export function VentasList({
           </span>
         );
       },
+    },
+    {
+      // The cashier closes the pending sale from the list. The sale that is
+      // not pending keeps the actions it had: a closed sale is not closed
+      // again.
+      key: "cancelar",
+      render: (v: SaleDto) =>
+        v.status === "Pending" ? (
+          <Button variant="ghost" size="small" onClick={() => onCancel(v.id)}>
+            {t("ventas.cancelSale")}
+          </Button>
+        ) : null,
     },
   ];
 

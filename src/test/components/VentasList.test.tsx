@@ -35,10 +35,12 @@ function VentasListHarness({
   ventas,
   pageNumber = 1,
   totalCount = 50,
+  onCancel = vi.fn(),
 }: {
   ventas: SaleDto[];
   pageNumber?: number;
   totalCount?: number;
+  onCancel?: (id: string) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -49,6 +51,7 @@ function VentasListHarness({
         totalCount={totalCount}
         onVentaClick={vi.fn()}
         onDelete={vi.fn()}
+        onCancel={onCancel}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         pageNumber={pageNumber}
@@ -293,6 +296,67 @@ describe("VentasList", () => {
 
     expect(screen.getByText(i18n.t("ventas.emptyValue"))).toBeInTheDocument();
     expect(screen.queryByText("NotAFiscalState")).not.toBeInTheDocument();
+  });
+
+  it("offers the cancel action only on a pending sale", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({ id: "1", code: "Vent-001", status: "Pending" }),
+          createVenta({ id: "2", code: "Vent-002", status: "Completed" }),
+        ]}
+      />,
+    );
+
+    expect(
+      within(rowOf("Vent-001")).getByRole("button", {
+        name: i18n.t("ventas.cancelSale"),
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(rowOf("Vent-002")).queryByRole("button", {
+        name: i18n.t("ventas.cancelSale"),
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("cancels the sale the cashier chose", () => {
+    const onCancel = vi.fn();
+
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({ id: "1", code: "Vent-001", status: "Pending" }),
+        ]}
+        onCancel={onCancel}
+      />,
+    );
+
+    fireEvent.click(
+      within(rowOf("Vent-001")).getByRole("button", {
+        name: i18n.t("ventas.cancelSale"),
+      }),
+    );
+
+    expect(onCancel).toHaveBeenCalledWith("1");
+  });
+
+  it("shows a cancelled sale as cancelled", () => {
+    render(
+      <VentasListHarness
+        ventas={[
+          createVenta({
+            id: "1",
+            code: "Vent-001",
+            status: "Cancelled" as unknown as SaleDto["status"],
+          }),
+        ]}
+      />,
+    );
+
+    expect(
+      within(rowOf("Vent-001")).getByText(i18n.t("ventas.cancelled")),
+    ).toBeInTheDocument();
   });
 
   it("links to the comprobantes module only for a sale with an electronic invoice", () => {

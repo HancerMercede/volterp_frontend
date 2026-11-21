@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import "../../i18n";
+import i18n from "../../i18n";
 import { NuevaVenta } from "../../pages/Ventas/components/NuevaVenta";
 import { Ventas } from "../../pages/Ventas/Ventas";
 import { useClienteStore } from "../../stores/clienteStore";
@@ -299,6 +299,26 @@ describe("NuevaVenta", () => {
 
     expect(createVenta).not.toHaveBeenCalled();
     expect(addToast).toHaveBeenCalledWith("Select a client, please.", "warning");
+  });
+
+  it("discards a pending sale and goes back to the list", async () => {
+    const cancelVenta = vi.fn(async () => {});
+    const onCancel = vi.fn();
+    useVentaStore.setState({ cancelVenta });
+
+    render(
+      <NuevaVenta editingSaleId="sale-1" onSave={vi.fn()} onCancel={onCancel} />,
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: i18n.t("ventas.discardSale") }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: i18n.t("ventas.confirmCancelSale") }),
+    );
+
+    expect(cancelVenta).toHaveBeenCalledWith("sale-1");
+    expect(onCancel).toHaveBeenCalled();
   });
 
   it("loads the client collection with a page size of 100", () => {

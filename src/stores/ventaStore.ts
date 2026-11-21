@@ -23,6 +23,7 @@ interface VentaStore {
   createVenta: (data: CreateSaleRequest) => Promise<SaleDto | undefined>;
   updateVenta: (id: string, data: UpdateSaleRequest) => Promise<void>;
   completeVenta: (id: string, asCommercialInvoice?: boolean) => Promise<void>;
+  cancelVenta: (id: string) => Promise<void>;
   deleteVenta: (id: string) => Promise<void>;
   clearError: () => void;
 }
@@ -159,6 +160,28 @@ export const useVentaStore = create<VentaStore>()(
           const completada = await saleService.completeSale(id, asCommercialInvoice);
           set((state) => ({
             ventas: state.ventas.map((v) => (v.id === id ? completada : v)),
+            loading: false,
+          }));
+        } catch (err) {
+          set({ error: (err as Error).message, loading: false });
+          throw err;
+        }
+      },
+
+      // The sale is not erased: it stays on record with the state the
+      // backend returns, so the row shows that it was closed and not
+      // deleted.
+      cancelVenta: async (id: string) => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          set({ error: "No autenticado" });
+          throw new Error("No autenticado");
+        }
+        set({ loading: true, error: null });
+        try {
+          const cancelada = await saleService.cancelSale(id);
+          set((state) => ({
+            ventas: state.ventas.map((v) => (v.id === id ? cancelada : v)),
             loading: false,
           }));
         } catch (err) {
