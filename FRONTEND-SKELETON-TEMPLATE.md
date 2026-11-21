@@ -23,6 +23,7 @@
 | Architecture | Clean Architecture-inspired (`infrastructure` → `stores` → `application` → `components`/`pages`) |
 | Source language | English (artifacts), Spanish (conversational docs) |
 | Last synced with code | **2026-11-07** — `useCrudForm`, `useDeleteConfirm`, `useColecciones`, `Modal`, `ConfirmModal`, `DynamicFormFields`, `SearchableSelect`, contrato visual (§1.5), flujo de invitación y recuperación de cuenta (§2.8) |
+| Menú lateral | **2026-11-21** — módulo `SideMenu` (§2.10): el menú se declara como datos, se traduce en un hook y lo dibuja un módulo que no conoce el router ni el dominio |
 | Stack re-synced | **2026-11-15** — pins de stack contra `package.json` real: React 19, React Router 7, Zustand 5, Vite 8, Vitest 4, TypeScript 6 |
 
 ---
@@ -31,7 +32,7 @@
 
 > Este MD **duplica código vivo**. Un snippet desactualizado es peor que un snippet ausente: alguien lo copia y hereda el bug.
 >
-> **Si cambiás un archivo que tiene snippet acá, actualizá su snippet en el mismo commit.** Los archivos con snippet son: `useCrudForm`, `useDeleteConfirm`, `useFilter`, `usePagination`, `usePermission`, `useTokenExpiry`, `useColecciones`, `fetchWithAuth`, `config.ts`, los services, `clienteStore`, `authStore`, `Table`, `Pagination`, `Modal`, `ConfirmModal`, `Button`, `ActionButtons`, `SearchInput`, `SearchableSelect`, `DynamicFormFields`, `Toast`, `PageHeader`, `ErrorBoundary`, `ImageCell`, los helpers de `utils/`, el init de i18n, `Login`, `Register` y `App.tsx`.
+> **Si cambiás un archivo que tiene snippet acá, actualizá su snippet en el mismo commit.** Los archivos con snippet son: `useCrudForm`, `useDeleteConfirm`, `useFilter`, `usePagination`, `usePermission`, `useTokenExpiry`, `useColecciones`, `fetchWithAuth`, `config.ts`, los services, `clienteStore`, `authStore`, `Table`, `Pagination`, `Modal`, `ConfirmModal`, `Button`, `ActionButtons`, `SearchInput`, `SearchableSelect`, `DynamicFormFields`, `Toast`, `PageHeader`, `ErrorBoundary`, `ImageCell`, los helpers de `utils/`, el init de i18n, `Login`, `Register`, `App.tsx`, el módulo `SideMenu` (`types.ts`, `buildMenuTree.ts`, `useMenuTree.ts`, `SideMenu.tsx`), `menuRoutes.ts`, `icons.ts` y `useMenuItems.ts`.
 >
 > Si el archivo cambió tanto que el snippet ya no es representativo, **borrá el snippet y apuntá al path vivo** (§2.4, "Hooks retirados", es el precedente).
 
@@ -72,7 +73,8 @@ erp-mvp/
     │   └── hooks/                ← un hook por caso de uso (recibe deps de stores)
     │       ├── useNominaCalculator.ts
     │       ├── useEmpleadoForm.ts
-    │       └── useDashboard.ts
+    │       ├── useDashboard.ts
+    │       └── useMenuItems.ts    ← traduce las claves del menú y resuelve sus iconos
     │
     ├── assets/                   ← imágenes, fuentes, SVGs estáticos
     │   └── logo.svg
@@ -99,6 +101,14 @@ erp-mvp/
     │   │   ├── Toast.tsx
     │   │   ├── ErrorBoundary.tsx
     │   │   └── index.ts          ← barrel (solo para UI primitives)
+    │   ├── SideMenu/             ← módulo del menú lateral (árbol + permisos)
+    │   │   ├── types.ts          ← RouteDef, GroupMeta, MenuItem, LeafProps, SideMenuProps
+    │   │   ├── utils.ts          ← filterByPermission, findPath, ancestorIds
+    │   │   ├── buildMenuTree.ts  ← buildMenuTree (rutas planas → árbol) + matchActiveId
+    │   │   ├── useMenuTree.ts    ← useMenuTree: pathname → { items, activeId }
+    │   │   ├── SideMenu.tsx      ← el componente que dibuja el árbol
+    │   │   ├── side-menu.css     ← estilos propios: todo sale de las variables "--sm-*"
+    │   │   └── index.ts          ← la API pública del módulo
     │   ├── Support/              ← feature component group (chat IA)
     │   └── UserManagement/
     │
@@ -120,7 +130,9 @@ erp-mvp/
     │   │   └── Asistencia.ts
     │   ├── constants/
     │   │   ├── roles.ts          ← Rol enum-as-const + helpers
-    │   │   └── permisos.ts       ← MATRIZ_PERMISOS
+    │   │   ├── permisos.ts       ← MATRIZ_PERMISOS
+    │   │   ├── menuRoutes.ts     ← las pantallas del menú, declaradas como datos
+    │   │   └── icons.ts          ← mapa de iconos del menú (clave → componente)
     │   └── dashboard/
     │       ├── types.ts
     │       └── constants.tsx
@@ -167,6 +179,7 @@ erp-mvp/
     │   ├── ActivateAccount/
     │   ├── InvalidLink/
     │   ├── Ventas/
+    │   ├── POS/                  ← el POS como pantalla propia (cobra directo)
     │   ├── Compras/
     │   ├── Inventario/
     │   ├── Clientes/
@@ -204,7 +217,9 @@ erp-mvp/
     │   ├── vitest-env.d.ts
     │   ├── utils/pagination.test.ts
     │   ├── stores/*.test.ts
-    │   └── components/*.test.tsx
+    │   ├── components/*.test.tsx
+    │   ├── components/SideMenu/*.test.tsx
+    │   └── pages/menuRoutes.test.ts, sidebarI18nKeys.test.ts
     │
     └── utils/                    ← helpers puros (sin React, sin fetch)
         ├── pagination.ts         ← getPaginationInfo, getPageNumbers, paginate
@@ -3831,6 +3846,308 @@ function App() {
 export default App;
 ```
 
+## 2.10 Menú lateral (`components/SideMenu/`) y su integración en la app `[PRINCIPIO: el menú se declara como datos y lo dibuja un módulo que no conoce el dominio]`
+
+**Por qué existe**: el menú estaba escrito en tres lugares que no hablaban entre sí — la lista de pantallas dentro del `Sidebar`, las rutas del router en `App.tsx` y el permiso de cada módulo — y cada pantalla nueva obligaba a tocarlos a los tres. Este módulo junta las tres cosas en un solo lugar: **el árbol se construye desde las rutas planas, el filtrado por permisos pasa en un único punto y el módulo no conoce ningún router**.
+
+**Ubicación**: `src/components/SideMenu/`
+
+**Reglas del módulo (las tiene que respetar la app)**:
+- El módulo **no conoce el dominio**: no sabe de ventas, de facturas ni de DGII. Solo conoce el árbol.
+- El módulo **no conoce ningún router**: la app le pasa su propio enlace con `renderLeaf`.
+- **El filtrado por permisos vive acá** (en `SideMenu`), no en la app: las hojas sin permiso desaparecen y los grupos que quedan vacíos se podan.
+- **El estado abierto/cerrado de los grupos vive acá**: la app no lo guarda.
+- **El árbol que devuelve `useMenuTree` es inmutable**: nadie lo muta.
+
+### Layout de archivos
+
+```
+src/components/SideMenu/
+├── types.ts          ← el modelo de datos
+├── utils.ts          ← filterByPermission, findPath, ancestorIds, containsId
+├── buildMenuTree.ts  ← buildMenuTree (rutas planas → árbol) + matchActiveId (pathname → id)
+├── useMenuTree.ts    ← useMenuTree: arma el árbol y dice qué hoja está activa
+├── SideMenu.tsx      ← el componente que dibuja el árbol
+├── side-menu.css     ← estilos propios: todo sale de las variables "--sm-*"
+└── index.ts          ← la API pública: nadie importa un archivo interno del módulo
+```
+
+### El modelo de datos
+
+`types.ts` (el código es real; los comentarios de cada campo se omiten para que se lea el modelo):
+
+```typescript
+export interface RouteDef {
+  path: string;
+  label?: string;
+  icon?: ReactNode;
+  badge?: ReactNode;
+  order?: number;
+  permission?: string;
+  disabled?: boolean;
+  hidden?: boolean;
+  indexLabel?: string;
+  parent?: string;
+}
+
+export interface GroupMeta {
+  label?: string;
+  icon?: ReactNode;
+  badge?: ReactNode;
+  order?: number;
+  permission?: string;
+  disabled?: boolean;
+  indexLabel?: string;
+}
+
+export interface MenuItem {
+  id: string;
+  label: string;
+  icon?: ReactNode;
+  badge?: ReactNode;
+  href?: string;
+  permission?: string;
+  disabled?: boolean;
+  children?: MenuItem[];
+}
+
+export interface LeafProps {
+  item: MenuItem;
+  active: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}
+
+export interface SideMenuProps {
+  items: MenuItem[];
+  activeId?: string | null;
+  permissions?: string[];
+  renderLeaf?: (props: LeafProps) => ReactNode;
+  ariaLabel?: string;
+  defaultOpenIds?: string[];
+  className?: string;
+}
+```
+
+- `RouteDef.path` es lo único obligatorio: es el path del router. La etiqueta se **infiere** del último segmento cuando no se da — y la inferencia no pone acentos: si la palabra los tiene, dala explícita.
+- `RouteDef.parent` cuelga la pantalla de otro grupo aunque su path no esté debajo: el POS vive en `/pos` y pertenece a `/ventas`.
+- `RouteDef.hidden` saca la pantalla del menú sin sacarla del router.
+- `MenuItem.id` es el prefijo acumulado del path (`/ventas/pos`); un grupo que también es ruta lleva el sufijo `::group` (`/ventas::group`).
+- `MenuItem.href` lo tiene la hoja; el grupo nunca navega.
+
+### El patrón completo, paso por paso
+
+**1. La app declara sus pantallas como datos** — `src/domain/constants/menuRoutes.ts`. Solo datos: ni React ni traducciones. Las etiquetas y los iconos se nombran por **clave**.
+
+```typescript
+export const MENU_ROUTES: MenuRoute[] = [
+  {
+    path: '/',
+    labelKey: 'sidebar.dashboard',
+    iconKey: 'dashboard',
+    permission: 'dashboard.read',
+    order: 10,
+  },
+  {
+    path: '/ventas',
+    labelKey: 'sidebar.ventas',
+    iconKey: 'ventas',
+    permission: 'ventas.read',
+    order: 20,
+  },
+  {
+    // El POS vive dentro de ventas: cuelga del grupo aunque su path no
+    // este debajo de el.
+    path: '/pos',
+    labelKey: 'sidebar.pos',
+    iconKey: 'pos',
+    permission: 'pos.read',
+    order: 20,
+    parent: '/ventas',
+  },
+];
+
+export const MENU_GROUPS: MenuGroup[] = [
+  {
+    prefix: '/ventas',
+    labelKey: 'sidebar.ventas',
+    iconKey: 'ventas',
+    permission: 'ventas.read',
+    order: 20,
+    indexLabelKey: 'sidebar.resumen',
+  },
+];
+```
+
+**2. La app traduce las etiquetas y resuelve los iconos** — `src/application/hooks/useMenuItems.ts`, con el mapa de iconos en `src/domain/constants/icons.ts` (`ICON_MAP`: clave → componente de `lucide-react`).
+
+```typescript
+export function useMenuItems(): MenuItems {
+  const { t } = useTranslation();
+
+  return useMemo(() => {
+    const routes: RouteDef[] = MENU_ROUTES.map((screen) => {
+      const route: RouteDef = {
+        path: screen.path,
+        label: t(screen.labelKey),
+        order: screen.order,
+      };
+
+      const Icon = ICON_MAP[screen.iconKey];
+      if (Icon) {
+        route.icon = createElement(Icon, {
+          size: ICON_SIZE,
+          strokeWidth: ICON_STROKE,
+        });
+      }
+      if (screen.permission) route.permission = screen.permission;
+      if (screen.hidden) route.hidden = true;
+      if (screen.parent) route.parent = screen.parent;
+
+      return route;
+    });
+
+    const groups: Record<string, GroupMeta> = {};
+    for (const group of MENU_GROUPS) {
+      const meta: GroupMeta = {
+        label: t(group.labelKey),
+        order: group.order,
+      };
+
+      const Icon = ICON_MAP[group.iconKey];
+      if (Icon) {
+        meta.icon = createElement(Icon, {
+          size: ICON_SIZE,
+          strokeWidth: ICON_STROKE,
+        });
+      }
+      if (group.permission) meta.permission = group.permission;
+      if (group.indexLabelKey) meta.indexLabel = t(group.indexLabelKey);
+
+      groups[group.prefix] = meta;
+    }
+
+    return { routes, groups };
+  }, [t]);
+}
+```
+
+> El `useMemo` no es decorativo: `useMenuTree` reconstruye el árbol cuando cambia la referencia de `routes` o `groups`. Sin el memo, el árbol se rehace en cada render.
+
+**3. El sidebar arma el árbol y lo dibuja** — `src/components/Layout/Sidebar.tsx`. El sidebar **sigue siendo el shell**: la marca, el scroll, la sección del usuario y el logout. Lo único que hace con el menú es darle el árbol, los permisos y su propio enlace.
+
+```tsx
+  const granted = usePermissionStore((state) => state.permissions);
+  const permissions = useMemo(() => [...granted], [granted]);
+
+  const { routes, groups } = useMenuItems();
+  const { items, activeId } = useMenuTree(routes, { pathname, groups });
+```
+
+```tsx
+  // Las hojas las dibuja la app con su propio router: el modulo no conoce
+  // ningun router.
+  const renderLeaf = ({ item, active, disabled }: LeafProps) => {
+    const content = (
+      <>
+        <span className={styles.navIcon}>{item.icon}</span>
+        {item.label}
+      </>
+    );
+
+    if (disabled) {
+      return (
+        <span
+          className={`${styles.navLink} ${styles.navLinkDisabled}`}
+          aria-disabled="true"
+        >
+          {content}
+        </span>
+      );
+    }
+
+    return (
+      <NavLink
+        to={item.href ?? "/"}
+        // Cada hoja es una pantalla exacta: sin esto el enlace de un grupo
+        // ("/contabilidad") tambien se markaria activo dentro de "/contabilidad/cuentas".
+        end
+        className={({ isActive }) =>
+          `${styles.navLink} ${isActive || active ? styles.navLinkActive : ""}`
+        }
+      >
+        {content}
+      </NavLink>
+    );
+  };
+```
+
+```tsx
+      <SideMenu
+        items={items}
+        activeId={activeId}
+        permissions={permissions}
+        renderLeaf={renderLeaf}
+        ariaLabel={t("sidebar.menuLabel")}
+        className={styles.navMenu}
+      />
+```
+
+**La paleta la pone la app**: el módulo no conoce los colores del sidebar, la app se los pasa por las variables `--sm-*` (`src/components/Layout/Sidebar.module.css`). El módulo se cambia de tema overrideando variables, nunca editando un selector.
+
+```css
+.sidebar .navMenu {
+  --sm-bg: transparent;
+  --sm-hover: rgba(255, 255, 255, 0.08);
+  --sm-text: rgba(255, 255, 255, 0.65);
+  --sm-strong: #ffffff;
+  --sm-accent: #fbbf24;
+  --sm-indent: 16px;
+
+  padding: 0;
+}
+```
+
+**4. Los dos guards que lo mantienen honesto**:
+
+- **`src/test/pages/menuRoutes.test.ts`** — el guard de **deriva**: lee los `<Route path="…">` de `App.tsx` y los compara con `MENU_ROUTES`. Toda ruta del router tiene que estar en el menú o en la lista `OUT_OF_MENU` **con su razón**, y toda pantalla del menú tiene que tener su ruta en el router. El menú nunca promete una pantalla que no existe.
+
+```typescript
+const readRouterPaths = (): string[] => {
+  const content = readFileSync(APP_FILE, "utf8");
+  const pattern = /<Route\s+path="([^"]+)"/g;
+  const paths: string[] = [];
+
+  for (const match of content.matchAll(pattern)) {
+    paths.push(match[1]);
+  }
+
+  return paths;
+};
+```
+
+- **`src/test/pages/sidebarI18nKeys.test.ts`** — el guard de **i18n**: toda clave `sidebar.*` que usa la app y toda clave que declara `menuRoutes.ts` tiene que existir en `es.json` **y** en `en.json`. El menú está escrito con claves, no con palabras de un idioma.
+
+```typescript
+const collectDeclaredKeys = (): string[] => {
+  const keys = new Set<string>();
+
+  for (const route of MENU_ROUTES) {
+    keys.add(route.labelKey);
+  }
+  for (const group of MENU_GROUPS) {
+    keys.add(group.labelKey);
+    if (group.indexLabelKey) keys.add(group.indexLabelKey);
+  }
+
+  return [...keys].sort();
+};
+```
+
+### El caso que motivó el `parent`
+
+El POS dejó de ser un overlay de la pantalla de ventas y pasó a ser una pantalla propia (`src/pages/POS/Pos.tsx`, ruta `/pos`) que monta el mismo cuerpo que el overlay (`src/pages/Ventas/components/NuevaVenta.tsx`). En el menú, el POS cuelga de `/ventas`: para el usuario el POS es parte de Ventas, aunque su URL no lo diga. De ahí el campo `parent` — y de ahí que el módulo resuelva el prefijo del grupo por su cuenta: **la app nunca escribe un id**.
+
 ---
 
 # PARTE 3 — WORKFLOW
@@ -3854,7 +4171,8 @@ npm install -D vitest @vitest/ui jsdom @testing-library/react @testing-library/j
 #    - src/hooks/
 #    - src/application/hooks/
 #    - src/components/UI/  (con index.ts barrel)
-#    - src/domain/types/, domain/constants/
+#    - src/components/SideMenu/  (con index.ts barrel)
+#    - src/domain/types/, domain/constants/  (menuRoutes.ts, icons.ts)
 #    - src/utils/
 #    - src/i18n/
 #    - src/pages/
@@ -3862,7 +4180,8 @@ npm install -D vitest @vitest/ui jsdom @testing-library/react @testing-library/j
 
 # 5. Copiar archivos del §2 según corresponda (mínimo: fetchWithAuth, API_CONFIG,
 #    Pagination, Table, useCrudForm, usePagination, useFilter, authStore,
-#    NotificationContainer).
+#    NotificationContainer, y el menu: SideMenu + useMenuTree + useMenuItems +
+#    menuRoutes + icons).
 
 # 6. Configurar vite.config.ts según §1.3
 # 7. Configurar tsconfig.app.json según §1.3
@@ -4043,6 +4362,7 @@ catch (err) {
 - **Claves**: camelCase (`selectClientWarning`, `saleCompleted`).
 - **Namespaces**: top-level del JSON (`common`, `auth`, `ventas`, etc.).
 - **NO usar `t()` dentro de constantes** — el JSON se carga antes que React. Si necesitás un string traducible, renderizalo con `<>{t("clave")}</>`.
+- **El menú se escribe con claves, no con palabras**: `menuRoutes.ts` nombra `labelKey` (`sidebar.ventas`) y el hook traduce. El guard `src/test/pages/sidebarI18nKeys.test.ts` revisa que toda clave del namespace `sidebar` exista en `es.json` **y** en `en.json`.
 
 ## 4.5 Forms (useCrudForm) `[PRINCIPIO]`
 
@@ -4117,6 +4437,9 @@ catch (err) {
 - **No existe auto-registro público.** El usuario se crea desde adentro del sistema (Configuración → Usuarios → Invitar usuario) y activa su cuenta con un enlace por correo. `POST /api/auth/register` ya no lo usa el frontend.
 - **Branding hardcodeado en Login** (logo, "Volterp ERP", "Sistema de gestión empresarial integral", "Gestión de ventas e inventario" etc.). Decisión intencional: no es copy traducible, es identidad de marca. Si se quiere traducir, separar branding de copy traducible en el JSON.
 - **Login maneja banner de sesión expirada** vía `location.state.expired`. Si el usuario llega a `/login` sin ese state, no muestra banner. Es la única señal que la app tiene para distinguir "veniste a loguearte" de "te deslogueamos".
+- **La jerarquía del menú puede ser distinta de la URL.** El campo `parent` de `menuRoutes.ts` cuelga una pantalla de un grupo aunque su path no esté debajo: el POS vive en `/pos` y pertenece a `/ventas`. El módulo resuelve el prefijo del grupo por su cuenta — **la app nunca escribe un id**.
+- **Las etiquetas y los iconos viajan por CLAVE, no por valor.** `menuRoutes.ts` nombra `labelKey` e `iconKey`; `useMenuItems.ts` traduce la etiqueta y busca el icono en `ICON_MAP` (`src/domain/constants/icons.ts`). La razón: la app tiene dos idiomas y sus propios iconos, y el módulo no debe saber de ninguno de los dos.
+- **Un módulo con más de una pantalla se dibuja como grupo; uno con una sola pantalla sigue siendo hoja.** La lista de módulos no cambia: cambia cómo se dibuja. El grupo que también es ruta no navega — su propio enlace pasa a ser el primer hijo ("Resumen" / `indexLabelKey`).
 
 ## 4.9 Anti-patterns (lo que NO hacer) `[PRINCIPIO]`
 
@@ -4142,6 +4465,16 @@ catch (err) {
 - **No escribir literales de color** (`#hex`, `rgb()`, `rgba()`, `hsl()`) fuera de `src/styles/variables.css`. Si el color no existe como token, **se agrega el token** (§1.5).
 - **No usar `--primary` ni `--text-muted` como color de texto** sobre superficie clara — 1.53:1 y 2.42:1. Son rellenos y metadatos. Para texto: `--text-primary` o `--text-secondary`.
 - **No dejar IA slop**: comentarios que narran lo que el código ya dice, bloques de prosa dentro del código, abstracciones que sólo envuelven una línea, helpers que nadie llama, ramas "por si acaso" que nadie pidió. Si un comentario no evita una pregunta, no va.
+
+### Menú lateral (`components/SideMenu/`)
+
+- **No filtrar los permisos en la app.** El filtrado vive en `SideMenu` (las hojas sin permiso desaparecen y los grupos que quedan vacíos se podan). Filtrar otra vez en la app duplica la regla y deja dos verdades.
+- **No mutar el árbol que devuelve `useMenuTree`.** Es inmutable: si una hoja tiene que cambiar, se declara otra ruta.
+- **No hardcodear los ids con el sufijo `::group`** (`/ventas::group`). Ese id lo arma el módulo; la app se refiere a las pantallas por su path.
+- **No sacar el estado abierto/cerrado de los grupos de `SideMenu`.** El menú abre solo el grupo de la pantalla activa; la app no guarda un `openGroup` propio.
+- **Mantener estables las referencias de `routes` y `groups`** (una constante de módulo o un `useMemo`). Si cambian en cada render, el árbol se reconstruye en cada render.
+- **No meter el dominio en el módulo.** `SideMenu` no sabe de ventas, de facturas ni de DGII: solo sabe de árboles. Lo que la app sabe del dominio se declara en `menuRoutes.ts`.
+- **No hardcodear el menú en el `Sidebar`.** El shell dibuja el árbol que le pasa `useMenuTree`; la lista de pantallas vive en `menuRoutes.ts`, no en el componente.
 
 ---
 
