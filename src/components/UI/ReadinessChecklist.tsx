@@ -1,16 +1,18 @@
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type {
   FiscalBlockerDto,
   FiscalReadinessDocumentTypeDto,
   FiscalReadinessDto,
 } from "../../domain/types";
+import { useUIStore } from "../../stores/uiStore";
 import { Table } from "./Table";
 import styles from "./ReadinessChecklist.module.css";
 
 export type ReadinessVariant = "compact" | "full";
 
 export interface ReadinessChecklistProps {
-  /** "compact" for the POS (one line), "full" for the configuration. */
+  /** "compact" for the rail of the sale, "full" for the configuration. */
   variant: ReadinessVariant;
   readiness: FiscalReadinessDto | null;
   loading?: boolean;
@@ -63,8 +65,8 @@ export function ReadinessChecklist({
   error = null,
 }: ReadinessChecklistProps) {
   const { t } = useTranslation();
-
   const compact = variant === "compact";
+  const addToast = useUIStore((state) => state.addToast);
 
   const state: ReadinessState = (() => {
     if (loading) return "loading";
@@ -73,13 +75,6 @@ export function ReadinessChecklist({
   })();
 
   const headline = (() => {
-    if (compact) {
-      if (state === "loading") return t("ventas.readiness.compactLoading");
-      if (state === "ready") return t("ventas.readiness.compactReady");
-      if (state === "notReady") return t("ventas.readiness.compactNotReady");
-      return t("ventas.readiness.compactUnverified");
-    }
-
     if (state === "loading") return t("ventas.readiness.fullLoading");
     if (state === "ready") return t("ventas.readiness.fullReady");
     if (state === "notReady") return t("ventas.readiness.fullNotReady");
@@ -91,7 +86,10 @@ export function ReadinessChecklist({
     ? t("ventas.readiness.kindElectronic")
     : t("ventas.readiness.kindPaper");
 
-  /** The sentence of a blocker: the code is translated and the data of the type builds it. */
+  /**
+   * The sentence of a blocker: the code is translated and the data of the
+   * type builds it.
+   */
   const sentenceOf = (
     code: string,
     type?: FiscalReadinessDocumentTypeDto,
@@ -146,6 +144,63 @@ export function ReadinessChecklist({
   };
 
   /**
+   * The same blocker in the words of the person who sells: the rail does not
+   * explain the fiscal path, it says what is missing.
+   */
+  const sellerReasonOf = (
+    code: string,
+    type?: FiscalReadinessDocumentTypeDto,
+  ): string => {
+    switch (code) {
+      case "certificate-missing":
+        return t("ventas.readiness.compactBlockers.certificateMissing");
+      case "range-missing":
+        return type
+          ? t("ventas.readiness.compactBlockers.rangeMissing", {
+              kind,
+              code: type.code,
+            })
+          : t("ventas.readiness.compactBlockers.unknown");
+      case "range-expired":
+        if (!type) return t("ventas.readiness.compactBlockers.unknown");
+        return type.rangeExpiresAt
+          ? t("ventas.readiness.compactBlockers.rangeExpired", {
+              kind,
+              code: type.code,
+              expiresAt: formatDay(type.rangeExpiresAt),
+            })
+          : t("ventas.readiness.compactBlockers.rangeExpiredNoDate", {
+              kind,
+              code: type.code,
+            });
+      case "range-exhausted":
+        return type
+          ? t("ventas.readiness.compactBlockers.rangeExhausted", {
+              kind,
+              code: type.code,
+              remaining: type.remaining,
+            })
+          : t("ventas.readiness.compactBlockers.unknown");
+      case "range-annulled":
+        return type
+          ? t("ventas.readiness.compactBlockers.rangeAnnulled", {
+              kind,
+              code: type.code,
+            })
+          : t("ventas.readiness.compactBlockers.unknown");
+      case "range-without-expiry":
+        return type
+          ? t("ventas.readiness.compactBlockers.rangeWithoutExpiry", {
+              kind,
+              code: type.code,
+            })
+          : t("ventas.readiness.compactBlockers.unknown");
+      default:
+        return t("ventas.readiness.compactBlockers.unknown");
+    }
+  };
+
+  /**
    * The type a blocker speaks of: the backend names it in the blocker itself
    * (`documentTypeCode`), so the type is found by its code.
    */
@@ -161,10 +216,39 @@ export function ReadinessChecklist({
 
   const reasons =
     state === "notReady" && readiness
-      ? readiness.blockers.map((blocker) =>
-          sentenceOf(blocker.code, typeOfBlocker(blocker)),
-        )
+      ? readiness.blockers.map((blocker) => {
+          const type = typeOfBlocker(blocker);
+          return compact
+            ? sellerReasonOf(blocker.code, type)
+            : sentenceOf(blocker.code, type);
+        })
       : [];
+
+  /**
+   * El aviso de la caja: un toast que se va solo. En el riel del carrito no
+   * hay banda: un negocio que no factura electronicamente no carga su
+   * certificado y no tiene que ver el aviso cada vez que abre la caja.
+   */
+  const aviso = (() => {
+    if (!compact) return "";
+    if (state === "notReady") {
+      const motivos = reasons.join(" · ");
+      return `${t("ventas.readiness.compactNotReady")}${
+        motivos ? ` — ${motivos}` : ""
+      }`;
+    }
+    if (state === "unverified") return t("ventas.readiness.compactUnverified");
+    return "";
+  })();
+
+  // El aviso se dice una sola vez: en desarrollo React monta el efecto dos
+  // veces y el vendedor no necesita el toast repetido.
+  const avisoYaDado = useRef(false);
+  useEffect(() => {
+    if (!aviso || avisoYaDado.current) return;
+    avisoYaDado.current = true;
+    addToast(aviso, "warning");
+  }, [aviso, addToast]);
 
   const pathText = !readiness
     ? ""
@@ -225,19 +309,7 @@ export function ReadinessChecklist({
     },
   ];
 
-  if (compact) {
-    return (
-      <div
-        role="status"
-        className={`${styles.compact} ${toneClass(state)}`}
-      >
-        <span className={styles.headline}>{headline}</span>
-        {reasons.length > 0 && (
-          <span>{" — "}{reasons.join(" · ")}</span>
-        )}
-      </div>
-    );
-  }
+  if (compact) return null;
 
   return (
     <section

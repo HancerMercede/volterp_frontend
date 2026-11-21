@@ -1,5 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildMenuTree, SideMenu } from "../../../components/SideMenu";
 
@@ -7,6 +9,25 @@ const ITEMS = buildMenuTree([
   { path: "/ventas", label: "Ventas" },
   { path: "/ventas/facturas", label: "Facturas" },
 ]);
+
+const CSS_DEL_MODULO = join(
+  process.cwd(),
+  "src",
+  "components",
+  "SideMenu",
+  "side-menu.css",
+);
+
+/**
+ * The declarations of a rule of the stylesheet of the module. jsdom does not
+ * lay out, so the way a panel collapses can only be pinned here.
+ */
+const reglaDe = (selector: string): string => {
+  const css = readFileSync(CSS_DEL_MODULO, "utf8");
+  const escapado = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const encontrado = new RegExp(`${escapado}\\s*\\{([^}]*)\\}`).exec(css);
+  return encontrado ? encontrado[1] : "";
+};
 
 describe("SideMenu", () => {
   it("el grupo se dibuja como boton con aria-expanded y aria-controls", () => {
@@ -53,6 +74,32 @@ describe("SideMenu", () => {
       "aria-expanded",
       "true",
     );
+  });
+
+  it("el grupo se puede cerrar a mano aunque la ruta activa este dentro", async () => {
+    render(<SideMenu items={ITEMS} activeId="/ventas/facturas" />);
+
+    const button = screen.getByRole("button", { name: "Ventas" });
+    expect(button).toHaveAttribute("aria-expanded", "true");
+
+    await userEvent.click(button);
+
+    expect(button).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("el cierre manual se respeta hasta que la ruta cambia", async () => {
+    const { rerender } = render(
+      <SideMenu items={ITEMS} activeId="/ventas/facturas" />,
+    );
+
+    const button = screen.getByRole("button", { name: "Ventas" });
+
+    await userEvent.click(button);
+    expect(button).toHaveAttribute("aria-expanded", "false");
+
+    // El usuario navego a otra pantalla del grupo: el grupo se abre solo.
+    rerender(<SideMenu items={ITEMS} activeId="/ventas" />);
+    expect(button).toHaveAttribute("aria-expanded", "true");
   });
 
   it("los hijos de un grupo cerrado no reciben el foco", async () => {
@@ -158,6 +205,81 @@ describe("SideMenu", () => {
       "aria-label",
       "Menu principal",
     );
+  });
+
+  it("el panel cerrado se colapsa: su fila pasa a cero", () => {
+    const panel = reglaDe(".sm-panel");
+    expect(panel).toMatch(/display:\s*grid/);
+    expect(panel).toMatch(/grid-template-rows:\s*1fr/);
+
+    const cerrado = reglaDe(".sm-panel--closed");
+    expect(cerrado).toMatch(/grid-template-rows:\s*0fr/);
+    expect(cerrado).toMatch(/visibility:\s*hidden/);
+  });
+
+  it("el contenido del panel se recorta para que la fila colapsada lo esconda", () => {
+    const contenido = reglaDe(".sm-panelInner");
+    expect(contenido).toMatch(/min-height:\s*0/);
+    expect(contenido).toMatch(/overflow:\s*hidden/);
+  });
+
+  it("el panel tiene un solo hijo: el que envuelve la lista de los hijos", () => {
+    render(<SideMenu items={ITEMS} />);
+
+    const button = screen.getByRole("button", { name: "Ventas" });
+    const panel = document.getElementById(
+      button.getAttribute("aria-controls") as string,
+    ) as HTMLElement;
+
+    expect(panel.children.length).toBe(1);
+
+    const lista = panel.querySelector("ul") as HTMLElement;
+    expect(lista).not.toBeNull();
+    expect(lista.parentElement).toBe(panel.children[0]);
+    expect(lista.children.length).toBeGreaterThan(0);
+    for (const hijo of Array.from(lista.children)) {
+      expect(hijo.tagName).toBe("LI");
+    }
+  });
+
+  it("el enlace indice del grupo hereda el icono de la ruta del grupo", () => {
+    const items = buildMenuTree([
+      {
+        path: "/ventas",
+        label: "Ventas",
+        icon: <span data-testid="icono-ventas" />,
+      },
+      {
+        path: "/ventas/facturas",
+        label: "Facturas",
+        icon: <span data-testid="icono-facturas" />,
+      },
+    ]);
+
+    render(<SideMenu items={items} defaultOpenIds={["/ventas::group"]} />);
+
+    const resumen = screen.getByRole("link", { name: "Resumen" });
+    expect(within(resumen).getByTestId("icono-ventas")).toBeInTheDocument();
+  });
+
+  it("el enlace indice hereda el icono del grupo cuando la ruta no trae icono", () => {
+    const items = buildMenuTree(
+      [
+        { path: "/ventas", label: "Ventas" },
+        { path: "/ventas/facturas", label: "Facturas" },
+      ],
+      {
+        "/ventas": {
+          label: "Ventas",
+          icon: <span data-testid="icono-grupo" />,
+        },
+      },
+    );
+
+    render(<SideMenu items={items} defaultOpenIds={["/ventas::group"]} />);
+
+    const resumen = screen.getByRole("link", { name: "Resumen" });
+    expect(within(resumen).getByTestId("icono-grupo")).toBeInTheDocument();
   });
 
   it("la app dibuja la hoja con su propio router", () => {

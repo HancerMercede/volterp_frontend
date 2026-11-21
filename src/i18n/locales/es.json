@@ -92,7 +92,7 @@
   "sidebar": {
     "dashboard": "Dashboard",
     "ventas": "Ventas",
-    "pos": "POS",
+    "nuevaVenta": "Nueva venta",
     "compras": "Compras",
     "inventario": "Inventario",
     "clientes": "Clientes",
@@ -115,7 +115,6 @@
     "recepcion": "Recepción",
     "facturacionConfiguracion": "Configuración fiscal",
     "soporte": "Soporte",
-    "resumen": "Resumen",
     "menuLabel": "Menú principal"
   },
   "auth": {
@@ -140,11 +139,11 @@
     "forgotPasswordTitle": "Recupera tu acceso",
     "forgotPasswordSubtitle": "Escribí el correo con el que iniciás sesión y te enviamos un enlace para crear una contraseña nueva.",
     "forgotPasswordSend": "Enviar enlace",
-    "forgotPasswordSentTitle": "Revisá tu correo",
+    "forgotPasswordSentTitle": "Revisa tu correo",
     "forgotPasswordSentBody": "Si el correo está registrado, vas a recibir un enlace para restablecer tu contraseña.",
     "forgotPasswordResend": "Enviar de nuevo",
     "resetPasswordTitle": "Restablecé tu contraseña",
-    "resetPasswordSubtitle": "Elegí una contraseña nueva para tu cuenta.",
+    "resetPasswordSubtitle": "Elige una contraseña nueva para tu cuenta.",
     "newPassword": "Nueva contraseña",
     "resetPasswordSubmit": "Guardar contraseña nueva",
     "activateAccountSubmit": "Activar cuenta",
@@ -152,11 +151,11 @@
     "passwordMismatch": "Las contraseñas no coinciden",
     "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
     "resetPasswordSuccessTitle": "Contraseña actualizada",
-    "resetPasswordSuccessBody": "Ya podés iniciar sesión con tu contraseña nueva.",
-    "activateAccountTitle": "Activá tu cuenta",
-    "activateAccountSubtitle": "Confirmá tu correo y elegí una contraseña para empezar a usar Volterp.",
+    "resetPasswordSuccessBody": "Ya puedes iniciar sesión con tu contraseña nueva.",
+    "activateAccountTitle": "Activa tu cuenta",
+    "activateAccountSubtitle": "Confirma tu correo y elige una contraseña para empezar a usar Volterp.",
     "activateAccountSuccessTitle": "Cuenta activada",
-    "activateAccountSuccessBody": "Tu cuenta ya está activa. Ya podés iniciar sesión.",
+    "activateAccountSuccessBody": "Tu cuenta ya está activa. Ya puedes iniciar sesión.",
     "accountEmail": "Correo de la cuenta",
     "checkingLink": "Verificando el enlace",
     "invalidLinkTitle": "El enlace no es válido",
@@ -300,10 +299,8 @@
       "requiresReview": "Requiere revisión"
     },
     "readiness": {
-      "compactReady": "Listo para facturar",
-      "compactNotReady": "No se puede facturar ahora",
-      "compactUnverified": "No se pudo verificar si se puede facturar",
-      "compactLoading": "Verificando si se puede facturar…",
+      "compactNotReady": "Puedes cobrar, pero el comprobante no se va a emitir",
+      "compactUnverified": "No se pudo verificar el estado de la facturación",
       "fullTitle": "Estado de facturación",
       "fullReady": "Listo para facturar",
       "fullNotReady": "No se puede facturar ahora",
@@ -337,6 +334,16 @@
         "rangeAnnulled": "El rango autorizado de {{kind}} del tipo {{code}} fue anulado.",
         "rangeWithoutExpiry": "El rango autorizado de {{kind}} del tipo {{code}} no tiene fecha de vencimiento.",
         "unknown": "No se pudo explicar qué impide facturar."
+      },
+      "compactBlockers": {
+        "certificateMissing": "falta el certificado del negocio",
+        "rangeMissing": "no hay rango de {{kind}} para el tipo {{code}}",
+        "rangeExpired": "el rango de {{kind}} del tipo {{code}} venció el {{expiresAt}}",
+        "rangeExpiredNoDate": "el rango de {{kind}} del tipo {{code}} está vencido",
+        "rangeExhausted": "el rango de {{kind}} del tipo {{code}} se agotó: quedan {{remaining}} números",
+        "rangeAnnulled": "el rango de {{kind}} del tipo {{code}} fue anulado",
+        "rangeWithoutExpiry": "el rango de {{kind}} del tipo {{code}} no tiene fecha de vencimiento",
+        "unknown": "no se pudo saber qué falta"
       }
     }
   },

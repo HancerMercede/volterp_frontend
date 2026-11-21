@@ -7,9 +7,9 @@ import { useProveedorStore } from "../stores/proveedorStore";
 const PAGE_SIZE = 100;
 
 /**
- * El POS filtra y pagina las colecciones en memoria, no contra el servidor:
+ * La venta nueva filtra y pagina las colecciones en memoria, no contra el servidor:
  * necesita el listado completo, no la página del módulo. Esta utilidad nació
- * para el POS y Compras la usa por la misma razón.
+ * para la venta nueva y Compras la usa por la misma razón.
  */
 export function useClientes() {
   const { clientes, fetchClientes } = useClienteStore();

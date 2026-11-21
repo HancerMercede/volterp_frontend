@@ -1,7 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
-import { beforeAll, describe, expect, it } from "vitest";
+import { StrictMode } from "react";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import i18n from "../../i18n";
 import { ReadinessChecklist } from "../../components/UI/ReadinessChecklist";
+import { useUIStore } from "../../stores/uiStore";
 import type {
   FiscalReadinessDocumentTypeDto,
   FiscalReadinessDto,
@@ -139,15 +141,35 @@ beforeAll(async () => {
 });
 
 describe("ReadinessChecklist compacto", () => {
-  it("dice que se puede facturar cuando el contribuyente esta listo", () => {
-    render(
+  const avisos = () => useUIStore.getState().toasts;
+
+  beforeEach(() => {
+    useUIStore.setState({ toasts: [] });
+  });
+
+  it("no avisa nada cuando el contribuyente esta listo", () => {
+    const { container } = render(
       <ReadinessChecklist variant="compact" readiness={READY} loading={false} />,
     );
 
-    expect(screen.getByText("Listo para facturar")).toBeInTheDocument();
+    expect(avisos()).toHaveLength(0);
+    expect(container).toBeEmptyDOMElement();
   });
 
-  it("dice por que no se puede facturar, en espanol y sin el mensaje del backend", () => {
+  it("no deja banda en el riel del carrito", () => {
+    const { container } = render(
+      <ReadinessChecklist
+        variant="compact"
+        readiness={NOT_READY}
+        loading={false}
+      />,
+    );
+
+    // El aviso es transitorio: en la caja no queda ninguna banda fija.
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it("avisa con un toast que se va solo", () => {
     render(
       <ReadinessChecklist
         variant="compact"
@@ -156,14 +178,37 @@ describe("ReadinessChecklist compacto", () => {
       />,
     );
 
-    expect(
-      screen.getByText(/No se puede facturar ahora/),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/El rango autorizado de e-NCF del tipo E32 se agotó/),
-    ).toBeInTheDocument();
+    const avisosDelToast = avisos();
+    expect(avisosDelToast).toHaveLength(1);
+    expect(avisosDelToast[0].message).toContain(
+      "Puedes cobrar, pero el comprobante no se va a emitir",
+    );
     // El mensaje del backend esta en ingles: la pantalla nunca lo muestra.
-    expect(screen.queryByText(/exhausted/i)).toBeNull();
+    expect(avisosDelToast[0].message).not.toMatch(/exhausted/i);
+  });
+
+  it("el motivo va en las palabras de quien vende", () => {
+    render(
+      <ReadinessChecklist
+        variant="compact"
+        readiness={WITHOUT_CERTIFICATE}
+        loading={false}
+      />,
+    );
+
+    expect(avisos()[0].message).toContain("falta el certificado del negocio");
+  });
+
+  it("el aviso es de aviso, no de error: la venta no esta bloqueada", () => {
+    render(
+      <ReadinessChecklist
+        variant="compact"
+        readiness={NOT_READY}
+        loading={false}
+      />,
+    );
+
+    expect(avisos()[0].type).toBe("warning");
   });
 
   it("empareja el bloqueo con su tipo por el codigo del tipo, no por el mensaje", () => {
@@ -177,27 +222,28 @@ describe("ReadinessChecklist compacto", () => {
 
     // El bloqueo habla del E33: el E32 comparte su codigo de bloqueo, pero
     // no es el tipo del bloqueo.
-    expect(
-      screen.getByText(/El rango autorizado de e-NCF del tipo E33 se agotó/),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/del tipo E32 se agotó/)).toBeNull();
+    const mensaje = avisos()[0].message;
+    expect(mensaje).toContain("el rango de e-NCF del tipo E33 se agotó");
+    expect(mensaje).not.toContain("del tipo E32 se agotó");
   });
 
-  it("explica el bloqueo del certificado, que no habla de ningun tipo", () => {
+  it("el aviso sale una sola vez, aunque el efecto se monte dos veces", () => {
+    // En desarrollo React monta los efectos dos veces: el aviso no puede
+    // repetirse por eso.
     render(
-      <ReadinessChecklist
-        variant="compact"
-        readiness={WITHOUT_CERTIFICATE}
-        loading={false}
-      />,
+      <StrictMode>
+        <ReadinessChecklist
+          variant="compact"
+          readiness={NOT_READY}
+          loading={false}
+        />
+      </StrictMode>,
     );
 
-    expect(
-      screen.getByText(/No hay un certificado de firma válido/),
-    ).toBeInTheDocument();
+    expect(avisos()).toHaveLength(1);
   });
 
-  it("avisa que no pudo verificar cuando la llamada falla", () => {
+  it("avisa que no pudo verificar en una sola linea", () => {
     render(
       <ReadinessChecklist
         variant="compact"
@@ -207,9 +253,9 @@ describe("ReadinessChecklist compacto", () => {
       />,
     );
 
-    expect(
-      screen.getByText("No se pudo verificar si se puede facturar"),
-    ).toBeInTheDocument();
+    expect(avisos()[0].message).toBe(
+      "No se pudo verificar el estado de la facturación",
+    );
   });
 });
 
@@ -268,5 +314,22 @@ describe("ReadinessChecklist completo", () => {
 
     expect(screen.getByText("Certificado de firma")).toBeInTheDocument();
     expect(screen.getByText("Válido hasta 2027-01-31")).toBeInTheDocument();
+  });
+
+  it("el estado completo sigue diciendo que no se puede facturar", () => {
+    render(
+      <ReadinessChecklist
+        variant="full"
+        readiness={NOT_READY}
+        loading={false}
+      />,
+    );
+
+    // En la configuracion la frase es cierta: alli no se emite nada.
+    expect(screen.getByText("No se puede facturar ahora")).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/El rango autorizado de e-NCF del tipo E32 se agotó/)
+        .length,
+    ).toBeGreaterThan(0);
   });
 });

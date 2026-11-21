@@ -13,7 +13,7 @@ import {
   Receipt,
   LifeBuoy,
   // Los iconos de las pantallas que cuelgan de un grupo.
-  CreditCard,
+  FilePlus,
   Landmark,
   HandCoins,
   WalletCards,
@@ -46,7 +46,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   configuracion: Settings,
   facturacion: Receipt,
   soporte: LifeBuoy,
-  pos: CreditCard,
+  nuevaVenta: FilePlus,
   cuentas: Landmark,
   cxc: HandCoins,
   cxp: WalletCards,

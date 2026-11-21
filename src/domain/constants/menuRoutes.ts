@@ -18,8 +18,8 @@ export interface MenuRoute {
   hidden?: boolean;
   /**
    * El prefijo del grupo del que cuelga la pantalla ("/ventas"), nunca un id.
-   * La pantalla cuelga de ese grupo aunque su path no este debajo: el POS
-   * vive en "/pos" y pertenece a "/ventas".
+   * La pantalla cuelga de ese grupo aunque su path no este debajo: la venta
+   * nueva vive en "/nueva-venta" y pertenece a "/ventas".
    */
   parent?: string;
 }
@@ -56,10 +56,10 @@ export const MENU_ROUTES: MenuRoute[] = [
     order: 20,
   },
   {
-    // El POS vive dentro de ventas: cuelga del grupo aunque su path no este debajo.
-    path: '/pos',
-    labelKey: 'sidebar.pos',
-    iconKey: 'pos',
+    // La venta nueva cuelga del grupo de ventas: su path no esta debajo.
+    path: '/nueva-venta',
+    labelKey: 'sidebar.nuevaVenta',
+    iconKey: 'nuevaVenta',
     permission: 'pos.read',
     order: 20,
     parent: '/ventas',
@@ -228,7 +228,7 @@ export const MENU_GROUPS: MenuGroup[] = [
     iconKey: 'ventas',
     permission: 'ventas.read',
     order: 20,
-    indexLabelKey: 'sidebar.resumen',
+    indexLabelKey: 'sidebar.ventas',
   },
   {
     prefix: '/contabilidad',
@@ -236,7 +236,7 @@ export const MENU_GROUPS: MenuGroup[] = [
     iconKey: 'contabilidad',
     permission: 'contabilidad.read',
     order: 70,
-    indexLabelKey: 'sidebar.resumen',
+    indexLabelKey: 'sidebar.contabilidad',
   },
   {
     prefix: '/rrhh',
@@ -244,7 +244,7 @@ export const MENU_GROUPS: MenuGroup[] = [
     iconKey: 'rrhh',
     permission: 'rrhh.read',
     order: 80,
-    indexLabelKey: 'sidebar.resumen',
+    indexLabelKey: 'sidebar.rrhh',
   },
   {
     prefix: '/facturacion',
@@ -252,6 +252,6 @@ export const MENU_GROUPS: MenuGroup[] = [
     iconKey: 'facturacion',
     permission: 'facturacion.read',
     order: 120,
-    indexLabelKey: 'sidebar.resumen',
+    indexLabelKey: 'sidebar.facturacion',
   },
 ];

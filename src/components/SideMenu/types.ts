@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 /** A group with children (it expands, it does not navigate) or a leaf (it navigates to its href). */
 export interface MenuItem {
-  /** The accumulated prefix ("/ventas/pos"); a group that is also a route adds "::group". */
+  /** The accumulated prefix ("/ventas/nueva-venta"); a group that is also a route adds "::group". */
   id: string;
   label: string;
   icon?: ReactNode;

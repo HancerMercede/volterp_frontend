@@ -1,9 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import i18n from "../../i18n";
-import { Pos } from "../../pages/POS/Pos";
+import { NuevaVentaPage } from "../../pages/NuevaVenta/NuevaVentaPage";
 import { Ventas } from "../../pages/Ventas/Ventas";
 import { useClienteStore } from "../../stores/clienteStore";
 import { useCompanyStore } from "../../stores/companyStore";
@@ -47,13 +49,13 @@ const renderEn = (ruta: string) =>
   render(
     <MemoryRouter initialEntries={[ruta]}>
       <Routes>
-        <Route path="/pos" element={<Pos />} />
+        <Route path="/nueva-venta" element={<NuevaVentaPage />} />
         <Route path="/ventas" element={<Ventas />} />
       </Routes>
     </MemoryRouter>,
   );
 
-const esperarCuerpoDelPos = () => {
+const esperarCuerpoDeLaVenta = () => {
   expect(
     screen.getByRole("heading", { name: "Productos" }),
   ).toBeInTheDocument();
@@ -88,36 +90,73 @@ beforeEach(() => {
   useUIStore.setState({ addToast: vi.fn() });
 });
 
-describe("la pagina del POS", () => {
-  it("la ruta /pos dibuja el POS", () => {
-    renderEn("/pos");
+describe("la pagina de la venta nueva", () => {
+  it("la ruta /nueva-venta dibuja la venta nueva", () => {
+    renderEn("/nueva-venta");
 
-    esperarCuerpoDelPos();
+    esperarCuerpoDeLaVenta();
   });
 
-  it("la pagina del POS no es el overlay de las ventas", () => {
-    const { container } = renderEn("/pos");
+  it("la venta nueva no es un modal", () => {
+    const { container } = renderEn("/nueva-venta");
 
     expect(container.querySelector('[class*="modalFull"]')).toBeNull();
   });
 
-  it("el overlay de /ventas abre el mismo cuerpo del POS", async () => {
+  it("la venta nueva no pone encabezado de pagina", () => {
+    renderEn("/nueva-venta");
+
+    expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
+  });
+
+  it("la venta nueva se dibuja sin el layout de la app", () => {
+    renderEn("/nueva-venta");
+
+    // Sin menu lateral y sin el area de contenido: la venta nueva es una
+    // pantalla de mostrador y ocupa la ventana.
+    expect(screen.queryByRole("navigation")).toBeNull();
+    expect(document.querySelector("main")).toBeNull();
+  });
+
+  it("la ruta de la venta nueva cuelga del guard, no del layout", () => {
+    const app = readFileSync(join(process.cwd(), "src", "App.tsx"), "utf8");
+
+    expect(app).toMatch(
+      /path="\/nueva-venta"[\s\S]{0,200}<ProtectedRoute>[\s\S]{0,200}<NuevaVentaPage \/>/,
+    );
+
+    const bloqueDelLayout = app.slice(
+      app.indexOf("<Layout />"),
+      app.lastIndexOf("</Route>"),
+    );
+    expect(bloqueDelLayout).not.toContain("/nueva-venta");
+  });
+
+  it("el boton de nueva venta de las ventas lleva a la venta nueva", async () => {
     renderEn("/ventas");
 
     await userEvent.click(
       screen.getByRole("button", { name: /Nueva Venta/ }),
     );
 
-    esperarCuerpoDelPos();
+    esperarCuerpoDeLaVenta();
   });
 
-  it("el overlay de /ventas se sigue dibujando como overlay", async () => {
-    const { container } = renderEn("/ventas");
-
-    await userEvent.click(
-      screen.getByRole("button", { name: /Nueva Venta/ }),
+  it("la venta nueva llena la ventana, sin margenes", () => {
+    // El cuerpo de la venta nueva es el que ocupaba la pantalla: la caja
+    // toma el alto del viewport y no deja bordes.
+    const css = readFileSync(
+      join(
+        process.cwd(),
+        "src",
+        "pages",
+        "Ventas",
+        "components",
+        "NuevaVenta.module.css",
+      ),
+      "utf8",
     );
 
-    expect(container.querySelector('[class*="modalFull"]')).not.toBeNull();
+    expect(css).toMatch(/\.posContainer\s*\{[^}]*height:\s*100vh/);
   });
 });

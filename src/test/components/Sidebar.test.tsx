@@ -56,29 +56,47 @@ describe("Sidebar", () => {
     const grupo = screen.getByRole("button", { name: "Ventas" });
 
     expect(grupo).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("link", { name: "POS" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Nueva venta" })).toBeInTheDocument();
   });
 
   it("el grupo que contiene la ruta activa se abre solo", () => {
-    renderSidebar("/pos");
+    renderSidebar("/nueva-venta");
 
     expect(screen.getByRole("button", { name: "Ventas" })).toHaveAttribute(
       "aria-expanded",
       "true",
     );
-    expect(screen.getByRole("link", { name: "POS" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Nueva venta" })).toBeInTheDocument();
   });
 
   it("la hoja activa se marca como la pagina actual", () => {
-    renderSidebar("/pos");
+    renderSidebar("/nueva-venta");
 
-    expect(screen.getByRole("link", { name: "POS" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Nueva venta" })).toHaveAttribute(
       "aria-current",
       "page",
     );
     expect(
-      screen.getByRole("link", { name: "Resumen" }),
+      screen.getByRole("link", { name: "Ventas" }),
     ).not.toHaveAttribute("aria-current");
+  });
+
+  it("el enlace indice del grupo trae el icono del grupo", () => {
+    renderSidebar("/ventas");
+
+    const resumen = screen.getByRole("link", { name: "Ventas" });
+    expect(resumen.querySelector("svg")).not.toBeNull();
+  });
+
+  it("cada pantalla del menu trae su icono", () => {
+    renderSidebar("/ventas");
+
+    for (const enlace of screen.getAllByRole("link")) {
+      expect(enlace.querySelector("svg")).not.toBeNull();
+    }
+    for (const grupo of screen.getAllByRole("button")) {
+      expect(grupo.querySelector("svg")).not.toBeNull();
+    }
   });
 
   it("dentro de un grupo solo se marca la pantalla activa", () => {
@@ -89,7 +107,7 @@ describe("Sidebar", () => {
       "page",
     );
     expect(
-      screen.getByRole("link", { name: "Resumen" }),
+      screen.getByRole("link", { name: "Contabilidad" }),
     ).not.toHaveAttribute("aria-current");
     expect(
       screen.getByRole("button", { name: "Contabilidad" }),
@@ -128,6 +146,6 @@ describe("Sidebar", () => {
     renderSidebar("/ventas");
 
     expect(screen.queryByRole("button", { name: "Ventas" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "POS" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Nueva venta" })).toBeNull();
   });
 });

@@ -5,8 +5,6 @@ import { useVentaStore } from "../../../stores/ventaStore";
 import { useCompanyStore } from "../../../stores/companyStore";
 import { useUIStore } from "../../../stores/uiStore";
 import { useProductos } from "../../../hooks/useColecciones";
-import { useFiscalReadiness } from "../../../application/hooks/useFiscalReadiness";
-import { ReadinessChecklist } from "../../../components/UI";
 import type {
   CreateSaleRequest,
   UpdateSaleRequest,
@@ -24,18 +22,12 @@ interface Props {
   editingSaleId: string | null;
   onSave: () => void;
   onCancel: () => void;
-  /**
-   * Como se dibuja el POS: "overlay" encima de la pantalla de ventas y
-   * "page" como pagina completa (la ruta "/pos"). El cuerpo es el mismo.
-   */
-  variant?: "overlay" | "page";
 }
 
 export function NuevaVenta({
   editingSaleId,
   onSave,
   onCancel,
-  variant = "overlay",
 }: Props) {
   const { t } = useTranslation();
   const { clientes } = useClienteStore();
@@ -43,13 +35,6 @@ export function NuevaVenta({
   const { ventas, createVenta, updateVenta, completeVenta } = useVentaStore();
   const { currentCompany, error: companyError } = useCompanyStore();
   const { addToast } = useUIStore();
-
-  // Si el contribuyente puede facturar hoy: la venta nunca espera por esto.
-  const {
-    readiness,
-    loading: readinessLoading,
-    error: readinessError,
-  } = useFiscalReadiness();
 
   const editingVenta = useMemo(
     () => (editingSaleId ? ventas.find((v) => v.id === editingSaleId) : null),
@@ -252,7 +237,7 @@ export function NuevaVenta({
     }
   };
 
-  // El cuerpo es uno solo: lo montan el overlay de las ventas y la pagina.
+  // El cuerpo es uno solo: lo monta la pagina de la venta nueva.
   const cuerpo = (
     <div className={styles.posContainer}>
       <SelectorProducto
@@ -279,12 +264,6 @@ export function NuevaVenta({
             </button>
           </div>
         </div>
-        <ReadinessChecklist
-          variant="compact"
-          readiness={readiness}
-          loading={readinessLoading}
-          error={readinessError}
-        />
         <div className={styles.railBody}>
           <ClienteSelector
             clientes={clientes}
@@ -315,7 +294,5 @@ export function NuevaVenta({
     </div>
   );
 
-  if (variant === "page") return cuerpo;
-
-  return <div className={styles.modalFull}>{cuerpo}</div>;
+  return cuerpo;
 }

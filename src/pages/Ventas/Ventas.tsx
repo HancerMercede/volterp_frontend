@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useVentaStore } from "../../stores/ventaStore";
 import { useCompanyStore } from "../../stores/companyStore";
 import { useAuthStore } from "../../stores/authStore";
@@ -11,7 +12,6 @@ import { useClientes } from "../../hooks/useColecciones";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import type { SaleDto } from "../../domain/types";
 import { VentasList } from "./components/VentasList";
-import { NuevaVenta } from "./components/NuevaVenta";
 import { VentaDetail } from "./components/VentaDetail";
 import { money } from "../../utils/currency";
 
@@ -21,9 +21,8 @@ export function Ventas() {
   const { currentCompany, fetchCurrentCompany } = useCompanyStore();
   const { user } = useAuthStore();
   const { addToast } = useUIStore();
+  const navigate = useNavigate();
 
-  const [showForm, setShowForm] = useState(false);
-  const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
   const [viewingSaleId, setViewingSaleId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -45,10 +44,10 @@ export function Ventas() {
     if (venta.status === "Completed") {
       addToast(t("ventas.completedViewOnly"), "info");
       setViewingSaleId(venta.id);
-    } else {
-      setEditingSaleId(venta.id);
-      setShowForm(true);
+      return;
     }
+    // La venta pendiente se edita en la misma pagina de la venta nueva.
+    navigate(`/nueva-venta?venta=${venta.id}`);
   };
 
   const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
@@ -59,20 +58,6 @@ export function Ventas() {
 
   const pendingSale = ventas.find((v) => v.id === deleteId) ?? null;
 
-  const handleNewVenta = () => {
-    setEditingSaleId(null);
-    setShowForm(true);
-  };
-  const handleFormSave = () => {
-    setShowForm(false);
-    setEditingSaleId(null);
-    fetchVentas(pageNumber, ITEMS_PER_PAGE);
-  };
-  const handleFormCancel = () => {
-    setShowForm(false);
-    setEditingSaleId(null);
-  };
-
   // Get sale being viewed for VentaDetail
   const viewingVenta = viewingSaleId
     ? ventas.find((v) => v.id === viewingSaleId)
@@ -81,18 +66,11 @@ export function Ventas() {
   return (
     <div>
       <PageHeader title={t("ventas.title")} subtitle={t("ventas.subtitle")}>
-        <Button onClick={handleNewVenta}>+ {t("ventas.newSale")}</Button>
+        <Button onClick={() => navigate("/nueva-venta")}>
+          + {t("ventas.newSale")}
+        </Button>
       </PageHeader>
 
-      {showForm && (
-        <NuevaVenta
-          key={editingSaleId ?? "new"}
-          variant="overlay"
-          editingSaleId={editingSaleId}
-          onSave={handleFormSave}
-          onCancel={handleFormCancel}
-        />
-      )}
       {viewingVenta && (
         <VentaDetail
           venta={viewingVenta}

@@ -11,6 +11,13 @@ interface MenuContext {
   renderLeaf?: (props: LeafProps) => ReactNode;
 }
 
+/** Lo que el usuario hizo a mano con un grupo: abrirlo o cerrarlo. */
+interface Decision {
+  abierto: boolean;
+  /** La ruta en la que se decidio: el cierre dura hasta que se navega. */
+  ruta: string;
+}
+
 /**
  * The side menu: the tree comes from useMenuTree and the permissions from
  * the app. The module knows no router, no translation and no domain.
@@ -31,33 +38,61 @@ export function SideMenu({
     [items, permissions],
   );
 
-  const [opened, setOpened] = useState<Set<string>>(
-    () => new Set(defaultOpenIds ?? []),
+  // The open state of the groups lives here. The user opens and closes the
+  // groups by hand and the menu remembers it: a group closed by hand stays
+  // closed on that route. The route that arrives opens the groups that hold
+  // it, so the active screen is always visible.
+  const [decisiones, setDecisiones] = useState<Record<string, Decision>>(
+    () => {
+      const inicial: Record<string, Decision> = {};
+      for (const id of defaultOpenIds ?? []) {
+        inicial[id] = { abierto: true, ruta: "" };
+      }
+      return inicial;
+    },
   );
 
-  // The open/closed state of the groups lives here. With an active id the
-  // menu follows it and keeps open the groups that hold it; without it the
-  // menu keeps its own state.
-  const controlled = activeId !== undefined;
+  const ruta = activeId ?? "";
+
+  const abiertosPorDecision = useMemo(() => {
+    const abiertos = new Set<string>();
+    for (const [id, decision] of Object.entries(decisiones)) {
+      if (decision.abierto) abiertos.add(id);
+    }
+    return abiertos;
+  }, [decisiones]);
+
+  const cerradosEnEstaRuta = useMemo(() => {
+    const cerrados = new Set<string>();
+    for (const [id, decision] of Object.entries(decisiones)) {
+      if (!decision.abierto && decision.ruta === ruta) cerrados.add(id);
+    }
+    return cerrados;
+  }, [decisiones, ruta]);
+
   const activeAncestors = useMemo(
     () => (activeId ? ancestorIds(visible, activeId) : []),
     [visible, activeId],
   );
 
   const openIds = useMemo(() => {
-    const next = new Set(opened);
-    if (controlled) for (const id of activeAncestors) next.add(id);
+    const next = new Set(abiertosPorDecision);
+    for (const id of activeAncestors) {
+      if (!cerradosEnEstaRuta.has(id)) next.add(id);
+    }
     return next;
-  }, [opened, activeAncestors, controlled]);
+  }, [abiertosPorDecision, activeAncestors, cerradosEnEstaRuta]);
 
-  const toggle = useCallback((id: string) => {
-    setOpened((previous) => {
-      const next = new Set(previous);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
+  const toggle = useCallback(
+    (id: string) => {
+      const estabaAbierto = openIds.has(id);
+      setDecisiones((previous) => ({
+        ...previous,
+        [id]: { abierto: !estabaAbierto, ruta },
+      }));
+    },
+    [openIds, ruta],
+  );
 
   const context: MenuContext = {
     activeId: activeId ?? null,
@@ -111,25 +146,30 @@ function MenuNode({ item, level, context }: MenuNodeProps) {
       </button>
       {/*
         The closed panel is hidden inline: its children never take the
-        focus, not even before the stylesheet arrives.
+        focus, not even before the stylesheet arrives. The panel holds a
+        single child: the wrapper the collapsed row clips.
       */}
-      <ul
+      <div
         id={panelId}
         className={open ? "sm-panel" : "sm-panel sm-panel--closed"}
-        style={{
-          paddingInlineStart: indentOf(level + 1),
-          ...(open ? {} : { visibility: "hidden" }),
-        }}
+        style={open ? undefined : { visibility: "hidden" }}
       >
-        {children.map((child) => (
-          <MenuNode
-            key={child.id}
-            item={child}
-            level={level + 1}
-            context={context}
-          />
-        ))}
-      </ul>
+        <div className="sm-panelInner">
+          <ul
+            className="sm-sublist"
+            style={{ paddingInlineStart: indentOf(level + 1) }}
+          >
+            {children.map((child) => (
+              <MenuNode
+                key={child.id}
+                item={child}
+                level={level + 1}
+                context={context}
+              />
+            ))}
+          </ul>
+        </div>
+      </div>
     </li>
   );
 }

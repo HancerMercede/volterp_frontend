@@ -38,8 +38,10 @@ const InvalidLink = lazy(() =>
 const Ventas = lazy(() =>
   import("./pages/Ventas/Ventas").then((m) => ({ default: m.Ventas })),
 );
-const Pos = lazy(() =>
-  import("./pages/POS/Pos").then((m) => ({ default: m.Pos })),
+const NuevaVentaPage = lazy(() =>
+  import("./pages/NuevaVenta/NuevaVentaPage").then((m) => ({
+    default: m.NuevaVentaPage,
+  })),
 );
 const Compras = lazy(() =>
   import("./pages/Compras/Compras").then((m) => ({ default: m.Compras })),
@@ -173,7 +175,6 @@ function AppRoutes() {
         >
           <Route path="/" element={<Dashboard />} />
           <Route path="/ventas" element={<Ventas />} />
-          <Route path="/pos" element={<Pos />} />
           <Route path="/compras" element={<Compras />} />
           <Route path="/inventario" element={<Inventario />} />
           <Route path="/clientes" element={<Clientes />} />
@@ -197,6 +198,18 @@ function AppRoutes() {
           <Route path="/facturacion/recepcion" element={<EcfReception />} />
           <Route path="/facturacion/configuracion" element={<EcfSettings />} />
         </Route>
+        {/*
+          La venta nueva es una pantalla de mostrador: ocupa la ventana
+          entera y vive fuera del layout con el menu lateral.
+        */}
+        <Route
+          path="/nueva-venta"
+          element={
+            <ProtectedRoute>
+              <NuevaVentaPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Suspense>
   );

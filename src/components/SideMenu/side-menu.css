@@ -51,6 +51,13 @@
   list-style: none;
 }
 
+/* The list of the children of a group: it lives inside the panel. */
+.sm-sublist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .sm-item {
   min-width: 0;
 }
@@ -118,12 +125,25 @@
   font-weight: 600;
 }
 
+/*
+ * The panel of a group is a grid whose row goes from "1fr" to "0fr": a closed
+ * group takes no space instead of leaving the hole of its children.
+ */
 .sm-panel {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--sm-duration) ease;
+}
+
+/* The content of the panel is clipped, so the collapsed row hides it. */
+.sm-panelInner {
+  min-height: 0;
   overflow: hidden;
 }
 
 /* A closed panel is out of the way: its children never take the focus. */
 .sm-panel--closed {
+  grid-template-rows: 0fr;
   visibility: hidden;
 }
 

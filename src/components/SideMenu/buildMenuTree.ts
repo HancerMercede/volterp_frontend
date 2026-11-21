@@ -152,6 +152,9 @@ export function buildMenuTree(
       prefix: node.prefix,
       path: node.path,
       label: node.indexLabel ?? DEFAULT_INDEX_LABEL,
+      // The link points at the route of the group, so it wears its icon: the
+      // one of the route or, when the route brings none, the one of the group.
+      icon: node.icon,
       permission: node.permission,
       disabled: node.disabled,
       isRoute: true,

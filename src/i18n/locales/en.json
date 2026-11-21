@@ -91,7 +91,7 @@
   "sidebar": {
     "dashboard": "Dashboard",
     "ventas": "Sales",
-    "pos": "POS",
+    "nuevaVenta": "New sale",
     "compras": "Purchases",
     "inventario": "Inventory",
     "clientes": "Clients",
@@ -114,7 +114,6 @@
     "recepcion": "Reception",
     "facturacionConfiguracion": "Fiscal settings",
     "soporte": "Support",
-    "resumen": "Overview",
     "menuLabel": "Main menu"
   },
   "auth": {
@@ -299,10 +298,8 @@
       "requiresReview": "Requires review"
     },
     "readiness": {
-      "compactReady": "Ready to bill",
-      "compactNotReady": "Cannot bill right now",
-      "compactUnverified": "Could not verify whether you can bill",
-      "compactLoading": "Checking whether you can bill…",
+      "compactNotReady": "You can take the payment, but the receipt will not be issued",
+      "compactUnverified": "Could not check the billing status",
       "fullTitle": "Billing status",
       "fullReady": "Ready to bill",
       "fullNotReady": "Cannot bill right now",
@@ -336,6 +333,16 @@
         "rangeAnnulled": "The authorized {{kind}} range of the type {{code}} was annulled.",
         "rangeWithoutExpiry": "The authorized {{kind}} range of the type {{code}} has no expiry date.",
         "unknown": "It could not be explained what is keeping you from billing."
+      },
+      "compactBlockers": {
+        "certificateMissing": "the business signing certificate is missing",
+        "rangeMissing": "there is no {{kind}} range for the type {{code}}",
+        "rangeExpired": "the {{kind}} range of the type {{code}} expired on {{expiresAt}}",
+        "rangeExpiredNoDate": "the {{kind}} range of the type {{code}} is expired",
+        "rangeExhausted": "the {{kind}} range of the type {{code}} is exhausted: {{remaining}} numbers left",
+        "rangeAnnulled": "the {{kind}} range of the type {{code}} was annulled",
+        "rangeWithoutExpiry": "the {{kind}} range of the type {{code}} has no expiry date",
+        "unknown": "it could not be said what is missing"
       }
     }
   },

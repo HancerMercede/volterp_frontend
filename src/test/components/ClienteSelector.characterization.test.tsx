@@ -7,7 +7,7 @@ import { ClienteSelector } from "../../pages/Ventas/components/ClienteSelector";
 import type { Client } from "../../domain/types";
 
 /**
- * Caracterizacion del picker de cliente del POS.
+ * Caracterizacion del picker de cliente de la venta nueva.
  *
  * El componente compartido `SearchableSelect` reporta `onChange("")` en cada
  * tecla (para no borrar el texto mientras se escribe). `ClienteSelector`
