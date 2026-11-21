@@ -1,4 +1,8 @@
 import type { UserStatus } from '../constants/userStatus';
+import type {
+  EcfDocumentType,
+  EcfFiscalState,
+} from '../constants/electronicInvoicing';
 
 export interface Direccion {
   calle: string;
@@ -180,10 +184,16 @@ export interface SaleDto {
   createdAt: string;
   updatedAt: string | null;
   items: SaleItemDto[];
+  // Fiscal side of the sale: the backend owns the e-CF it emits for it.
+  documentType?: EcfDocumentType | null;
+  receptorTaxId?: string | null;
+  issuerTaxId?: string | null;
+  subtotal?: number | null;
+  itbis?: number | null;
   /** The fiscal document of the sale, when it has one. */
   electronicInvoiceId?: string | null;
   /** The coarse fiscal state of the sale (null when nothing is open). */
-  fiscalState?: SaleFiscalState | null;
+  fiscalState?: EcfFiscalState | null;
   /** The fine state of the document of the sale, as the DGII named it. */
   fiscalStatus?: ElectronicInvoiceStatus | null;
   /** The note of the verdict of the DGII. */
@@ -522,3 +532,8 @@ export type Account = AccountDto;
 
 // The backend takes the company from the JWT: the request never carries it.
 export type AccountRequest = Omit<AccountDto, "id">;
+
+// Electronic invoicing (e-CF) contract. It lives in its own module because it
+// is the only contract with this many entities, and it is re-exported here so
+// the import surface of `domain/types` stays the same for every module.
+export * from "./electronicInvoicing";

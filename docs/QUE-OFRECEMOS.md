@@ -56,6 +56,17 @@
 - Filtro por tipo de transacción, búsqueda y paginación.
 - Formato de moneda en **DOP (pesos dominicanos)**.
 
+## Facturación electrónica
+
+- **Emisores** del tenant: RNC, razón social y estado, para saber quién firma.
+- **Rangos de e-NCF** habilitados por emisor y tipo de comprobante, con la secuencia actual, su disponibilidad y su vencimiento.
+- **Certificados** de firma: se cargan cifrados y **no se vuelven a mostrar**.
+- **Comprobantes emitidos**: estado de cada uno, **veredicto de la DGII tal como lo envía** (sin reinterpretarlo), QR y representación impresa.
+- **Reintento** de los comprobantes rechazados o marcados para revisión, con el error del backend a la vista.
+- **Modo de emisión** (electrónica o normal), **contingencia** declarada, **credenciales de API** para las integraciones que firman fuera del navegador y **secuencias normales**.
+- **Decisión comercial** sobre los comprobantes que recibe la empresa.
+- La venta muestra su **estado fiscal** y el enlace a su comprobante.
+
 ## Recursos humanos
 
 - Expediente del empleado con **puesto, departamento, fecha de ingreso, salario, horario y estado**.
@@ -110,7 +121,7 @@
 ## Seguridad y control de acceso
 
 - **6 roles**: Super Administrador, Administrador, Ventas, Inventario, Contabilidad y Recursos Humanos.
-- **3 niveles de permiso** por módulo: lectura, escritura y eliminación, con matriz sobre 11 módulos.
+- **3 niveles de permiso** por módulo: lectura, escritura y eliminación, con matriz sobre 12 módulos.
 - El menú lateral se adapta al rol del usuario: cada quien ve sólo lo que le corresponde.
 - Inicio de sesión con token, **detección de sesión vencida** y aviso al usuario.
 - Opción **"recordarme"**: la sesión se conserva aunque se cierre el navegador.
@@ -130,7 +141,7 @@
 - Pantalla de error general con opción de reintento.
 - Interfaz **adaptada a computadora y celular**: el menú se convierte en panel lateral en pantallas pequeñas.
 - **Carga diferida por módulo**: cada pantalla se descarga sólo cuando se abre, así el sistema arranca rápido.
-- **164 pruebas automatizadas** en verde, con revisión de tipos y linting estrictos.
+- **507 pruebas automatizadas** en verde, con revisión de tipos y linting estrictos.
 
 ## Soporte dentro del sistema
 
@@ -150,11 +161,12 @@ Estos puntos son ciertos y conviene conocerlos antes de comprometer algo con un 
 | Chat de Soporte | Funciona con un bot de respuestas frecuentes; **no está conectado a un modelo de IA** todavía. |
 | Exportar a Excel, CSV o PDF, e importar planillas | **No implementado.** |
 | Ordenar tablas por columna | **No implementado.** |
-| Ocultar botones de alta/edición/baja según el rol | La matriz de permisos ya existe y aplica al menú y a las pestañas de administración; **falta aplicarla a los botones**. |
+| Ocultar botones de alta/edición/baja según el rol | La matriz de permisos aplica al menú y a las pestañas de administración; **en el módulo de facturación electrónica los botones también se ocultan** según el permiso. En el resto de los módulos **falta aplicarla a los botones**. |
 | Pantalla de detalle | Sólo **Ventas** tiene detalle completo; el resto muestra el listado. |
 | Categorías | El backend las soporta, pero **no hay pantalla para administrarlas**. |
 | Multi-empresa | La estructura existe; el alta de usuario hoy asigna una empresa por defecto. |
 | Traducción | Login, Registro y algunas etiquetas del dashboard tienen textos fijos en un solo idioma. |
+| Facturación electrónica | El módulo está completo contra el contrato del backend. Quedan dos huecos **del backend**, visibles en la interfaz y no disimulados: **no hay consulta de un comprobante por id** (el detalle sale de la superficie de estado) y **no hay listado de comprobantes recibidos accesible desde el navegador** (la recepción real exige certificado cliente TLS). |
 
 ---
 

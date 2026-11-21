@@ -58,3 +58,15 @@ export async function fetchWithAuthJson<T>(
   if (response.status === 204) return null as T;
   return response.json();
 }
+
+/**
+ * Convenience wrapper for binary responses (the e-CF QR code and the printable
+ * representation of a comprobante).
+ */
+export async function fetchWithAuthBlob(
+  url: string,
+  options: RequestInit = {}
+): Promise<Blob> {
+  const response = await fetchWithAuth(url, options);
+  return response.blob();
+}

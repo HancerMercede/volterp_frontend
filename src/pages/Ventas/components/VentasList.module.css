@@ -19,3 +19,32 @@
 .searchBar {
   margin-bottom: var(--space-lg);
 }
+
+.fiscalCell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.fiscalChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--gray-100);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fiscalLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: underline;
+}
+
+.fiscalLink:hover {
+  color: var(--text-primary);
+}

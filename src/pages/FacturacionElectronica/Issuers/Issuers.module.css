@@ -1,0 +1,32 @@
+.container {
+  padding: 0;
+}
+
+.searchBar {
+  margin-bottom: var(--space-lg);
+}
+
+.empty {
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  color: var(--danger-text);
+}
+
+.errorTitle {
+  font-weight: 600;
+}

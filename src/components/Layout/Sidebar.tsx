@@ -12,6 +12,7 @@ import {
   FolderKanban,
   FileBarChart,
   Settings,
+  Receipt,
   LifeBuoy,
   LogOut,
   type LucideIcon,
@@ -35,6 +36,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   proyectos: FolderKanban,
   reportes: FileBarChart,
   configuracion: Settings,
+  facturacion: Receipt,
   soporte: LifeBuoy,
 };
 
@@ -50,6 +52,7 @@ const MODULE_TRANSLATIONS: Record<string, string> = {
   proyectos: "sidebar.proyectos",
   reportes: "sidebar.reportes",
   configuracion: "sidebar.configuracion",
+  facturacion: "sidebar.facturacion",
 };
 
 export function Sidebar() {

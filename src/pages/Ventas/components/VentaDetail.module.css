@@ -231,6 +231,75 @@
   color: var(--primary);
 }
 
+/* ─── Fiscal block ─────────────────────────────────────────────── */
+.fiscalCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.fiscalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.fiscalValue {
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.fiscalNote {
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--gray-100);
+}
+
+.fiscalNoteLabel {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.fiscalNote p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+.fiscalLink {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.fiscalLink:hover {
+  color: var(--text-secondary);
+}
+
+.fiscalEmpty {
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--gray-100);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
 /* ─── Details ───────────────────────────────────────────────────── */
 .detailRow {
   display: flex;
