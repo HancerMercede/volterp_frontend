@@ -11,6 +11,8 @@ interface Props {
   itbis: number;
   total: number;
   documento: DocumentoVenta;
+  /** The state of the sale: a pending sale is a draft, it can keep growing. */
+  estado: "pendiente" | "completada";
   onDocumentoChange: (documento: DocumentoVenta) => void;
   onCompletarVenta: () => void;
   onGuardarBorrador: () => void;
@@ -22,6 +24,7 @@ export function ResumenVenta({
   itbis,
   total,
   documento,
+  estado,
   onDocumentoChange,
   onCompletarVenta,
   onGuardarBorrador,
@@ -49,6 +52,9 @@ export function ResumenVenta({
       </div>
 
       <div className={styles.formGroup}>
+        <span className={styles.estadoBadge}>
+          {estado === "completada" ? t("ventas.completed") : t("ventas.pending")}
+        </span>
         <label htmlFor="venta-documento">{t("ventas.documentType")}</label>
         <select
           id="venta-documento"

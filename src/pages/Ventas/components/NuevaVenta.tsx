@@ -247,6 +247,7 @@ export function NuevaVenta({ editingSaleId, onSave, onCancel }: Props) {
               itbis={totales.itbis}
               total={totales.total}
               documento={documento}
+              estado={editingVenta?.status === "Completed" ? "completada" : "pendiente"}
               onDocumentoChange={setDocumentoElegido}
               onCompletarVenta={() => validateAndSubmit(true)}
               onGuardarBorrador={() => validateAndSubmit(false)}
