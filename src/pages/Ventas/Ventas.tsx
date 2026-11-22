@@ -10,6 +10,7 @@ import { usePagination } from "../../hooks/usePagination";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useClientes } from "../../hooks/useColecciones";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
+import { esVentaEditable } from "../../utils/ventas";
 import type { SaleDto } from "../../domain/types";
 import { VentasList } from "./components/VentasList";
 import { VentaDetail } from "./components/VentaDetail";
@@ -42,14 +43,15 @@ export function Ventas() {
   useClientes();
 
   const handleVentaClick = (venta: SaleDto) => {
-    if (venta.status === "Completed") {
-      addToast(t("ventas.completedViewOnly"), "info");
-      setViewingSaleId(venta.id);
-      return;
-    }
-    // Una venta cancelada no se edita: el stock ya volvio al inventario.
-    if (venta.status === "Cancelled") {
-      addToast(t("ventas.cancelledViewOnly"), "info");
+    if (!esVentaEditable(venta)) {
+      addToast(
+        t(
+          venta.status === "Cancelled"
+            ? "ventas.cancelledViewOnly"
+            : "ventas.completedViewOnly",
+        ),
+        "info",
+      );
       setViewingSaleId(venta.id);
       return;
     }

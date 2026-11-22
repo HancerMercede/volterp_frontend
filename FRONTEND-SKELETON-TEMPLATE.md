@@ -24,6 +24,7 @@
 | Source language | English (artifacts), Spanish (conversational docs) |
 | Last synced with code | **2026-11-07** — `useCrudForm`, `useDeleteConfirm`, `useColecciones`, `Modal`, `ConfirmModal`, `DynamicFormFields`, `SearchableSelect`, contrato visual (§1.5), flujo de invitación y recuperación de cuenta (§2.8) |
 | Menú lateral | **2026-11-21** — módulo `SideMenu` (§2.10): el menú se declara como datos, se traduce en un hook y lo dibuja un módulo que no conoce el router ni el dominio |
+| Venta nueva | **2026-11-21** — la venta nueva es una ruta fuera del layout (§2.9), el checklist compacto es un toast (§2.5) y el cajero cancela la venta pendiente (§2.9) |
 | Stack re-synced | **2026-11-15** — pins de stack contra `package.json` real: React 19, React Router 7, Zustand 5, Vite 8, Vitest 4, TypeScript 6 |
 
 ---
@@ -32,7 +33,7 @@
 
 > Este MD **duplica código vivo**. Un snippet desactualizado es peor que un snippet ausente: alguien lo copia y hereda el bug.
 >
-> **Si cambiás un archivo que tiene snippet acá, actualizá su snippet en el mismo commit.** Los archivos con snippet son: `useCrudForm`, `useDeleteConfirm`, `useFilter`, `usePagination`, `usePermission`, `useTokenExpiry`, `useColecciones`, `fetchWithAuth`, `config.ts`, los services, `clienteStore`, `authStore`, `Table`, `Pagination`, `Modal`, `ConfirmModal`, `Button`, `ActionButtons`, `SearchInput`, `SearchableSelect`, `DynamicFormFields`, `Toast`, `PageHeader`, `ErrorBoundary`, `ImageCell`, los helpers de `utils/`, el init de i18n, `Login`, `Register`, `App.tsx`, el módulo `SideMenu` (`types.ts`, `buildMenuTree.ts`, `useMenuTree.ts`, `SideMenu.tsx`), `menuRoutes.ts`, `icons.ts` y `useMenuItems.ts`.
+> **Si cambiás un archivo que tiene snippet acá, actualizá su snippet en el mismo commit.** Los archivos con snippet son: `useCrudForm`, `useDeleteConfirm`, `useFilter`, `usePagination`, `usePermission`, `useTokenExpiry`, `useColecciones`, `fetchWithAuth`, `config.ts`, los services, `clienteStore`, `authStore`, `Table`, `Pagination`, `Modal`, `ConfirmModal`, `Button`, `ActionButtons`, `SearchInput`, `SearchableSelect`, `DynamicFormFields`, `Toast`, `ReadinessChecklist`, `PageHeader`, `ErrorBoundary`, `ImageCell`, los helpers de `utils/`, el init de i18n, `Login`, `Register`, `App.tsx`, el módulo `SideMenu` (`types.ts`, `buildMenuTree.ts`, `useMenuTree.ts`, `SideMenu.tsx`), `menuRoutes.ts`, `icons.ts` y `useMenuItems.ts`.
 >
 > Si el archivo cambió tanto que el snippet ya no es representativo, **borrá el snippet y apuntá al path vivo** (§2.4, "Hooks retirados", es el precedente).
 
@@ -74,6 +75,7 @@ erp-mvp/
     │       ├── useNominaCalculator.ts
     │       ├── useEmpleadoForm.ts
     │       ├── useDashboard.ts
+    │       ├── useFiscalReadiness.ts ← si el contribuyente puede facturar ahora
     │       └── useMenuItems.ts    ← traduce las claves del menú y resuelve sus iconos
     │
     ├── assets/                   ← imágenes, fuentes, SVGs estáticos
@@ -94,6 +96,7 @@ erp-mvp/
     │   │   ├── SearchableSelect.tsx
     │   │   ├── PageHeader.tsx
     │   │   ├── PageLoader.tsx
+    │   │   ├── ReadinessChecklist.tsx ← el aviso de la caja (toast) y el checklist de la configuración
     │   │   ├── ActionButtons.tsx
     │   │   ├── ImageCell.tsx
     │   │   ├── DynamicFormFields.tsx
@@ -178,8 +181,8 @@ erp-mvp/
     │   ├── ResetPassword/
     │   ├── ActivateAccount/
     │   ├── InvalidLink/
-    │   ├── Ventas/
-    │   ├── POS/                  ← el POS como pantalla propia (cobra directo)
+    │   ├── Ventas/               ← el listado de ventas
+    │   ├── NuevaVenta/          ← la venta nueva: ruta fuera del layout (cobra directo)
     │   ├── Compras/
     │   ├── Inventario/
     │   ├── Clientes/
@@ -219,7 +222,7 @@ erp-mvp/
     │   ├── stores/*.test.ts
     │   ├── components/*.test.tsx
     │   ├── components/SideMenu/*.test.tsx
-    │   └── pages/menuRoutes.test.ts, sidebarI18nKeys.test.ts
+    │   └── pages/menuRoutes.test.ts, sidebarI18nKeys.test.ts, nuevaVenta.test.tsx
     │
     └── utils/                    ← helpers puros (sin React, sin fetch)
         ├── pagination.ts         ← getPaginationInfo, getPageNumbers, paginate
@@ -440,7 +443,7 @@ src/i18n/
 | `--primary-light` | `#FEF08A` | fondo teñido del primario |
 | `--primary-gradient` | `linear-gradient(180deg, #FACC15, #EAB308)` | encabezado de marca |
 | `--brand-navy` | `#1e3a5f` | navy de marca |
-| `--brand-gradient` | `linear-gradient(180deg, #1e3a5f, #0f172a 50%, #020617)` | degradado de marca (POS, login) |
+| `--brand-gradient` | `linear-gradient(180deg, #1e3a5f, #0f172a 50%, #020617)` | degradado de marca (sidebar, venta nueva) |
 | `--dark` | `#0f172a` | fondo oscuro de marca |
 | `--sidebar-bg` | `#1F2937` | shell del sidebar |
 | `--sidebar-hover` | `#374151` | hover del item del sidebar |
@@ -708,7 +711,7 @@ export const API_CONFIG = {
 #### Service "completo" — saleService `[PRINCIPIO + STACK: usa fetchWithAuthJson de este proyecto]`
 
 **Ubicación**: `src/infrastructure/api/saleService.ts`
-**Propósito**: el service más completo del proyecto. Cubre listados paginados, listados por status, get-by-id, create, update, transition de estado (`completeSale`), delete.
+**Propósito**: el service más completo del proyecto. Cubre listados paginados, listados por status, get-by-id, create, update, transition de estado (`completeSale`), cierre de la venta pendiente (`cancelSale`), estado fiscal (`getReadiness`) y delete.
 
 **Snippet:**
 
@@ -720,6 +723,7 @@ import type {
   SaleDto,
   CreateSaleRequest,
   UpdateSaleRequest,
+  FiscalReadinessDto,
 } from "../../domain/types";
 
 export const saleService = {
@@ -763,6 +767,15 @@ export const saleService = {
     );
   },
 
+  // Whether the taxpayer can bill right now: the path the sale takes, the
+  // certificate that signs it and the room the ranges have left. The seller
+  // asks it before charging, so it lives with the sales.
+  async getReadiness(): Promise<FiscalReadinessDto> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES_READINESS}`,
+    );
+  },
+
   async getSale(id: string): Promise<SaleDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}`,
@@ -789,9 +802,23 @@ export const saleService = {
     );
   },
 
-  async completeSale(id: string): Promise<SaleDto> {
+  // The commercial invoice is the sale that leaves without a fiscal
+  // document: it is only for the taxpayer that invoices in the normal mode.
+  async completeSale(id: string, asCommercialInvoice = false): Promise<SaleDto> {
     return fetchWithAuthJson(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}/complete`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ asCommercialInvoice }),
+      },
+    );
+  },
+
+  // The cashier closes the sale: it stays on record as cancelled and the
+  // stock it reserved comes back.
+  async cancelSale(id: string): Promise<SaleDto> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}/cancel`,
       {
         method: "PUT",
       },
@@ -1723,12 +1750,12 @@ export function useDeleteConfirm({
 }
 ```
 
-### useColecciones (colecciones completas para el POS) `[PRINCIPIO: el POS filtra en memoria, no contra el servidor]`
+### useColecciones (colecciones completas para la venta nueva) `[PRINCIPIO: la venta nueva filtra en memoria, no contra el servidor]`
 
 **Ubicación**: `src/hooks/useColecciones.ts`
 **Propósito**: cargar el listado completo de clientes, productos, proveedores y categorías para las pantallas que filtran y paginan en memoria — o que necesitan un lookup completo.
 **Reglas**:
-- **Nació para el POS**: el POS y el editor de líneas de compra necesitan el listado entero, no la página del módulo. Por eso piden `PAGE_SIZE = 100` en vez de `ITEMS_PER_PAGE`.
+- **Nació para la venta nueva**: la venta nueva y el editor de líneas de compra necesitan el listado entero, no la página del módulo. Por eso piden `PAGE_SIZE = 100` en vez de `ITEMS_PER_PAGE`.
 - **Compras la usa por la misma razón**: el form de compra referencia proveedores y el editor de líneas referencia productos.
 - Un hook por colección (`useClientes`, `useProductos`, `useProveedores`, `useCategorias`): cada uno dispara su `fetch` una vez al montar y devuelve el array del store.
 - **Inventario usa `useCategorias` porque las categorías son un lookup, no una lista paginada**: el módulo pagina los productos en el servidor, pero el `select` de categoría necesita TODAS las categorías siempre. Pedirlas con el `pageNumber` de los productos devolvía una página vacía desde la segunda página en adelante (y pisaba el snapshot persistido de `category-storage`).
@@ -1921,7 +1948,7 @@ export function useTokenExpiry(): void {
 ### Hooks retirados: `useCarrito`, `useVentaForm`, `useClienteSelector` `[STACK: dominio ventas]`
 
 > **Retirados el 2026-11-06** en `c7881d8 chore: remove the unused domain hooks` (387 líneas).
-> El POS de Ventas se reconstruyó como **componentes** en `src/pages/Ventas/components/` (`NuevaVenta`, `Carrito`, `ResumenVenta`, `ClienteSelector`, `SelectorProducto`): el carrito dejó de ser un hook porque su estado es efímero y pertenece al componente que lo posee. Ninguno de los tres hooks tenía call site.
+> La venta nueva se reconstruyó como **componentes** en `src/pages/Ventas/components/` (`NuevaVenta`, `Carrito`, `ResumenVenta`, `ClienteSelector`, `SelectorProducto`): el carrito dejó de ser un hook porque su estado es efímero y pertenece al componente que lo posee. Ninguno de los tres hooks tenía call site.
 
 **Regla que dejó:** antes de escribir un hook en `application/hooks/`, comprobar que hay un call site. Un hook sin consumidor es código muerto con tests.
 
@@ -2557,10 +2584,10 @@ export function SearchInput({
 - **Teclado**: `ArrowDown`/`ArrowUp` mueven la opción activa y abren la lista, `Enter` selecciona la activa, `Escape` cierra **sin propagar** (el `Escape` del modal no se dispara a la vez). La lista se abre también con `focus`.
 - **Al escribir a mano** llama `onChange("", texto)`: el valor no matchea ninguna opción y el formulario lo trata como vacío. No inventa un id.
 - `clearOnSelect` deja el input vacío después de elegir (lo usa el editor de líneas de compra, donde el mismo producto se puede agregar varias veces).
-- `autoFocus` enfoca el input al montar (lo usa el POS cuando el usuario pulsa "Cambiar" en la card del cliente).
+- `autoFocus` enfoca el input al montar (lo usa la venta nueva cuando el usuario pulsa "Cambiar" en la card del cliente).
 - Se cierra al hacer click afuera (`mousedown` sobre `document`).
 - **Accesibilidad**: `role="combobox"` con `aria-expanded`, `aria-controls`, `aria-activedescendant`; la lista es `role="listbox"` y cada ítem `role="option"` con `aria-selected`.
-- Se renderiza desde `DynamicFormFields` cuando `field.type === "combobox"`, o directamente en un componente de feature (líneas de compra, selector de cliente del POS).
+- Se renderiza desde `DynamicFormFields` cuando `field.type === "combobox"`, o directamente en un componente de feature (líneas de compra, selector de cliente de la venta nueva).
 
 **Snippet (representativo — el archivo completo son 176 líneas):**
 
@@ -2841,6 +2868,48 @@ export function NotificationContainer() {
 export const ToastContainer: FC = NotificationContainer;  // alias histórico
 ```
 
+### ReadinessChecklist (el aviso de la caja) `[PRINCIPIO + STACK]`
+
+**Ubicación**: `src/components/UI/ReadinessChecklist.tsx`
+**Propósito**: decir si el contribuyente puede facturar ahora mismo. Tiene dos variantes: **`compact`** (la caja: el aviso del riel del carrito) y **`full`** (la configuración: la tabla con los rangos, el certificado y la vía de emisión).
+
+**Reglas**:
+- **La variante compacta no pinta nada**: devuelve `null`. Su único producto es un **toast** que se va solo. En el riel del carrito no hay banda: un negocio que no factura electrónicamente no carga su certificado y no tiene que ver el aviso cada vez que abre la caja.
+- **El aviso se dice una sola vez**: un `useRef` lo evita. En desarrollo React monta el efecto dos veces (StrictMode) y el vendedor no necesita el toast repetido.
+- **La variante compacta habla en las palabras del que vende** ("falta el certificado del negocio"), no con el camino fiscal: esas frases viven en `ventas.readiness.compactBlockers.*`.
+- **La venta nunca espera por el checklist**: si la llamada falla, la pantalla sigue vendiendo y el aviso dice que no se pudo verificar (los datos llegan por `useFiscalReadiness`, un hook de aplicación, no por la UI).
+
+**Snippet** (`src/components/UI/ReadinessChecklist.tsx`):
+
+```tsx
+  const aviso = (() => {
+    if (!compact) return "";
+    if (state === "notReady") {
+      const motivos = reasons.join(" · ");
+      return `${t("ventas.readiness.compactNotReady")}${
+        motivos ? ` — ${motivos}` : ""
+      }`;
+    }
+    if (state === "unverified") return t("ventas.readiness.compactUnverified");
+    return "";
+  })();
+
+  // El aviso se dice una sola vez: en desarrollo React monta el efecto dos
+  // veces y el vendedor no necesita el toast repetido.
+  const avisoYaDado = useRef(false);
+  useEffect(() => {
+    if (!aviso || avisoYaDado.current) return;
+    avisoYaDado.current = true;
+    addToast(aviso, "warning");
+  }, [aviso, addToast]);
+```
+
+```tsx
+  if (compact) return null;
+```
+
+**Dónde se usa**: la página de la venta nueva lo monta con `variant="compact"`; la configuración fiscal lo monta con `variant="full"` (`src/pages/FacturacionElectronica/Settings/Settings.tsx`).
+
 ### PageHeader `[PRINCIPIO]`
 
 **Ubicación**: `src/components/UI/PageHeader.tsx`
@@ -3024,6 +3093,11 @@ export { ConfirmModal } from './ConfirmModal';
 export { DynamicFormFields } from './DynamicFormFields';
 export { VolterpMark } from './VolterpMark';
 export { ErrorBoundary } from './ErrorBoundary';
+export { ReadinessChecklist } from './ReadinessChecklist';
+export type {
+  ReadinessChecklistProps,
+  ReadinessVariant,
+} from './ReadinessChecklist';
 ```
 
 > **Decisión intencional**: este es el ÚNICO barrel permitido en el proyecto. Toda la regla anti-barrel del §4.7 aplica a TODO lo demás — este es la excepción justificada (los primitives son reusados en todas las pages).
@@ -3776,7 +3850,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 - **Todas las páginas se importan con `lazy()`** — cada una se convierte en su propio chunk.
 - `<Suspense fallback={<PageLoader />}>` envuelve las rutas.
 - `ProtectedRoute` chequea `isAuthenticated` + `hasHydrated`. Si no está hidratado, retorna `null` (evita flash del login).
-- `Layout` envuelve todas las rutas protegidas.
+- `Layout` envuelve todas las rutas protegidas — **excepto las pantallas de mostrador**, que se declaran FUERA de ese `<Route>` (§2.9, "La venta nueva: la ruta que vive fuera del layout").
 
 **Snippet (representativo):**
 
@@ -3795,6 +3869,11 @@ const Dashboard = lazy(() =>
 );
 const Clientes = lazy(() =>
   import("./pages/Clientes/Clientes").then((m) => ({ default: m.Clientes })),
+);
+const NuevaVentaPage = lazy(() =>
+  import("./pages/NuevaVenta/NuevaVentaPage").then((m) => ({
+    default: m.NuevaVentaPage,
+  })),
 );
 // … etc …
 
@@ -3827,6 +3906,18 @@ function AppRoutes() {
           <Route path="/clientes" element={<Clientes />} />
           {/* … */}
         </Route>
+        {/*
+          La venta nueva es una pantalla de mostrador: ocupa la ventana
+          entera y vive fuera del layout con el menu lateral.
+        */}
+        <Route
+          path="/nueva-venta"
+          element={
+            <ProtectedRoute>
+              <NuevaVentaPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Suspense>
   );
@@ -3846,6 +3937,99 @@ function App() {
 export default App;
 ```
 
+### La venta nueva: la ruta que vive fuera del layout `[PRINCIPIO + STACK]`
+
+**Por qué**: la venta nueva nació como modal dentro de `/ventas` y después como una página dentro del layout. En las dos formas se veía compacta y apretada: un contador de mostrador necesita la ventana entera, no un hueco dentro del contenedor de la app. La ruta `/nueva-venta` se dibuja **fuera** del `<Route>` que envuelve las páginas con `<ProtectedRoute><Layout /></ProtectedRoute>`: no hay barra lateral ni contenedor de contenido, y el cuerpo mide lo que mide la ventana.
+
+**Lo que NO se va**: la protección. La ruta sigue envuelta en `ProtectedRoute` — lo que sale del layout es la pantalla, no la sesión.
+
+**El modal desaparece**: el botón de la lista **navega** (`src/pages/Ventas/Ventas.tsx`). No quedan dos experiencias (overlay y ruta) del mismo formulario: una sola pantalla, la de la caja.
+
+```tsx
+        <Button onClick={() => navigate("/nueva-venta")}>
+          + {t("ventas.newSale")}
+        </Button>
+```
+
+**La misma ruta edita la venta pendiente** (`src/pages/NuevaVenta/NuevaVentaPage.tsx`): el parámetro `?venta=<id>` dice cuál es. Sin él, el formulario arranca de cero.
+
+```tsx
+  const ventaAEditar = searchParams.get("venta");
+  // …
+
+      <NuevaVenta
+        key={`nueva-venta-${intento}`}
+        editingSaleId={ventaAEditar}
+        onSave={() => setIntento((conteo) => conteo + 1)}
+        onCancel={() => navigate("/ventas")}
+      />
+```
+
+**El cuerpo mide la ventana** (`src/pages/Ventas/components/NuevaVenta.module.css`):
+
+```css
+/* La venta nueva ocupa la ventana entera: es una pantalla de mostrador. */
+.posContainer {
+  display: flex;
+  height: 100vh;
+  gap: 16px;
+  padding: 16px;
+  overflow: hidden;
+  background: var(--background);
+}
+```
+
+### La venta pendiente: editar y cancelar `[PRINCIPIO + STACK]`
+
+**Cancelar no es borrar**: la venta cancelada queda en el registro y el stock que tenía reservado vuelve al inventario. Por eso la acción pide confirmación — el cajero está deshaciendo algo, no limpiando una fila.
+
+**El servicio** (`src/infrastructure/api/saleService.ts`):
+
+```typescript
+  async cancelSale(id: string): Promise<SaleDto> {
+    return fetchWithAuthJson(
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SALES}/${id}/cancel`,
+      {
+        method: "PUT",
+      },
+    );
+  }
+```
+
+- La **lista** ofrece "Cancelar" **solo en las pendientes**: una venta cerrada no se cierra otra vez.
+- La **venta nueva** ofrece "Descartar" para la pendiente que está editando: la cancela y vuelve al listado.
+- El **store** expone `cancelVenta` (`src/stores/ventaStore.ts`): la venta no se borra, la fila se reemplaza por la que devuelve el back.
+- El `SaleDto` del front declara el estado que el back ya envía: `"Pending" | "Completed" | "Cancelled"`. Una venta cancelada se abre en solo vista, como las completadas.
+
+**La columna de la lista** (`src/pages/Ventas/components/VentasList.tsx`):
+
+```tsx
+    {
+      // The cashier closes the pending sale from the list. The sale that is
+      // not pending keeps the actions it had: a closed sale is not closed
+      // again.
+      key: "cancelar",
+      render: (v: SaleDto) =>
+        v.status === "Pending" ? (
+          <Button variant="ghost" size="small" onClick={() => onCancel(v.id)}>
+            {t("ventas.cancelSale")}
+          </Button>
+        ) : null,
+    },
+```
+
+**El "Descartar" de la venta nueva** (`src/pages/Ventas/components/NuevaVenta.tsx`):
+
+```tsx
+          {sePuedeDescartar && (
+            <div className={styles.descartarAccion}>
+              <Button variant="ghost" size="small" onClick={descartar}>
+                {t("ventas.discardSale")}
+              </Button>
+            </div>
+          )}
+```
+
 ## 2.10 Menú lateral (`components/SideMenu/`) y su integración en la app `[PRINCIPIO: el menú se declara como datos y lo dibuja un módulo que no conoce el dominio]`
 
 **Por qué existe**: el menú estaba escrito en tres lugares que no hablaban entre sí — la lista de pantallas dentro del `Sidebar`, las rutas del router en `App.tsx` y el permiso de cada módulo — y cada pantalla nueva obligaba a tocarlos a los tres. Este módulo junta las tres cosas en un solo lugar: **el árbol se construye desde las rutas planas, el filtrado por permisos pasa en un único punto y el módulo no conoce ningún router**.
@@ -3856,7 +4040,7 @@ export default App;
 - El módulo **no conoce el dominio**: no sabe de ventas, de facturas ni de DGII. Solo conoce el árbol.
 - El módulo **no conoce ningún router**: la app le pasa su propio enlace con `renderLeaf`.
 - **El filtrado por permisos vive acá** (en `SideMenu`), no en la app: las hojas sin permiso desaparecen y los grupos que quedan vacíos se podan.
-- **El estado abierto/cerrado de los grupos vive acá**: la app no lo guarda.
+- **El estado abierto/cerrado de los grupos vive acá**: la app no lo guarda. El toggle **siempre funciona**: la apertura automática (la que sigue a la ruta activa) solo se aplica cuando la ruta cambia; un grupo cerrado a mano se queda cerrado en esa ruta.
 - **El árbol que devuelve `useMenuTree` es inmutable**: nadie lo muta.
 
 ### Layout de archivos
@@ -3930,9 +4114,9 @@ export interface SideMenuProps {
 ```
 
 - `RouteDef.path` es lo único obligatorio: es el path del router. La etiqueta se **infiere** del último segmento cuando no se da — y la inferencia no pone acentos: si la palabra los tiene, dala explícita.
-- `RouteDef.parent` cuelga la pantalla de otro grupo aunque su path no esté debajo: el POS vive en `/pos` y pertenece a `/ventas`.
+- `RouteDef.parent` cuelga la pantalla de otro grupo aunque su path no esté debajo: la venta nueva vive en `/nueva-venta` y pertenece a `/ventas`.
 - `RouteDef.hidden` saca la pantalla del menú sin sacarla del router.
-- `MenuItem.id` es el prefijo acumulado del path (`/ventas/pos`); un grupo que también es ruta lleva el sufijo `::group` (`/ventas::group`).
+- `MenuItem.id` es el prefijo acumulado del path (`/ventas/nueva-venta`); un grupo que también es ruta lleva el sufijo `::group` (`/ventas::group`).
 - `MenuItem.href` lo tiene la hoja; el grupo nunca navega.
 
 ### El patrón completo, paso por paso
@@ -3956,11 +4140,10 @@ export const MENU_ROUTES: MenuRoute[] = [
     order: 20,
   },
   {
-    // El POS vive dentro de ventas: cuelga del grupo aunque su path no
-    // este debajo de el.
-    path: '/pos',
-    labelKey: 'sidebar.pos',
-    iconKey: 'pos',
+    // La venta nueva cuelga del grupo de ventas: su path no esta debajo.
+    path: '/nueva-venta',
+    labelKey: 'sidebar.nuevaVenta',
+    iconKey: 'nuevaVenta',
     permission: 'pos.read',
     order: 20,
     parent: '/ventas',
@@ -3974,10 +4157,12 @@ export const MENU_GROUPS: MenuGroup[] = [
     iconKey: 'ventas',
     permission: 'ventas.read',
     order: 20,
-    indexLabelKey: 'sidebar.resumen',
+    indexLabelKey: 'sidebar.ventas',
   },
 ];
 ```
+
+> **El primer hijo de un grupo se llama con el nombre del módulo** ("Ventas", "Contabilidad", "RRHH", "Facturación"), no con un "Resumen" genérico: el grupo y su enlace dicen lo mismo y el usuario reconoce el módulo de un vistazo. `indexLabelKey` es la clave i18n de ese nombre (`sidebar.ventas`).
 
 **2. La app traduce las etiquetas y resuelve los iconos** — `src/application/hooks/useMenuItems.ts`, con el mapa de iconos en `src/domain/constants/icons.ts` (`ICON_MAP`: clave → componente de `lucide-react`).
 
@@ -4144,9 +4329,91 @@ const collectDeclaredKeys = (): string[] => {
 };
 ```
 
+### El enlace del grupo: su nombre y su icono `[PRINCIPIO]`
+
+**Por qué**: un grupo que también es ruta tiene un enlace propio que apunta a esa ruta. Ese enlace se llamaba "Resumen" en todos los módulos y no traía icono: el menú repetía la misma palabra cuatro veces y el usuario no veía a qué módulo pertenecía. Ahora el enlace **hereda el icono** de la ruta (o, cuando la ruta no trae, el del grupo) y **se llama con el nombre del módulo** ("Ventas", "Contabilidad", "RRHH", "Facturación").
+
+**Snippet** (`src/components/SideMenu/buildMenuTree.ts`):
+
+```typescript
+    const link: BuildNode = {
+      prefix: node.prefix,
+      path: node.path,
+      label: node.indexLabel ?? DEFAULT_INDEX_LABEL,
+      // The link points at the route of the group, so it wears its icon: the
+      // one of the route or, when the route brings none, the one of the group.
+      icon: node.icon,
+      permission: node.permission,
+      disabled: node.disabled,
+      isRoute: true,
+      isIndexLink: true,
+      children: new Map(),
+      seq: node.seq,
+    };
+```
+
+### El panel cerrado no ocupa espacio `[PRINCIPIO + STACK]`
+
+**Por qué**: un grupo cerrado dejaba el hueco de sus hijos: la lista seguía midiendo el alto de un panel invisible y el menú se veía roto. El panel es ahora un grid de una fila que pasa de `1fr` a `0fr`: cerrado, **no mide nada**, y el `visibility: hidden` saca además a sus hijos del tab order.
+
+**Snippet** (`src/components/SideMenu/side-menu.css`):
+
+```css
+/*
+ * The panel of a group is a grid whose row goes from "1fr" to "0fr": a closed
+ * group takes no space instead of leaving the hole of its children.
+ */
+.sm-panel {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--sm-duration) ease;
+}
+
+/* The content of the panel is clipped, so the collapsed row hides it. */
+.sm-panelInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* A closed panel is out of the way: its children never take the focus. */
+.sm-panel--closed {
+  grid-template-rows: 0fr;
+  visibility: hidden;
+}
+```
+
+### El estado abierto/cerrado es del menú `[PRINCIPIO]`
+
+**Por qué**: antes, con una ruta activa adentro, el menú re-abría el grupo y el toggle del usuario no hacía nada: cerrabas un grupo y volvía a aparecer abierto. Ahora el estado es una **decisión del usuario** (`{ abierto, ruta }`): la ruta activa solo **suma** aperturas, nunca las quita, y la decisión vale en la ruta en la que se tomó — cuando la ruta cambia, la apertura automática vuelve a mandar.
+
+**Snippet** (`src/components/SideMenu/SideMenu.tsx`):
+
+```typescript
+  const cerradosEnEstaRuta = useMemo(() => {
+    const cerrados = new Set<string>();
+    for (const [id, decision] of Object.entries(decisiones)) {
+      if (!decision.abierto && decision.ruta === ruta) cerrados.add(id);
+    }
+    return cerrados;
+  }, [decisiones, ruta]);
+```
+
+```typescript
+  const toggle = useCallback(
+    (id: string) => {
+      const estabaAbierto = openIds.has(id);
+      setDecisiones((previous) => ({
+        ...previous,
+        [id]: { abierto: !estabaAbierto, ruta },
+      }));
+    },
+    [openIds, ruta],
+  );
+```
+
 ### El caso que motivó el `parent`
 
-El POS dejó de ser un overlay de la pantalla de ventas y pasó a ser una pantalla propia (`src/pages/POS/Pos.tsx`, ruta `/pos`) que monta el mismo cuerpo que el overlay (`src/pages/Ventas/components/NuevaVenta.tsx`). En el menú, el POS cuelga de `/ventas`: para el usuario el POS es parte de Ventas, aunque su URL no lo diga. De ahí el campo `parent` — y de ahí que el módulo resuelva el prefijo del grupo por su cuenta: **la app nunca escribe un id**.
+La venta nueva dejó de ser un modal de la pantalla de ventas y pasó a ser una pantalla propia (`src/pages/NuevaVenta/NuevaVentaPage.tsx`, ruta `/nueva-venta`) que monta el mismo cuerpo que el modal (`src/pages/Ventas/components/NuevaVenta.tsx`). En el menú, la venta nueva cuelga de `/ventas`: para el usuario es parte de Ventas, aunque su URL no lo diga. De ahí el campo `parent` — y de ahí que el módulo resuelva el prefijo del grupo por su cuenta: **la app nunca escribe un id**.
 
 ---
 
@@ -4181,7 +4448,8 @@ npm install -D vitest @vitest/ui jsdom @testing-library/react @testing-library/j
 # 5. Copiar archivos del §2 según corresponda (mínimo: fetchWithAuth, API_CONFIG,
 #    Pagination, Table, useCrudForm, usePagination, useFilter, authStore,
 #    NotificationContainer, y el menu: SideMenu + useMenuTree + useMenuItems +
-#    menuRoutes + icons).
+#    menuRoutes + icons, y la venta nueva: NuevaVentaPage + ReadinessChecklist
+#    + useFiscalReadiness).
 
 # 6. Configurar vite.config.ts según §1.3
 # 7. Configurar tsconfig.app.json según §1.3
@@ -4363,6 +4631,7 @@ catch (err) {
 - **Namespaces**: top-level del JSON (`common`, `auth`, `ventas`, etc.).
 - **NO usar `t()` dentro de constantes** — el JSON se carga antes que React. Si necesitás un string traducible, renderizalo con `<>{t("clave")}</>`.
 - **El menú se escribe con claves, no con palabras**: `menuRoutes.ts` nombra `labelKey` (`sidebar.ventas`) y el hook traduce. El guard `src/test/pages/sidebarI18nKeys.test.ts` revisa que toda clave del namespace `sidebar` exista en `es.json` **y** en `en.json`.
+- **La copia de la app se escribe en español neutro (tú), no en voseo**: "Revisa tu correo", "Elige una contraseña nueva", "Ya puedes iniciar sesión". Las pantallas de recuperación de cuenta se corrigieron a neutral; quedan frases viejas con voseo ("Escribí el correo con el que iniciás sesión") y se van corrigiendo de a poco. **No escribas voseo nuevo**: la app la lee un cliente de cualquier país.
 
 ## 4.5 Forms (useCrudForm) `[PRINCIPIO]`
 
@@ -4437,9 +4706,14 @@ catch (err) {
 - **No existe auto-registro público.** El usuario se crea desde adentro del sistema (Configuración → Usuarios → Invitar usuario) y activa su cuenta con un enlace por correo. `POST /api/auth/register` ya no lo usa el frontend.
 - **Branding hardcodeado en Login** (logo, "Volterp ERP", "Sistema de gestión empresarial integral", "Gestión de ventas e inventario" etc.). Decisión intencional: no es copy traducible, es identidad de marca. Si se quiere traducir, separar branding de copy traducible en el JSON.
 - **Login maneja banner de sesión expirada** vía `location.state.expired`. Si el usuario llega a `/login` sin ese state, no muestra banner. Es la única señal que la app tiene para distinguir "veniste a loguearte" de "te deslogueamos".
-- **La jerarquía del menú puede ser distinta de la URL.** El campo `parent` de `menuRoutes.ts` cuelga una pantalla de un grupo aunque su path no esté debajo: el POS vive en `/pos` y pertenece a `/ventas`. El módulo resuelve el prefijo del grupo por su cuenta — **la app nunca escribe un id**.
+- **La jerarquía del menú puede ser distinta de la URL.** El campo `parent` de `menuRoutes.ts` cuelga una pantalla de un grupo aunque su path no esté debajo: la venta nueva vive en `/nueva-venta` y pertenece a `/ventas`. El módulo resuelve el prefijo del grupo por su cuenta — **la app nunca escribe un id**.
 - **Las etiquetas y los iconos viajan por CLAVE, no por valor.** `menuRoutes.ts` nombra `labelKey` e `iconKey`; `useMenuItems.ts` traduce la etiqueta y busca el icono en `ICON_MAP` (`src/domain/constants/icons.ts`). La razón: la app tiene dos idiomas y sus propios iconos, y el módulo no debe saber de ninguno de los dos.
-- **Un módulo con más de una pantalla se dibuja como grupo; uno con una sola pantalla sigue siendo hoja.** La lista de módulos no cambia: cambia cómo se dibuja. El grupo que también es ruta no navega — su propio enlace pasa a ser el primer hijo ("Resumen" / `indexLabelKey`).
+- **Un módulo con más de una pantalla se dibuja como grupo; uno con una sola pantalla sigue siendo hoja.** La lista de módulos no cambia: cambia cómo se dibuja. El grupo que también es ruta no navega — su propio enlace pasa a ser el primer hijo, que lleva el nombre del módulo (`indexLabelKey`) y hereda su icono.
+- **La venta nueva es una ruta que vive fuera del layout.** `/nueva-venta` se dibuja FUERA del `<Route>` que envuelve las páginas con `<ProtectedRoute><Layout /></ProtectedRoute>`: la pantalla del mostrador ocupa la ventana entera (`height: 100vh`), sin barra lateral ni contenedor de contenido. El modal de "Nueva venta" dentro de `/ventas` ya no existe — el botón de la lista navega y la venta pendiente se edita en `/nueva-venta?venta=<id>`. La protección sigue: lo que sale del layout es la pantalla, no la sesión.
+- **Cancelar una venta no es borrarla.** `PUT /api/sales/{id}/cancel` la deja en el registro con estado `Cancelled` y devuelve el stock reservado al inventario. Por eso la lista ofrece "Cancelar" solo en las pendientes, la venta nueva ofrece "Descartar" para la que está editando, y el `SaleDto` del front declara `"Pending" | "Completed" | "Cancelled"` (el back ya lo enviaba).
+- **El checklist compacto es un toast, no una banda.** El aviso de la caja sale una sola vez y se va solo; la versión completa sigue en la configuración. Un `useRef` lo evita porque en desarrollo React monta el efecto dos veces (StrictMode).
+- **El grupo cerrado no ocupa espacio.** El panel es un grid de una fila (`1fr` → `0fr`): cerrado no mide nada y sus hijos salen del tab order.
+- **El primer hijo de un grupo lleva el nombre del módulo y su icono.** "Ventas", no "Resumen"; y el enlace hereda el icono de la ruta (o, cuando la ruta no trae, el del grupo).
 
 ## 4.9 Anti-patterns (lo que NO hacer) `[PRINCIPIO]`
 
@@ -4456,12 +4730,15 @@ catch (err) {
 - **No usar `useEffect` para sincronizar state derivado**. Si necesitás derivar algo del state, hacelo inline o con `useMemo`. (Ver skill `react-no-effects`).
 - **No usar `class` para componentes React** — solo `function` (excepto `ErrorBoundary`, que NECESITA class porque es el único componente React que tiene lifecycle hooks para capturar errores).
 - **No mezclar español e inglés en la MISMA entidad**. Si tu entity se llama `client` en el dominio, todos los derivados van en inglés (`clientService`, `clientStore`, `useClientForm`). Si va en español, todo español. **No** `clientService` + `clienteStore`.
+- **No meter la pantalla del mostrador en un modal.** La venta nueva es una ruta fuera del layout (`/nueva-venta`), no un overlay de `/ventas`: dentro del contenedor de la app se ve compacta y apretada, y el contador de un mostrador necesita la ventana entera.
+- **No volver la banda del checklist al riel del carrito.** El aviso de la caja es un toast que se dice una sola vez (`ReadinessChecklist` con `variant="compact"`); la banda fija obligaba a ver el aviso en cada apertura.
+- **No ofrecer "Cancelar" en una venta que no está pendiente.** La cancelación devuelve el stock reservado: solo tiene sentido deshacer una venta pendiente.
 - **No "arreglar" los typos históricos** listados en §4.8 sin entender el impacto. Cada uno tiene un motivo.
 - **No usar `useCrudForm` para login ni para las pantallas de recuperación de cuenta**. Auth es un caso especial de 2–5 campos con submit simple. Forzar la abstracción CRUD complica el código sin beneficio. Usar `useState` local.
 - **No usar el mapper por defecto `pickKeys` cuando el DTO trae arrays o campos vacíos** — ver §4.5. Compartir la referencia del array hace que el form edite el array del store en vivo, y no normalizar los `null` rompe `isDirty` (el form aparece sucio al abrirse).
 - **No re-implementar el estado del modal de borrado en la página** (`deleteId` + `showDeleteConfirm` + `confirmDelete`). Usar `useDeleteConfirm`.
 - **No usar `<select>` para referencias a entidades con muchos registros** (proveedores, productos). Declarar el campo como `type: "combobox"`. Para una lista corta, el `<select>` nativo ES el control correcto (ver §4.5).
-- **No crear un hook en `application/hooks/` sin call site** — un hook sin consumidor es código muerto con tests. El POS de Ventas ya no tiene hooks: su estado vive en los componentes que lo poseen.
+- **No crear un hook en `application/hooks/` sin call site** — un hook sin consumidor es código muerto con tests. La venta nueva ya no tiene hooks: su estado vive en los componentes que lo poseen.
 - **No escribir literales de color** (`#hex`, `rgb()`, `rgba()`, `hsl()`) fuera de `src/styles/variables.css`. Si el color no existe como token, **se agrega el token** (§1.5).
 - **No usar `--primary` ni `--text-muted` como color de texto** sobre superficie clara — 1.53:1 y 2.42:1. Son rellenos y metadatos. Para texto: `--text-primary` o `--text-secondary`.
 - **No dejar IA slop**: comentarios que narran lo que el código ya dice, bloques de prosa dentro del código, abstracciones que sólo envuelven una línea, helpers que nadie llama, ramas "por si acaso" que nadie pidió. Si un comentario no evita una pregunta, no va.
@@ -4471,7 +4748,7 @@ catch (err) {
 - **No filtrar los permisos en la app.** El filtrado vive en `SideMenu` (las hojas sin permiso desaparecen y los grupos que quedan vacíos se podan). Filtrar otra vez en la app duplica la regla y deja dos verdades.
 - **No mutar el árbol que devuelve `useMenuTree`.** Es inmutable: si una hoja tiene que cambiar, se declara otra ruta.
 - **No hardcodear los ids con el sufijo `::group`** (`/ventas::group`). Ese id lo arma el módulo; la app se refiere a las pantallas por su path.
-- **No sacar el estado abierto/cerrado de los grupos de `SideMenu`.** El menú abre solo el grupo de la pantalla activa; la app no guarda un `openGroup` propio.
+- **No sacar el estado abierto/cerrado de los grupos de `SideMenu`.** El menú decide qué grupos están abiertos y recuerda la decisión del usuario en esa ruta (la apertura automática por la ruta activa solo suma, nunca quita); la app no guarda un `openGroup` propio ni le dice al menú que abra algo.
 - **Mantener estables las referencias de `routes` y `groups`** (una constante de módulo o un `useMemo`). Si cambian en cada render, el árbol se reconstruye en cada render.
 - **No meter el dominio en el módulo.** `SideMenu` no sabe de ventas, de facturas ni de DGII: solo sabe de árboles. Lo que la app sabe del dominio se declara en `menuRoutes.ts`.
 - **No hardcodear el menú en el `Sidebar`.** El shell dibuja el árbol que le pasa `useMenuTree`; la lista de pantallas vive en `menuRoutes.ts`, no en el componente.
