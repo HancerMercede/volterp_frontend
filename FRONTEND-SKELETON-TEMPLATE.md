@@ -3314,6 +3314,18 @@ export const ITEMS_PER_PAGE = 10;
 
 > **Regla**: el default de paginación vive acá y se reusa en `usePagination` y en los services. Si querés cambiar el default, tocás UN archivo.
 
+### ventas (que se puede editar de una venta) `[PRINCIPIO]`
+
+**Ubicación**: `src/utils/ventas.ts`
+
+```typescript
+export function esVentaEditable(venta: Pick<SaleDto, "status">): boolean {
+  return venta.status === "Pending";
+}
+```
+
+> **Regla**: una venta completada ya facturó y una cancelada ya devolvió el stock al inventario: las dos se miran, no se tocan. La regla vive en una función pura con su test, no en dos ramas dentro del manejador del click.
+
 ---
 
 ## 2.7 i18n (init + locale shape) `[STACK: react-i18next con detección custom]`
