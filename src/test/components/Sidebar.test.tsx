@@ -50,42 +50,37 @@ beforeEach(() => {
 });
 
 describe("Sidebar", () => {
-  it("un modulo con varias pantallas se dibuja como grupo con sus hijos", () => {
+  it("un modulo con una sola pantalla se dibuja como enlace plano", () => {
     renderSidebar("/ventas");
 
-    const grupo = screen.getByRole("button", { name: "Ventas" });
+    const ventas = screen.getByRole("link", { name: "Ventas" });
 
-    expect(grupo).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("link", { name: "Nueva venta" })).toBeInTheDocument();
+    expect(ventas).toHaveAttribute("href", "/ventas");
+    expect(screen.queryByRole("button", { name: "Ventas" })).toBeNull();
   });
 
-  it("el grupo que contiene la ruta activa se abre solo", () => {
-    renderSidebar("/nueva-venta");
+  it("la venta nueva no es un item del menu", () => {
+    renderSidebar("/ventas");
 
-    expect(screen.getByRole("button", { name: "Ventas" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
-    expect(screen.getByRole("link", { name: "Nueva venta" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Nueva venta" })).toBeNull();
+    expect(screen.queryByText("Nueva venta")).toBeNull();
   });
 
   it("la hoja activa se marca como la pagina actual", () => {
-    renderSidebar("/nueva-venta");
+    renderSidebar("/ventas");
 
-    expect(screen.getByRole("link", { name: "Nueva venta" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Ventas" })).toHaveAttribute(
       "aria-current",
       "page",
     );
-    expect(
-      screen.getByRole("link", { name: "Ventas" }),
-    ).not.toHaveAttribute("aria-current");
   });
 
-  it("el enlace indice del grupo trae el icono del grupo", () => {
+  it("el enlace del modulo trae su icono", () => {
     renderSidebar("/ventas");
 
-    const resumen = screen.getByRole("link", { name: "Ventas" });
-    expect(resumen.querySelector("svg")).not.toBeNull();
+    const ventas = screen.getByRole("link", { name: "Ventas" });
+
+    expect(ventas.querySelector("svg")).not.toBeNull();
   });
 
   it("cada pantalla del menu trae su icono", () => {
@@ -97,6 +92,15 @@ describe("Sidebar", () => {
     for (const grupo of screen.getAllByRole("button")) {
       expect(grupo.querySelector("svg")).not.toBeNull();
     }
+  });
+
+  it("un modulo con varias pantallas se dibuja como grupo con sus hijos", () => {
+    renderSidebar("/contabilidad/cuentas");
+
+    const grupo = screen.getByRole("button", { name: "Contabilidad" });
+
+    expect(grupo).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("link", { name: "Cuentas" })).toBeInTheDocument();
   });
 
   it("dentro de un grupo solo se marca la pantalla activa", () => {
@@ -139,13 +143,13 @@ describe("Sidebar", () => {
 
   it("un modulo sin permiso se pierde entero, con sus hijos", () => {
     usePermissionStore.setState({
-      permissions: new Set(PERMISOS.filter((p) => p !== "ventas.read")),
+      permissions: new Set(PERMISOS.filter((p) => p !== "contabilidad.read")),
       status: "ready",
     });
 
     renderSidebar("/ventas");
 
-    expect(screen.queryByRole("button", { name: "Ventas" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Nueva venta" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Contabilidad" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Cuentas" })).toBeNull();
   });
 });

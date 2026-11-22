@@ -30,6 +30,8 @@ const OUT_OF_MENU: Record<string, string> = {
   "/activate-account":
     "es publica: el menu es de las pantallas protegidas",
   "/invalid-link": "es publica: el menu es de las pantallas protegidas",
+  "/nueva-venta":
+    "se abre desde el boton de la lista de ventas: no es un item del menu",
 };
 
 describe("las rutas del menu y las del router no se separan", () => {

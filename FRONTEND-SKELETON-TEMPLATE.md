@@ -4126,9 +4126,9 @@ export interface SideMenuProps {
 ```
 
 - `RouteDef.path` es lo único obligatorio: es el path del router. La etiqueta se **infiere** del último segmento cuando no se da — y la inferencia no pone acentos: si la palabra los tiene, dala explícita.
-- `RouteDef.parent` cuelga la pantalla de otro grupo aunque su path no esté debajo: la venta nueva vive en `/nueva-venta` y pertenece a `/ventas`.
+- `RouteDef.parent` cuelga la pantalla de otro grupo aunque su path no esté debajo. Hoy ninguna pantalla lo usa: la venta nueva fue la última y dejó de ser un item del menú (se abre desde el botón de la lista de ventas).
 - `RouteDef.hidden` saca la pantalla del menú sin sacarla del router.
-- `MenuItem.id` es el prefijo acumulado del path (`/ventas/nueva-venta`); un grupo que también es ruta lleva el sufijo `::group` (`/ventas::group`).
+- `MenuItem.id` es el prefijo acumulado del path (`/contabilidad/cuentas`); un grupo que también es ruta lleva el sufijo `::group` (`/contabilidad::group`).
 - `MenuItem.href` lo tiene la hoja; el grupo nunca navega.
 
 ### El patrón completo, paso por paso
@@ -4151,30 +4151,23 @@ export const MENU_ROUTES: MenuRoute[] = [
     permission: 'ventas.read',
     order: 20,
   },
-  {
-    // La venta nueva cuelga del grupo de ventas: su path no esta debajo.
-    path: '/nueva-venta',
-    labelKey: 'sidebar.nuevaVenta',
-    iconKey: 'nuevaVenta',
-    permission: 'pos.read',
-    order: 20,
-    parent: '/ventas',
-  },
 ];
 
 export const MENU_GROUPS: MenuGroup[] = [
   {
-    prefix: '/ventas',
-    labelKey: 'sidebar.ventas',
-    iconKey: 'ventas',
-    permission: 'ventas.read',
-    order: 20,
-    indexLabelKey: 'sidebar.ventas',
+    prefix: '/contabilidad',
+    labelKey: 'sidebar.contabilidad',
+    iconKey: 'contabilidad',
+    permission: 'contabilidad.read',
+    order: 30,
+    indexLabelKey: 'sidebar.contabilidad',
   },
 ];
 ```
 
-> **El primer hijo de un grupo se llama con el nombre del módulo** ("Ventas", "Contabilidad", "RRHH", "Facturación"), no con un "Resumen" genérico: el grupo y su enlace dicen lo mismo y el usuario reconoce el módulo de un vistazo. `indexLabelKey` es la clave i18n de ese nombre (`sidebar.ventas`).
+> **La venta nueva no es un item del menú**: vive en `/nueva-venta` (fuera del layout, a pantalla completa) y se abre desde el botón de la lista de ventas. Una pantalla que no sea del menú no se declara en `MENU_ROUTES`: se declara como ruta en `App.tsx`.
+
+> **El primer hijo de un grupo se llama con el nombre del módulo** ("Contabilidad", "RRHH", "Facturación"), no con un "Resumen" genérico: el grupo y su enlace dicen lo mismo y el usuario reconoce el módulo de un vistazo. `indexLabelKey` es la clave i18n de ese nombre (`sidebar.contabilidad`).
 
 **2. La app traduce las etiquetas y resuelve los iconos** — `src/application/hooks/useMenuItems.ts`, con el mapa de iconos en `src/domain/constants/icons.ts` (`ICON_MAP`: clave → componente de `lucide-react`).
 

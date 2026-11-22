@@ -17,9 +17,8 @@ export interface MenuRoute {
   /** Una pantalla oculta no llega al menu. */
   hidden?: boolean;
   /**
-   * El prefijo del grupo del que cuelga la pantalla ("/ventas"), nunca un id.
-   * La pantalla cuelga de ese grupo aunque su path no este debajo: la venta
-   * nueva vive en "/nueva-venta" y pertenece a "/ventas".
+   * El prefijo del grupo del que cuelga la pantalla ("/contabilidad"), nunca
+   * un id. La pantalla cuelga de ese grupo aunque su path no este debajo.
    */
   parent?: string;
 }
@@ -49,20 +48,13 @@ export const MENU_ROUTES: MenuRoute[] = [
     order: 10,
   },
   {
+    // La venta nueva no es un item del menu: se abre desde el boton de la
+    // lista de ventas.
     path: '/ventas',
     labelKey: 'sidebar.ventas',
     iconKey: 'ventas',
     permission: 'ventas.read',
     order: 20,
-  },
-  {
-    // La venta nueva cuelga del grupo de ventas: su path no esta debajo.
-    path: '/nueva-venta',
-    labelKey: 'sidebar.nuevaVenta',
-    iconKey: 'nuevaVenta',
-    permission: 'pos.read',
-    order: 20,
-    parent: '/ventas',
   },
   {
     path: '/compras',
@@ -222,14 +214,6 @@ export const MENU_ROUTES: MenuRoute[] = [
 
 /** Los grupos del menu: los modulos que tienen mas de una pantalla. */
 export const MENU_GROUPS: MenuGroup[] = [
-  {
-    prefix: '/ventas',
-    labelKey: 'sidebar.ventas',
-    iconKey: 'ventas',
-    permission: 'ventas.read',
-    order: 20,
-    indexLabelKey: 'sidebar.ventas',
-  },
   {
     prefix: '/contabilidad',
     labelKey: 'sidebar.contabilidad',

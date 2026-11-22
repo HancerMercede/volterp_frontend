@@ -91,7 +91,6 @@
   "sidebar": {
     "dashboard": "Dashboard",
     "ventas": "Sales",
-    "nuevaVenta": "New sale",
     "compras": "Purchases",
     "inventario": "Inventory",
     "clientes": "Clients",
