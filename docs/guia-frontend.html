@@ -17,6 +17,17 @@
  *   - Cada título de sección empieza en una hoja nueva (`break-before: page`).
  */
 
+/* Las tipografias de la maqueta: Inter para el texto.
+ *
+ * El @import va PRIMERO: por norma el navegador ignora un @import que llega
+ * despues de otra regla (por eso el titulo salia con Segoe UI).
+ *
+ * El codigo NO usa JetBrains Mono: esa fuente (la de la web y la del IDE) no
+ * trae los caracteres de dibujo de los arboles de carpetas, y el navegador cae
+ * a otra fuente para ellos → el arbol pierde la alineacion. Cascadia Mono y
+ * Consolas los traen y son monoespaciadas de verdad. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 :root {
   --accent-primary: #6366f1;
   --accent-secondary: #8b5cf6;
@@ -57,9 +68,10 @@ body {
       var(--bg-dark) 42%,
       color-mix(in srgb, var(--bg-dark) 68%, var(--accent-primary)) 100%);
   color: var(--text-light);
-  padding: 62mm 22mm 18mm;
-  margin: -16mm -15mm 12mm;
-  min-height: 245mm;
+  padding: 50px 55px;
+  margin: -16mm -15mm 0;
+  height: 297mm;
+  box-sizing: border-box;
   break-after: page;
   display: flex;
   flex-direction: column;
@@ -101,7 +113,6 @@ body {
   color: color-mix(in srgb, var(--text-light) 72%, var(--accent-primary));
   margin-bottom: 9mm;
 }
-
 .cover h1 {
   position: relative;
   font-size: 30pt;
@@ -109,6 +120,9 @@ body {
   font-weight: 800;
   letter-spacing: -0.5px;
   max-width: 150mm;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: 0;
 }
 
 .cover .subtitle {
@@ -284,10 +298,11 @@ tbody td:first-child { font-weight: 600; }
 pre {
   background: var(--code-bg);
   color: #e2e8f0;
-  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  font-family: 'Cascadia Mono', Consolas, monospace;
   font-size: 7.4pt;
   line-height: 1.45;
-  padding: 3mm 4mm;
+  padding: 3mm 4mm 3mm 8mm;
+  text-indent: -4mm;
   border-radius: var(--border-radius);
   border-left: 3px solid var(--accent-primary);
   white-space: pre-wrap;
@@ -299,7 +314,7 @@ pre {
 }
 
 code {
-  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  font-family: 'Cascadia Mono', Consolas, monospace;
   font-size: 8.4pt;
   background: var(--bg-surface);
   border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
@@ -390,6 +405,130 @@ blockquote p { margin: 1.2mm 0; }
 
 .pie .marca { font-weight: 600; color: var(--text-primary); }
 
+/* ---------- Los componentes de la maqueta que faltaban ---------- */
+
+/* Rejilla de tarjetas: dos columnas de features */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+  break-inside: avoid;
+}
+
+.card {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--border-radius);
+  padding: 11px 14px;
+  border-left: 4px solid var(--accent-primary);
+  break-inside: avoid;
+}
+
+.card .ct {
+  font-weight: 700;
+  font-size: 9pt;
+  margin-bottom: 2mm;
+}
+
+.card p { margin: 1mm 0; font-size: 8.5pt; }
+
+/* Pasos numerados */
+.flow {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--border-radius);
+  padding: 14px;
+  break-inside: avoid;
+}
+
+.fs {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  padding: 6px 10px;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  break-inside: avoid;
+}
+
+.fs .n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: var(--accent-primary);
+  color: var(--text-light);
+  border-radius: 50%;
+  font-size: 7pt;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.fs p { margin: 0; font-size: 8.5pt; }
+
+/* Modelo de datos */
+.entity {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  break-inside: avoid;
+}
+
+.entity .eh {
+  background: var(--bg-dark);
+  color: var(--text-light);
+  padding: 7px 12px;
+  font-weight: 600;
+  font-size: 8.5pt;
+}
+
+.entity .eb { padding: 8px 12px; }
+
+.erow {
+  display: flex;
+  justify-content: space-between;
+  padding: 2.5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 8pt;
+}
+
+/* Resumen ejecutivo */
+.exec-summary {
+  background: linear-gradient(135deg, var(--bg-surface) 0%,
+      color-mix(in srgb, var(--accent-primary) 10%, var(--bg-surface)) 100%);
+  border: 2px solid var(--accent-primary);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 18px;
+  break-inside: avoid;
+}
+
+.exec-summary p { margin: 1.5mm 0; }
+
+/* Veredictos */
+.verdict {
+  background: #f0fdf4;
+  border: 2px solid var(--success);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  break-inside: avoid;
+}
+
+.verdict-danger { background: #fef2f2; border-color: var(--danger); }
+.verdict-warning { background: #fffbeb; border-color: var(--warning); }
+
+/* ---------- Ayudas de corte ---------- */
+
+.avoid-break { break-inside: avoid; }
+.avoid-after { break-after: avoid; }
+.force-before { break-before: page; }
+
 </style>
 </head>
 <body>
@@ -401,7 +540,7 @@ blockquote p { margin: 1.2mm 0; }
     <div class="subtitle">Cómo se construye el front: los módulos, el código, los patrones y cómo trabajamos</div>
     <div class="meta">
       <span><strong>Origen</strong> erp-mvp</span>
-      <span><strong>Commit</strong> 2d60803</span>
+      <span><strong>Commit</strong> c97e8d9</span>
       <span><strong>Fecha</strong> 2026-11-23</span>
     </div>
   </div>
@@ -469,183 +608,183 @@ Si el archivo cambió tanto que el snippet ya no es representativo, <strong>borr
 <h1 id="parte-1-skeleton">PARTE 1 — SKELETON</h1>
 <h2 id="1-1-estructura-de-carpetas-stack-clean-architecture-con-infr">1.1 Estructura de carpetas <code>[STACK: Clean Architecture con infrastructure → stores → application → components/pages; adaptable a otra organización por capas]</code></h2>
 <p>Un único proyecto Vite (no hay monorepo). El frontend vive en <code>src/</code> con cuatro capas concéntricas (<code>infrastructure</code> es lo más "externo", <code>components</code>/<code>pages</code> lo más "cercano al usuario"). Los servicios, stores y hooks custom están separados por responsabilidad.</p>
-<pre><code>erp<span class="tok-punc">-</span>mvp<span class="tok-punc">/</span>
-├── package<span class="tok-punc">.</span>json
-├── tsconfig<span class="tok-punc">.</span>json
-├── tsconfig<span class="tok-punc">.</span>app<span class="tok-punc">.</span>json
-├── tsconfig<span class="tok-punc">.</span>node<span class="tok-punc">.</span>json
-├── vite<span class="tok-punc">.</span>config<span class="tok-punc">.</span>ts
-├── <span class="tok-punc">.</span>env                          ← <span class="tok-type">VITE_API_URL</span><span class="tok-punc">=</span>http<span class="tok-punc">:</span><span class="tok-com">//localhost:5106</span>
-├── <span class="tok-punc">.</span>env<span class="tok-punc">.</span>example
-├── index<span class="tok-punc">.</span>html
-├── <span class="tok-type">README</span><span class="tok-punc">.</span>md
+<pre><code>erp-mvp/
+├── package.json
+├── tsconfig.json
+├── tsconfig.app.json
+├── tsconfig.node.json
+├── vite.config.ts
+├── .env                          ← VITE_API_URL=http://localhost:5106
+├── .env.example
+├── index.html
+├── README.md
 │
-└── src<span class="tok-punc">/</span>
-    ├── main<span class="tok-punc">.</span>tsx                  ← entry point<span class="tok-punc">:</span> <span class="tok-type">ReactDOM</span><span class="tok-punc">.</span>createRoot
-    ├── <span class="tok-type">App</span><span class="tok-punc">.</span>tsx                   ← <span class="tok-type">BrowserRouter</span> <span class="tok-punc">+</span> <span class="tok-type">ErrorBoundary</span> <span class="tok-punc">+</span> <span class="tok-type">NotificationContainer</span>
+└── src/
+    ├── main.tsx                  ← entry point: ReactDOM.createRoot
+    ├── App.tsx                   ← BrowserRouter + ErrorBoundary + NotificationContainer
     │
-    ├── application<span class="tok-punc">/</span>              ← use<span class="tok-punc">-</span>cases <span class="tok-punc">/</span> orquestación específica de dominio
-    │   └── hooks<span class="tok-punc">/</span>                ← un hook por caso de <span class="tok-fn">uso</span> <span class="tok-punc">(</span>recibe deps de stores<span class="tok-punc">)</span>
-    │       ├── useNominaCalculator<span class="tok-punc">.</span>ts
-    │       ├── useEmpleadoForm<span class="tok-punc">.</span>ts
-    │       ├── useDashboard<span class="tok-punc">.</span>ts
-    │       ├── useFiscalReadiness<span class="tok-punc">.</span>ts ← si el contribuyente puede facturar ahora
-    │       └── useMenuItems<span class="tok-punc">.</span>ts    ← traduce las claves del menú y resuelve sus iconos
+    ├── application/              ← use-cases / orquestación específica de dominio
+    │   └── hooks/                ← un hook por caso de uso (recibe deps de stores)
+    │       ├── useNominaCalculator.ts
+    │       ├── useEmpleadoForm.ts
+    │       ├── useDashboard.ts
+    │       ├── useFiscalReadiness.ts ← si el contribuyente puede facturar ahora
+    │       └── useMenuItems.ts    ← traduce las claves del menú y resuelve sus iconos
     │
-    ├── assets<span class="tok-punc">/</span>                   ← imágenes<span class="tok-punc">,</span> fuentes<span class="tok-punc">,</span> <span class="tok-type">SVGs</span> estáticos
-    │   └── logo<span class="tok-punc">.</span>svg
+    ├── assets/                   ← imágenes, fuentes, SVGs estáticos
+    │   └── logo.svg
     │
-    ├── components<span class="tok-punc">/</span>               ← presentacionales <span class="tok-punc">+</span> container<span class="tok-punc">-</span>presentational
-    │   ├── <span class="tok-type">Layout</span><span class="tok-punc">/</span>
-    │   │   ├── <span class="tok-type">Layout</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">Sidebar</span><span class="tok-punc">.</span>tsx
-    │   │   └── <span class="tok-punc">*</span><span class="tok-punc">.</span>module<span class="tok-punc">.</span>css
-    │   ├── <span class="tok-type">UI</span><span class="tok-punc">/</span>                   ← primitivos <span class="tok-fn">reutilizables</span> <span class="tok-punc">(</span><span class="tok-type">Tabla</span><span class="tok-punc">,</span> <span class="tok-type">Modal</span><span class="tok-punc">,</span> etc<span class="tok-punc">.</span><span class="tok-punc">)</span>
-    │   │   ├── <span class="tok-type">Button</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">Table</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">Pagination</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">Modal</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">ConfirmModal</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">SearchInput</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">SearchableSelect</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">PageHeader</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">PageLoader</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">ReadinessChecklist</span><span class="tok-punc">.</span>tsx ← el aviso de la <span class="tok-fn">caja</span> <span class="tok-punc">(</span>toast<span class="tok-punc">)</span> y el checklist de la configuración
-    │   │   ├── <span class="tok-type">ActionButtons</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">ImageCell</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">DynamicFormFields</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">VolterpMark</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">Toast</span><span class="tok-punc">.</span>tsx
-    │   │   ├── <span class="tok-type">ErrorBoundary</span><span class="tok-punc">.</span>tsx
-    │   │   └── index<span class="tok-punc">.</span>ts          ← <span class="tok-fn">barrel</span> <span class="tok-punc">(</span>solo para <span class="tok-type">UI</span> primitives<span class="tok-punc">)</span>
-    │   ├── <span class="tok-type">SideMenu</span><span class="tok-punc">/</span>             ← módulo del menú <span class="tok-fn">lateral</span> <span class="tok-punc">(</span>árbol <span class="tok-punc">+</span> permisos<span class="tok-punc">)</span>
-    │   │   ├── types<span class="tok-punc">.</span>ts          ← <span class="tok-type">RouteDef</span><span class="tok-punc">,</span> <span class="tok-type">GroupMeta</span><span class="tok-punc">,</span> <span class="tok-type">MenuItem</span><span class="tok-punc">,</span> <span class="tok-type">LeafProps</span><span class="tok-punc">,</span> <span class="tok-type">SideMenuProps</span>
-    │   │   ├── utils<span class="tok-punc">.</span>ts          ← filterByPermission<span class="tok-punc">,</span> findPath<span class="tok-punc">,</span> ancestorIds
-    │   │   ├── buildMenuTree<span class="tok-punc">.</span>ts  ← <span class="tok-fn">buildMenuTree</span> <span class="tok-punc">(</span>rutas planas → árbol<span class="tok-punc">)</span> <span class="tok-punc">+</span> matchActiveId
-    │   │   ├── useMenuTree<span class="tok-punc">.</span>ts    ← useMenuTree<span class="tok-punc">:</span> pathname → <span class="tok-punc">{</span> items<span class="tok-punc">,</span> activeId <span class="tok-punc">}</span>
-    │   │   ├── <span class="tok-type">SideMenu</span><span class="tok-punc">.</span>tsx      ← el componente que dibuja el árbol
-    │   │   ├── side<span class="tok-punc">-</span>menu<span class="tok-punc">.</span>css     ← estilos propios<span class="tok-punc">:</span> todo sale de las variables <span class="tok-str">"--sm-*"</span>
-    │   │   └── index<span class="tok-punc">.</span>ts          ← la <span class="tok-type">API</span> pública del módulo
-    │   ├── <span class="tok-type">Support</span><span class="tok-punc">/</span>              ← feature component <span class="tok-fn">group</span> <span class="tok-punc">(</span>chat <span class="tok-type">IA</span><span class="tok-punc">)</span>
-    │   └── <span class="tok-type">UserManagement</span><span class="tok-punc">/</span>
+    ├── components/               ← presentacionales + container-presentational
+    │   ├── Layout/
+    │   │   ├── Layout.tsx
+    │   │   ├── Sidebar.tsx
+    │   │   └── *.module.css
+    │   ├── UI/                   ← primitivos reutilizables (Tabla, Modal, etc.)
+    │   │   ├── Button.tsx
+    │   │   ├── Table.tsx
+    │   │   ├── Pagination.tsx
+    │   │   ├── Modal.tsx
+    │   │   ├── ConfirmModal.tsx
+    │   │   ├── SearchInput.tsx
+    │   │   ├── SearchableSelect.tsx
+    │   │   ├── PageHeader.tsx
+    │   │   ├── PageLoader.tsx
+    │   │   ├── ReadinessChecklist.tsx ← el aviso de la caja (toast) y el checklist de la configuración
+    │   │   ├── ActionButtons.tsx
+    │   │   ├── ImageCell.tsx
+    │   │   ├── DynamicFormFields.tsx
+    │   │   ├── VolterpMark.tsx
+    │   │   ├── Toast.tsx
+    │   │   ├── ErrorBoundary.tsx
+    │   │   └── index.ts          ← barrel (solo para UI primitives)
+    │   ├── SideMenu/             ← módulo del menú lateral (árbol + permisos)
+    │   │   ├── types.ts          ← RouteDef, GroupMeta, MenuItem, LeafProps, SideMenuProps
+    │   │   ├── utils.ts          ← filterByPermission, findPath, ancestorIds
+    │   │   ├── buildMenuTree.ts  ← buildMenuTree (rutas planas → árbol) + matchActiveId
+    │   │   ├── useMenuTree.ts    ← useMenuTree: pathname → { items, activeId }
+    │   │   ├── SideMenu.tsx      ← el componente que dibuja el árbol
+    │   │   ├── side-menu.css     ← estilos propios: todo sale de las variables "--sm-*"
+    │   │   └── index.ts          ← la API pública del módulo
+    │   ├── Support/              ← feature component group (chat IA)
+    │   └── UserManagement/
     │
-    ├── config<span class="tok-punc">/</span>                   ← constantes <span class="tok-fn">globales</span> <span class="tok-punc">(</span>no lógica<span class="tok-punc">)</span>
-    │   └── pagination<span class="tok-punc">.</span>ts         ← <span class="tok-type">ITEMS_PER_PAGE</span>
+    ├── config/                   ← constantes globales (no lógica)
+    │   └── pagination.ts         ← ITEMS_PER_PAGE
     │
-    ├── data<span class="tok-punc">/</span>                     ← fixtures <span class="tok-punc">/</span> mock data
-    │   ├── mockData<span class="tok-punc">.</span>ts
-    │   ├── soporteResponses<span class="tok-punc">.</span>ts
-    │   └── asistenciaMockData<span class="tok-punc">.</span>ts
+    ├── data/                     ← fixtures / mock data
+    │   ├── mockData.ts
+    │   ├── soporteResponses.ts
+    │   └── asistenciaMockData.ts
     │
-    ├── domain<span class="tok-punc">/</span>                   ← tipos y constantes de dominio <span class="tok-type">PURAS</span> <span class="tok-punc">(</span>sin <span class="tok-type">React</span><span class="tok-punc">)</span>
-    │   ├── index<span class="tok-punc">.</span>ts              ← barrel para entities <span class="tok-punc">+</span> types
-    │   ├── types<span class="tok-punc">/</span>
-    │   │   └── index<span class="tok-punc">.</span>ts          ← <span class="tok-type">DTOs</span> <span class="tok-fn">compartidos</span> <span class="tok-punc">(</span><span class="tok-type">ClientDto</span><span class="tok-punc">,</span> <span class="tok-type">SaleDto</span><span class="tok-punc">,</span> <span class="tok-type">PagedResult</span><span class="tok-punc">&lt;</span><span class="tok-type">T</span><span class="tok-punc">&gt;</span><span class="tok-punc">,</span> etc<span class="tok-punc">.</span><span class="tok-punc">)</span>
-    │   ├── entities<span class="tok-punc">/</span>             ← tipos de dominio compuestos
-    │   │   ├── <span class="tok-type">Nomina</span><span class="tok-punc">.</span>ts
-    │   │   ├── <span class="tok-type">Beneficio</span><span class="tok-punc">.</span>ts
-    │   │   └── <span class="tok-type">Asistencia</span><span class="tok-punc">.</span>ts
-    │   ├── constants<span class="tok-punc">/</span>
-    │   │   ├── roles<span class="tok-punc">.</span>ts          ← <span class="tok-type">Rol</span> <span class="tok-key">enum</span><span class="tok-punc">-</span><span class="tok-key">as</span><span class="tok-punc">-</span><span class="tok-key">const</span> <span class="tok-punc">+</span> helpers
-    │   │   ├── permisos<span class="tok-punc">.</span>ts       ← <span class="tok-type">MATRIZ_PERMISOS</span>
-    │   │   ├── menuRoutes<span class="tok-punc">.</span>ts     ← las pantallas del menú<span class="tok-punc">,</span> declaradas como datos
-    │   │   └── icons<span class="tok-punc">.</span>ts          ← mapa de iconos del menú <span class="tok-punc">(</span>clave → componente<span class="tok-punc">)</span>
-    │   └── dashboard<span class="tok-punc">/</span>
-    │       ├── types<span class="tok-punc">.</span>ts
-    │       └── constants<span class="tok-punc">.</span>tsx
+    ├── domain/                   ← tipos y constantes de dominio PURAS (sin React)
+    │   ├── index.ts              ← barrel para entities + types
+    │   ├── types/
+    │   │   └── index.ts          ← DTOs compartidos (ClientDto, SaleDto, PagedResult&lt;T&gt;, etc.)
+    │   ├── entities/             ← tipos de dominio compuestos
+    │   │   ├── Nomina.ts
+    │   │   ├── Beneficio.ts
+    │   │   └── Asistencia.ts
+    │   ├── constants/
+    │   │   ├── roles.ts          ← Rol enum-as-const + helpers
+    │   │   ├── permisos.ts       ← MATRIZ_PERMISOS
+    │   │   ├── menuRoutes.ts     ← las pantallas del menú, declaradas como datos
+    │   │   └── icons.ts          ← mapa de iconos del menú (clave → componente)
+    │   └── dashboard/
+    │       ├── types.ts
+    │       └── constants.tsx
     │
-    ├── hooks<span class="tok-punc">/</span>                    ← hooks genéricos <span class="tok-fn">reutilizables</span> <span class="tok-punc">(</span>sin lógica de dominio<span class="tok-punc">)</span>
-    │   ├── useFilter<span class="tok-punc">.</span>ts
-    │   ├── usePagination<span class="tok-punc">.</span>ts
-    │   ├── useCrudForm<span class="tok-punc">.</span>ts
-    │   ├── useDeleteConfirm<span class="tok-punc">.</span>ts
-    │   ├── useColecciones<span class="tok-punc">.</span>ts
-    │   ├── usePermission<span class="tok-punc">.</span>ts
-    │   └── useTokenExpiry<span class="tok-punc">.</span>ts
+    ├── hooks/                    ← hooks genéricos reutilizables (sin lógica de dominio)
+    │   ├── useFilter.ts
+    │   ├── usePagination.ts
+    │   ├── useCrudForm.ts
+    │   ├── useDeleteConfirm.ts
+    │   ├── useColecciones.ts
+    │   ├── usePermission.ts
+    │   └── useTokenExpiry.ts
     │
-    ├── i18n<span class="tok-punc">/</span>
-    │   ├── index<span class="tok-punc">.</span>ts              ← init de react<span class="tok-punc">-</span>i18next
-    │   └── locales<span class="tok-punc">/</span>
-    │       ├── es<span class="tok-punc">.</span>json
-    │       └── en<span class="tok-punc">.</span>json
+    ├── i18n/
+    │   ├── index.ts              ← init de react-i18next
+    │   └── locales/
+    │       ├── es.json
+    │       └── en.json
     │
-    ├── infrastructure<span class="tok-punc">/</span>           ← adapters hacia el <span class="tok-fn">exterior</span> <span class="tok-punc">(</span><span class="tok-type">HTTP</span><span class="tok-punc">,</span> auth<span class="tok-punc">,</span> etc<span class="tok-punc">.</span><span class="tok-punc">)</span>
-    │   └── api<span class="tok-punc">/</span>
-    │       ├── config<span class="tok-punc">.</span>ts         ← <span class="tok-type">API_CONFIG</span><span class="tok-punc">.</span><span class="tok-type">BASE_URL</span> <span class="tok-punc">+</span> <span class="tok-type">ENDPOINTS</span>
-    │       ├── types<span class="tok-punc">.</span>ts          ← <span class="tok-type">ApiError</span> <span class="tok-punc">+</span> contratos de <span class="tok-str">`/api/auth/*`</span>
-    │       ├── fetchWithAuth<span class="tok-punc">.</span>ts  ← fetch wrapper <span class="tok-punc">+</span> <span class="tok-num">401</span> interceptor
-    │       ├── authService<span class="tok-punc">.</span>ts
-    │       ├── clientService<span class="tok-punc">.</span>ts
-    │       ├── productService<span class="tok-punc">.</span>ts
-    │       ├── categoryService<span class="tok-punc">.</span>ts
-    │       ├── supplierService<span class="tok-punc">.</span>ts
-    │       ├── saleService<span class="tok-punc">.</span>ts
-    │       ├── purchaseService<span class="tok-punc">.</span>ts
-    │       ├── employeeService<span class="tok-punc">.</span>ts
-    │       ├── companyService<span class="tok-punc">.</span>ts
-    │       ├── userService<span class="tok-punc">.</span>ts
-    │       ├── accountingTransactionService<span class="tok-punc">.</span>ts
-    │       ├── proyectoService<span class="tok-punc">.</span>ts
-    │       └── dashboardService<span class="tok-punc">.</span>ts
+    ├── infrastructure/           ← adapters hacia el exterior (HTTP, auth, etc.)
+    │   └── api/
+    │       ├── config.ts         ← API_CONFIG.BASE_URL + ENDPOINTS
+    │       ├── types.ts          ← ApiError + contratos de `/api/auth/*`
+    │       ├── fetchWithAuth.ts  ← fetch wrapper + 401 interceptor
+    │       ├── authService.ts
+    │       ├── clientService.ts
+    │       ├── productService.ts
+    │       ├── categoryService.ts
+    │       ├── supplierService.ts
+    │       ├── saleService.ts
+    │       ├── purchaseService.ts
+    │       ├── employeeService.ts
+    │       ├── companyService.ts
+    │       ├── userService.ts
+    │       ├── accountingTransactionService.ts
+    │       ├── proyectoService.ts
+    │       └── dashboardService.ts
     │
-    ├── pages<span class="tok-punc">/</span>                    ← rutas — una carpeta por módulo
-    │   ├── <span class="tok-type">Dashboard</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">Login</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">ForgotPassword</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">ResetPassword</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">ActivateAccount</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">InvalidLink</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">Ventas</span><span class="tok-punc">/</span>               ← el listado de ventas
-    │   ├── <span class="tok-type">NuevaVenta</span><span class="tok-punc">/</span>          ← la venta nueva<span class="tok-punc">:</span> ruta fuera del <span class="tok-fn">layout</span> <span class="tok-punc">(</span>cobra directo<span class="tok-punc">)</span>
-    │   ├── <span class="tok-type">Compras</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">Inventario</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">Clientes</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">Proveedores</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">Contabilidad</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">RRHH</span><span class="tok-punc">/</span>                 ← incluye <span class="tok-type">Nomina</span><span class="tok-punc">/</span> y <span class="tok-type">Asistencia</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">Proyectos</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">Reportes</span><span class="tok-punc">/</span>
-    │   ├── <span class="tok-type">Configuracion</span><span class="tok-punc">/</span>
-    │   └── <span class="tok-type">Soporte</span><span class="tok-punc">/</span>
+    ├── pages/                    ← rutas — una carpeta por módulo
+    │   ├── Dashboard/
+    │   ├── Login/
+    │   ├── ForgotPassword/
+    │   ├── ResetPassword/
+    │   ├── ActivateAccount/
+    │   ├── InvalidLink/
+    │   ├── Ventas/               ← el listado de ventas
+    │   ├── NuevaVenta/          ← la venta nueva: ruta fuera del layout (cobra directo)
+    │   ├── Compras/
+    │   ├── Inventario/
+    │   ├── Clientes/
+    │   ├── Proveedores/
+    │   ├── Contabilidad/
+    │   ├── RRHH/                 ← incluye Nomina/ y Asistencia/
+    │   ├── Proyectos/
+    │   ├── Reportes/
+    │   ├── Configuracion/
+    │   └── Soporte/
     │
-    ├── stores<span class="tok-punc">/</span>                   ← <span class="tok-type">Zustand</span> global <span class="tok-fn">state</span> <span class="tok-punc">(</span>uno por entidad<span class="tok-punc">)</span>
-    │   ├── authStore<span class="tok-punc">.</span>ts
-    │   ├── clienteStore<span class="tok-punc">.</span>ts
-    │   ├── productoStore<span class="tok-punc">.</span>ts
-    │   ├── categoryStore<span class="tok-punc">.</span>ts
-    │   ├── proveedorStore<span class="tok-punc">.</span>ts
-    │   ├── ventaStore<span class="tok-punc">.</span>ts
-    │   ├── compraStore<span class="tok-punc">.</span>ts
-    │   ├── empleadoStore<span class="tok-punc">.</span>ts
-    │   ├── companyStore<span class="tok-punc">.</span>ts
-    │   ├── transaccionStore<span class="tok-punc">.</span>ts
-    │   ├── proyectoStore<span class="tok-punc">.</span>ts
-    │   ├── dashboardStore<span class="tok-punc">.</span>ts
-    │   ├── chatStore<span class="tok-punc">.</span>ts
-    │   ├── asistenciaStore<span class="tok-punc">.</span>ts
-    │   ├── uiStore<span class="tok-punc">.</span>ts            ← toasts<span class="tok-punc">,</span> modals<span class="tok-punc">,</span> loading overlay
-    │   └── languageStore<span class="tok-punc">.</span>ts
+    ├── stores/                   ← Zustand global state (uno por entidad)
+    │   ├── authStore.ts
+    │   ├── clienteStore.ts
+    │   ├── productoStore.ts
+    │   ├── categoryStore.ts
+    │   ├── proveedorStore.ts
+    │   ├── ventaStore.ts
+    │   ├── compraStore.ts
+    │   ├── empleadoStore.ts
+    │   ├── companyStore.ts
+    │   ├── transaccionStore.ts
+    │   ├── proyectoStore.ts
+    │   ├── dashboardStore.ts
+    │   ├── chatStore.ts
+    │   ├── asistenciaStore.ts
+    │   ├── uiStore.ts            ← toasts, modals, loading overlay
+    │   └── languageStore.ts
     │
-    ├── styles<span class="tok-punc">/</span>
-    │   └── variables<span class="tok-punc">.</span>css         ← <span class="tok-type">CSS</span> custom <span class="tok-fn">properties</span> <span class="tok-punc">(</span>colores<span class="tok-punc">,</span> spacing<span class="tok-punc">,</span> radius<span class="tok-punc">)</span>
+    ├── styles/
+    │   └── variables.css         ← CSS custom properties (colores, spacing, radius)
     │
-    ├── test<span class="tok-punc">/</span>                     ← tests con vitest <span class="tok-punc">+</span> @testing<span class="tok-punc">-</span>library
-    │   ├── setup<span class="tok-punc">.</span>ts
-    │   ├── vitest<span class="tok-punc">-</span>env<span class="tok-punc">.</span>d<span class="tok-punc">.</span>ts
-    │   ├── utils<span class="tok-punc">/</span>pagination<span class="tok-punc">.</span>test<span class="tok-punc">.</span>ts
-    │   ├── stores<span class="tok-punc">/</span><span class="tok-punc">*</span><span class="tok-punc">.</span>test<span class="tok-punc">.</span>ts
-    │   ├── components<span class="tok-punc">/</span><span class="tok-punc">*</span><span class="tok-punc">.</span>test<span class="tok-punc">.</span>tsx
-    │   ├── components<span class="tok-punc">/</span><span class="tok-type">SideMenu</span><span class="tok-punc">/</span><span class="tok-punc">*</span><span class="tok-punc">.</span>test<span class="tok-punc">.</span>tsx
-    │   └── pages<span class="tok-punc">/</span>menuRoutes<span class="tok-punc">.</span>test<span class="tok-punc">.</span>ts<span class="tok-punc">,</span> sidebarI18nKeys<span class="tok-punc">.</span>test<span class="tok-punc">.</span>ts<span class="tok-punc">,</span> nuevaVenta<span class="tok-punc">.</span>test<span class="tok-punc">.</span>tsx
+    ├── test/                     ← tests con vitest + @testing-library
+    │   ├── setup.ts
+    │   ├── vitest-env.d.ts
+    │   ├── utils/pagination.test.ts
+    │   ├── stores/*.test.ts
+    │   ├── components/*.test.tsx
+    │   ├── components/SideMenu/*.test.tsx
+    │   └── pages/menuRoutes.test.ts, sidebarI18nKeys.test.ts, nuevaVenta.test.tsx
     │
-    └── utils<span class="tok-punc">/</span>                    ← helpers <span class="tok-fn">puros</span> <span class="tok-punc">(</span>sin <span class="tok-type">React</span><span class="tok-punc">,</span> sin fetch<span class="tok-punc">)</span>
-        ├── pagination<span class="tok-punc">.</span>ts         ← getPaginationInfo<span class="tok-punc">,</span> getPageNumbers<span class="tok-punc">,</span> paginate
-        ├── jwt<span class="tok-punc">.</span>ts                ← getTokenExpiry<span class="tok-punc">,</span> isTokenExpired<span class="tok-punc">,</span> msUntilExpiry
-        └── name<span class="tok-punc">.</span>ts               ← getFirstName<span class="tok-punc">,</span> getInitials</code></pre>
+    └── utils/                    ← helpers puros (sin React, sin fetch)
+        ├── pagination.ts         ← getPaginationInfo, getPageNumbers, paginate
+        ├── jwt.ts                ← getTokenExpiry, isTokenExpired, msUntilExpiry
+        └── name.ts               ← getFirstName, getInitials</code></pre>
 <blockquote><p><strong>Nota</strong>: <code>application/hooks/</code> está separado de <code>hooks/</code> a propósito. <code>hooks/</code> contiene hooks <strong>genéricos</strong> y reutilizables (no conocen ninguna entidad). <code>application/hooks/</code> contiene hooks <strong>específicos de un caso de uso</strong> — saben de <code>clienteStore</code>, <code>companyStore</code>, etc.</p></blockquote>
 <h2 id="1-2-regla-de-dependencias-entre-capas-principio">1.2 Regla de dependencias entre capas <code>[PRINCIPIO]</code></h2>
 <pre><code>pages ──► components ──► application ──► infrastructure
-     └────► stores ──────┘                 └► <span class="tok-fn">stores</span> <span class="tok-punc">(</span><span class="tok-key">for</span> token <span class="tok-key">in</span> fetchWithAuth<span class="tok-punc">)</span></code></pre>
+     └────► stores ──────┘                 └► stores (for token in fetchWithAuth)</code></pre>
 <ul><li><strong><code>pages</code></strong> compone <code>components</code> + <code>application/hooks/*</code> + <code>stores</code> directamente. Una página = una ruta.<li><strong><code>components</code></strong> consume <code>application/hooks/*</code> cuando necesita lógica de dominio. <strong>Nunca</strong> importa <code>stores</code> directamente (excepción: <code>ErrorBoundary</code> y <code>NotificationContainer</code> que leen <code>uiStore</code>).<li><strong><code>application/hooks/*</code></strong> recibe dependencias de <code>stores</code> y/o <code>services</code> y devuelve una API cohesiva para una vista. Son la "puerta de entrada" a stores desde los componentes.<li><strong><code>infrastructure/api/*</code></strong> no conoce React ni Zustand. Solo <code>fetch</code>. La única excepción es <code>fetchWithAuth.ts</code>, que lee el token desde <code>authStore</code> (es un caso justificado — es un interceptor global).<li><strong><code>stores</code></strong> solo depende de <code>infrastructure/api/*</code> (servicios) y <code>domain/*</code> (tipos).<li><strong><code>utils</code></strong> y <strong><code>domain</code></strong> son libres de dependencias, pero no importan nada "arriba" (nada de React, Zustand, fetch).</ul>
 <blockquote><p><strong>Reglas explícitas</strong>:
 1. <code>components/**</code> no importa <code>stores/**</code> directamente excepto en <code>ErrorBoundary</code> y <code>NotificationContainer</code> (que son cross-cutting). Toda interacción con store pasa por un hook en <code>application/hooks/*</code>.
@@ -743,15 +882,15 @@ Si el archivo cambió tanto que el snippet ya no es representativo, <strong>borr
 <span class="tok-punc">}</span><span class="tok-punc">)</span></code></pre>
 <blockquote><p><strong>Razón</strong>: Vitest reutiliza el pipeline de Vite — JSX, CSS Modules, aliases, todo funciona igual. <code>globals: true</code> permite usar <code>describe/it/expect</code> sin imports.</p></blockquote>
 <h3 id="env-stack">.env <code>[STACK]</code></h3>
-<pre><code><span class="tok-type">VITE_API_URL</span><span class="tok-punc">=</span>http<span class="tok-punc">:</span><span class="tok-com">//localhost:5106</span></code></pre>
+<pre><code>VITE_API_URL=http://localhost:5106</code></pre>
 <blockquote><p><strong>Regla</strong>: solo se exponen al cliente las vars prefijadas con <code>VITE_</code>. El <code>BASE_URL</code> se lee en <code>infrastructure/api/config.ts</code> con fallback.</p></blockquote>
 <h2 id="1-4-i18n-stack-react-i18next-con-deteccion-custom-no-languag">1.4 i18n <code>[STACK: react-i18next con detección custom, no LanguageDetector]</code></h2>
 <h3 id="estructura">Estructura</h3>
-<pre><code>src<span class="tok-punc">/</span>i18n<span class="tok-punc">/</span>
-├── index<span class="tok-punc">.</span>ts          ← init de i18next con recursos y detección de idioma
-└── locales<span class="tok-punc">/</span>
-    ├── es<span class="tok-punc">.</span>json       ← idioma por <span class="tok-fn">defecto</span> <span class="tok-punc">(</span>fallback<span class="tok-punc">)</span>
-    └── en<span class="tok-punc">.</span>json</code></pre>
+<pre><code>src/i18n/
+├── index.ts          ← init de i18next con recursos y detección de idioma
+└── locales/
+    ├── es.json       ← idioma por defecto (fallback)
+    └── en.json</code></pre>
 <h3 id="convencion">Convención</h3>
 <ul><li><strong>Toda la copia user-facing vive en <code>src/i18n/locales/{es,en}.json</code></strong>. Nunca hardcoded strings en componentes.<li>Los archivos JSON están organizados por namespace (<code>common</code>, <code>auth</code>, <code>sidebar</code>, <code>ventas</code>, <code>clientes</code>, etc.). Cada namespace es una sección top-level del JSON.<li>Los componentes consumen con <code>const { t } = useTranslation()</code> o el hook sin namespace (busca en <code>common</code> por default).<li><strong>Idioma por defecto</strong>: <code>es</code>. El <code>init</code> detecta idioma del navegador y cae a <code>es</code> si no es <code>en</code>.<li>Las claves usan <strong>camelCase</strong> (<code>selectClientWarning</code>, <code>saleCompleted</code>).<li>Los <strong>mensajes de error</strong> que vienen del backend (en <code>stores/services</code>) son <strong>inglés</strong> (son técnicos). Los <strong>mensajes de validación de formularios</strong> (<code>useCrudForm</code>) son <strong>español</strong> (son UX-facing). Esta separación está en <code>§4.4</code>.</ul>
 <h3 id="estructura-de-claves-extracto-de-es-json">Estructura de claves (extracto de <code>es.json</code>)</h3>
@@ -3803,14 +3942,14 @@ window<span class="tok-punc">.</span><span class="tok-fn">addEventListener</span
 <p><strong>Reglas del módulo (las tiene que respetar la app)</strong>:</p>
 <ul><li>El módulo <strong>no conoce el dominio</strong>: no sabe de ventas, de facturas ni de DGII. Solo conoce el árbol.<li>El módulo <strong>no conoce ningún router</strong>: la app le pasa su propio enlace con <code>renderLeaf</code>.<li><strong>El filtrado por permisos vive acá</strong> (en <code>SideMenu</code>), no en la app: las hojas sin permiso desaparecen y los grupos que quedan vacíos se podan.<li><strong>El estado abierto/cerrado de los grupos vive acá</strong>: la app no lo guarda. El toggle <strong>siempre funciona</strong>: la apertura automática (la que sigue a la ruta activa) solo se aplica cuando la ruta cambia; un grupo cerrado a mano se queda cerrado en esa ruta.<li><strong>El árbol que devuelve <code>useMenuTree</code> es inmutable</strong>: nadie lo muta.<li><strong>El grupo que también es una ruta lleva esa ruta en el título</strong>: el título ES el enlace a la pantalla del módulo y el submenu lista <strong>solo las demás pantallas</strong> del módulo. El nombre del módulo no se repite dentro de su propio submenu.<li><strong>El título del grupo es un solo control</strong>: navega a la pantalla del módulo y abre o cierra el submenu. No hay un chevron aparte: dos botones para lo mismo se leen como un defecto.</ul>
 <h3 id="layout-de-archivos">Layout de archivos</h3>
-<pre><code>src<span class="tok-punc">/</span>components<span class="tok-punc">/</span><span class="tok-type">SideMenu</span><span class="tok-punc">/</span>
-├── types<span class="tok-punc">.</span>ts          ← el modelo de datos
-├── utils<span class="tok-punc">.</span>ts          ← filterByPermission<span class="tok-punc">,</span> findPath<span class="tok-punc">,</span> ancestorIds<span class="tok-punc">,</span> containsId
-├── buildMenuTree<span class="tok-punc">.</span>ts  ← <span class="tok-fn">buildMenuTree</span> <span class="tok-punc">(</span>rutas planas → árbol<span class="tok-punc">)</span> <span class="tok-punc">+</span> <span class="tok-fn">matchActiveId</span> <span class="tok-punc">(</span>pathname → id<span class="tok-punc">)</span>
-├── useMenuTree<span class="tok-punc">.</span>ts    ← useMenuTree<span class="tok-punc">:</span> arma el árbol y dice qué hoja está activa
-├── <span class="tok-type">SideMenu</span><span class="tok-punc">.</span>tsx      ← el componente que dibuja el árbol
-├── side<span class="tok-punc">-</span>menu<span class="tok-punc">.</span>css     ← estilos propios<span class="tok-punc">:</span> todo sale de las variables <span class="tok-str">"--sm-*"</span>
-└── index<span class="tok-punc">.</span>ts          ← la <span class="tok-type">API</span> pública<span class="tok-punc">:</span> nadie importa un archivo interno del módulo</code></pre>
+<pre><code>src/components/SideMenu/
+├── types.ts          ← el modelo de datos
+├── utils.ts          ← filterByPermission, findPath, ancestorIds, containsId
+├── buildMenuTree.ts  ← buildMenuTree (rutas planas → árbol) + matchActiveId (pathname → id)
+├── useMenuTree.ts    ← useMenuTree: arma el árbol y dice qué hoja está activa
+├── SideMenu.tsx      ← el componente que dibuja el árbol
+├── side-menu.css     ← estilos propios: todo sale de las variables "--sm-*"
+└── index.ts          ← la API pública: nadie importa un archivo interno del módulo</code></pre>
 <h3 id="el-modelo-de-datos">El modelo de datos</h3>
 <p><code>types.ts</code> (el código es real; los comentarios de cada campo se omiten para que se lea el modelo):</p>
 <pre><code><span class="tok-key">export</span> <span class="tok-key">interface</span> <span class="tok-type">RouteDef</span> <span class="tok-punc">{</span>
