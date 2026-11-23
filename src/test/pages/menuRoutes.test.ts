@@ -2,8 +2,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { MENU_GROUPS, MENU_ROUTES } from "../../domain/constants/menuRoutes";
+import { buildMenuTree } from "../../components/SideMenu";
 
 const APP_FILE = join(process.cwd(), "src", "App.tsx");
+const LOCALES_DIR = join(process.cwd(), "src", "i18n", "locales");
 
 /** The "path" of every <Route> of App.tsx. */
 const readRouterPaths = (): string[] => {
@@ -85,5 +87,64 @@ describe("las rutas del menu y las del router no se separan", () => {
 
   it("el menu no repite pantallas", () => {
     expect(new Set(menuPaths).size).toBe(menuPaths.length);
+  });
+});
+
+describe("los grupos del menu no repiten su nombre", () => {
+  const es = JSON.parse(
+    readFileSync(join(LOCALES_DIR, "es.json"), "utf8"),
+  ) as Record<string, unknown>;
+
+  const labelDe = (key: string): string =>
+    key
+      .split(".")
+      .reduce<unknown>(
+        (node, part) =>
+          node && typeof node === "object"
+            ? (node as Record<string, unknown>)[part]
+            : undefined,
+        es,
+      ) as string;
+
+  const arbol = buildMenuTree(
+    MENU_ROUTES.map((ruta) => ({
+      path: ruta.path,
+      label: labelDe(ruta.labelKey),
+      order: ruta.order,
+      permission: ruta.permission,
+      hidden: ruta.hidden,
+      parent: ruta.parent,
+    })),
+    Object.fromEntries(
+      MENU_GROUPS.map((grupo) => [
+        grupo.prefix,
+        { label: labelDe(grupo.labelKey), permission: grupo.permission },
+      ]),
+    ),
+  );
+
+  const grupos = arbol.filter((item) => (item.children ?? []).length > 0);
+
+  it("el menu tiene los grupos de los modulos", () => {
+    expect(grupos.map((grupo) => grupo.label)).toEqual([
+      "Contabilidad",
+      "RRHH",
+      "Facturación",
+    ]);
+  });
+
+  it("el titulo de cada grupo es el enlace a la pantalla del modulo", () => {
+    for (const grupo of grupos) {
+      expect(grupo.href).toBeTruthy();
+    }
+  });
+
+  it("el submenu de cada grupo lista solo las demas pantallas del modulo", () => {
+    for (const grupo of grupos) {
+      const nombres = (grupo.children ?? []).map((hijo) => hijo.label);
+
+      expect(nombres).not.toContain(grupo.label);
+      expect(nombres.length).toBeGreaterThan(0);
+    }
   });
 });

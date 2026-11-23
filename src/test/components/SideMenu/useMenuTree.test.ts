@@ -38,7 +38,7 @@ describe("useMenuTree", () => {
       { initialProps: { pathname: "/ventas" } },
     );
 
-    expect(result.current.activeId).toBe("/ventas");
+    expect(result.current.activeId).toBe("/ventas::group");
 
     rerender({ pathname: "/ventas/facturas" });
 

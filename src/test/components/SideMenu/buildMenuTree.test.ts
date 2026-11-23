@@ -13,21 +13,13 @@ describe("buildMenuTree", () => {
       {
         id: "/ventas::group",
         label: "Ventas",
+        href: "/ventas",
         children: [
-          {
-            id: "/ventas",
-            label: "Resumen",
-            href: "/ventas",
-          },
           {
             id: "/ventas/facturas::group",
             label: "Facturas",
+            href: "/ventas/facturas",
             children: [
-              {
-                id: "/ventas/facturas",
-                label: "Resumen",
-                href: "/ventas/facturas",
-              },
               {
                 id: "/ventas/facturas/nueva",
                 label: "Nueva",
@@ -81,40 +73,44 @@ describe("buildMenuTree", () => {
     expect(tree.map((item) => item.label)).toEqual(["D", "A", "C", "B"]);
   });
 
-  it("el grupo que es tambien ruta recibe el id ::group y no navega", () => {
+  it("el grupo que es tambien ruta lleva la pantalla del modulo en el titulo", () => {
     const tree = buildMenuTree([
       { path: "/ventas", label: "Ventas" },
       { path: "/ventas/facturas", label: "Facturas" },
     ]);
 
     expect(tree[0].id).toBe("/ventas::group");
-    expect(tree[0].href).toBeUndefined();
+    expect(tree[0].href).toBe("/ventas");
     expect(tree[0].children?.map((item) => item.id)).toEqual([
-      "/ventas",
       "/ventas/facturas",
     ]);
   });
 
-  it("el enlace del grupo que es tambien ruta pasa a ser el primer hijo", () => {
+  it("el submenu del grupo lista solo las demas pantallas del modulo", () => {
     const tree = buildMenuTree([
       { path: "/ventas", label: "Ventas" },
       { path: "/ventas/facturas", label: "Facturas" },
+      { path: "/ventas/recibos", label: "Recibos" },
     ]);
 
-    expect(tree[0].children?.[0]).toEqual({
-      id: "/ventas",
-      label: "Resumen",
-      href: "/ventas",
-    });
+    // El nombre del modulo no se repite: el titulo ya es su pantalla.
+    expect(tree[0].children?.map((item) => item.label)).toEqual([
+      "Facturas",
+      "Recibos",
+    ]);
   });
 
-  it("el enlace del grupo usa el indexLabel cuando hay uno", () => {
+  it("un grupo que no es ruta no lleva enlace en el titulo", () => {
     const tree = buildMenuTree([
-      { path: "/ventas", label: "Ventas", indexLabel: "Vista general" },
       { path: "/ventas/facturas", label: "Facturas" },
+      { path: "/pos", label: "POS", parent: "/ventas" },
     ]);
 
-    expect(tree[0].children?.[0].label).toBe("Vista general");
+    expect(tree[0].href).toBeUndefined();
+    expect(tree[0].children?.map((item) => item.label)).toEqual([
+      "Facturas",
+      "POS",
+    ]);
   });
 
   it("la regla parent cuelga una ruta de un grupo cuyo prefijo no coincide con su path", () => {
@@ -143,8 +139,8 @@ describe("buildMenuTree", () => {
     ]);
 
     expect(tree[0].id).toBe("/ventas::group");
+    expect(tree[0].href).toBe("/ventas");
     expect(tree[0].children?.map((item) => item.id)).toEqual([
-      "/ventas",
       "/ventas/facturas",
       "/pos",
     ]);

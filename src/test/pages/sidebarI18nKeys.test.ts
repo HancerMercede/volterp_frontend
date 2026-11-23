@@ -42,7 +42,6 @@ const collectDeclaredKeys = (): string[] => {
   }
   for (const group of MENU_GROUPS) {
     keys.add(group.labelKey);
-    if (group.indexLabelKey) keys.add(group.indexLabelKey);
   }
 
   return [...keys].sort();

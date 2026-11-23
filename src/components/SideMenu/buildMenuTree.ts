@@ -4,8 +4,6 @@ import type { GroupMeta, MenuItem, RouteDef } from "./types";
 /** The suffix a group gets when the group is also a route. */
 export const GROUP_SUFFIX = "::group";
 
-const DEFAULT_INDEX_LABEL = "Resumen";
-
 interface BuildNode {
   prefix: string;
   path?: string;
@@ -15,9 +13,7 @@ interface BuildNode {
   order?: number;
   permission?: string;
   disabled?: boolean;
-  indexLabel?: string;
   isRoute: boolean;
-  isIndexLink: boolean;
   children: Map<string, BuildNode>;
   seq: number;
 }
@@ -29,7 +25,9 @@ interface BuildNode {
  * 2. The routes with ":param", with "*" or hidden do not reach the menu.
  * 3. The label is inferred from the segment; the inference adds no accents.
  * 4. The order is the "order" of the route; without it, the declaration order.
- * 5. A group that is also a route does not navigate: its link is the first child.
+ * 5. Un grupo que tambien es ruta lleva esa ruta en su titulo: el titulo ES
+ *    el enlace a la pantalla del modulo y el submenu lista solo las demas
+ *    pantallas (el nombre del modulo no se repite).
  * 6. The routes with a "parent" hang from the group of that prefix even when
  *    their own path is not under it.
  */
@@ -43,7 +41,6 @@ export function buildMenuTree(
   const createNode = (prefix: string, seq: number): BuildNode => ({
     prefix,
     isRoute: false,
-    isIndexLink: false,
     children: new Map(),
     seq,
   });
@@ -87,7 +84,6 @@ export function buildMenuTree(
     node.order ??= route.order;
     node.permission ??= route.permission;
     node.disabled ??= route.disabled;
-    node.indexLabel ??= route.indexLabel;
     node.seq = seq;
   };
 
@@ -142,32 +138,7 @@ export function buildMenuTree(
     node.order ??= meta.order;
     node.permission ??= meta.permission;
     node.disabled ??= meta.disabled;
-    node.indexLabel ??= meta.indexLabel;
   }
-
-  const finalize = (node: BuildNode): void => {
-    for (const child of node.children.values()) finalize(child);
-    if (node.children.size === 0 || !node.isRoute || !node.path) return;
-    const link: BuildNode = {
-      prefix: node.prefix,
-      path: node.path,
-      label: node.indexLabel ?? DEFAULT_INDEX_LABEL,
-      // The link points at the route of the group, so it wears its icon: the
-      // one of the route or, when the route brings none, the one of the group.
-      icon: node.icon,
-      permission: node.permission,
-      disabled: node.disabled,
-      isRoute: true,
-      isIndexLink: true,
-      children: new Map(),
-      seq: node.seq,
-    };
-    const children = new Map<string, BuildNode>();
-    children.set(keyOf(link), link);
-    for (const [key, child] of node.children) children.set(key, child);
-    node.children = children;
-  };
-  for (const root of roots.values()) finalize(root);
 
   const usedIds = new Set<string>();
   const claimId = (preferred: string, fallback: string): string => {
@@ -208,8 +179,12 @@ export function buildMenuTree(
     if (node.badge !== undefined) item.badge = node.badge;
     if (node.permission !== undefined) item.permission = node.permission;
     if (node.disabled !== undefined) item.disabled = node.disabled;
-    if (isGroup) item.children = children;
-    else item.href = node.path;
+    if (isGroup) {
+      item.children = children;
+      if (node.isRoute && node.path) item.href = node.path;
+    } else {
+      item.href = node.path;
+    }
     return item;
   };
 
@@ -220,31 +195,29 @@ export function buildMenuTree(
 }
 
 /**
- * The id of the leaf the pathname points at: the href with the longest
- * prefix that matches wins. The root ("/") only matches exactly.
+ * El id del enlace que apunta el pathname: gana el href con el prefijo mas
+ * largo que coincide. La raiz ("/") solo coincide exactamente. El titulo de
+ * un grupo es un enlace tambien: la pantalla del modulo es candidata.
  */
 export function matchActiveId(
   items: MenuItem[],
   pathname: string,
 ): string | null {
-  const leaves: MenuItem[] = [];
+  const links: MenuItem[] = [];
 
   const visit = (nodes: MenuItem[]): void => {
     for (const node of nodes) {
-      if (node.children && node.children.length > 0) {
-        visit(node.children);
-        continue;
-      }
-      if (node.href) leaves.push(node);
+      if (node.href) links.push(node);
+      if (node.children && node.children.length > 0) visit(node.children);
     }
   };
   visit(items);
 
   let best: MenuItem | null = null;
-  for (const leaf of leaves) {
-    const href = leaf.href as string;
+  for (const link of links) {
+    const href = link.href as string;
     if (!matchesPathname(pathname, href)) continue;
-    if (!best || href.length > (best.href as string).length) best = leaf;
+    if (!best || href.length > (best.href as string).length) best = link;
   }
 
   return best ? best.id : null;
@@ -256,7 +229,6 @@ const matchesPathname = (pathname: string, href: string): boolean => {
 };
 
 const compareNodes = (a: BuildNode, b: BuildNode): number => {
-  if (a.isIndexLink !== b.isIndexLink) return a.isIndexLink ? -1 : 1;
   const orderA = a.order ?? Number.POSITIVE_INFINITY;
   const orderB = b.order ?? Number.POSITIVE_INFINITY;
   if (orderA !== orderB) return orderA < orderB ? -1 : 1;

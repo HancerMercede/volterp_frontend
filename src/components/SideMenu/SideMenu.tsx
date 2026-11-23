@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { ancestorIds, filterByPermission } from "./utils";
+import { filterByPermission, findPath } from "./utils";
 import type { LeafProps, MenuItem, SideMenuProps } from "./types";
 import "./side-menu.css";
 
@@ -70,10 +70,12 @@ export function SideMenu({
     return cerrados;
   }, [decisiones, ruta]);
 
-  const activeAncestors = useMemo(
-    () => (activeId ? ancestorIds(visible, activeId) : []),
-    [visible, activeId],
-  );
+  const activeAncestors = useMemo(() => {
+    if (!activeId) return [];
+    // El grupo que es la hoja activa abre el suyo: el usuario esta en la
+    // pantalla del modulo.
+    return findPath(visible, activeId).map((item) => item.id);
+  }, [visible, activeId]);
 
   const openIds = useMemo(() => {
     const next = new Set(abiertosPorDecision);
@@ -131,19 +133,19 @@ function MenuNode({ item, level, context }: MenuNodeProps) {
 
   const open = context.openIds.has(item.id);
   const panelId = panelIdOf(item.id);
+  const active = context.activeId === item.id;
+  const disabled = Boolean(item.disabled);
 
   return (
     <li className="sm-item sm-item--group">
-      <button
-        type="button"
-        className="sm-group"
-        aria-expanded={open}
-        aria-controls={panelId}
-        disabled={item.disabled}
-        onClick={() => context.toggle(item.id)}
-      >
-        <NodeContent item={item} />
-      </button>
+      <GroupTitle
+        item={item}
+        active={active}
+        disabled={disabled}
+        open={open}
+        panelId={panelId}
+        context={context}
+      />
       {/*
         The closed panel is hidden inline: its children never take the
         focus, not even before the stylesheet arrives. The panel holds a
@@ -171,6 +173,74 @@ function MenuNode({ item, level, context }: MenuNodeProps) {
         </div>
       </div>
     </li>
+  );
+}
+
+interface GroupTitleProps {
+  item: MenuItem;
+  active: boolean;
+  disabled: boolean;
+  /** El grupo esta abierto: el titulo lo dice con aria-expanded. */
+  open: boolean;
+  /** El panel que el titulo controla. */
+  panelId: string;
+  context: MenuContext;
+}
+
+/**
+ * El titulo de un grupo es el enlace a la pantalla del modulo: el submenu
+ * lista solo las demas pantallas, asi que el nombre no se repite. El mismo
+ * control abre y cierra el submenu: no hay un chevron aparte.
+ */
+function GroupTitle({
+  item,
+  active,
+  disabled,
+  open,
+  panelId,
+  context,
+}: GroupTitleProps) {
+  if (!item.href) {
+    return (
+      <span className="sm-groupLabel">
+        <NodeContent item={item} />
+      </span>
+    );
+  }
+
+  if (context.renderLeaf) {
+    return (
+      <>
+        {context.renderLeaf({
+          item,
+          active,
+          disabled,
+          open,
+          onSelect: () => context.toggle(item.id),
+        })}
+      </>
+    );
+  }
+
+  if (disabled) {
+    return (
+      <span className="sm-groupLink sm-groupLink--disabled" aria-disabled="true">
+        <NodeContent item={item} />
+      </span>
+    );
+  }
+
+  return (
+    <a
+      className="sm-groupLink"
+      href={item.href}
+      aria-current={active ? "page" : undefined}
+      aria-expanded={open}
+      aria-controls={panelId}
+      onClick={() => context.toggle(item.id)}
+    >
+      <NodeContent item={item} />
+    </a>
   );
 }
 

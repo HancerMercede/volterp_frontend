@@ -57,7 +57,6 @@ export function useMenuItems(): MenuItems {
         });
       }
       if (group.permission) meta.permission = group.permission;
-      if (group.indexLabelKey) meta.indexLabel = t(group.indexLabelKey);
 
       groups[group.prefix] = meta;
     }

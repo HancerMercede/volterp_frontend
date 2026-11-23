@@ -97,9 +97,19 @@ describe("Sidebar", () => {
   it("un modulo con varias pantallas se dibuja como grupo con sus hijos", () => {
     renderSidebar("/contabilidad/cuentas");
 
-    const grupo = screen.getByRole("button", { name: "Contabilidad" });
+    const grupo = screen.getByRole("link", { name: "Contabilidad" });
 
+    expect(grupo).toHaveAttribute("href", "/contabilidad");
     expect(grupo).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("link", { name: "Cuentas" })).toBeInTheDocument();
+  });
+
+  it("el submenu del modulo no repite el nombre del modulo", () => {
+    renderSidebar("/contabilidad/cuentas");
+
+    // El nombre del modulo aparece una sola vez: en el titulo, que es su
+    // enlace. El submenu lista las demas pantallas.
+    expect(screen.getAllByText("Contabilidad")).toHaveLength(1);
     expect(screen.getByRole("link", { name: "Cuentas" })).toBeInTheDocument();
   });
 
@@ -114,7 +124,7 @@ describe("Sidebar", () => {
       screen.getByRole("link", { name: "Contabilidad" }),
     ).not.toHaveAttribute("aria-current");
     expect(
-      screen.getByRole("button", { name: "Contabilidad" }),
+      screen.getByRole("link", { name: "Contabilidad" }),
     ).toHaveAttribute("aria-expanded", "true");
   });
 
@@ -149,7 +159,7 @@ describe("Sidebar", () => {
 
     renderSidebar("/ventas");
 
-    expect(screen.queryByRole("button", { name: "Contabilidad" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Contabilidad" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Cuentas" })).toBeNull();
   });
 });

@@ -7,7 +7,7 @@ export interface MenuItem {
   label: string;
   icon?: ReactNode;
   badge?: ReactNode;
-  /** A group never has one. */
+  /** La hoja navega a el; un grupo que tambien es ruta lleva la pantalla de su modulo. */
   href?: string;
   permission?: string;
   disabled?: boolean;
@@ -24,7 +24,6 @@ export interface RouteDef {
   permission?: string;
   disabled?: boolean;
   hidden?: boolean;
-  indexLabel?: string;
   /** The prefix of the group the route hangs from ("/ventas"), never an id. */
   parent?: string;
 }
@@ -37,7 +36,6 @@ export interface GroupMeta {
   order?: number;
   permission?: string;
   disabled?: boolean;
-  indexLabel?: string;
 }
 
 export interface LeafProps {
@@ -46,6 +44,8 @@ export interface LeafProps {
   active: boolean;
   /** The leaf is disabled: it does not navigate. */
   disabled: boolean;
+  /** The title of a group carries the state of its panel: the control opens and closes it. */
+  open?: boolean;
   onSelect: () => void;
 }
 
@@ -55,7 +55,7 @@ export interface SideMenuProps {
   activeId?: string | null;
   /** The filtering lives here and nowhere else. */
   permissions?: string[];
-  /** The app passes its own router link: the module knows no router. */
+  /** La app pasa su propio enlace: el modulo no conoce ningun router. Dibuja las hojas y el titulo de los grupos. */
   renderLeaf?: (props: LeafProps) => ReactNode;
   ariaLabel?: string;
   defaultOpenIds?: string[];

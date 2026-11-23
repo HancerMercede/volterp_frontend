@@ -30,8 +30,6 @@ export interface MenuGroup {
   permission?: string;
   /** El orden del grupo dentro del menu: ascendente. */
   order: number;
-  /** La clave i18n de la etiqueta del enlace del grupo que tambien es una ruta. */
-  indexLabelKey?: string;
 }
 
 /**
@@ -220,7 +218,6 @@ export const MENU_GROUPS: MenuGroup[] = [
     iconKey: 'contabilidad',
     permission: 'contabilidad.read',
     order: 70,
-    indexLabelKey: 'sidebar.contabilidad',
   },
   {
     prefix: '/rrhh',
@@ -228,7 +225,6 @@ export const MENU_GROUPS: MenuGroup[] = [
     iconKey: 'rrhh',
     permission: 'rrhh.read',
     order: 80,
-    indexLabelKey: 'sidebar.rrhh',
   },
   {
     prefix: '/facturacion',
@@ -236,6 +232,5 @@ export const MENU_GROUPS: MenuGroup[] = [
     iconKey: 'facturacion',
     permission: 'facturacion.read',
     order: 120,
-    indexLabelKey: 'sidebar.facturacion',
   },
 ];

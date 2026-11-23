@@ -29,30 +29,60 @@ const reglaDe = (selector: string): string => {
   return encontrado ? encontrado[1] : "";
 };
 
+/** El titulo del grupo: el unico control del grupo. */
+const tituloDelGrupo = () => screen.getByRole("link", { name: "Ventas" });
+
+/** El panel que el titulo del grupo controla. */
+const panelDelGrupo = (titulo: HTMLElement): HTMLElement =>
+  document.getElementById(
+    titulo.getAttribute("aria-controls") as string,
+  ) as HTMLElement;
+
 describe("SideMenu", () => {
-  it("el grupo se dibuja como boton con aria-expanded y aria-controls", () => {
+  it("el titulo del grupo es el enlace a la pantalla del modulo", () => {
     render(<SideMenu items={ITEMS} />);
 
-    const button = screen.getByRole("button", { name: "Ventas" });
-    expect(button).toHaveAttribute("aria-expanded", "false");
+    const titulo = tituloDelGrupo();
 
-    const panelId = button.getAttribute("aria-controls");
-    expect(panelId).toBeTruthy();
-    expect(document.getElementById(panelId as string)).toBeInTheDocument();
+    expect(titulo).toHaveAttribute("href", "/ventas");
   });
 
-  it("el boton abre y cierra el grupo", async () => {
+  it("el titulo del grupo es el unico control: no hay un chevron aparte", () => {
     render(<SideMenu items={ITEMS} />);
 
-    const button = screen.getByRole("button", { name: "Ventas" });
-    await userEvent.click(button);
+    expect(screen.queryByRole("button", { name: "Ventas" })).toBeNull();
+    expect(screen.getAllByRole("link", { name: "Ventas" })).toHaveLength(1);
+  });
 
-    expect(button).toHaveAttribute("aria-expanded", "true");
+  it("el submenu del grupo lista solo las demas pantallas del modulo", () => {
+    render(<SideMenu items={ITEMS} defaultOpenIds={["/ventas::group"]} />);
+
+    const panel = panelDelGrupo(tituloDelGrupo());
+
+    // El nombre del modulo no se repite dentro de su propio submenu.
+    expect(
+      within(panel).getAllByRole("link").map((link) => link.textContent),
+    ).toEqual(["Facturas"]);
+  });
+
+  it("el titulo del grupo abre y cierra el submenu", async () => {
+    render(<SideMenu items={ITEMS} />);
+
+    const titulo = tituloDelGrupo();
+    expect(titulo).toHaveAttribute("aria-expanded", "false");
+
+    const panelId = titulo.getAttribute("aria-controls");
+    expect(panelId).toBeTruthy();
+    expect(document.getElementById(panelId as string)).toBeInTheDocument();
+
+    await userEvent.click(titulo);
+
+    expect(titulo).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("link", { name: "Facturas" })).toBeInTheDocument();
 
-    await userEvent.click(button);
+    await userEvent.click(titulo);
 
-    expect(button).toHaveAttribute("aria-expanded", "false");
+    expect(titulo).toHaveAttribute("aria-expanded", "false");
   });
 
   it("la hoja activa lleva aria-current='page'", () => {
@@ -62,29 +92,24 @@ describe("SideMenu", () => {
       "aria-current",
       "page",
     );
-    expect(screen.getByRole("link", { name: "Resumen" })).not.toHaveAttribute(
-      "aria-current",
-    );
+    expect(tituloDelGrupo()).not.toHaveAttribute("aria-current");
   });
 
   it("el menu sigue la ruta activa y abre los grupos que la contienen", () => {
     render(<SideMenu items={ITEMS} activeId="/ventas/facturas" />);
 
-    expect(screen.getByRole("button", { name: "Ventas" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
+    expect(tituloDelGrupo()).toHaveAttribute("aria-expanded", "true");
   });
 
   it("el grupo se puede cerrar a mano aunque la ruta activa este dentro", async () => {
     render(<SideMenu items={ITEMS} activeId="/ventas/facturas" />);
 
-    const button = screen.getByRole("button", { name: "Ventas" });
-    expect(button).toHaveAttribute("aria-expanded", "true");
+    const titulo = tituloDelGrupo();
+    expect(titulo).toHaveAttribute("aria-expanded", "true");
 
-    await userEvent.click(button);
+    await userEvent.click(titulo);
 
-    expect(button).toHaveAttribute("aria-expanded", "false");
+    expect(titulo).toHaveAttribute("aria-expanded", "false");
   });
 
   it("el cierre manual se respeta hasta que la ruta cambia", async () => {
@@ -92,23 +117,20 @@ describe("SideMenu", () => {
       <SideMenu items={ITEMS} activeId="/ventas/facturas" />,
     );
 
-    const button = screen.getByRole("button", { name: "Ventas" });
+    const titulo = tituloDelGrupo();
 
-    await userEvent.click(button);
-    expect(button).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(titulo);
+    expect(titulo).toHaveAttribute("aria-expanded", "false");
 
-    // El usuario navego a otra pantalla del grupo: el grupo se abre solo.
-    rerender(<SideMenu items={ITEMS} activeId="/ventas" />);
-    expect(button).toHaveAttribute("aria-expanded", "true");
+    // El usuario navego a la pantalla del modulo: el grupo se abre solo.
+    rerender(<SideMenu items={ITEMS} activeId="/ventas::group" />);
+    expect(titulo).toHaveAttribute("aria-expanded", "true");
   });
 
   it("los hijos de un grupo cerrado no reciben el foco", async () => {
     const { container } = render(<SideMenu items={ITEMS} />);
 
-    const button = screen.getByRole("button", { name: "Ventas" });
-    const panel = document.getElementById(
-      button.getAttribute("aria-controls") as string,
-    ) as HTMLElement;
+    const titulo = tituloDelGrupo();
     const link = container.querySelector(
       'a[href="/ventas/facturas"]',
     ) as HTMLElement;
@@ -116,53 +138,41 @@ describe("SideMenu", () => {
     expect(link).not.toBeVisible();
 
     await userEvent.tab();
-    expect(button).toHaveFocus();
+    expect(titulo).toHaveFocus();
 
     await userEvent.tab();
-    expect(panel).not.toContainElement(document.activeElement as HTMLElement);
     expect(link).not.toHaveFocus();
   });
 
   it("los hijos de un grupo abierto si reciben el foco", async () => {
     const { container } = render(<SideMenu items={ITEMS} />);
 
-    const button = screen.getByRole("button", { name: "Ventas" });
-    const panel = document.getElementById(
-      button.getAttribute("aria-controls") as string,
-    ) as HTMLElement;
+    const titulo = tituloDelGrupo();
+    const panel = panelDelGrupo(titulo);
     const link = container.querySelector(
       'a[href="/ventas/facturas"]',
     ) as HTMLElement;
 
-    await userEvent.click(button);
+    await userEvent.click(titulo);
     expect(link).toBeVisible();
 
     await userEvent.tab();
     expect(panel).toContainElement(document.activeElement as HTMLElement);
   });
 
-  it("el grupo se abre y se cierra con el teclado", async () => {
+  it("el titulo del grupo toma el foco con el teclado", async () => {
     render(<SideMenu items={ITEMS} />);
 
-    const button = screen.getByRole("button", { name: "Ventas" });
+    const titulo = tituloDelGrupo();
 
     await userEvent.tab();
-    expect(button).toHaveFocus();
-
-    await userEvent.keyboard("{Enter}");
-    expect(button).toHaveAttribute("aria-expanded", "true");
-
-    await userEvent.keyboard(" ");
-    expect(button).toHaveAttribute("aria-expanded", "false");
+    expect(titulo).toHaveFocus();
   });
 
   it("los grupos que empiezan abiertos vienen en defaultOpenIds", () => {
     render(<SideMenu items={ITEMS} defaultOpenIds={["/ventas::group"]} />);
 
-    expect(screen.getByRole("button", { name: "Ventas" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
+    expect(tituloDelGrupo()).toHaveAttribute("aria-expanded", "true");
   });
 
   it("los permisos del llamante podan las hojas", () => {
@@ -177,7 +187,7 @@ describe("SideMenu", () => {
 
     expect(screen.queryByRole("link", { name: "Facturas" })).toBeNull();
     expect(
-      screen.getByRole("button", { name: "Inventario" }),
+      screen.getByRole("link", { name: "Inventario" }),
     ).toBeInTheDocument();
   });
 
@@ -188,14 +198,14 @@ describe("SideMenu", () => {
 
     render(<SideMenu items={items} permissions={[]} />);
 
-    expect(screen.queryByRole("button", { name: "Ventas" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Ventas" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Facturas" })).toBeNull();
   });
 
   it("sin permisos se ve todo el menu", () => {
     render(<SideMenu items={ITEMS} />);
 
-    expect(screen.getByRole("button", { name: "Ventas" })).toBeInTheDocument();
+    expect(tituloDelGrupo()).toBeInTheDocument();
   });
 
   it("el nav lleva su etiqueta", () => {
@@ -226,10 +236,7 @@ describe("SideMenu", () => {
   it("el panel tiene un solo hijo: el que envuelve la lista de los hijos", () => {
     render(<SideMenu items={ITEMS} />);
 
-    const button = screen.getByRole("button", { name: "Ventas" });
-    const panel = document.getElementById(
-      button.getAttribute("aria-controls") as string,
-    ) as HTMLElement;
+    const panel = panelDelGrupo(tituloDelGrupo());
 
     expect(panel.children.length).toBe(1);
 
@@ -242,7 +249,7 @@ describe("SideMenu", () => {
     }
   });
 
-  it("el enlace indice del grupo hereda el icono de la ruta del grupo", () => {
+  it("el titulo del grupo trae el icono de la ruta del grupo", () => {
     const items = buildMenuTree([
       {
         path: "/ventas",
@@ -258,11 +265,11 @@ describe("SideMenu", () => {
 
     render(<SideMenu items={items} defaultOpenIds={["/ventas::group"]} />);
 
-    const resumen = screen.getByRole("link", { name: "Resumen" });
-    expect(within(resumen).getByTestId("icono-ventas")).toBeInTheDocument();
+    const titulo = tituloDelGrupo();
+    expect(within(titulo).getByTestId("icono-ventas")).toBeInTheDocument();
   });
 
-  it("el enlace indice hereda el icono del grupo cuando la ruta no trae icono", () => {
+  it("el titulo del grupo hereda el icono del grupo cuando la ruta no trae icono", () => {
     const items = buildMenuTree(
       [
         { path: "/ventas", label: "Ventas" },
@@ -278,8 +285,8 @@ describe("SideMenu", () => {
 
     render(<SideMenu items={items} defaultOpenIds={["/ventas::group"]} />);
 
-    const resumen = screen.getByRole("link", { name: "Resumen" });
-    expect(within(resumen).getByTestId("icono-grupo")).toBeInTheDocument();
+    const titulo = tituloDelGrupo();
+    expect(within(titulo).getByTestId("icono-grupo")).toBeInTheDocument();
   });
 
   it("la app dibuja la hoja con su propio router", () => {
@@ -299,5 +306,21 @@ describe("SideMenu", () => {
       "aria-current",
       "page",
     );
+  });
+
+  it("la app recibe el estado del submenu para marcarlo", () => {
+    render(
+      <SideMenu
+        items={ITEMS}
+        activeId="/ventas/facturas"
+        renderLeaf={({ item, open }) => (
+          <a href={item.href} aria-expanded={open ? "true" : undefined}>
+            {item.label}
+          </a>
+        )}
+      />,
+    );
+
+    expect(tituloDelGrupo()).toHaveAttribute("aria-expanded", "true");
   });
 });

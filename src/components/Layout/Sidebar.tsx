@@ -34,7 +34,7 @@ export function Sidebar() {
 
   // Las hojas las dibuja la app con su propio router: el modulo no conoce
   // ningun router.
-  const renderLeaf = ({ item, active, disabled }: LeafProps) => {
+  const renderLeaf = ({ item, active, disabled, open, onSelect }: LeafProps) => {
     const content = (
       <>
         <span className={styles.navIcon}>{item.icon}</span>
@@ -56,6 +56,10 @@ export function Sidebar() {
     return (
       <NavLink
         to={item.href ?? "/"}
+        onClick={onSelect}
+        // El titulo de un grupo es su enlace y su control: el mismo boton
+        // lleva a la pantalla del modulo y abre o cierra el submenu.
+        aria-expanded={open}
         // Cada hoja es una pantalla exacta: sin esto el enlace de un grupo
         // ("/contabilidad") tambien se markaria activo dentro de "/contabilidad/cuentas".
         end

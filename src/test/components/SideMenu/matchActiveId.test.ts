@@ -12,12 +12,13 @@ describe("matchActiveId", () => {
     expect(matchActiveId(ITEMS, "/ventas/facturas/123")).toBe(
       "/ventas/facturas",
     );
-    expect(matchActiveId(ITEMS, "/ventas")).toBe("/ventas");
+    // El titulo del grupo es un enlace: la pantalla del modulo es la activa.
+    expect(matchActiveId(ITEMS, "/ventas")).toBe("/ventas::group");
   });
 
   it("la raiz solo coincide exactamente", () => {
     expect(matchActiveId(ITEMS, "/")).toBe("/");
-    expect(matchActiveId(ITEMS, "/ventas")).toBe("/ventas");
+    expect(matchActiveId(ITEMS, "/ventas")).toBe("/ventas::group");
   });
 
   it("una ruta que no esta en el menu no deja nada activo", () => {

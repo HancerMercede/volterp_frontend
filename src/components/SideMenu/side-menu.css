@@ -62,8 +62,8 @@
   min-width: 0;
 }
 
-.sm-group,
-.sm-leaf {
+.sm-leaf,
+.sm-groupLink {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -83,23 +83,31 @@
     color var(--sm-duration) ease;
 }
 
-.sm-group:hover,
-.sm-leaf:hover {
+.sm-leaf:hover,
+.sm-groupLink:hover {
   background: var(--sm-hover);
   color: var(--sm-strong);
 }
 
 /* The focus is always visible, even with the mouse. */
-.sm-group:focus-visible,
-.sm-leaf:focus-visible {
+.sm-leaf:focus-visible,
+.sm-groupLink:focus-visible {
   outline: 2px solid var(--sm-accent);
   outline-offset: 2px;
 }
 
-.sm-group:disabled,
-.sm-leaf--disabled {
+.sm-leaf--disabled,
+.sm-groupLink--disabled {
   color: var(--sm-muted);
   cursor: not-allowed;
+}
+
+.sm-groupLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
 }
 
 .sm-label {
