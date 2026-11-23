@@ -46,6 +46,21 @@ vi.mock("../../infrastructure/api/normalFiscalSequenceService", () => ({
   },
 }));
 
+vi.mock("../../infrastructure/api/saleService", () => ({
+  saleService: {
+    getReadiness: vi.fn().mockResolvedValue({
+      emissionMode: "Electronic",
+      usesElectronicEmission: true,
+      isInContingency: false,
+      hasValidCertificate: true,
+      certificateExpiresAt: null,
+      isReady: true,
+      blockers: [],
+      documentTypes: [],
+    }),
+  },
+}));
+
 const mockEmissionModeService = companyEmissionModeService as unknown as {
   getEmissionMode: ReturnType<typeof vi.fn>;
   updateEmissionMode: ReturnType<typeof vi.fn>;

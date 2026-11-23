@@ -23,8 +23,8 @@
 | Architecture | Clean Architecture-inspired (`infrastructure` → `stores` → `application` → `components`/`pages`) |
 | Source language | English (artifacts), Spanish (conversational docs) |
 | Last synced with code | **2026-11-07** — `useCrudForm`, `useDeleteConfirm`, `useColecciones`, `Modal`, `ConfirmModal`, `DynamicFormFields`, `SearchableSelect`, contrato visual (§1.5), flujo de invitación y recuperación de cuenta (§2.8) |
-| Menú lateral | **2026-11-21** — módulo `SideMenu` (§2.10): el menú se declara como datos, se traduce en un hook y lo dibuja un módulo que no conoce el router ni el dominio |
-| Venta nueva | **2026-11-21** — la venta nueva es una ruta fuera del layout (§2.9), el checklist compacto es un toast (§2.5) y el cajero cancela la venta pendiente (§2.9) |
+| Menú lateral | **2026-11-22** — módulo `SideMenu` (§2.10): el menú se declara como datos, se traduce en un hook y lo dibuja un módulo que no conoce el router ni el dominio; el título del grupo es el enlace a la pantalla del módulo y alterna el submenu |
+| Venta nueva | **2026-11-22** — la venta nueva es una ruta fuera del layout (§2.9), el checklist compacto es un toast (§2.5), el cajero cancela la venta pendiente (§2.9) y la caja se limpia al guardar el borrador y al completar: el carrito, el cliente y el tipo del documento (§2.9) |
 | Stack re-synced | **2026-11-15** — pins de stack contra `package.json` real: React 19, React Router 7, Zustand 5, Vite 8, Vitest 4, TypeScript 6 |
 
 ---
@@ -3970,9 +3970,13 @@ export default App;
   // …
 
       <NuevaVenta
-        key={`nueva-venta-${intento}`}
+        key={`nueva-venta-${ventaAEditar ?? "nueva"}`}
         editingSaleId={ventaAEditar}
-        onSave={() => setIntento((conteo) => conteo + 1)}
+        onSave={(completada) => {
+          // La venta completada vuelve a la venta nueva. El borrador deja la
+          // caja limpia (el componente la vacio) y la pantalla en su sitio.
+          if (completada) navigate("/nueva-venta", { replace: true });
+        }}
         onCancel={() => navigate("/ventas")}
       />
 ```
@@ -4042,6 +4046,68 @@ export default App;
           )}
 ```
 
+### La caja: el carrito, el cliente y el tipo del documento `[PRINCIPIO + STACK]`
+
+**Por qué**: el carrito y el cliente se quedaban en la pantalla al completar: el cajero veía la venta anterior y podía cobrarla otra vez. Ahora la caja se limpia en los dos momentos —al guardar el borrador y al completar—: el borrador ya limpía y el completado limpia igual.
+
+**Reglas**:
+- **Guardar borrador y completar limpian la caja**: el carrito, el cliente y el tipo del documento quedan vacíos en los dos casos; la pantalla queda para la siguiente venta.
+- **La venta en borrador se carga desde el listado**: el cajero la vuelve a abrir desde la lista y la completa ahí — el completado actualiza esa misma venta, no crea otra.
+- **El tipo por defecto es el comercial** (`"comercial"` en `DocumentoVenta`): la venta sale sin comprobante fiscal. El documento lo decide el back; el front solo marca la venta como comercial (`isCommercialInvoice` al crearla, `asCommercialInvoice` al completarla).
+- **Al editar una venta, el selector trae el tipo de esa venta**: si es un crédito fiscal (`documentType === "FiscalCredit"`) se selecciona "credito"; en cualquier otro caso, "comercial". El tipo vive en `documentoElegido` y se inicializa desde la venta que se está editando.
+- **El carrito se siembra agrupando las líneas por producto**: si el back manda el mismo producto en dos líneas, quedan en una sola con la cantidad sumada y el subtotal recalculado. El PUT no reenvía duplicados.
+- **El estado fiscal no se lista**: vive en el detalle de la venta (`VentaDetail.tsx`), no en el listado.
+
+**Snippet** (`src/pages/Ventas/components/NuevaVenta.tsx`):
+
+```tsx
+  // La caja queda para la siguiente venta: sin renglones y sin cliente. El
+  // borrador limpia igual que el completado.
+  const limpiarLaCaja = () => {
+    setCarrito([]);
+    setSelectedCliente(null);
+    setDocumentoElegido(null);
+  };
+```
+
+```tsx
+const documentoDeLaVenta = (
+  venta: SaleDto | null | undefined,
+): DocumentoVenta | null => {
+  if (!venta) return null;
+  return venta.documentType === "FiscalCredit" ? "credito" : "comercial";
+};
+```
+
+```tsx
+const agruparLineas = (
+  items: SaleItemDto[],
+  taxCodeOf: (item: SaleItemDto) => TaxCode,
+): CartItem[] => {
+  const porProducto = new Map<string, CartItem>();
+
+  for (const item of items) {
+    const linea = porProducto.get(item.productId);
+    if (!linea) {
+      porProducto.set(item.productId, {
+        productId: item.productId,
+        productName: item.productName,
+        imageUrl: item.productImageUrl || "",
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        subtotal: item.quantity * item.unitPrice,
+        taxCode: taxCodeOf(item),
+      });
+      continue;
+    }
+    linea.quantity += item.quantity;
+    linea.subtotal = linea.quantity * linea.unitPrice;
+  }
+
+  return [...porProducto.values()];
+};
+```
+
 ## 2.10 Menú lateral (`components/SideMenu/`) y su integración en la app `[PRINCIPIO: el menú se declara como datos y lo dibuja un módulo que no conoce el dominio]`
 
 **Por qué existe**: el menú estaba escrito en tres lugares que no hablaban entre sí — la lista de pantallas dentro del `Sidebar`, las rutas del router en `App.tsx` y el permiso de cada módulo — y cada pantalla nueva obligaba a tocarlos a los tres. Este módulo junta las tres cosas en un solo lugar: **el árbol se construye desde las rutas planas, el filtrado por permisos pasa en un único punto y el módulo no conoce ningún router**.
@@ -4054,6 +4120,8 @@ export default App;
 - **El filtrado por permisos vive acá** (en `SideMenu`), no en la app: las hojas sin permiso desaparecen y los grupos que quedan vacíos se podan.
 - **El estado abierto/cerrado de los grupos vive acá**: la app no lo guarda. El toggle **siempre funciona**: la apertura automática (la que sigue a la ruta activa) solo se aplica cuando la ruta cambia; un grupo cerrado a mano se queda cerrado en esa ruta.
 - **El árbol que devuelve `useMenuTree` es inmutable**: nadie lo muta.
+- **El grupo que también es una ruta lleva esa ruta en el título**: el título ES el enlace a la pantalla del módulo y el submenu lista **solo las demás pantallas** del módulo. El nombre del módulo no se repite dentro de su propio submenu.
+- **El título del grupo es un solo control**: navega a la pantalla del módulo y abre o cierra el submenu. No hay un chevron aparte: dos botones para lo mismo se leen como un defecto.
 
 ### Layout de archivos
 
@@ -4082,7 +4150,6 @@ export interface RouteDef {
   permission?: string;
   disabled?: boolean;
   hidden?: boolean;
-  indexLabel?: string;
   parent?: string;
 }
 
@@ -4093,7 +4160,6 @@ export interface GroupMeta {
   order?: number;
   permission?: string;
   disabled?: boolean;
-  indexLabel?: string;
 }
 
 export interface MenuItem {
@@ -4111,6 +4177,7 @@ export interface LeafProps {
   item: MenuItem;
   active: boolean;
   disabled: boolean;
+  open?: boolean;
   onSelect: () => void;
 }
 
@@ -4129,7 +4196,8 @@ export interface SideMenuProps {
 - `RouteDef.parent` cuelga la pantalla de otro grupo aunque su path no esté debajo. Hoy ninguna pantalla lo usa: la venta nueva fue la última y dejó de ser un item del menú (se abre desde el botón de la lista de ventas).
 - `RouteDef.hidden` saca la pantalla del menú sin sacarla del router.
 - `MenuItem.id` es el prefijo acumulado del path (`/contabilidad/cuentas`); un grupo que también es ruta lleva el sufijo `::group` (`/contabilidad::group`).
-- `MenuItem.href` lo tiene la hoja; el grupo nunca navega.
+- `MenuItem.href` lo tiene la hoja y el grupo que también es ruta: ese href es el de la pantalla del módulo y lo lleva el título del grupo.
+- `LeafProps.open` dice si el submenu del grupo está abierto: la app lo usa para marcar el control (`aria-expanded`) y el módulo lo mantiene.
 
 ### El patrón completo, paso por paso
 
@@ -4160,14 +4228,13 @@ export const MENU_GROUPS: MenuGroup[] = [
     iconKey: 'contabilidad',
     permission: 'contabilidad.read',
     order: 30,
-    indexLabelKey: 'sidebar.contabilidad',
   },
 ];
 ```
 
 > **La venta nueva no es un item del menú**: vive en `/nueva-venta` (fuera del layout, a pantalla completa) y se abre desde el botón de la lista de ventas. Una pantalla que no sea del menú no se declara en `MENU_ROUTES`: se declara como ruta en `App.tsx`.
 
-> **El primer hijo de un grupo se llama con el nombre del módulo** ("Contabilidad", "RRHH", "Facturación"), no con un "Resumen" genérico: el grupo y su enlace dicen lo mismo y el usuario reconoce el módulo de un vistazo. `indexLabelKey` es la clave i18n de ese nombre (`sidebar.contabilidad`).
+> **El grupo no declara el nombre de su hijo**: el título del grupo es el enlace a la pantalla del módulo y el submenu lista las demás pantallas. Por eso `MENU_GROUPS` no trae la clave del nombre repetido: el nombre del módulo es el del grupo.
 
 **2. La app traduce las etiquetas y resuelve los iconos** — `src/application/hooks/useMenuItems.ts`, con el mapa de iconos en `src/domain/constants/icons.ts` (`ICON_MAP`: clave → componente de `lucide-react`).
 
@@ -4212,7 +4279,6 @@ export function useMenuItems(): MenuItems {
         });
       }
       if (group.permission) meta.permission = group.permission;
-      if (group.indexLabelKey) meta.indexLabel = t(group.indexLabelKey);
 
       groups[group.prefix] = meta;
     }
@@ -4237,7 +4303,7 @@ export function useMenuItems(): MenuItems {
 ```tsx
   // Las hojas las dibuja la app con su propio router: el modulo no conoce
   // ningun router.
-  const renderLeaf = ({ item, active, disabled }: LeafProps) => {
+  const renderLeaf = ({ item, active, disabled, open, onSelect }: LeafProps) => {
     const content = (
       <>
         <span className={styles.navIcon}>{item.icon}</span>
@@ -4259,6 +4325,10 @@ export function useMenuItems(): MenuItems {
     return (
       <NavLink
         to={item.href ?? "/"}
+        onClick={onSelect}
+        // El titulo de un grupo es su enlace y su control: el mismo boton
+        // lleva a la pantalla del modulo y abre o cierra el submenu.
+        aria-expanded={open}
         // Cada hoja es una pantalla exacta: sin esto el enlace de un grupo
         // ("/contabilidad") tambien se markaria activo dentro de "/contabilidad/cuentas".
         end
@@ -4327,35 +4397,89 @@ const collectDeclaredKeys = (): string[] => {
   }
   for (const group of MENU_GROUPS) {
     keys.add(group.labelKey);
-    if (group.indexLabelKey) keys.add(group.indexLabelKey);
   }
 
   return [...keys].sort();
 };
 ```
 
-### El enlace del grupo: su nombre y su icono `[PRINCIPIO]`
+### El título del grupo: el enlace y el submenu `[PRINCIPIO]`
 
-**Por qué**: un grupo que también es ruta tiene un enlace propio que apunta a esa ruta. Ese enlace se llamaba "Resumen" en todos los módulos y no traía icono: el menú repetía la misma palabra cuatro veces y el usuario no veía a qué módulo pertenecía. Ahora el enlace **hereda el icono** de la ruta (o, cuando la ruta no trae, el del grupo) y **se llama con el nombre del módulo** ("Ventas", "Contabilidad", "RRHH", "Facturación").
+**Por qué**: el grupo repetía su propio nombre: "Contabilidad" salía como título y otra vez como primer hijo del submenu, con el mismo icono. El dueño lo lee como un defecto — dos controles para la misma pantalla. Ahora el **título es el enlace** a la pantalla del módulo y el submenu lista **solo las demás pantallas**. El título es además el **único control** del grupo: navega a la pantalla del módulo y abre o cierra el submenu. No hay chevron aparte.
 
 **Snippet** (`src/components/SideMenu/buildMenuTree.ts`):
 
 ```typescript
-    const link: BuildNode = {
-      prefix: node.prefix,
-      path: node.path,
-      label: node.indexLabel ?? DEFAULT_INDEX_LABEL,
-      // The link points at the route of the group, so it wears its icon: the
-      // one of the route or, when the route brings none, the one of the group.
-      icon: node.icon,
-      permission: node.permission,
-      disabled: node.disabled,
-      isRoute: true,
-      isIndexLink: true,
-      children: new Map(),
-      seq: node.seq,
-    };
+    if (isGroup) {
+      item.children = children;
+      if (node.isRoute && node.path) item.href = node.path;
+    } else {
+      item.href = node.path;
+    }
 ```
+
+**Snippet** (`src/components/SideMenu/SideMenu.tsx`):
+
+```tsx
+/**
+ * El titulo de un grupo es el enlace a la pantalla del modulo: el submenu
+ * lista solo las demas pantallas, asi que el nombre no se repite. El mismo
+ * control abre y cierra el submenu: no hay un chevron aparte.
+ */
+function GroupTitle({
+  item,
+  active,
+  disabled,
+  open,
+  panelId,
+  context,
+}: GroupTitleProps) {
+  if (!item.href) {
+    return (
+      <span className="sm-groupLabel">
+        <NodeContent item={item} />
+      </span>
+    );
+  }
+
+  if (context.renderLeaf) {
+    return (
+      <>
+        {context.renderLeaf({
+          item,
+          active,
+          disabled,
+          open,
+          onSelect: () => context.toggle(item.id),
+        })}
+      </>
+    );
+  }
+
+  if (disabled) {
+    return (
+      <span className="sm-groupLink sm-groupLink--disabled" aria-disabled="true">
+        <NodeContent item={item} />
+      </span>
+    );
+  }
+
+  return (
+    <a
+      className="sm-groupLink"
+      href={item.href}
+      aria-current={active ? "page" : undefined}
+      aria-expanded={open}
+      aria-controls={panelId}
+      onClick={() => context.toggle(item.id)}
+    >
+      <NodeContent item={item} />
+    </a>
+  );
+}
+```
+
+**Los guards que lo sostienen** (`src/test/pages/menuRoutes.test.ts`): cada grupo tiene su `href` (el título es el enlace) y el submenu **no** contiene el nombre del módulo. `src/test/components/SideMenu/SideMenu.test.tsx` sube un nivel: el título es el enlace, es el único control (no hay un botón aparte) y el submenu lista solo las demás pantallas.
 
 ### El panel cerrado no ocupa espacio `[PRINCIPIO + STACK]`
 
@@ -4713,12 +4837,13 @@ catch (err) {
 - **Login maneja banner de sesión expirada** vía `location.state.expired`. Si el usuario llega a `/login` sin ese state, no muestra banner. Es la única señal que la app tiene para distinguir "veniste a loguearte" de "te deslogueamos".
 - **La jerarquía del menú puede ser distinta de la URL.** El campo `parent` de `menuRoutes.ts` cuelga una pantalla de un grupo aunque su path no esté debajo: la venta nueva vive en `/nueva-venta` y pertenece a `/ventas`. El módulo resuelve el prefijo del grupo por su cuenta — **la app nunca escribe un id**.
 - **Las etiquetas y los iconos viajan por CLAVE, no por valor.** `menuRoutes.ts` nombra `labelKey` e `iconKey`; `useMenuItems.ts` traduce la etiqueta y busca el icono en `ICON_MAP` (`src/domain/constants/icons.ts`). La razón: la app tiene dos idiomas y sus propios iconos, y el módulo no debe saber de ninguno de los dos.
-- **Un módulo con más de una pantalla se dibuja como grupo; uno con una sola pantalla sigue siendo hoja.** La lista de módulos no cambia: cambia cómo se dibuja. El grupo que también es ruta no navega — su propio enlace pasa a ser el primer hijo, que lleva el nombre del módulo (`indexLabelKey`) y hereda su icono.
+- **Un módulo con más de una pantalla se dibuja como grupo; uno con una sola pantalla sigue siendo hoja.** La lista de módulos no cambia: cambia cómo se dibuja. El grupo que también es ruta lleva esa ruta en el **título**: el título es el enlace a la pantalla del módulo y el submenu lista solo las demás pantallas.
 - **La venta nueva es una ruta que vive fuera del layout.** `/nueva-venta` se dibuja FUERA del `<Route>` que envuelve las páginas con `<ProtectedRoute><Layout /></ProtectedRoute>`: la pantalla del mostrador ocupa la ventana entera (`height: 100vh`), sin barra lateral ni contenedor de contenido. El modal de "Nueva venta" dentro de `/ventas` ya no existe — el botón de la lista navega y la venta pendiente se edita en `/nueva-venta?venta=<id>`. La protección sigue: lo que sale del layout es la pantalla, no la sesión.
 - **Cancelar una venta no es borrarla.** `PUT /api/sales/{id}/cancel` la deja en el registro con estado `Cancelled` y devuelve el stock reservado al inventario. Por eso la lista ofrece "Cancelar" solo en las pendientes, la venta nueva ofrece "Descartar" para la que está editando, y el `SaleDto` del front declara `"Pending" | "Completed" | "Cancelled"` (el back ya lo enviaba).
+- **La caja se limpia al guardar el borrador y al completar.** El carrito y el cliente quedan vacíos en los dos casos: el cajero no debe poder cobrar dos veces la misma venta. La venta en borrador se vuelve a abrir desde el listado y se completa ahí — el completado actualiza esa misma venta, no crea otra.
 - **El checklist compacto es un toast, no una banda.** El aviso de la caja sale una sola vez y se va solo; la versión completa sigue en la configuración. Un `useRef` lo evita porque en desarrollo React monta el efecto dos veces (StrictMode).
 - **El grupo cerrado no ocupa espacio.** El panel es un grid de una fila (`1fr` → `0fr`): cerrado no mide nada y sus hijos salen del tab order.
-- **El primer hijo de un grupo lleva el nombre del módulo y su icono.** "Ventas", no "Resumen"; y el enlace hereda el icono de la ruta (o, cuando la ruta no trae, el del grupo).
+- **El título del grupo es un solo control.** Navega a la pantalla del módulo y abre o cierra el submenu: no hay un chevron aparte y el nombre del módulo no se repite dentro de su propio submenu.
 
 ## 4.9 Anti-patterns (lo que NO hacer) `[PRINCIPIO]`
 

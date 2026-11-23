@@ -108,6 +108,11 @@ export function VentaDetail({ venta, clienteId, onClose }: Props) {
   const subtotal = venta.total / 1.18;
   const itbis = venta.total - subtotal;
   const units = venta.items.reduce((sum, item) => sum + item.quantity, 0);
+  // El back puede mandar el mismo producto en dos lineas: la etiqueta cuenta
+  // los productos distintos, no las lineas.
+  const productosDistintos = new Set(
+    venta.items.map((item) => item.productId),
+  ).size;
   const completed = venta.status === "Completed";
   const clientName = cliente?.name ?? venta.clienteName ?? "-";
 
@@ -204,7 +209,7 @@ export function VentaDetail({ venta, clienteId, onClose }: Props) {
 
           <section className={styles.section}>
             <h4 className={styles.eyebrow}>
-              {t("ventas.items")} · {venta.items.length}
+              {t("ventas.items")} · {productosDistintos}
             </h4>
             <div className={styles.itemsCard}>
               <table className={styles.itemsTable}>

@@ -211,4 +211,38 @@ describe("VentaDetail fiscal document", () => {
     expect(screen.getByText("Laptop Pro")).toBeInTheDocument();
     expect(screen.getByText("RD$ 118.00")).toBeInTheDocument();
   });
+
+  it("counts the distinct products and not the lines of the sale", () => {
+    renderDetail(
+      venta({
+        items: [
+          {
+            id: "item-1",
+            productId: "prod-1",
+            productName: "Laptop Pro",
+            quantity: 2,
+            unitPrice: 50,
+            subtotal: 100,
+          },
+          {
+            id: "item-2",
+            productId: "prod-1",
+            productName: "Laptop Pro",
+            quantity: 1,
+            unitPrice: 50,
+            subtotal: 50,
+          },
+        ],
+      }),
+    );
+
+    // El back puede mandar el mismo producto en dos lineas: la etiqueta
+    // cuenta los productos distintos.
+    expect(
+      screen.getByText(`${i18n.t("ventas.items")} · 1`),
+    ).toBeInTheDocument();
+
+    // Las unidades se quedan como estan: la suma de las lineas.
+    expect(screen.getByText(`3 ${i18n.t("ventas.units")}`)).toBeInTheDocument();
+  });
 });

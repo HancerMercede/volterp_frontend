@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import "../../i18n";
 import { Carrito } from "../../pages/Ventas/components/Carrito";
@@ -41,6 +41,39 @@ describe("Carrito", () => {
     const quantity = screen.getByText("2");
 
     expect(price.parentElement).toContainElement(quantity);
+  });
+
+  it("shows both lines when the sale carries the same product twice", () => {
+    const otraLinea = { ...ITEM, quantity: 3, subtotal: 96 };
+
+    render(
+      <Carrito
+        items={[ITEM, otraLinea]}
+        onQuantityChange={vi.fn()}
+        onRemoveItem={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByText("Leche entera")).toHaveLength(2);
+    expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
+  });
+
+  it("changes the quantity of the line and not of every line of the product", () => {
+    const onQuantityChange = vi.fn();
+    const otraLinea = { ...ITEM, quantity: 3, subtotal: 96 };
+
+    render(
+      <Carrito
+        items={[ITEM, otraLinea]}
+        onQuantityChange={onQuantityChange}
+        onRemoveItem={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getAllByText("+")[1]);
+
+    expect(onQuantityChange).toHaveBeenCalledWith(1, 1);
   });
 
   it("shows the empty state when there are no items", () => {

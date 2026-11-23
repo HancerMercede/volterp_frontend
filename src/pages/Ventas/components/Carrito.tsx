@@ -7,8 +7,9 @@ import styles from "./Carrito.module.css";
 
 interface Props {
   items: CartItem[];
-  onQuantityChange: (productId: string, delta: number) => void;
-  onRemoveItem: (productId: string) => void;
+  /** Los controles trabajan por linea: una venta puede llevar el mismo producto en dos lineas. */
+  onQuantityChange: (index: number, delta: number) => void;
+  onRemoveItem: (index: number) => void;
 }
 
 export function Carrito({ items, onQuantityChange, onRemoveItem }: Props) {
@@ -24,8 +25,8 @@ export function Carrito({ items, onQuantityChange, onRemoveItem }: Props) {
         </div>
       ) : (
         <div className={styles.cartItems}>
-          {items.map((item) => (
-            <div key={item.productId} className={styles.cartItem}>
+          {items.map((item, index) => (
+            <div key={`${item.productId}-${index}`} className={styles.cartItem}>
               {item.imageUrl ? (
                 <img
                   src={item.imageUrl}
@@ -44,7 +45,7 @@ export function Carrito({ items, onQuantityChange, onRemoveItem }: Props) {
                   </span>
                   <button
                     className={styles.cartItemDelete}
-                    onClick={() => onRemoveItem(item.productId)}
+                    onClick={() => onRemoveItem(index)}
                     aria-label={t("ventas.removeFromCart")}
                   >
                     ×
@@ -56,13 +57,13 @@ export function Carrito({ items, onQuantityChange, onRemoveItem }: Props) {
                   </span>
                   <div className={styles.cartItemControls}>
                     <button
-                      onClick={() => onQuantityChange(item.productId, -1)}
+                      onClick={() => onQuantityChange(index, -1)}
                     >
                       −
                     </button>
                     <span>{item.quantity}</span>
                     <button
-                      onClick={() => onQuantityChange(item.productId, 1)}
+                      onClick={() => onQuantityChange(index, 1)}
                     >
                       +
                     </button>

@@ -12,7 +12,7 @@ import { useCompanyStore } from "../../stores/companyStore";
 import { useProductoStore } from "../../stores/productoStore";
 import { useUIStore } from "../../stores/uiStore";
 import { useVentaStore } from "../../stores/ventaStore";
-import type { Client, Company, Product } from "../../domain/types";
+import type { Client, Company, Product, SaleDto } from "../../domain/types";
 
 const PRODUCTO: Product = {
   id: "p1",
@@ -43,6 +43,30 @@ const CLIENTE: Client = {
   imageUrl: null,
   createdAt: "2026-11-01T10:00:00Z",
   updatedAt: null,
+};
+
+const VENTA_PENDIENTE: SaleDto = {
+  id: "sale-1",
+  code: "Vent-001",
+  companyId: "c1",
+  clienteId: "c1",
+  clienteName: "Acme Corp",
+  status: "Pending",
+  total: 32,
+  notes: null,
+  createdAt: "2026-11-01T10:00:00Z",
+  updatedAt: null,
+  items: [
+    {
+      id: "i1",
+      productId: "p1",
+      productName: "Leche entera",
+      quantity: 1,
+      unitPrice: 32,
+      subtotal: 32,
+    },
+  ],
+  documentType: null,
 };
 
 const renderEn = (ruta: string) =>
@@ -158,5 +182,55 @@ describe("la pagina de la venta nueva", () => {
     );
 
     expect(css).toMatch(/\.posContainer\s*\{[^}]*height:\s*100vh/);
+  });
+
+  it("al completar una venta pendiente, la caja queda limpia para la siguiente", async () => {
+    const completeVenta = vi.fn(async () => {});
+    useVentaStore.setState({
+      ventas: [VENTA_PENDIENTE],
+      createVenta: vi.fn(async () => {}),
+      updateVenta: vi.fn(async () => {}),
+      completeVenta,
+    });
+
+    renderEn("/nueva-venta?venta=sale-1");
+
+    expect(screen.getByText("1 artículo")).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: /Completar Venta/ }),
+    );
+
+    expect(completeVenta).toHaveBeenCalledWith("sale-1", true);
+
+    // La caja queda para la siguiente venta: sin renglones y sin cliente.
+    expect(screen.getByText("0 artículos")).toBeInTheDocument();
+    expect(screen.queryByText("Acme Corp")).toBeNull();
+  });
+
+  it("al guardar un borrador, la caja queda limpia", async () => {
+    const completeVenta = vi.fn();
+    useVentaStore.setState({
+      ventas: [],
+      createVenta: vi.fn(async () => ({ id: "sale-2" }) as SaleDto),
+      updateVenta: vi.fn(async () => {}),
+      completeVenta,
+    });
+
+    renderEn("/nueva-venta");
+
+    await userEvent.click(screen.getByRole("combobox", { name: "Cliente" }));
+    await userEvent.click(screen.getByRole("button", { name: /Acme Corp/ }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Agregar al carrito" }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Guardar Borrador" }),
+    );
+
+    // El borrador deja la caja limpia, como el completado: la venta queda
+    // en el listado y la pantalla queda para la siguiente.
+    expect(screen.getByText("0 artículos")).toBeInTheDocument();
+    expect(screen.queryByText("Acme Corp")).toBeNull();
+    expect(completeVenta).not.toHaveBeenCalled();
   });
 });

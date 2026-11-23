@@ -117,7 +117,7 @@ describe("VentasList", () => {
     expect(editAction).toHaveAttribute("data-action", "edit");
   });
 
-  it("shows the fiscal state of the sale in its own column, with the vocabulary of the DGII", () => {
+  it("no muestra el estado fiscal de la venta en el listado", () => {
     render(
       <VentasListHarness
         ventas={[
@@ -126,55 +126,23 @@ describe("VentasList", () => {
             code: "Vent-001",
             electronicInvoiceId: "inv-1",
             fiscalState: "Rejected",
-          }),
-          createVenta({
-            id: "2",
-            code: "Vent-002",
-            electronicInvoiceId: "inv-2",
-            fiscalState: "InProcess",
+            fiscalStatus: "Rejected",
           }),
         ]}
       />,
     );
 
-    expect(screen.getByText(i18n.t("ventas.fiscalState"))).toBeInTheDocument();
     expect(
-      within(rowOf("Vent-001")).getByText(
+      screen.queryByRole("columnheader", { name: i18n.t("ventas.fiscalState") }),
+    ).toBeNull();
+    expect(
+      within(rowOf("Vent-001")).queryByText(
         i18n.t("ventas.fiscalStatus.rejected"),
       ),
-    ).toBeInTheDocument();
-    expect(
-      within(rowOf("Vent-002")).getByText(
-        i18n.t("ventas.fiscalStatus.inProcess"),
-      ),
-    ).toBeInTheDocument();
+    ).not.toBeInTheDocument();
   });
 
-  it("keeps the fiscal state apart from the payment status of the sale", () => {
-    render(
-      <VentasListHarness
-        ventas={[
-          createVenta({
-            id: "1",
-            code: "Vent-001",
-            status: "Completed",
-            electronicInvoiceId: "inv-1",
-            fiscalState: "Rejected",
-          }),
-        ]}
-      />,
-    );
-
-    const row = rowOf("Vent-001");
-    expect(
-      within(row).getByText(i18n.t("ventas.completed")),
-    ).toBeInTheDocument();
-    expect(
-      within(row).getByText(i18n.t("ventas.fiscalStatus.rejected")),
-    ).toBeInTheDocument();
-  });
-
-  it("shows the state of the document of a sale that the DGII already accepted", () => {
+  it("no lleva al modulo de comprobantes desde el listado", () => {
     render(
       <VentasListHarness
         ventas={[
@@ -182,67 +150,12 @@ describe("VentasList", () => {
             id: "1",
             code: "Vent-001",
             electronicInvoiceId: "inv-1",
-            fiscalState: null,
-            fiscalStatus: "Accepted",
           }),
         ]}
       />,
     );
 
-    const row = rowOf("Vent-001");
-    expect(
-      within(row).getByText(i18n.t("ventas.fiscalStatus.accepted")),
-    ).toBeInTheDocument();
-  });
-
-  it("falls back to the coarse state while the document is still in flight", () => {
-    render(
-      <VentasListHarness
-        ventas={[
-          createVenta({
-            id: "1",
-            code: "Vent-001",
-            electronicInvoiceId: "inv-1",
-            fiscalState: "PendingEmission",
-            fiscalStatus: null,
-          }),
-        ]}
-      />,
-    );
-
-    const row = rowOf("Vent-001");
-    expect(
-      within(row).getByText(i18n.t("ventas.fiscalStatus.pendingEmission")),
-    ).toBeInTheDocument();
-  });
-
-  it("shows nothing in the fiscal column for a sale without a document", () => {
-    render(
-      <VentasListHarness
-        ventas={[
-          createVenta({
-            id: "1",
-            code: "Vent-001",
-            electronicInvoiceId: null,
-            fiscalState: null,
-          }),
-        ]}
-      />,
-    );
-
-    const row = rowOf("Vent-001");
-    expect(
-      within(row).queryByText(i18n.t("ventas.fiscalStatus.rejected")),
-    ).not.toBeInTheDocument();
-    expect(
-      within(row).queryByText(i18n.t("ventas.fiscalStatus.inProcess")),
-    ).not.toBeInTheDocument();
-    expect(
-      within(row).queryByText(i18n.t("ventas.fiscalStatus.pendingEmission")),
-    ).not.toBeInTheDocument();
-    expect(
-      within(row).queryByText(i18n.t("ventas.fiscalStatus.accepted")),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("link")).toBeNull();
   });
 
   it("renders every row of the page it receives, even on page 2", () => {
@@ -259,43 +172,6 @@ describe("VentasList", () => {
     expect(screen.getByText("Cliente 11")).toBeInTheDocument();
     expect(screen.getByText("Cliente 20")).toBeInTheDocument();
     expect(screen.queryByText("Cliente 1")).not.toBeInTheDocument();
-  });
-
-  it("shows the fiscal state the backend sent", () => {
-    render(
-      <VentasListHarness
-        ventas={[
-          createVenta({
-            id: "1",
-            code: "Vent-001",
-            fiscalState: "Rejected",
-          }),
-        ]}
-      />,
-    );
-
-    expect(
-      screen.getByRole("columnheader", { name: i18n.t("ventas.fiscalState") }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Rejected")).toBeInTheDocument();
-  });
-
-  it("shows the empty fiscal state when the backend sends a value outside the contract", () => {
-    render(
-      <VentasListHarness
-        ventas={[
-          createVenta({
-            id: "1",
-            code: "Vent-001",
-            fiscalState:
-              "NotAFiscalState" as unknown as SaleDto["fiscalState"],
-          }),
-        ]}
-      />,
-    );
-
-    expect(screen.getByText(i18n.t("ventas.emptyValue"))).toBeInTheDocument();
-    expect(screen.queryByText("NotAFiscalState")).not.toBeInTheDocument();
   });
 
   it("offers the cancel action only on a pending sale", () => {
@@ -357,30 +233,5 @@ describe("VentasList", () => {
     expect(
       within(rowOf("Vent-001")).getByText(i18n.t("ventas.cancelled")),
     ).toBeInTheDocument();
-  });
-
-  it("links to the comprobantes module only for a sale with an electronic invoice", () => {
-    render(
-      <VentasListHarness
-        ventas={[
-          createVenta({
-            id: "1",
-            code: "Vent-001",
-            electronicInvoiceId: "inv-1",
-          }),
-          createVenta({
-            id: "2",
-            code: "Vent-002",
-            electronicInvoiceId: null,
-          }),
-        ]}
-      />,
-    );
-
-    const link = screen.getByRole("link", {
-      name: i18n.t("ventas.viewInvoice"),
-    });
-    expect(link).toHaveAttribute("href", "/facturacion/comprobantes");
-    expect(screen.getAllByRole("link")).toHaveLength(1);
   });
 });

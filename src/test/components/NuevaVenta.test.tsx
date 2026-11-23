@@ -60,6 +60,30 @@ const CLIENT: Client = {
   updatedAt: null,
 };
 
+const PENDING_SALE: SaleDto = {
+  id: "sale-1",
+  code: "Vent-001",
+  companyId: "c1",
+  clienteId: "c1",
+  clienteName: "Acme Corp",
+  status: "Pending",
+  total: 32,
+  notes: null,
+  createdAt: "2026-11-01T10:00:00Z",
+  updatedAt: null,
+  items: [
+    {
+      id: "i1",
+      productId: "p1",
+      productName: "Leche entera",
+      quantity: 1,
+      unitPrice: 32,
+      subtotal: 32,
+    },
+  ],
+  documentType: "FiscalCredit",
+};
+
 beforeEach(() => {
   useProductoStore.setState({ productos: [PRODUCT], fetchProductos: vi.fn() });
   useClienteStore.setState({ clientes: [CLIENT], fetchClientes: vi.fn() });
@@ -73,6 +97,13 @@ const renderPos = () =>
   render(
     <NuevaVenta editingSaleId={null} onSave={vi.fn()} onCancel={vi.fn()} />,
   );
+
+const renderEditando = (venta: SaleDto) => {
+  useVentaStore.setState({ ventas: [venta] });
+  return render(
+    <NuevaVenta editingSaleId={venta.id} onSave={vi.fn()} onCancel={vi.fn()} />,
+  );
+};
 
 const chooseClient = async () => {
   await userEvent.click(screen.getByRole("combobox", { name: "Client" }));
@@ -204,7 +235,7 @@ describe("NuevaVenta", () => {
     );
     expect(completeVenta).toHaveBeenCalledWith(
       "sale-1",
-      false,
+      true,
     );
   });
 
@@ -225,7 +256,7 @@ describe("NuevaVenta", () => {
     );
   });
 
-  it("issues a consumption document by default, even when the client has a tax id", async () => {
+  it("issues a sale without a document by default, even when the client has a tax id", async () => {
     const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
     useVentaStore.setState({ createVenta });
     useClienteStore.setState({
@@ -238,11 +269,107 @@ describe("NuevaVenta", () => {
     await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
     await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
 
-    // The consumption invoice is the one without fiscal value: it is the
-    // default and it is valid at any amount.
+    // La venta sin comprobante viaja con la bandera del back: el documento
+    // lo decide el back, no el front.
     expect(createVenta).toHaveBeenCalledWith(
-      expect.objectContaining({ documentType: "Consumer" }),
+      expect.objectContaining({
+        documentType: "Consumer",
+        isCommercialInvoice: true,
+      }),
     );
+  });
+
+  it("issues the sale without a document by default", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    const completeVenta = vi.fn();
+    useVentaStore.setState({ createVenta, completeVenta });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(createVenta).toHaveBeenCalledWith(
+      expect.objectContaining({
+        documentType: "Consumer",
+        isCommercialInvoice: true,
+      }),
+    );
+    expect(completeVenta).toHaveBeenCalledWith("sale-1", true);
+  });
+
+  it("brings the type of the sale that is being completed", () => {
+    renderEditando(PENDING_SALE);
+
+    expect(screen.getByRole("combobox", { name: "Document type" })).toHaveValue(
+      "Fiscal credit (E31)",
+    );
+  });
+
+  it("brings the commercial type when the sale has no document", () => {
+    renderEditando({ ...PENDING_SALE, documentType: null });
+
+    expect(screen.getByRole("combobox", { name: "Document type" })).toHaveValue(
+      "Commercial invoice (no document)",
+    );
+  });
+
+  it("brings the commercial type when the sale has a consumption document", () => {
+    renderEditando({ ...PENDING_SALE, documentType: "Consumer" });
+
+    // Toda venta que no es un credito fiscal se completa como comercial.
+    expect(screen.getByRole("combobox", { name: "Document type" })).toHaveValue(
+      "Commercial invoice (no document)",
+    );
+  });
+
+  it("clears the cart and the client when the sale is completed", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    const completeVenta = vi.fn();
+    useVentaStore.setState({ createVenta, completeVenta });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    expect(screen.getByText("1 item")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(screen.getByText("0 items")).toBeInTheDocument();
+    expect(screen.queryByText("Acme Corp")).toBeNull();
+  });
+
+  it("clears the cart and the client when the sale is saved as a draft", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    useVentaStore.setState({ createVenta });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: "Save Draft" }));
+
+    // El borrador deja la caja limpia, como el completado.
+    expect(screen.getByText("0 items")).toBeInTheDocument();
+    expect(screen.queryByText("Acme Corp")).toBeNull();
+  });
+
+  it("completes the sale that is being edited without creating another one", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-2" }) as SaleDto);
+    const updateVenta = vi.fn(async () => {});
+    const completeVenta = vi.fn();
+    useVentaStore.setState({ createVenta, updateVenta, completeVenta });
+
+    renderEditando({ ...PENDING_SALE, documentType: null });
+
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    // La venta cargada del listado se completa: no se crea otra.
+    expect(updateVenta).toHaveBeenCalledWith("sale-1", expect.anything());
+    expect(completeVenta).toHaveBeenCalledWith("sale-1", true);
+    expect(createVenta).not.toHaveBeenCalled();
   });
 
   it("refuses a fiscal credit when the client has no tax id", async () => {
@@ -271,7 +398,7 @@ describe("NuevaVenta", () => {
     );
   });
 
-  it("issues a consumption document when the client has no tax id", async () => {
+  it("issues the sale without a document when the client has no tax id", async () => {
     const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
     useVentaStore.setState({ createVenta });
 
@@ -282,7 +409,94 @@ describe("NuevaVenta", () => {
     await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
 
     expect(createVenta).toHaveBeenCalledWith(
-      expect.objectContaining({ documentType: "Consumer" }),
+      expect.objectContaining({
+        documentType: "Consumer",
+        isCommercialInvoice: true,
+      }),
+    );
+  });
+
+  it("groups the lines of the same product into one line of the cart", () => {
+    const ventaConLineasRepetidas: SaleDto = {
+      ...PENDING_SALE,
+      items: [
+        {
+          id: "i1",
+          productId: "p1",
+          productName: "Leche entera",
+          quantity: 2,
+          unitPrice: 32,
+          subtotal: 64,
+        },
+        {
+          id: "i2",
+          productId: "p1",
+          productName: "Leche entera",
+          quantity: 3,
+          unitPrice: 32,
+          subtotal: 96,
+        },
+      ],
+    };
+
+    renderEditando(ventaConLineasRepetidas);
+
+    // El back puede mandar el mismo producto en dos lineas: el carrito las
+    // junta en una sola, con la cantidad sumada y el subtotal recalculado.
+    expect(screen.getByText("5")).toBeInTheDocument();
+    expect(screen.getByText("TOTAL").nextElementSibling).toHaveTextContent(
+      "RD$ 188.80",
+    );
+  });
+
+  it("does not send the duplicated lines back when the sale is completed", async () => {
+    const updateVenta = vi.fn(async () => {});
+    const completeVenta = vi.fn();
+    useVentaStore.setState({ updateVenta, completeVenta });
+    useVentaStore.setState({
+      ventas: [
+        {
+          ...PENDING_SALE,
+          documentType: null,
+          items: [
+            {
+              id: "i1",
+              productId: "p1",
+              productName: "Leche entera",
+              quantity: 2,
+              unitPrice: 32,
+              subtotal: 64,
+            },
+            {
+              id: "i2",
+              productId: "p1",
+              productName: "Leche entera",
+              quantity: 3,
+              unitPrice: 32,
+              subtotal: 96,
+            },
+          ],
+        },
+      ],
+    });
+
+    render(
+      <NuevaVenta editingSaleId="sale-1" onSave={vi.fn()} onCancel={vi.fn()} />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(updateVenta).toHaveBeenCalledWith(
+      "sale-1",
+      expect.objectContaining({
+        items: [
+          expect.objectContaining({
+            productId: "p1",
+            quantity: 5,
+            subtotal: 160,
+          }),
+        ],
+      }),
     );
   });
 

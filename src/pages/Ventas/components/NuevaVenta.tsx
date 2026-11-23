@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, ConfirmModal } from "../../../components/UI";
 import { useDeleteConfirm } from "../../../hooks/useDeleteConfirm";
@@ -12,6 +12,9 @@ import type {
   UpdateSaleRequest,
   CartItem,
   Product,
+  SaleDto,
+  SaleItemDto,
+  TipoDocumentoVenta,
 } from "../../../domain/types";
 import { calculateSaleTotals, TaxCode } from "../../../domain/constants/taxCodes";
 import { ClienteSelector } from "./ClienteSelector";
@@ -22,9 +25,49 @@ import styles from "./NuevaVenta.module.css";
 
 interface Props {
   editingSaleId: string | null;
-  onSave: () => void;
+  /** Una venta completada deja la caja vacia; un borrador no. */
+  onSave: (completada: boolean) => void;
   onCancel: () => void;
 }
+
+/** El tipo que trae la venta que se edita: el credito fiscal o el comercial. */
+const documentoDeLaVenta = (
+  venta: SaleDto | null | undefined,
+): DocumentoVenta | null => {
+  if (!venta) return null;
+  return venta.documentType === "FiscalCredit" ? "credito" : "comercial";
+};
+
+/**
+ * Las lineas se agrupan por producto: el back puede mandar el mismo producto
+ * en dos lineas y el PUT no reenvia duplicados.
+ */
+const agruparLineas = (
+  items: SaleItemDto[],
+  taxCodeOf: (item: SaleItemDto) => TaxCode,
+): CartItem[] => {
+  const porProducto = new Map<string, CartItem>();
+
+  for (const item of items) {
+    const linea = porProducto.get(item.productId);
+    if (!linea) {
+      porProducto.set(item.productId, {
+        productId: item.productId,
+        productName: item.productName,
+        imageUrl: item.productImageUrl || "",
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        subtotal: item.quantity * item.unitPrice,
+        taxCode: taxCodeOf(item),
+      });
+      continue;
+    }
+    linea.quantity += item.quantity;
+    linea.subtotal = linea.quantity * linea.unitPrice;
+  }
+
+  return [...porProducto.values()];
+};
 
 export function NuevaVenta({
   editingSaleId,
@@ -82,27 +125,26 @@ export function NuevaVenta({
 
   // Estado local del formulario: el remount por key deja el estado limpio cuando cambia el editingSaleId.
   const [carrito, setCarrito] = useState<CartItem[]>(
-    editingVenta
-      ? editingVenta.items.map((item) => ({
-          productId: item.productId,
-          productName: item.productName,
-          imageUrl: item.productImageUrl || "",
-          unitPrice: item.unitPrice,
-          quantity: item.quantity,
-          subtotal: item.subtotal,
-          taxCode: taxCodeOfLine(item),
-        }))
-      : [],
+    editingVenta ? agruparLineas(editingVenta.items, taxCodeOfLine) : [],
   );
   const [selectedCliente, setSelectedCliente] = useState<string | null>(
     editingVenta?.clienteId ?? null,
   );
-  // The document of the sale. The default is the consumption one (the
-  // "factura sin valor fiscal", valid at any amount: the DGII models have
-  // one for a total over and one under DOP 250 mil). A fiscal credit is
-  // for a client that needs it.
-  const [documentoElegido, setDocumentoElegido] = useState<DocumentoVenta | null>(null);
-  const documento: DocumentoVenta = documentoElegido ?? "consumo";
+  // El default es el comercial: la venta sale sin comprobante fiscal.
+  const [documentoElegido, setDocumentoElegido] = useState<DocumentoVenta | null>(
+    documentoDeLaVenta(editingVenta),
+  );
+  const documento: DocumentoVenta = documentoElegido ?? "comercial";
+
+  // La venta editada puede llegar despues del primer pintado: su tipo entra
+  // cuando aparece y solo esa vez.
+  const tipoDeLaVenta = useRef<string | null>(null);
+  useEffect(() => {
+    if (!editingVenta) return;
+    if (tipoDeLaVenta.current === editingVenta.id) return;
+    tipoDeLaVenta.current = editingVenta.id;
+    setDocumentoElegido((elegido) => elegido ?? documentoDeLaVenta(editingVenta));
+  }, [editingVenta]);
 
   // A fiscal credit needs the tax id of the client: without it the backend
   // refuses to complete the sale. The picker cannot disable the option, so
@@ -165,10 +207,12 @@ export function NuevaVenta({
     });
   };
 
-  const actualizarCantidad = (productId: string, delta: number) => {
+  // Los controles trabajan por linea y no por producto: una venta puede
+  // llevar el mismo producto en dos lineas.
+  const actualizarCantidad = (index: number, delta: number) => {
     setCarrito((prev) =>
-      prev.map((item) =>
-        item.productId === productId
+      prev.map((item, i) =>
+        i === index
           ? {
               ...item,
               quantity: Math.max(1, item.quantity + delta),
@@ -179,8 +223,8 @@ export function NuevaVenta({
     );
   };
 
-  const eliminarDelCarrito = (productId: string) =>
-    setCarrito((prev) => prev.filter((item) => item.productId !== productId));
+  const eliminarDelCarrito = (index: number) =>
+    setCarrito((prev) => prev.filter((_, i) => i !== index));
 
   const buildSaleItems = () =>
     carrito.map((item) => ({
@@ -191,6 +235,14 @@ export function NuevaVenta({
       unitPrice: item.unitPrice,
       subtotal: item.subtotal,
     }));
+
+  // La caja queda para la siguiente venta: sin renglones y sin cliente. El
+  // borrador limpia igual que el completado.
+  const limpiarLaCaja = () => {
+    setCarrito([]);
+    setSelectedCliente(null);
+    setDocumentoElegido(null);
+  };
 
   const validateAndSubmit = async (completar: boolean) => {
     if (carrito.length === 0) {
@@ -212,11 +264,11 @@ export function NuevaVenta({
 
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
 
-    // A commercial invoice leaves without a fiscal document (it is only for
-    // the taxpayer that invoices in the normal mode). The other two are the
-    // document the backend issues.
+    // La factura comercial sale sin comprobante fiscal: el back la marca con
+    // la bandera y no emite documento.
     const esComercial = documento === "comercial";
-    const documentType = documento === "credito" ? "FiscalCredit" : "Consumer";
+    const documentType: TipoDocumentoVenta =
+      documento === "credito" ? "FiscalCredit" : "Consumer";
 
     try {
       if (editingSaleId) {
@@ -248,6 +300,7 @@ export function NuevaVenta({
           notes: null,
           items: buildSaleItems(),
           documentType,
+          isCommercialInvoice: esComercial,
         } as CreateSaleRequest);
 
         // The sale is created pending and completed right away: the completion is what issues the document.
@@ -256,10 +309,15 @@ export function NuevaVenta({
         }
       }
       addToast(
-        completar ? t("ventas.saleCompleted") : t("ventas.draftSaved"),
+        completar
+          ? esComercial
+            ? t("ventas.saleCompletedWithoutDocument")
+            : t("ventas.saleCompleted")
+          : t("ventas.draftSaved"),
         "success",
       );
-      onSave();
+      limpiarLaCaja();
+      onSave(completar);
     } catch (err) {
       addToast((err as Error).message, "error");
     }

@@ -11,6 +11,7 @@ import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useClientes } from "../../hooks/useColecciones";
 import { ITEMS_PER_PAGE } from "../../config/pagination";
 import { esVentaEditable } from "../../utils/ventas";
+import { elComprobanteYaEnviado } from "./comprobanteFiscal";
 import type { SaleDto } from "../../domain/types";
 import { VentasList } from "./components/VentasList";
 import { VentaDetail } from "./components/VentaDetail";
@@ -61,7 +62,18 @@ export function Ventas() {
 
   const { showDeleteConfirm, deleteId, handleDelete, confirmDelete, cancelDelete } =
     useDeleteConfirm({
-      onDelete: deleteVenta,
+      onDelete: async (id: string) => {
+        const venta = ventas.find((v) => v.id === id) ?? null;
+        try {
+          await deleteVenta(id);
+        } catch {
+          throw new Error(
+            elComprobanteYaEnviado(venta)
+              ? t("ventas.saleDeleteBlockedByDocument")
+              : t("ventas.saleDeleteFailed"),
+          );
+        }
+      },
       successMessage: t("ventas.saleDeleted"),
     });
 

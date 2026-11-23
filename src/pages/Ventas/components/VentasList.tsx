@@ -9,15 +9,8 @@ import {
 import { ITEMS_PER_PAGE } from "../../../config/pagination";
 import { useFilter } from "../../../hooks/useFilter";
 import { useClienteStore } from "../../../stores/clienteStore";
-import { Link } from "react-router-dom";
-import {
-  FISCAL_STATE_PALETTE,
-  FISCAL_STATE_VOCABULARY,
-  SALE_FISCAL_STATE_VOCABULARY,
-  type SaleDto,
-} from "../../../domain/types";
-import { COMPROBANTES_ROUTE } from "./comprobantesRoute";
 import styles from "./VentasList.module.css";
+import type { SaleDto } from "../../../domain/types";
 
 interface Props {
   ventas: SaleDto[];
@@ -125,66 +118,16 @@ export function VentasList({
         const estado = estadoDe(v);
 
         if (estado === "Cancelled") {
-          return (
-            <span
-              className={styles.badge}
-              style={{
-                background: FISCAL_STATE_PALETTE.slate.background,
-                color: FISCAL_STATE_PALETTE.slate.color,
-              }}
-            >
-              {t("ventas.cancelled")}
-            </span>
-          );
+          return <span className={styles.badge}>{t("ventas.cancelled")}</span>;
         }
 
         return (
           <span
             className={`${styles.badge} ${styles[estado === "Completed" ? "completada" : "pendiente"]}`}
           >
-            {estado === "Completed" ? t("ventas.completed") : t("ventas.pending")}
-          </span>
-        );
-      },
-    },
-    {
-      // The fiscal state travels in its own column: it is not the state of
-      // the payment, and a rejected document does not cancel a paid sale.
-      // The fine state of the document wins; while the document is still in
-      // flight, the coarse state of the sale is the only thing there is.
-      key: "fiscalState",
-      header: t("ventas.fiscalState"),
-      render: (v: SaleDto) => {
-        const state = v.fiscalStatus
-          ? FISCAL_STATE_VOCABULARY[v.fiscalStatus]
-          : v.fiscalState
-            ? SALE_FISCAL_STATE_VOCABULARY[v.fiscalState]
-            : null;
-
-        const badge = state ? (
-          <span
-            className={styles.badge}
-            style={{
-              background: FISCAL_STATE_PALETTE[state.color].background,
-              color: FISCAL_STATE_PALETTE[state.color].color,
-            }}
-          >
-            {t(state.labelKey)}
-          </span>
-        ) : (
-          <span className={styles.emptyValue}>{t("ventas.emptyValue")}</span>
-        );
-
-        // A sale that has a document can go to the comprobantes module; one
-        // without it has nothing to show there.
-        if (!v.electronicInvoiceId) return badge;
-
-        return (
-          <span className={styles.fiscalCell}>
-            {badge}
-            <Link to={COMPROBANTES_ROUTE} className={styles.comprobanteLink}>
-              {t("ventas.viewInvoice")}
-            </Link>
+            {estado === "Completed"
+              ? t("ventas.completed")
+              : t("ventas.pending")}
           </span>
         );
       },

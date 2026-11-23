@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useClientes } from "../../hooks/useColecciones";
 import { useFiscalReadiness } from "../../application/hooks/useFiscalReadiness";
@@ -14,7 +13,6 @@ import { NuevaVenta } from "../Ventas/components/NuevaVenta";
 export function NuevaVentaPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [intento, setIntento] = useState(0);
 
   const ventaAEditar = searchParams.get("venta");
 
@@ -39,9 +37,13 @@ export function NuevaVentaPage() {
         error={readinessError}
       />
       <NuevaVenta
-        key={`nueva-venta-${intento}`}
+        key={`nueva-venta-${ventaAEditar ?? "nueva"}`}
         editingSaleId={ventaAEditar}
-        onSave={() => setIntento((conteo) => conteo + 1)}
+        onSave={(completada) => {
+          // La venta completada vuelve a la venta nueva. El borrador deja la
+          // caja limpia (el componente la vacio) y la pantalla en su sitio.
+          if (completada) navigate("/nueva-venta", { replace: true });
+        }}
         onCancel={() => navigate("/ventas")}
       />
     </>

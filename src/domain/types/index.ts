@@ -209,6 +209,8 @@ export interface CreateSaleItemRequest {
 /**
  * The document the sale leaves with. The backend issues a fiscal credit
  * (E31) when the client has a tax id and a consumer one (E32) otherwise.
+ * The sale without a document (the commercial one) does not travel as null:
+ * the backend does not read a null there, it reads the flag of the sale.
  */
 export type TipoDocumentoVenta = "Consumer" | "FiscalCredit";
 
@@ -221,6 +223,8 @@ export interface CreateSaleRequest {
   notes: string | null;
   items: CreateSaleItemRequest[];
   documentType?: TipoDocumentoVenta;
+  /** The sale leaves without a fiscal document: the backend has the flag. */
+  isCommercialInvoice?: boolean;
 }
 
 export interface UpdateSaleRequest {
