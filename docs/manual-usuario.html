@@ -62,7 +62,10 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-@page { size: A4; margin: 0; }
+/* El aire de la hoja: arriba y abajo viven el encabezado corrido y el pie con
+ * el numero de pagina (Chrome los pone en los margenes), y por eso el texto
+ * no los pisa. */
+@page { size: A4; margin: 0.55in 0 0.5in 0; }
 
 body {
   font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
@@ -633,13 +636,13 @@ figure.captura.pendiente .hueco {
     </div>
   </div>
 <blockquote><p>Para quien vende, administra y usa el sistema. No hace falta saber nada de programación: este manual explica, pantalla por pantalla, <strong>qué hace cada cosa y cómo se hace</strong>.</p></blockquote>
-<h2 id="como-leer-este-manual">Cómo leer este manual</h2>
+<div class="page-header"><span class="brand">1 · Cómo leer este manual</span><span>Manual del usuario de Volterp</span></div><h2 id="como-leer-este-manual">Cómo leer este manual</h2>
 <ul><li><strong>El menú de la izquierda</strong> agrupa las pantallas por módulo (Ventas, Contabilidad, Facturación, RRHH…). El título del grupo es un botón: si lo tocás, abre la primera pantalla del grupo.<li><strong>Los botones</strong> se nombran como los llamás en la pantalla: <strong>Nueva Venta</strong>, <strong>Guardar Borrador</strong>, <strong>Completar Venta</strong>, <strong>Descartar</strong>, <strong>Cancelar</strong>…<li><strong>Las capturas</strong> son de una sesión real: si una pantalla cambió, la foto es una foto de la fecha en que se armó este manual.<li><strong>Los avisos</strong> (los mensajes verdes o amarillos) son la respuesta del sistema. Si algo no se puede hacer, el sistema lo dice y por qué.</ul>
-<h2 id="1-el-panel">1. El panel</h2>
+<div class="page-header"><span class="brand">2 · 1. El panel</span><span>Manual del usuario de Volterp</span></div><h2 id="1-el-panel">1. El panel</h2>
 <p><figure class="captura pendiente"><div class="hueco">01-dashboard.png</div><figcaption>El panel con los indicadores del negocio</figcaption></figure></p>
 <p>El panel (Dashboard) es lo primero que ves al entrar. Arriba tenés los <strong>filtros de período</strong>: Hoy, Esta semana, Este mes. Todo lo de la pantalla cambia con el filtro.</p>
 <ul><li><strong>Ventas, Compras, Clientes, Utilidad</strong>: las cuatro cifras del negocio.<li><strong>Ventas vs. Compras</strong>: la gráfica de los dos lados en el tiempo.<li><strong>Top productos</strong>: qué se está vendiendo más.<li><strong>Recordatorios</strong>: lo que el sistema te recuerda hacer (ventas pendientes por cobrar, cosas por revisar).</ul>
-<h2 id="2-ventas">2. Ventas</h2>
+<div class="page-header"><span class="brand">3 · 2. Ventas</span><span>Manual del usuario de Volterp</span></div><h2 id="2-ventas">2. Ventas</h2>
 <p><figure class="captura pendiente"><div class="hueco">02-ventas.png</div><figcaption>La lista de ventas</figcaption></figure></p>
 <p>La pantalla de <strong>Ventas</strong> es la lista de todas las ventas: las completadas, las pendientes y las canceladas. Tiene buscador, filtros y paginación.</p>
 <p>Desde acá se entra a la caja con el botón <strong>+ Nueva Venta</strong>.</p>
@@ -650,7 +653,7 @@ figure.captura.pendiente .hueco {
 <ol><li><strong>Busca o escanea el producto.</strong> La tecla <strong>F2</strong> lleva el cursor al buscador. También podés elegir por categoría, con las pestañas de arriba.<li><strong>Tocá el producto</strong> → se agrega al carrito (la tarjeta del producto es el botón).<li><strong>Elegí el cliente</strong> con el buscador. Cuando lo tenés, aparece su tarjeta con el botón <strong>Cambiar</strong> (por si te equivocaste).<li><strong>Ajustá el carrito</strong>: cada línea tiene <strong>−</strong> y <strong>+</strong> para la cantidad, y <strong>Quitar del carrito</strong> para sacarla. El botón <strong>Vaciar</strong> deja la caja en blanco.<li><strong>Revisá el resumen</strong>: Subtotal, <strong>ITBIS</strong> (18%) y <strong>TOTAL</strong>. Arriba dice cuántos artículos hay.<li><strong>Elegí el comprobante</strong> (abajo a la derecha):</ol><ul><li><strong>Consumo (E32)</strong> — la factura de consumo: es la de siempre.</li><li><strong>Crédito fiscal (E31)</strong> — para un cliente con RNC: es la que le descuenta el ITBIS. <strong>Si el cliente no tiene RNC, el sistema no te deja elegirla</strong> y te avisa <em>"El crédito fiscal necesita el RNC del cliente."</em></li><li><strong>Factura comercial (sin comprobante)</strong> — la venta sin comprobante fiscal: no consume número de la DGII. Es la que se usa en el modo normal.</ul><ol><li>Tocá <strong>Completar Venta $X</strong> (el botón verde con el total).</ol>
 <p><strong>Lo que el sistema te avisa:</strong></p>
 <table><thead><tr><th>Aviso</th><th>Qué pasó</th></tr></thead><tbody><tr><td><em>El carrito está vacío</em></td><td>No hay nada que cobrar todavía.</td></tr><tr><td><em>Seleccione un cliente, por favor.</em></td><td>La venta necesita saber a quién es.</td></tr><tr><td><em>No hay empresa seleccionada</em></td><td>La empresa es la que emite; revisá la configuración.</td></tr><tr><td><em>Venta realizada exitosamente</em></td><td>Se emitió el comprobante fiscal.</td></tr><tr><td><em>Venta realizada sin comprobante</em></td><td>Fue una factura comercial: no salió comprobante.</td></tr><tr><td><em>Puedes cobrar, pero el comprobante no se va a emitir</em></td><td>Falta algo para facturar (certificado, rango). Podés cobrar igual, pero el comprobante no sale.</td></tr></tbody></table>
-<blockquote><p><strong>El aviso de "puedes cobrar pero…"</strong> sale apenas abrís la caja si al sistema le falta algo. No te frena la venta: te dice que el comprobante no se va a emitir. Para saber qué falta, mirá el <strong>estado de facturación</strong> en Configuración fiscal (§9.7).</p></blockquote>
+<div class="exec-summary"><p><strong><strong>El aviso de "puedes cobrar pero…"</strong></strong> sale apenas abrís la caja si al sistema le falta algo. No te frena la venta: te dice que el comprobante no se va a emitir. Para saber qué falta, mirá el <strong>estado de facturación</strong> en Configuración fiscal (§9.7).</p></div>
 <h3 id="2-2-guardar-un-borrador-y-volver-a-el">2.2 Guardar un borrador y volver a él</h3>
 <p>Si el cliente se va y todavía no sabés si cierra, tocá <strong>Guardar Borrador</strong>.</p>
 <ul><li>La venta queda en estado <strong>Pendiente</strong> (no está cobrada).<li><strong>La caja se queda limpia</strong> y vos seguís en la misma pantalla: podés seguir vendiendo.<li>El sistema avisa <em>Borrador guardado</em>.</ul>
@@ -665,29 +668,29 @@ figure.captura.pendiente .hueco {
 <h3 id="2-5-el-comprobante-fiscal-de-una-venta">2.5 El comprobante fiscal de una venta</h3>
 <p>Cuando la venta tiene comprobante fiscal, el modal <strong>Detalle de Venta</strong> agrega la sección <strong>Comprobante fiscal</strong>:</p>
 <ul><li>La <strong>insignia de estado</strong>, con las palabras de la DGII: Borrador, Firmado, Enviado, En proceso, <strong>Aceptado</strong>, <strong>Aceptado condicional</strong>, <strong>Rechazado</strong>, Anulado.<li>El <strong>e-NCF</strong> (el número del comprobante) y el <strong>Track ID</strong> (el número que te dio la DGII).<li>El <strong>Veredicto de la DGII</strong>: lo que la DGII respondió.<li>El <strong>Código QR del comprobante</strong> (el mismo que va impreso en la factura de papel).<li>Si quedó <strong>Rechazado</strong> o <strong>Requiere revisión</strong>, aparece el botón <strong>Reintentar emisión</strong>.</ul>
-<blockquote><p><strong>En la lista de ventas el estado fiscal no se ve</strong>, a propósito: la lista es de ventas y el estado fiscal vive en el detalle. La lista se mantiene simple y el que necesita el dato entra al detalle.</p></blockquote>
+<div class="exec-summary"><p><strong><strong>En la lista de ventas el estado fiscal no se ve</strong></strong> , a propósito: la lista es de ventas y el estado fiscal vive en el detalle. La lista se mantiene simple y el que necesita el dato entra al detalle.</p></div>
 <p><strong>Una venta con comprobante ya enviado a la DGII no se puede eliminar</strong>: el sistema te avisa <em>"No se puede eliminar: el comprobante fiscal ya fue enviado a la DGII"</em>.</p>
-<h2 id="3-inventario">3. Inventario</h2>
+<div class="page-header"><span class="brand">4 · 3. Inventario</span><span>Manual del usuario de Volterp</span></div><h2 id="3-inventario">3. Inventario</h2>
 <p><figure class="captura pendiente"><div class="hueco">05-inventario.png</div><figcaption>El inventario de productos</figcaption></figure></p>
 <p>En <strong>Inventario</strong> manejás los productos: nombre, categoría, código (se genera solo), precio, stock, imagen y si está activo.</p>
 <ul><li>Los filtros de arriba: <strong>Todos</strong>, <strong>Stock bajo</strong>, <strong>Sin stock</strong>.<li>El <strong>stock se edita a mano</strong>: el sistema descuenta cuando vendés y devuelve cuando cancelás, pero la carga inicial (y las correcciones) las hacés vos.</ul>
-<h2 id="4-compras">4. Compras</h2>
+<div class="page-header"><span class="brand">5 · 4. Compras</span><span>Manual del usuario de Volterp</span></div><h2 id="4-compras">4. Compras</h2>
 <p><figure class="captura pendiente"><div class="hueco">04-compras.png</div><figcaption>Las compras</figcaption></figure></p>
 <p>En <strong>Compras</strong> registrás las compras: el proveedor, las líneas de productos y el total (se calcula solo). Los estados son <strong>Pendiente</strong>, <strong>Recibida</strong> y <strong>Cancelada</strong>.</p>
-<h2 id="5-clientes-y-proveedores">5. Clientes y proveedores</h2>
+<div class="page-header"><span class="brand">6 · 5. Clientes y proveedores</span><span>Manual del usuario de Volterp</span></div><h2 id="5-clientes-y-proveedores">5. Clientes y proveedores</h2>
 <p><figure class="captura pendiente"><div class="hueco">06-clientes.png</div><figcaption>Los clientes</figcaption></figure></p>
 <p><strong>Clientes</strong>: nombre, email, teléfono, dirección, foto y si está activo. Es la ficha que usa la caja.</p>
-<blockquote><p><strong>Ojo</strong>: hoy la ficha de cliente <strong>no tiene campo para el RNC</strong>. Si el cliente necesita crédito fiscal (E31), el RNC tiene que estar cargado en la ficha por el administrador; la caja no lo puede escribir. Es una limitación conocida (§12).</p></blockquote>
+<div class="exec-summary"><p><strong><strong>Ojo</strong></strong> : hoy la ficha de cliente <strong>no tiene campo para el RNC</strong>. Si el cliente necesita crédito fiscal (E31), el RNC tiene que estar cargado en la ficha por el administrador; la caja no lo puede escribir. Es una limitación conocida (§12).</p></div>
 <p><strong>Proveedores</strong>: igual, más la categoría y la persona de contacto.</p>
-<h2 id="6-contabilidad">6. Contabilidad</h2>
+<div class="page-header"><span class="brand">7 · 6. Contabilidad</span><span>Manual del usuario de Volterp</span></div><h2 id="6-contabilidad">6. Contabilidad</h2>
 <p><figure class="captura pendiente"><div class="hueco">08-contabilidad.png</div><figcaption>La contabilidad</figcaption></figure></p>
 <ul><li><strong>Contabilidad</strong>: los movimientos de ingreso y egreso, con los tres indicadores (Ingresos, Egresos, Balance).<li><strong>Cuentas</strong> (<code>/contabilidad/cuentas</code>): el catálogo de cuentas contables (código, tipo, cuenta padre, si permite movimiento). Editar es de Admin y SuperAdmin.<li><strong>Cuentas por cobrar</strong> (<code>/contabilidad/cxc</code>): las ventas pendientes de cobro, agrupadas por cliente, con el saldo y cuántas ventas hay.<li><strong>Cuentas por pagar</strong> (<code>/contabilidad/cxp</code>): las compras pendientes de pago, agrupadas por proveedor.</ul>
-<h2 id="7-recursos-humanos">7. Recursos humanos</h2>
+<div class="page-header"><span class="brand">8 · 7. Recursos humanos</span><span>Manual del usuario de Volterp</span></div><h2 id="7-recursos-humanos">7. Recursos humanos</h2>
 <p><figure class="captura pendiente"><div class="hueco">12-rrhh.png</div><figcaption>Los expedientes de los empleados</figcaption></figure></p>
 <ul><li><strong>RRHH</strong>: los expedientes de los empleados (el alta es un formulario de 3 pasos), con los indicadores y filtros.<li><strong>Nómina</strong>: la calculadora de nómina por empleado (salario bruto, deducciones y neto). <strong>Calcula y muestra; no guarda.</strong><li><strong>Asistencia</strong>: los ponches (entrada, pausa, salida) con sus indicadores. Hoy son <strong>datos de demostración</strong>.</ul>
-<h2 id="8-proyectos-y-reportes">8. Proyectos y reportes</h2>
+<div class="page-header"><span class="brand">9 · 8. Proyectos y reportes</span><span>Manual del usuario de Volterp</span></div><h2 id="8-proyectos-y-reportes">8. Proyectos y reportes</h2>
 <ul><li><strong>Proyectos</strong>: presupuesto, gastado, fechas y porcentaje de avance.<li><strong>Reportes</strong>: el resumen de ventas y compras, los mejores clientes, el top 10 de productos y la gráfica de los últimos 7 días. <strong>Se arma con los datos que están en memoria</strong>: no es un reporte del servidor.</ul>
-<h2 id="9-facturacion-electronica">9. Facturación electrónica</h2>
+<div class="page-header"><span class="brand">10 · 9. Facturación electrónica</span><span>Manual del usuario de Volterp</span></div><h2 id="9-facturacion-electronica">9. Facturación electrónica</h2>
 <p><figure class="captura pendiente"><div class="hueco">17-facturacion.png</div><figcaption>El hub de facturación electrónica</figcaption></figure></p>
 <p>Esta sección es <strong>administración</strong>: no es donde se vende, es donde se deja listo al sistema para poder emitir. Entrás por <strong>Facturación electrónica</strong> y hay seis pantallas.</p>
 <h3 id="9-1-el-estado-de-facturacion-puedo-facturar">9.1 El estado de facturación (¿puedo facturar?)</h3>
@@ -715,17 +718,17 @@ figure.captura.pendiente .hueco {
 <p><figure class="captura pendiente"><div class="hueco">22-recepcion.png</div><figcaption>La recepción de comprobantes</figcaption></figure></p>
 <p>El comprobante que <strong>te envía un cliente</strong> (el proveedor de tu proveedor, por ejemplo) llega con el certificado de él. Acá se registra la decisión comercial: <strong>+ Registrar decisión</strong> → el id del comprobante, <strong>Aprobar</strong> o <strong>Rechazar</strong>, y el motivo.</p>
 <p>Abajo queda la ficha de la última decisión: RNC emisor y receptor, e-NCF, firmado, recibido, estado de aprobación, quién decidió, la fecha y el motivo.</p>
-<blockquote><p><strong>No hay listado</strong>: por el modelo de seguridad del backend (mutual TLS) el comprobante recibido se busca por su id.</p></blockquote>
+<div class="exec-summary"><p><strong><strong>No hay listado</strong></strong> : por el modelo de seguridad del backend (mutual TLS) el comprobante recibido se busca por su id.</p></div>
 <h3 id="9-7-configuracion-fiscal">9.7 Configuración fiscal</h3>
 <ul><li><strong>Modo de emisión</strong>: <strong>Guardar el modo de emisión</strong> (Electrónico / Normal). Es la declaración ante la DGII: en modo normal se factura con NCF (B01/B02) y no hace falta certificado.<li><strong>Contingencia</strong>: estado y las fechas de inicio y fin → <strong>Guardar la contingencia</strong>. Dentro de una contingencia el camino es el papel.<li><strong>Credenciales de API</strong>: <strong>+ Nueva credencial</strong> para las integraciones y <strong>Revocar</strong>. El secret se muestra <strong>una sola vez</strong>.<li><strong>Secuencias normales</strong>: <strong>+ Nueva secuencia normal</strong> (el tramo de números de NCF del camino en papel).</ul>
-<h2 id="10-configuracion-y-usuarios">10. Configuración y usuarios</h2>
+<div class="page-header"><span class="brand">11 · 10. Configuración y usuarios</span><span>Manual del usuario de Volterp</span></div><h2 id="10-configuracion-y-usuarios">10. Configuración y usuarios</h2>
 <p><figure class="captura pendiente"><div class="hueco">24-configuracion.png</div><figcaption>La configuración</figcaption></figure></p>
 <p><strong>Configuración</strong> tiene tres pestañas: <strong>General</strong> (los datos de la empresa, incluido su RNC), <strong>Empresas</strong> y <strong>Usuarios</strong>.</p>
 <p>Ahí se da de alta a los usuarios y se les asignan los <strong>permisos</strong>: lo que puede ver cada persona depende de los permisos que tiene, y el botón de una pantalla desaparece si no lo tiene.</p>
-<h2 id="11-soporte">11. Soporte</h2>
+<div class="page-header"><span class="brand">12 · 11. Soporte</span><span>Manual del usuario de Volterp</span></div><h2 id="11-soporte">11. Soporte</h2>
 <p><figure class="captura pendiente"><div class="hueco">25-soporte.png</div><figcaption>El chat de soporte</figcaption></figure></p>
 <p>El chat de ayuda: responde por reglas y, si hace falta, escala a una persona.</p>
-<h2 id="12-lo-que-hoy-no-se-puede-hacer">12. Lo que hoy no se puede hacer</h2>
+<div class="page-header"><span class="brand">13 · 12. Lo que hoy no se puede hacer</span><span>Manual del usuario de Volterp</span></div><h2 id="12-lo-que-hoy-no-se-puede-hacer">12. Lo que hoy no se puede hacer</h2>
 <p>Lo que el sistema todavía no resuelve, para que no pierdas tiempo buscándolo:</p>
 <ul><li><strong>El RNC del cliente no se captura en la UI.</strong> El formulario de clientes no tiene ese campo y la caja tampoco lo pide: el crédito fiscal (E31) necesita un cliente que <strong>ya tenga el RNC cargado en su ficha</strong> (lo carga el administrador). La caja avisa <em>"El crédito fiscal necesita el RNC del cliente"</em> cuando no lo tiene.<li><strong>La venta a consumidor final por encima de RD$250,000 sin RNC</strong> no se frena en la caja: la DGII exige el RNC del comprador a partir de ese monto y el comprobante puede ser rechazado al enviarse.<li><strong>No hay movimientos de inventario</strong>: el stock se edita a mano y solo lo ajustan las ventas (descontan al completarse y devuelven al cancelarse).<li><strong>No hay pantalla de categorías</strong>: existen en el sistema y se usan en el producto, pero no se crean ni se editan desde la app.<li><strong>Nómina y asistencia no se guardan</strong>: la nómina se calcula y se muestra; la asistencia es de demostración.<li><strong>Reportes se arma con los datos en memoria</strong>, no con una consulta al servidor.<li><strong>El "Descargar PDF" de una venta imprime</strong> la vista del navegador: no genera un PDF propio.<li><strong>Los emisores y los rangos no se borran</strong>: un rango se anula, un emisor se desactiva.<li><strong>Recepción no tiene listado</strong>: se registra por id de comprobante.</ul>
 </body>
