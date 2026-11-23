@@ -17,6 +17,31 @@
  *   - Every section title starts on a new sheet (`break-before: page`).
  */
 
+/* La maqueta de los PDF del proyecto.
+ *
+ * These are the values of the house (multi-tenant-refactor.html): the same
+ * palette, the same typography, the same components. The PDF of the manuals
+ * has to look like the rest of the documentation.
+ *
+ * The rules that matter when printing:
+ *   - @page without margins: the air is the body's padding → the footer with
+ *     the page number (Chrome puts it there) does not eat the text.
+ *   - Every block that cannot be split carries `break-inside: avoid`.
+ *   - Every section title starts on a new sheet (`break-before: page`).
+ */
+
+/* The typography of the house: Inter for the text.
+ *
+ * The @import goes FIRST, before any other rule: by rule the browser ignores
+ * an @import that comes after another rule (that is why the title came out in
+ * Segoe UI).
+ *
+ * The code does NOT use JetBrains Mono: that font (the web one and the one of
+ * the IDE) does not have the drawing characters of the folder trees, and the
+ * browser falls back to another font for them → the tree loses its alignment.
+ * Cascadia Mono and Consolas have them and are really monospaced. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 :root {
   --accent-primary: #6366f1;
   --accent-secondary: #8b5cf6;
@@ -33,16 +58,7 @@
   --code-bg: #0f172a;
 }
 
-/* The typography of the house: Inter for the text.
- *
- * The @import goes FIRST: by rule the browser ignores an @import that comes
- * after another rule (that is why the title came out in Segoe UI).
- *
- * The code does NOT use JetBrains Mono: that font (the web one and the one of
- * the IDE) does not have the drawing characters of the folder trees, and the
- * browser falls back to another font for them → the tree loses its alignment.
- * Cascadia Mono and Consolas have them and are really monospaced. */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* The typography of the house: Inter for the text. */
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -567,6 +583,9 @@ figure.captura.pendiente .hueco {
   text-align: center;
 }
 
+/* El titulo del documento no lleva numero: no es una parte */
+.toc-parte.toc-titulo { border-bottom-color: color-mix(in srgb, var(--border) 70%, transparent); }
+
 </style>
 </head>
 <body>
@@ -597,20 +616,20 @@ figure.captura.pendiente .hueco {
   <div class="index">
     <h2 id="indice" style="break-before:auto">Índice</h2>
     <div class="toc">
-      <div class="toc-parte"><span class="n">1</span><a href="#manual-del-usuario-de-volterp">Manual del usuario de Volterp</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.1</span><a href="#como-leer-este-manual">Cómo leer este manual</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.2</span><a href="#1-el-panel">1. El panel</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.3</span><a href="#2-ventas">2. Ventas</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.4</span><a href="#3-inventario">3. Inventario</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.5</span><a href="#4-compras">4. Compras</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.6</span><a href="#5-clientes-y-proveedores">5. Clientes y proveedores</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.7</span><a href="#6-contabilidad">6. Contabilidad</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.8</span><a href="#7-recursos-humanos">7. Recursos humanos</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.9</span><a href="#8-proyectos-y-reportes">8. Proyectos y reportes</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.10</span><a href="#9-facturacion-electronica">9. Facturación electrónica</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.11</span><a href="#10-configuracion-y-usuarios">10. Configuración y usuarios</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.12</span><a href="#11-soporte">11. Soporte</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1.13</span><a href="#12-lo-que-hoy-no-se-puede-hacer">12. Lo que hoy no se puede hacer</a></div>
+      <div class="toc-parte toc-titulo"><a href="#manual-del-usuario-de-volterp">Manual del usuario de Volterp</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">1</span><a href="#como-leer-este-manual">Cómo leer este manual</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">2</span><a href="#1-el-panel">1. El panel</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">3</span><a href="#2-ventas">2. Ventas</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">4</span><a href="#3-inventario">3. Inventario</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">5</span><a href="#4-compras">4. Compras</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">6</span><a href="#5-clientes-y-proveedores">5. Clientes y proveedores</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">7</span><a href="#6-contabilidad">6. Contabilidad</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">8</span><a href="#7-recursos-humanos">7. Recursos humanos</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">9</span><a href="#8-proyectos-y-reportes">8. Proyectos y reportes</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">10</span><a href="#9-facturacion-electronica">9. Facturación electrónica</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">11</span><a href="#10-configuracion-y-usuarios">10. Configuración y usuarios</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">12</span><a href="#11-soporte">11. Soporte</a></div>
+        <div class="toc-seccion lvl-2"><span class="n">13</span><a href="#12-lo-que-hoy-no-se-puede-hacer">12. Lo que hoy no se puede hacer</a></div>
     </div>
   </div>
 <blockquote><p>Para quien vende, administra y usa el sistema. No hace falta saber nada de programación: este manual explica, pantalla por pantalla, <strong>qué hace cada cosa y cómo se hace</strong>.</p></blockquote>
