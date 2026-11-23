@@ -2,6 +2,12 @@
 
 ERP frontend built with React 19, TypeScript 6, and Vite. Consumes the [Volterp Backend API](https://github.com/HancerMercede/volterp_backend).
 
+## Documentation
+
+- **[Guía del frontend (PDF)](docs/guia-frontend.pdf)** — la guía de cómo se construye este front: los módulos, el código, los patrones y cómo trabajamos. La produce el template (`FRONTEND-SKELETON-TEMPLATE.md`) y se regenera de ahí, no se edita a mano.
+- El template vivo: [`FRONTEND-SKELETON-TEMPLATE.md`](FRONTEND-SKELETON-TEMPLATE.md).
+- Lo que el sistema ofrece, en palabras: [`docs/QUE-OFRECEMOS.md`](docs/QUE-OFRECEMOS.md) · [`docs/SISTEMA-INVENTARIO.md`](docs/SISTEMA-INVENTARIO.md).
+
 ## Tech Stack
 
 | Layer | Technology |
