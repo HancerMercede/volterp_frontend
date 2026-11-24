@@ -11,23 +11,11 @@
  * has to look like the rest of the documentation.
  *
  * The rules that matter when printing:
- *   - @page without margins: the air is the body's padding → the footer with
- *     the page number (Chrome puts it there) does not eat the text.
+ *   - `@page` without margins: the air lives inside each sheet (`.page`), so
+ *     the content never lands on the edge of the paper.
+ *   - One `.page` = one sheet (210mm x 297mm), with the running header and
+ *     the footer with the page number inside it.
  *   - Every block that cannot be split carries `break-inside: avoid`.
- *   - Every section title starts on a new sheet (`break-before: page`).
- */
-
-/* La maqueta de los PDF del proyecto.
- *
- * These are the values of the house (multi-tenant-refactor.html): the same
- * palette, the same typography, the same components. The PDF of the manuals
- * has to look like the rest of the documentation.
- *
- * The rules that matter when printing:
- *   - @page without margins: the air is the body's padding → the footer with
- *     the page number (Chrome puts it there) does not eat the text.
- *   - Every block that cannot be split carries `break-inside: avoid`.
- *   - Every section title starts on a new sheet (`break-before: page`).
  */
 
 /* The typography of the house: Inter for the text.
@@ -35,6 +23,8 @@
  * The @import goes FIRST, before any other rule: by rule the browser ignores
  * an @import that comes after another rule (that is why the title came out in
  * Segoe UI).
+ *
+ * NOTA: este bloque va repetido arriba; el de arriba es el que manda.
  *
  * The code does NOT use JetBrains Mono: that font (the web one and the one of
  * the IDE) does not have the drawing characters of the folder trees, and the
@@ -62,10 +52,15 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* El aire de la hoja: sin margenes, como el PDF de la casa. El encabezado
- * de cada seccion va dentro del flujo (no es fijo), y el pie con el numero de
- * pagina lo pone Chrome abajo, en el aire que deja el cuerpo. */
-@page { size: A4; margin: 0; }
+/* ---------- Hoja ----------
+ *
+ * Una hoja = un `.page` de 210 x 297 mm (A4). El aire de los lados y el del
+ * pie viven en el padding de la hoja, nunca en el margen de impresion: asi el
+ * texto nunca queda pegado al papel y el encabezado corrido no pisa el
+ * titulo. El generador reparte los bloques en hojas y escribe el numero de
+ * pagina en el pie de cada una. */
+
+@page { size: 210mm 297mm; margin: 0; }
 
 body {
   font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
@@ -73,9 +68,32 @@ body {
   line-height: 1.55;
   color: var(--text-primary);
   width: 210mm;
-  /* El aire de los lados y el del pie (ahi se dibuja el numero de pagina). */
-  padding: 0 55px 14mm;
+  margin: 0;
+  padding: 0;
   background: #fff;
+}
+
+.page {
+  width: 210mm;
+  height: 297mm;
+  padding: 50px 55px 55px;
+  page-break-after: always;
+  break-after: page;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.page:last-of-type { page-break-after: auto; break-after: auto; }
+
+/* El cuerpo de la hoja: lo que mide el generador para saber si el bloque
+ * siguiente entra o hay que abrir una hoja nueva. */
+.page-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* ---------- Portada ---------- */
@@ -85,15 +103,8 @@ body {
   overflow: hidden;
   background: linear-gradient(135deg, #0f0c29 0%, #1e1b4b 50%, #312e81 100%);
   color: var(--text-light);
-  padding: 50px 55px;
-  /* La portada sangra al borde de la hoja: los margenes negativos la sacan de
-   * la caja de contenido y Chrome imprime el desborde. */
-  margin: 0 -55px 0;
-  height: 297mm;
-  box-sizing: border-box;
-  break-after: page;
-  display: flex;
-  flex-direction: column;
+  /* La portada es una hoja mas: sangra al borde porque el papel no tiene
+   * margenes y la hoja los lleva dentro. */
   justify-content: center;
 }
 
@@ -230,11 +241,36 @@ body {
 
 .page-header .brand { color: var(--accent-primary); font-weight: 700; }
 
+/* El pie de la hoja: el repositorio a la izquierda, el numero de pagina a la
+ * derecha (los dos dentro de la hoja, nunca en el margen del papel). */
+.page-foot {
+  position: absolute;
+  bottom: 22px;
+  left: 55px;
+  right: 55px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7.5pt;
+  color: var(--text-muted);
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.page-foot .pn { color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; }
+
 /* ---------- Índice ---------- */
 
-.index { break-after: page; }
+/* Cada bloque lleva su propio alto: los margenes del titulo no se colapsan
+ * hacia afuera, asi la medicion de la hoja es exacta. */
+.blk { display: flow-root; }
 
-.index h2 { break-before: auto; color: var(--text-primary); border-bottom: 0; }
+.index-title {
+  color: var(--text-primary);
+  font-size: 15pt;
+  font-weight: 700;
+  margin: 0 0 5mm;
+}
 
 .toc { margin-top: 6mm; }
 
@@ -274,10 +310,22 @@ body {
 .toc a:hover { color: var(--accent-primary); }
 .toc-parte a:hover { color: var(--accent-primary); }
 
+/* El numero de pagina de cada entrada del indice (a la derecha, como en la
+ * casa). */
+.toc-p {
+  margin-left: auto;
+  padding-left: 6mm;
+  color: var(--text-muted);
+  font-size: 8.5pt;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Títulos ---------- */
 
+/* Los titulos de seccion abren hoja nueva: eso lo hace el generador al
+ * repartir los bloques, asi que aca no debe haber un salto de pagina. */
 h1 {
-  break-before: page;
   break-after: avoid;
   font-size: 32pt;
   font-weight: 800;
@@ -287,7 +335,6 @@ h1 {
 }
 
 h2 {
-  break-before: page;
   break-after: avoid;
   font-size: 15pt;
   font-weight: 700;
@@ -583,6 +630,24 @@ figure.captura.pendiente .hueco {
   font-size: 8.5pt;
   padding: 14mm 8mm;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2mm;
+}
+
+figure.captura.pendiente .hueco-titulo {
+  font-size: 7.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+
+figure.captura.pendiente .hueco-nombre {
+  font-family: 'Cascadia Mono', Consolas, monospace;
+  font-size: 7.5pt;
+  color: var(--accent-primary);
 }
 
 /* El titulo del documento no lleva numero: no es una parte */
@@ -592,143 +657,549 @@ figure.captura.pendiente .hueco {
 </head>
 <body>
 
-  <div class="cover">
+  <div class="page cover">
     <div class="cover-tag">Volterp · Manual del usuario</div>
     <div class="cover-title">Manual del <span class="grad">usuario</span> de Volterp</div>
     <div class="cover-sub">Cada pantalla del sistema y cómo se hace cada cosa, paso a paso</div>
     <div class="cover-stats">
-      <div class="cover-stat">
+      <div class="cover-stat" data-metric="pantallas">
         <div class="num">25</div>
         <div class="lbl">pantallas</div>
       </div>
-      <div class="cover-stat">
+      <div class="cover-stat" data-metric="módulos">
         <div class="num">12</div>
         <div class="lbl">módulos</div>
       </div>
-      <div class="cover-stat">
+      <div class="cover-stat" data-metric="fiscal">
         <div class="num">9</div>
         <div class="lbl">fiscal</div>
       </div>
-      <div class="cover-stat">
+      <div class="cover-stat" data-metric="manual">
         <div class="num">1</div>
         <div class="lbl">manual</div>
       </div></div>
-  </div>
-
-  <div class="index">
-    <h2 id="indice" style="break-before:auto">Índice</h2>
-    <div class="toc">
-      <div class="toc-parte toc-titulo"><a href="#manual-del-usuario-de-volterp">Manual del usuario de Volterp</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">1</span><a href="#como-leer-este-manual">Cómo leer este manual</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">2</span><a href="#1-el-panel">1. El panel</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">3</span><a href="#2-ventas">2. Ventas</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">4</span><a href="#3-inventario">3. Inventario</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">5</span><a href="#4-compras">4. Compras</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">6</span><a href="#5-clientes-y-proveedores">5. Clientes y proveedores</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">7</span><a href="#6-contabilidad">6. Contabilidad</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">8</span><a href="#7-recursos-humanos">7. Recursos humanos</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">9</span><a href="#8-proyectos-y-reportes">8. Proyectos y reportes</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">10</span><a href="#9-facturacion-electronica">9. Facturación electrónica</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">11</span><a href="#10-configuracion-y-usuarios">10. Configuración y usuarios</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">12</span><a href="#11-soporte">11. Soporte</a></div>
-        <div class="toc-seccion lvl-2"><span class="n">13</span><a href="#12-lo-que-hoy-no-se-puede-hacer">12. Lo que hoy no se puede hacer</a></div>
+    <div class="cover-foot">
+      <span>Volterp · Manual del usuario</span>
+      <span>Manual de usuario · Nov 2026</span>
     </div>
   </div>
-<blockquote><p>Para quien vende, administra y usa el sistema. No hace falta saber nada de programación: este manual explica, pantalla por pantalla, <strong>qué hace cada cosa y cómo se hace</strong>.</p></blockquote>
-<div class="page-header"><span class="brand">1 · Cómo leer este manual</span><span>Manual del usuario de Volterp</span></div><h2 id="como-leer-este-manual">Cómo leer este manual</h2>
-<ul><li><strong>El menú de la izquierda</strong> agrupa las pantallas por módulo (Ventas, Contabilidad, Facturación, RRHH…). El título del grupo es un botón: si lo tocás, abre la primera pantalla del grupo.<li><strong>Los botones</strong> se nombran como los llamás en la pantalla: <strong>Nueva Venta</strong>, <strong>Guardar Borrador</strong>, <strong>Completar Venta</strong>, <strong>Descartar</strong>, <strong>Cancelar</strong>…<li><strong>Las capturas</strong> son de una sesión real: si una pantalla cambió, la foto es una foto de la fecha en que se armó este manual.<li><strong>Los avisos</strong> (los mensajes verdes o amarillos) son la respuesta del sistema. Si algo no se puede hacer, el sistema lo dice y por qué.</ul>
-<div class="page-header"><span class="brand">2 · 1. El panel</span><span>Manual del usuario de Volterp</span></div><h2 id="1-el-panel">1. El panel</h2>
-<p><figure class="captura pendiente"><div class="hueco">01-dashboard.png</div><figcaption>El panel con los indicadores del negocio</figcaption></figure></p>
-<p>El panel (Dashboard) es lo primero que ves al entrar. Arriba tenés los <strong>filtros de período</strong>: Hoy, Esta semana, Este mes. Todo lo de la pantalla cambia con el filtro.</p>
-<ul><li><strong>Ventas, Compras, Clientes, Utilidad</strong>: las cuatro cifras del negocio.<li><strong>Ventas vs. Compras</strong>: la gráfica de los dos lados en el tiempo.<li><strong>Top productos</strong>: qué se está vendiendo más.<li><strong>Recordatorios</strong>: lo que el sistema te recuerda hacer (ventas pendientes por cobrar, cosas por revisar).</ul>
-<div class="page-header"><span class="brand">3 · 2. Ventas</span><span>Manual del usuario de Volterp</span></div><h2 id="2-ventas">2. Ventas</h2>
-<p><figure class="captura pendiente"><div class="hueco">02-ventas.png</div><figcaption>La lista de ventas</figcaption></figure></p>
-<p>La pantalla de <strong>Ventas</strong> es la lista de todas las ventas: las completadas, las pendientes y las canceladas. Tiene buscador, filtros y paginación.</p>
-<p>Desde acá se entra a la caja con el botón <strong>+ Nueva Venta</strong>.</p>
-<h3 id="2-1-la-caja-registrar-una-venta">2.1 La caja: registrar una venta</h3>
-<p><figure class="captura pendiente"><div class="hueco">03-caja-nueva-venta.png</div><figcaption>La caja de venta nueva</figcaption></figure></p>
-<p>La caja (la venta nueva) es una <strong>pantalla completa</strong>: no tiene el menú de la izquierda, y la barra del navegador dice que estás vendiendo. Es la pantalla donde se hace todo el día a día.</p>
-<p><strong>Cómo se registra una venta:</strong></p>
-<ol><li><strong>Busca o escanea el producto.</strong> La tecla <strong>F2</strong> lleva el cursor al buscador. También podés elegir por categoría, con las pestañas de arriba.<li><strong>Tocá el producto</strong> → se agrega al carrito (la tarjeta del producto es el botón).<li><strong>Elegí el cliente</strong> con el buscador. Cuando lo tenés, aparece su tarjeta con el botón <strong>Cambiar</strong> (por si te equivocaste).<li><strong>Ajustá el carrito</strong>: cada línea tiene <strong>−</strong> y <strong>+</strong> para la cantidad, y <strong>Quitar del carrito</strong> para sacarla. El botón <strong>Vaciar</strong> deja la caja en blanco.<li><strong>Revisá el resumen</strong>: Subtotal, <strong>ITBIS</strong> (18%) y <strong>TOTAL</strong>. Arriba dice cuántos artículos hay.<li><strong>Elegí el comprobante</strong> (abajo a la derecha):</ol><ul><li><strong>Consumo (E32)</strong> — la factura de consumo: es la de siempre.</li><li><strong>Crédito fiscal (E31)</strong> — para un cliente con RNC: es la que le descuenta el ITBIS. <strong>Si el cliente no tiene RNC, el sistema no te deja elegirla</strong> y te avisa <em>"El crédito fiscal necesita el RNC del cliente."</em></li><li><strong>Factura comercial (sin comprobante)</strong> — la venta sin comprobante fiscal: no consume número de la DGII. Es la que se usa en el modo normal.</ul><ol><li>Tocá <strong>Completar Venta $X</strong> (el botón verde con el total).</ol>
-<p><strong>Lo que el sistema te avisa:</strong></p>
-<table><thead><tr><th>Aviso</th><th>Qué pasó</th></tr></thead><tbody><tr><td><em>El carrito está vacío</em></td><td>No hay nada que cobrar todavía.</td></tr><tr><td><em>Seleccione un cliente, por favor.</em></td><td>La venta necesita saber a quién es.</td></tr><tr><td><em>No hay empresa seleccionada</em></td><td>La empresa es la que emite; revisá la configuración.</td></tr><tr><td><em>Venta realizada exitosamente</em></td><td>Se emitió el comprobante fiscal.</td></tr><tr><td><em>Venta realizada sin comprobante</em></td><td>Fue una factura comercial: no salió comprobante.</td></tr><tr><td><em>Puedes cobrar, pero el comprobante no se va a emitir</em></td><td>Falta algo para facturar (certificado, rango). Podés cobrar igual, pero el comprobante no sale.</td></tr></tbody></table>
-<div class="exec-summary"><p><strong><strong>El aviso de "puedes cobrar pero…"</strong></strong> sale apenas abrís la caja si al sistema le falta algo. No te frena la venta: te dice que el comprobante no se va a emitir. Para saber qué falta, mirá el <strong>estado de facturación</strong> en Configuración fiscal (§9.7).</p></div>
-<h3 id="2-2-guardar-un-borrador-y-volver-a-el">2.2 Guardar un borrador y volver a él</h3>
-<p>Si el cliente se va y todavía no sabés si cierra, tocá <strong>Guardar Borrador</strong>.</p>
-<ul><li>La venta queda en estado <strong>Pendiente</strong> (no está cobrada).<li><strong>La caja se queda limpia</strong> y vos seguís en la misma pantalla: podés seguir vendiendo.<li>El sistema avisa <em>Borrador guardado</em>.</ul>
-<p>Para volver a una venta pendiente: en <strong>Ventas</strong>, tocá el ícono de editar de la fila → la caja se abre con lo que cargaste antes (los productos y el tipo de comprobante original).</p>
-<h3 id="2-3-cancelar-una-venta">2.3 Cancelar una venta</h3>
-<p>Hay dos formas, y hacen lo mismo:</p>
-<ul><li><strong>Desde la caja</strong> (editando una venta pendiente): el botón <strong>Descartar</strong> → te pregunta <em>"¿Cancelar la venta?"</em> → <strong>Sí, cancelar</strong>.<li><strong>Desde la lista</strong> de ventas: el botón <strong>Cancelar</strong> de la fila (solo aparece en las pendientes).</ul>
-<p><strong>Lo que pasa:</strong> la venta queda en estado <strong>Cancelada</strong> (no se borra: queda el registro) y <strong>el stock que había reservado vuelve al inventario</strong>. El sistema avisa <em>Venta cancelada</em>.</p>
-<h3 id="2-4-ver-el-detalle-de-una-venta">2.4 Ver el detalle de una venta</h3>
-<p>Tocá una venta <strong>Completada</strong> o <strong>Cancelada</strong> de la lista → se abre el modal <strong>Detalle de Venta #código</strong>.</p>
-<ul><li>Si la venta está completada, el aviso dice <em>"Venta completada — solo vista"</em> (no se puede editar una venta cobrada).<li>Ves: el cliente, la tabla de productos, el <strong>Resumen</strong> (Subtotal / ITBIS / Total) y los detalles (artículos, líneas, actualizado).<li><strong>Copiar ID</strong> te lleva el identificador de la venta al portapapeles.<li><strong>Descargar PDF</strong> imprime la vista (usa la impresión del navegador).</ul>
-<h3 id="2-5-el-comprobante-fiscal-de-una-venta">2.5 El comprobante fiscal de una venta</h3>
-<p>Cuando la venta tiene comprobante fiscal, el modal <strong>Detalle de Venta</strong> agrega la sección <strong>Comprobante fiscal</strong>:</p>
-<ul><li>La <strong>insignia de estado</strong>, con las palabras de la DGII: Borrador, Firmado, Enviado, En proceso, <strong>Aceptado</strong>, <strong>Aceptado condicional</strong>, <strong>Rechazado</strong>, Anulado.<li>El <strong>e-NCF</strong> (el número del comprobante) y el <strong>Track ID</strong> (el número que te dio la DGII).<li>El <strong>Veredicto de la DGII</strong>: lo que la DGII respondió.<li>El <strong>Código QR del comprobante</strong> (el mismo que va impreso en la factura de papel).<li>Si quedó <strong>Rechazado</strong> o <strong>Requiere revisión</strong>, aparece el botón <strong>Reintentar emisión</strong>.</ul>
-<div class="exec-summary"><p><strong><strong>En la lista de ventas el estado fiscal no se ve</strong></strong> , a propósito: la lista es de ventas y el estado fiscal vive en el detalle. La lista se mantiene simple y el que necesita el dato entra al detalle.</p></div>
-<p><strong>Una venta con comprobante ya enviado a la DGII no se puede eliminar</strong>: el sistema te avisa <em>"No se puede eliminar: el comprobante fiscal ya fue enviado a la DGII"</em>.</p>
-<div class="page-header"><span class="brand">4 · 3. Inventario</span><span>Manual del usuario de Volterp</span></div><h2 id="3-inventario">3. Inventario</h2>
-<p><figure class="captura pendiente"><div class="hueco">05-inventario.png</div><figcaption>El inventario de productos</figcaption></figure></p>
-<p>En <strong>Inventario</strong> manejás los productos: nombre, categoría, código (se genera solo), precio, stock, imagen y si está activo.</p>
-<ul><li>Los filtros de arriba: <strong>Todos</strong>, <strong>Stock bajo</strong>, <strong>Sin stock</strong>.<li>El <strong>stock se edita a mano</strong>: el sistema descuenta cuando vendés y devuelve cuando cancelás, pero la carga inicial (y las correcciones) las hacés vos.</ul>
-<div class="page-header"><span class="brand">5 · 4. Compras</span><span>Manual del usuario de Volterp</span></div><h2 id="4-compras">4. Compras</h2>
-<p><figure class="captura pendiente"><div class="hueco">04-compras.png</div><figcaption>Las compras</figcaption></figure></p>
-<p>En <strong>Compras</strong> registrás las compras: el proveedor, las líneas de productos y el total (se calcula solo). Los estados son <strong>Pendiente</strong>, <strong>Recibida</strong> y <strong>Cancelada</strong>.</p>
-<div class="page-header"><span class="brand">6 · 5. Clientes y proveedores</span><span>Manual del usuario de Volterp</span></div><h2 id="5-clientes-y-proveedores">5. Clientes y proveedores</h2>
-<p><figure class="captura pendiente"><div class="hueco">06-clientes.png</div><figcaption>Los clientes</figcaption></figure></p>
-<p><strong>Clientes</strong>: nombre, email, teléfono, dirección, foto y si está activo. Es la ficha que usa la caja.</p>
-<div class="exec-summary"><p><strong><strong>Ojo</strong></strong> : hoy la ficha de cliente <strong>no tiene campo para el RNC</strong>. Si el cliente necesita crédito fiscal (E31), el RNC tiene que estar cargado en la ficha por el administrador; la caja no lo puede escribir. Es una limitación conocida (§12).</p></div>
-<p><strong>Proveedores</strong>: igual, más la categoría y la persona de contacto.</p>
-<div class="page-header"><span class="brand">7 · 6. Contabilidad</span><span>Manual del usuario de Volterp</span></div><h2 id="6-contabilidad">6. Contabilidad</h2>
-<p><figure class="captura pendiente"><div class="hueco">08-contabilidad.png</div><figcaption>La contabilidad</figcaption></figure></p>
-<ul><li><strong>Contabilidad</strong>: los movimientos de ingreso y egreso, con los tres indicadores (Ingresos, Egresos, Balance).<li><strong>Cuentas</strong> (<code>/contabilidad/cuentas</code>): el catálogo de cuentas contables (código, tipo, cuenta padre, si permite movimiento). Editar es de Admin y SuperAdmin.<li><strong>Cuentas por cobrar</strong> (<code>/contabilidad/cxc</code>): las ventas pendientes de cobro, agrupadas por cliente, con el saldo y cuántas ventas hay.<li><strong>Cuentas por pagar</strong> (<code>/contabilidad/cxp</code>): las compras pendientes de pago, agrupadas por proveedor.</ul>
-<div class="page-header"><span class="brand">8 · 7. Recursos humanos</span><span>Manual del usuario de Volterp</span></div><h2 id="7-recursos-humanos">7. Recursos humanos</h2>
-<p><figure class="captura pendiente"><div class="hueco">12-rrhh.png</div><figcaption>Los expedientes de los empleados</figcaption></figure></p>
-<ul><li><strong>RRHH</strong>: los expedientes de los empleados (el alta es un formulario de 3 pasos), con los indicadores y filtros.<li><strong>Nómina</strong>: la calculadora de nómina por empleado (salario bruto, deducciones y neto). <strong>Calcula y muestra; no guarda.</strong><li><strong>Asistencia</strong>: los ponches (entrada, pausa, salida) con sus indicadores. Hoy son <strong>datos de demostración</strong>.</ul>
-<div class="page-header"><span class="brand">9 · 8. Proyectos y reportes</span><span>Manual del usuario de Volterp</span></div><h2 id="8-proyectos-y-reportes">8. Proyectos y reportes</h2>
-<ul><li><strong>Proyectos</strong>: presupuesto, gastado, fechas y porcentaje de avance.<li><strong>Reportes</strong>: el resumen de ventas y compras, los mejores clientes, el top 10 de productos y la gráfica de los últimos 7 días. <strong>Se arma con los datos que están en memoria</strong>: no es un reporte del servidor.</ul>
-<div class="page-header"><span class="brand">10 · 9. Facturación electrónica</span><span>Manual del usuario de Volterp</span></div><h2 id="9-facturacion-electronica">9. Facturación electrónica</h2>
-<p><figure class="captura pendiente"><div class="hueco">17-facturacion.png</div><figcaption>El hub de facturación electrónica</figcaption></figure></p>
-<p>Esta sección es <strong>administración</strong>: no es donde se vende, es donde se deja listo al sistema para poder emitir. Entrás por <strong>Facturación electrónica</strong> y hay seis pantallas.</p>
-<h3 id="9-1-el-estado-de-facturacion-puedo-facturar">9.1 El estado de facturación (¿puedo facturar?)</h3>
-<p><figure class="captura pendiente"><div class="hueco">23-configuracion-fiscal.png</div><figcaption>La configuración fiscal con el estado de facturación</figcaption></figure></p>
-<p>En <strong>Configuración fiscal</strong> está el checklist <strong>Estado de facturación</strong>, que responde la pregunta que importa: <em>¿puedo emitir comprobantes ahora?</em></p>
-<ul><li><strong>Listo para facturar</strong> — todo está en su lugar.<li><strong>No se puede facturar ahora</strong> — con el motivo: falta el certificado, el rango no existe, venció, se agotó o se anuló.<li><strong>La ruta de emisión</strong>: <strong>Electrónica (e-NCF)</strong> o <strong>Papel (NCF)</strong>. Sale del <strong>modo de emisión</strong> que declaró la empresa y de si está en contingencia.<li><strong>Certificado de firma</strong>: si existe, cuándo vence.<li><strong>Tipos de comprobante</strong>: los que podés emitir, con cuántos números quedan, cuándo vencen y su estado.</ul>
-<blockquote><p>En la <strong>caja</strong> el mismo checklist aparece como un aviso rápido (<em>"Puedes cobrar, pero el comprobante no se va a emitir"</em>). Acá está la versión completa, con el detalle.</p></blockquote>
-<h3 id="9-2-emisores">9.2 Emisores</h3>
-<p><figure class="captura pendiente"><div class="hueco">18-emisores.png</div><figcaption>Los emisores</figcaption></figure></p>
-<p>Un emisor es el <strong>RNC que emite</strong>: el de la empresa o el de otra marca de la misma empresa. Con <strong>+ Nuevo emisor</strong> cargás el RNC y la razón social.</p>
-<p>Al editar, <strong>el RNC no se puede cambiar</strong> (la DGII no lo permite); solo la razón social y si está activo.</p>
-<h3 id="9-3-rangos-de-e-ncf">9.3 Rangos de e-NCF</h3>
-<p><figure class="captura pendiente"><div class="hueco">19-rangos.png</div><figcaption>Los rangos de e-NCF</figcaption></figure></p>
-<p>El <strong>rango</strong> es el tramo de números que la DGII le autorizó a un emisor para un tipo de comprobante: desde, hasta, posición actual y fecha de vencimiento.</p>
-<ul><li><strong>+ Nuevo rango</strong>: RNC emisor, tipo, desde, hasta, posición y vencimiento.<li>Al editar, el emisor, el tipo y el inicio son <strong>solo lectura</strong>.<li><strong>Anular rango</strong> es lo único que destruye: avisa con los mensajes de la DGII.</ul>
-<h3 id="9-4-certificados">9.4 Certificados</h3>
-<p><figure class="captura pendiente"><div class="hueco">20-certificados.png</div><figcaption>Los certificados de firma</figcaption></figure></p>
-<p>El <strong>certificado</strong> es el <code>.p12</code> con el que se firma el comprobante. <strong>+ Nuevo certificado</strong>: nombre, RNC, fecha de vencimiento y la credencial.</p>
-<p>La credencial es <strong>opaca</strong>: se pega una sola vez y nunca se vuelve a mostrar. Por eso no hay edición ni borrado (el backend no los expone).</p>
-<h3 id="9-5-comprobantes">9.5 Comprobantes</h3>
-<p><figure class="captura pendiente"><div class="hueco">21-comprobantes.png</div><figcaption>Los comprobantes emitidos</figcaption></figure></p>
-<p>El estado de cada comprobante emitido. Arriba, las tarjetas de conteo: pendientes de emitir, en proceso, rechazados, requieren revisión y el total.</p>
-<p>Por fila: <strong>Reintentar</strong> (solo si está rechazado o requiere revisión), <strong>Ver QR</strong> e <strong>Imprimir</strong> (abre la representación impresa en una pestaña nueva).</p>
-<h3 id="9-6-recepcion">9.6 Recepción</h3>
-<p><figure class="captura pendiente"><div class="hueco">22-recepcion.png</div><figcaption>La recepción de comprobantes</figcaption></figure></p>
-<p>El comprobante que <strong>te envía un cliente</strong> (el proveedor de tu proveedor, por ejemplo) llega con el certificado de él. Acá se registra la decisión comercial: <strong>+ Registrar decisión</strong> → el id del comprobante, <strong>Aprobar</strong> o <strong>Rechazar</strong>, y el motivo.</p>
-<p>Abajo queda la ficha de la última decisión: RNC emisor y receptor, e-NCF, firmado, recibido, estado de aprobación, quién decidió, la fecha y el motivo.</p>
-<div class="exec-summary"><p><strong><strong>No hay listado</strong></strong> : por el modelo de seguridad del backend (mutual TLS) el comprobante recibido se busca por su id.</p></div>
-<h3 id="9-7-configuracion-fiscal">9.7 Configuración fiscal</h3>
-<ul><li><strong>Modo de emisión</strong>: <strong>Guardar el modo de emisión</strong> (Electrónico / Normal). Es la declaración ante la DGII: en modo normal se factura con NCF (B01/B02) y no hace falta certificado.<li><strong>Contingencia</strong>: estado y las fechas de inicio y fin → <strong>Guardar la contingencia</strong>. Dentro de una contingencia el camino es el papel.<li><strong>Credenciales de API</strong>: <strong>+ Nueva credencial</strong> para las integraciones y <strong>Revocar</strong>. El secret se muestra <strong>una sola vez</strong>.<li><strong>Secuencias normales</strong>: <strong>+ Nueva secuencia normal</strong> (el tramo de números de NCF del camino en papel).</ul>
-<div class="page-header"><span class="brand">11 · 10. Configuración y usuarios</span><span>Manual del usuario de Volterp</span></div><h2 id="10-configuracion-y-usuarios">10. Configuración y usuarios</h2>
-<p><figure class="captura pendiente"><div class="hueco">24-configuracion.png</div><figcaption>La configuración</figcaption></figure></p>
-<p><strong>Configuración</strong> tiene tres pestañas: <strong>General</strong> (los datos de la empresa, incluido su RNC), <strong>Empresas</strong> y <strong>Usuarios</strong>.</p>
-<p>Ahí se da de alta a los usuarios y se les asignan los <strong>permisos</strong>: lo que puede ver cada persona depende de los permisos que tiene, y el botón de una pantalla desaparece si no lo tiene.</p>
-<div class="page-header"><span class="brand">12 · 11. Soporte</span><span>Manual del usuario de Volterp</span></div><h2 id="11-soporte">11. Soporte</h2>
-<p><figure class="captura pendiente"><div class="hueco">25-soporte.png</div><figcaption>El chat de soporte</figcaption></figure></p>
-<p>El chat de ayuda: responde por reglas y, si hace falta, escala a una persona.</p>
-<div class="page-header"><span class="brand">13 · 12. Lo que hoy no se puede hacer</span><span>Manual del usuario de Volterp</span></div><h2 id="12-lo-que-hoy-no-se-puede-hacer">12. Lo que hoy no se puede hacer</h2>
-<p>Lo que el sistema todavía no resuelve, para que no pierdas tiempo buscándolo:</p>
-<ul><li><strong>El RNC del cliente no se captura en la UI.</strong> El formulario de clientes no tiene ese campo y la caja tampoco lo pide: el crédito fiscal (E31) necesita un cliente que <strong>ya tenga el RNC cargado en su ficha</strong> (lo carga el administrador). La caja avisa <em>"El crédito fiscal necesita el RNC del cliente"</em> cuando no lo tiene.<li><strong>La venta a consumidor final por encima de RD$250,000 sin RNC</strong> no se frena en la caja: la DGII exige el RNC del comprador a partir de ese monto y el comprobante puede ser rechazado al enviarse.<li><strong>No hay movimientos de inventario</strong>: el stock se edita a mano y solo lo ajustan las ventas (descontan al completarse y devuelven al cancelarse).<li><strong>No hay pantalla de categorías</strong>: existen en el sistema y se usan en el producto, pero no se crean ni se editan desde la app.<li><strong>Nómina y asistencia no se guardan</strong>: la nómina se calcula y se muestra; la asistencia es de demostración.<li><strong>Reportes se arma con los datos en memoria</strong>, no con una consulta al servidor.<li><strong>El "Descargar PDF" de una venta imprime</strong> la vista del navegador: no genera un PDF propio.<li><strong>Los emisores y los rangos no se borran</strong>: un rango se anula, un emisor se desactiva.<li><strong>Recepción no tiene listado</strong>: se registra por id de comprobante.</ul>
+<div id="index-blocks"><div class="blk"><h2 class="index-title">Índice</h2></div>
+
+      <div class="blk toc-entry" data-outline="0">
+        <div class="toc-parte">
+          
+          <a href="#manual-del-usuario-de-volterp">Manual del usuario de Volterp</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="1">
+        <div class="toc-seccion lvl-2">
+          <span class="n">1</span>
+          <a href="#como-leer-este-manual">Cómo leer este manual</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="2">
+        <div class="toc-seccion lvl-2">
+          <span class="n">2</span>
+          <a href="#1-el-panel">1. El panel</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="3">
+        <div class="toc-seccion lvl-2">
+          <span class="n">3</span>
+          <a href="#2-ventas">2. Ventas</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="4">
+        <div class="toc-seccion lvl-2">
+          <span class="n">4</span>
+          <a href="#3-inventario">3. Inventario</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="5">
+        <div class="toc-seccion lvl-2">
+          <span class="n">5</span>
+          <a href="#4-compras">4. Compras</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="6">
+        <div class="toc-seccion lvl-2">
+          <span class="n">6</span>
+          <a href="#5-clientes-y-proveedores">5. Clientes y proveedores</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="7">
+        <div class="toc-seccion lvl-2">
+          <span class="n">7</span>
+          <a href="#6-contabilidad">6. Contabilidad</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="8">
+        <div class="toc-seccion lvl-2">
+          <span class="n">8</span>
+          <a href="#7-recursos-humanos">7. Recursos humanos</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="9">
+        <div class="toc-seccion lvl-2">
+          <span class="n">9</span>
+          <a href="#8-proyectos-y-reportes">8. Proyectos y reportes</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="10">
+        <div class="toc-seccion lvl-2">
+          <span class="n">10</span>
+          <a href="#9-facturacion-electronica">9. Facturación electrónica</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="11">
+        <div class="toc-seccion lvl-2">
+          <span class="n">11</span>
+          <a href="#10-configuracion-y-usuarios">10. Configuración y usuarios</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="12">
+        <div class="toc-seccion lvl-2">
+          <span class="n">12</span>
+          <a href="#11-soporte">11. Soporte</a>
+          <span class="toc-p"></span>
+        </div>
+      </div>
+      <div class="blk toc-entry" data-outline="13">
+        <div class="toc-seccion lvl-2">
+          <span class="n">13</span>
+          <a href="#12-lo-que-hoy-no-se-puede-hacer">12. Lo que hoy no se puede hacer</a>
+          <span class="toc-p"></span>
+        </div>
+      </div></div>
+<div id="content">
+<div class="blk" data-sec=""><blockquote><p>Para quien vende, administra y usa el sistema. No hace falta saber nada de programación: este manual explica, pantalla por pantalla, <strong>qué hace cada cosa y cómo se hace</strong>.</p></blockquote></div>
+<div class="blk" data-sec="Cómo leer este manual" data-outline="1" data-opens="1"><h2 id="como-leer-este-manual">Cómo leer este manual</h2></div>
+<div class="blk" data-sec="Cómo leer este manual"><ul><li><strong>El menú de la izquierda</strong> agrupa las pantallas por módulo (Ventas, Contabilidad, Facturación, RRHH…). El título del grupo es un botón: si lo tocás, abre la primera pantalla del grupo.<li><strong>Los botones</strong> se nombran como los llamás en la pantalla: <strong>Nueva Venta</strong>, <strong>Guardar Borrador</strong>, <strong>Completar Venta</strong>, <strong>Descartar</strong>, <strong>Cancelar</strong>…<li><strong>Las capturas</strong> son de una sesión real: si una pantalla cambió, la foto es una foto de la fecha en que se armó este manual.<li><strong>Los avisos</strong> (los mensajes verdes o amarillos) son la respuesta del sistema. Si algo no se puede hacer, el sistema lo dice y por qué.</ul></div>
+<div class="blk" data-sec="1. El panel" data-outline="2" data-opens="1"><h2 id="1-el-panel">1. El panel</h2></div>
+<div class="blk" data-sec="1. El panel"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">01-dashboard.png</span></div><figcaption>El panel con los indicadores del negocio</figcaption></figure></p></div>
+<div class="blk" data-sec="1. El panel"><p>El panel (Dashboard) es lo primero que ves al entrar. Arriba tenés los <strong>filtros de período</strong>: Hoy, Esta semana, Este mes. Todo lo de la pantalla cambia con el filtro.</p></div>
+<div class="blk" data-sec="1. El panel"><ul><li><strong>Ventas, Compras, Clientes, Utilidad</strong>: las cuatro cifras del negocio.<li><strong>Ventas vs. Compras</strong>: la gráfica de los dos lados en el tiempo.<li><strong>Top productos</strong>: qué se está vendiendo más.<li><strong>Recordatorios</strong>: lo que el sistema te recuerda hacer (ventas pendientes por cobrar, cosas por revisar).</ul></div>
+<div class="blk" data-sec="2. Ventas" data-outline="3" data-opens="1"><h2 id="2-ventas">2. Ventas</h2></div>
+<div class="blk" data-sec="2. Ventas"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">02-ventas.png</span></div><figcaption>La lista de ventas</figcaption></figure></p></div>
+<div class="blk" data-sec="2. Ventas"><p>La pantalla de <strong>Ventas</strong> es la lista de todas las ventas: las completadas, las pendientes y las canceladas. Tiene buscador, filtros y paginación.</p></div>
+<div class="blk" data-sec="2. Ventas"><p>Desde acá se entra a la caja con el botón <strong>+ Nueva Venta</strong>.</p></div>
+<div class="blk" data-sec="2. Ventas"><h3 id="2-1-la-caja-registrar-una-venta">2.1 La caja: registrar una venta</h3></div>
+<div class="blk" data-sec="2. Ventas"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">03-caja-nueva-venta.png</span></div><figcaption>La caja de venta nueva</figcaption></figure></p></div>
+<div class="blk" data-sec="2. Ventas"><p>La caja (la venta nueva) es una <strong>pantalla completa</strong>: no tiene el menú de la izquierda, y la barra del navegador dice que estás vendiendo. Es la pantalla donde se hace todo el día a día.</p></div>
+<div class="blk" data-sec="2. Ventas"><p><strong>Cómo se registra una venta:</strong></p></div>
+<div class="blk" data-sec="2. Ventas"><ol><li><strong>Busca o escanea el producto.</strong> La tecla <strong>F2</strong> lleva el cursor al buscador. También podés elegir por categoría, con las pestañas de arriba.<li><strong>Tocá el producto</strong> → se agrega al carrito (la tarjeta del producto es el botón).<li><strong>Elegí el cliente</strong> con el buscador. Cuando lo tenés, aparece su tarjeta con el botón <strong>Cambiar</strong> (por si te equivocaste).<li><strong>Ajustá el carrito</strong>: cada línea tiene <strong>−</strong> y <strong>+</strong> para la cantidad, y <strong>Quitar del carrito</strong> para sacarla. El botón <strong>Vaciar</strong> deja la caja en blanco.<li><strong>Revisá el resumen</strong>: Subtotal, <strong>ITBIS</strong> (18%) y <strong>TOTAL</strong>. Arriba dice cuántos artículos hay.<li><strong>Elegí el comprobante</strong> (abajo a la derecha):</ol><ul><li><strong>Consumo (E32)</strong> — la factura de consumo: es la de siempre.</li><li><strong>Crédito fiscal (E31)</strong> — para un cliente con RNC: es la que le descuenta el ITBIS. <strong>Si el cliente no tiene RNC, el sistema no te deja elegirla</strong> y te avisa <em>"El crédito fiscal necesita el RNC del cliente."</em></li><li><strong>Factura comercial (sin comprobante)</strong> — la venta sin comprobante fiscal: no consume número de la DGII. Es la que se usa en el modo normal.</ul><ol><li>Tocá <strong>Completar Venta $X</strong> (el botón verde con el total).</ol></div>
+<div class="blk" data-sec="2. Ventas"><p><strong>Lo que el sistema te avisa:</strong></p></div>
+<div class="blk" data-sec="2. Ventas"><table><thead><tr><th>Aviso</th><th>Qué pasó</th></tr></thead><tbody><tr><td><em>El carrito está vacío</em></td><td>No hay nada que cobrar todavía.</td></tr><tr><td><em>Seleccione un cliente, por favor.</em></td><td>La venta necesita saber a quién es.</td></tr><tr><td><em>No hay empresa seleccionada</em></td><td>La empresa es la que emite; revisá la configuración.</td></tr><tr><td><em>Venta realizada exitosamente</em></td><td>Se emitió el comprobante fiscal.</td></tr><tr><td><em>Venta realizada sin comprobante</em></td><td>Fue una factura comercial: no salió comprobante.</td></tr><tr><td><em>Puedes cobrar, pero el comprobante no se va a emitir</em></td><td>Falta algo para facturar (certificado, rango). Podés cobrar igual, pero el comprobante no sale.</td></tr></tbody></table></div>
+<div class="blk" data-sec="2. Ventas"><div class="exec-summary"><p><strong><strong>El aviso de "puedes cobrar pero…"</strong></strong> sale apenas abrís la caja si al sistema le falta algo. No te frena la venta: te dice que el comprobante no se va a emitir. Para saber qué falta, mirá el <strong>estado de facturación</strong> en Configuración fiscal (§9.7).</p></div></div>
+<div class="blk" data-sec="2. Ventas"><h3 id="2-2-guardar-un-borrador-y-volver-a-el">2.2 Guardar un borrador y volver a él</h3></div>
+<div class="blk" data-sec="2. Ventas"><p>Si el cliente se va y todavía no sabés si cierra, tocá <strong>Guardar Borrador</strong>.</p></div>
+<div class="blk" data-sec="2. Ventas"><ul><li>La venta queda en estado <strong>Pendiente</strong> (no está cobrada).<li><strong>La caja se queda limpia</strong> y vos seguís en la misma pantalla: podés seguir vendiendo.<li>El sistema avisa <em>Borrador guardado</em>.</ul></div>
+<div class="blk" data-sec="2. Ventas"><p>Para volver a una venta pendiente: en <strong>Ventas</strong>, tocá el ícono de editar de la fila → la caja se abre con lo que cargaste antes (los productos y el tipo de comprobante original).</p></div>
+<div class="blk" data-sec="2. Ventas"><h3 id="2-3-cancelar-una-venta">2.3 Cancelar una venta</h3></div>
+<div class="blk" data-sec="2. Ventas"><p>Hay dos formas, y hacen lo mismo:</p></div>
+<div class="blk" data-sec="2. Ventas"><ul><li><strong>Desde la caja</strong> (editando una venta pendiente): el botón <strong>Descartar</strong> → te pregunta <em>"¿Cancelar la venta?"</em> → <strong>Sí, cancelar</strong>.<li><strong>Desde la lista</strong> de ventas: el botón <strong>Cancelar</strong> de la fila (solo aparece en las pendientes).</ul></div>
+<div class="blk" data-sec="2. Ventas"><p><strong>Lo que pasa:</strong> la venta queda en estado <strong>Cancelada</strong> (no se borra: queda el registro) y <strong>el stock que había reservado vuelve al inventario</strong>. El sistema avisa <em>Venta cancelada</em>.</p></div>
+<div class="blk" data-sec="2. Ventas"><h3 id="2-4-ver-el-detalle-de-una-venta">2.4 Ver el detalle de una venta</h3></div>
+<div class="blk" data-sec="2. Ventas"><p>Tocá una venta <strong>Completada</strong> o <strong>Cancelada</strong> de la lista → se abre el modal <strong>Detalle de Venta #código</strong>.</p></div>
+<div class="blk" data-sec="2. Ventas"><ul><li>Si la venta está completada, el aviso dice <em>"Venta completada — solo vista"</em> (no se puede editar una venta cobrada).<li>Ves: el cliente, la tabla de productos, el <strong>Resumen</strong> (Subtotal / ITBIS / Total) y los detalles (artículos, líneas, actualizado).<li><strong>Copiar ID</strong> te lleva el identificador de la venta al portapapeles.<li><strong>Descargar PDF</strong> imprime la vista (usa la impresión del navegador).</ul></div>
+<div class="blk" data-sec="2. Ventas"><h3 id="2-5-el-comprobante-fiscal-de-una-venta">2.5 El comprobante fiscal de una venta</h3></div>
+<div class="blk" data-sec="2. Ventas"><p>Cuando la venta tiene comprobante fiscal, el modal <strong>Detalle de Venta</strong> agrega la sección <strong>Comprobante fiscal</strong>:</p></div>
+<div class="blk" data-sec="2. Ventas"><ul><li>La <strong>insignia de estado</strong>, con las palabras de la DGII: Borrador, Firmado, Enviado, En proceso, <strong>Aceptado</strong>, <strong>Aceptado condicional</strong>, <strong>Rechazado</strong>, Anulado.<li>El <strong>e-NCF</strong> (el número del comprobante) y el <strong>Track ID</strong> (el número que te dio la DGII).<li>El <strong>Veredicto de la DGII</strong>: lo que la DGII respondió.<li>El <strong>Código QR del comprobante</strong> (el mismo que va impreso en la factura de papel).<li>Si quedó <strong>Rechazado</strong> o <strong>Requiere revisión</strong>, aparece el botón <strong>Reintentar emisión</strong>.</ul></div>
+<div class="blk" data-sec="2. Ventas"><div class="exec-summary"><p><strong><strong>En la lista de ventas el estado fiscal no se ve</strong></strong> , a propósito: la lista es de ventas y el estado fiscal vive en el detalle. La lista se mantiene simple y el que necesita el dato entra al detalle.</p></div></div>
+<div class="blk" data-sec="2. Ventas"><p><strong>Una venta con comprobante ya enviado a la DGII no se puede eliminar</strong>: el sistema te avisa <em>"No se puede eliminar: el comprobante fiscal ya fue enviado a la DGII"</em>.</p></div>
+<div class="blk" data-sec="3. Inventario" data-outline="4" data-opens="1"><h2 id="3-inventario">3. Inventario</h2></div>
+<div class="blk" data-sec="3. Inventario"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">05-inventario.png</span></div><figcaption>El inventario de productos</figcaption></figure></p></div>
+<div class="blk" data-sec="3. Inventario"><p>En <strong>Inventario</strong> manejás los productos: nombre, categoría, código (se genera solo), precio, stock, imagen y si está activo.</p></div>
+<div class="blk" data-sec="3. Inventario"><ul><li>Los filtros de arriba: <strong>Todos</strong>, <strong>Stock bajo</strong>, <strong>Sin stock</strong>.<li>El <strong>stock se edita a mano</strong>: el sistema descuenta cuando vendés y devuelve cuando cancelás, pero la carga inicial (y las correcciones) las hacés vos.</ul></div>
+<div class="blk" data-sec="4. Compras" data-outline="5" data-opens="1"><h2 id="4-compras">4. Compras</h2></div>
+<div class="blk" data-sec="4. Compras"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">04-compras.png</span></div><figcaption>Las compras</figcaption></figure></p></div>
+<div class="blk" data-sec="4. Compras"><p>En <strong>Compras</strong> registrás las compras: el proveedor, las líneas de productos y el total (se calcula solo). Los estados son <strong>Pendiente</strong>, <strong>Recibida</strong> y <strong>Cancelada</strong>.</p></div>
+<div class="blk" data-sec="5. Clientes y proveedores" data-outline="6" data-opens="1"><h2 id="5-clientes-y-proveedores">5. Clientes y proveedores</h2></div>
+<div class="blk" data-sec="5. Clientes y proveedores"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">06-clientes.png</span></div><figcaption>Los clientes</figcaption></figure></p></div>
+<div class="blk" data-sec="5. Clientes y proveedores"><p><strong>Clientes</strong>: nombre, email, teléfono, dirección, foto y si está activo. Es la ficha que usa la caja.</p></div>
+<div class="blk" data-sec="5. Clientes y proveedores"><div class="exec-summary"><p><strong><strong>Ojo</strong></strong> : hoy la ficha de cliente <strong>no tiene campo para el RNC</strong>. Si el cliente necesita crédito fiscal (E31), el RNC tiene que estar cargado en la ficha por el administrador; la caja no lo puede escribir. Es una limitación conocida (§12).</p></div></div>
+<div class="blk" data-sec="5. Clientes y proveedores"><p><strong>Proveedores</strong>: igual, más la categoría y la persona de contacto.</p></div>
+<div class="blk" data-sec="6. Contabilidad" data-outline="7" data-opens="1"><h2 id="6-contabilidad">6. Contabilidad</h2></div>
+<div class="blk" data-sec="6. Contabilidad"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">08-contabilidad.png</span></div><figcaption>La contabilidad</figcaption></figure></p></div>
+<div class="blk" data-sec="6. Contabilidad"><ul><li><strong>Contabilidad</strong>: los movimientos de ingreso y egreso, con los tres indicadores (Ingresos, Egresos, Balance).<li><strong>Cuentas</strong> (<code>/contabilidad/cuentas</code>): el catálogo de cuentas contables (código, tipo, cuenta padre, si permite movimiento). Editar es de Admin y SuperAdmin.<li><strong>Cuentas por cobrar</strong> (<code>/contabilidad/cxc</code>): las ventas pendientes de cobro, agrupadas por cliente, con el saldo y cuántas ventas hay.<li><strong>Cuentas por pagar</strong> (<code>/contabilidad/cxp</code>): las compras pendientes de pago, agrupadas por proveedor.</ul></div>
+<div class="blk" data-sec="7. Recursos humanos" data-outline="8" data-opens="1"><h2 id="7-recursos-humanos">7. Recursos humanos</h2></div>
+<div class="blk" data-sec="7. Recursos humanos"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">12-rrhh.png</span></div><figcaption>Los expedientes de los empleados</figcaption></figure></p></div>
+<div class="blk" data-sec="7. Recursos humanos"><ul><li><strong>RRHH</strong>: los expedientes de los empleados (el alta es un formulario de 3 pasos), con los indicadores y filtros.<li><strong>Nómina</strong>: la calculadora de nómina por empleado (salario bruto, deducciones y neto). <strong>Calcula y muestra; no guarda.</strong><li><strong>Asistencia</strong>: los ponches (entrada, pausa, salida) con sus indicadores. Hoy son <strong>datos de demostración</strong>.</ul></div>
+<div class="blk" data-sec="8. Proyectos y reportes" data-outline="9" data-opens="1"><h2 id="8-proyectos-y-reportes">8. Proyectos y reportes</h2></div>
+<div class="blk" data-sec="8. Proyectos y reportes"><ul><li><strong>Proyectos</strong>: presupuesto, gastado, fechas y porcentaje de avance.<li><strong>Reportes</strong>: el resumen de ventas y compras, los mejores clientes, el top 10 de productos y la gráfica de los últimos 7 días. <strong>Se arma con los datos que están en memoria</strong>: no es un reporte del servidor.</ul></div>
+<div class="blk" data-sec="9. Facturación electrónica" data-outline="10" data-opens="1"><h2 id="9-facturacion-electronica">9. Facturación electrónica</h2></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">17-facturacion.png</span></div><figcaption>El hub de facturación electrónica</figcaption></figure></p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>Esta sección es <strong>administración</strong>: no es donde se vende, es donde se deja listo al sistema para poder emitir. Entrás por <strong>Facturación electrónica</strong> y hay seis pantallas.</p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><h3 id="9-1-el-estado-de-facturacion-puedo-facturar">9.1 El estado de facturación (¿puedo facturar?)</h3></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">23-configuracion-fiscal.png</span></div><figcaption>La configuración fiscal con el estado de facturación</figcaption></figure></p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>En <strong>Configuración fiscal</strong> está el checklist <strong>Estado de facturación</strong>, que responde la pregunta que importa: <em>¿puedo emitir comprobantes ahora?</em></p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><ul><li><strong>Listo para facturar</strong> — todo está en su lugar.<li><strong>No se puede facturar ahora</strong> — con el motivo: falta el certificado, el rango no existe, venció, se agotó o se anuló.<li><strong>La ruta de emisión</strong>: <strong>Electrónica (e-NCF)</strong> o <strong>Papel (NCF)</strong>. Sale del <strong>modo de emisión</strong> que declaró la empresa y de si está en contingencia.<li><strong>Certificado de firma</strong>: si existe, cuándo vence.<li><strong>Tipos de comprobante</strong>: los que podés emitir, con cuántos números quedan, cuándo vencen y su estado.</ul></div>
+<div class="blk" data-sec="9. Facturación electrónica"><blockquote><p>En la <strong>caja</strong> el mismo checklist aparece como un aviso rápido (<em>"Puedes cobrar, pero el comprobante no se va a emitir"</em>). Acá está la versión completa, con el detalle.</p></blockquote></div>
+<div class="blk" data-sec="9. Facturación electrónica"><h3 id="9-2-emisores">9.2 Emisores</h3></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">18-emisores.png</span></div><figcaption>Los emisores</figcaption></figure></p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>Un emisor es el <strong>RNC que emite</strong>: el de la empresa o el de otra marca de la misma empresa. Con <strong>+ Nuevo emisor</strong> cargás el RNC y la razón social.</p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>Al editar, <strong>el RNC no se puede cambiar</strong> (la DGII no lo permite); solo la razón social y si está activo.</p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><h3 id="9-3-rangos-de-e-ncf">9.3 Rangos de e-NCF</h3></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">19-rangos.png</span></div><figcaption>Los rangos de e-NCF</figcaption></figure></p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>El <strong>rango</strong> es el tramo de números que la DGII le autorizó a un emisor para un tipo de comprobante: desde, hasta, posición actual y fecha de vencimiento.</p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><ul><li><strong>+ Nuevo rango</strong>: RNC emisor, tipo, desde, hasta, posición y vencimiento.<li>Al editar, el emisor, el tipo y el inicio son <strong>solo lectura</strong>.<li><strong>Anular rango</strong> es lo único que destruye: avisa con los mensajes de la DGII.</ul></div>
+<div class="blk" data-sec="9. Facturación electrónica"><h3 id="9-4-certificados">9.4 Certificados</h3></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">20-certificados.png</span></div><figcaption>Los certificados de firma</figcaption></figure></p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>El <strong>certificado</strong> es el <code>.p12</code> con el que se firma el comprobante. <strong>+ Nuevo certificado</strong>: nombre, RNC, fecha de vencimiento y la credencial.</p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>La credencial es <strong>opaca</strong>: se pega una sola vez y nunca se vuelve a mostrar. Por eso no hay edición ni borrado (el backend no los expone).</p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><h3 id="9-5-comprobantes">9.5 Comprobantes</h3></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">21-comprobantes.png</span></div><figcaption>Los comprobantes emitidos</figcaption></figure></p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>El estado de cada comprobante emitido. Arriba, las tarjetas de conteo: pendientes de emitir, en proceso, rechazados, requieren revisión y el total.</p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>Por fila: <strong>Reintentar</strong> (solo si está rechazado o requiere revisión), <strong>Ver QR</strong> e <strong>Imprimir</strong> (abre la representación impresa en una pestaña nueva).</p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><h3 id="9-6-recepcion">9.6 Recepción</h3></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">22-recepcion.png</span></div><figcaption>La recepción de comprobantes</figcaption></figure></p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>El comprobante que <strong>te envía un cliente</strong> (el proveedor de tu proveedor, por ejemplo) llega con el certificado de él. Acá se registra la decisión comercial: <strong>+ Registrar decisión</strong> → el id del comprobante, <strong>Aprobar</strong> o <strong>Rechazar</strong>, y el motivo.</p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><p>Abajo queda la ficha de la última decisión: RNC emisor y receptor, e-NCF, firmado, recibido, estado de aprobación, quién decidió, la fecha y el motivo.</p></div>
+<div class="blk" data-sec="9. Facturación electrónica"><div class="exec-summary"><p><strong><strong>No hay listado</strong></strong> : por el modelo de seguridad del backend (mutual TLS) el comprobante recibido se busca por su id.</p></div></div>
+<div class="blk" data-sec="9. Facturación electrónica"><h3 id="9-7-configuracion-fiscal">9.7 Configuración fiscal</h3></div>
+<div class="blk" data-sec="9. Facturación electrónica"><ul><li><strong>Modo de emisión</strong>: <strong>Guardar el modo de emisión</strong> (Electrónico / Normal). Es la declaración ante la DGII: en modo normal se factura con NCF (B01/B02) y no hace falta certificado.<li><strong>Contingencia</strong>: estado y las fechas de inicio y fin → <strong>Guardar la contingencia</strong>. Dentro de una contingencia el camino es el papel.<li><strong>Credenciales de API</strong>: <strong>+ Nueva credencial</strong> para las integraciones y <strong>Revocar</strong>. El secret se muestra <strong>una sola vez</strong>.<li><strong>Secuencias normales</strong>: <strong>+ Nueva secuencia normal</strong> (el tramo de números de NCF del camino en papel).</ul></div>
+<div class="blk" data-sec="10. Configuración y usuarios" data-outline="11" data-opens="1"><h2 id="10-configuracion-y-usuarios">10. Configuración y usuarios</h2></div>
+<div class="blk" data-sec="10. Configuración y usuarios"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">24-configuracion.png</span></div><figcaption>La configuración</figcaption></figure></p></div>
+<div class="blk" data-sec="10. Configuración y usuarios"><p><strong>Configuración</strong> tiene tres pestañas: <strong>General</strong> (los datos de la empresa, incluido su RNC), <strong>Empresas</strong> y <strong>Usuarios</strong>.</p></div>
+<div class="blk" data-sec="10. Configuración y usuarios"><p>Ahí se da de alta a los usuarios y se les asignan los <strong>permisos</strong>: lo que puede ver cada persona depende de los permisos que tiene, y el botón de una pantalla desaparece si no lo tiene.</p></div>
+<div class="blk" data-sec="11. Soporte" data-outline="12" data-opens="1"><h2 id="11-soporte">11. Soporte</h2></div>
+<div class="blk" data-sec="11. Soporte"><p><figure class="captura pendiente"><div class="hueco"><span class="hueco-titulo">Captura de pantalla pendiente</span><span class="hueco-nombre">25-soporte.png</span></div><figcaption>El chat de soporte</figcaption></figure></p></div>
+<div class="blk" data-sec="11. Soporte"><p>El chat de ayuda: responde por reglas y, si hace falta, escala a una persona.</p></div>
+<div class="blk" data-sec="12. Lo que hoy no se puede hacer" data-outline="13" data-opens="1"><h2 id="12-lo-que-hoy-no-se-puede-hacer">12. Lo que hoy no se puede hacer</h2></div>
+<div class="blk" data-sec="12. Lo que hoy no se puede hacer"><p>Lo que el sistema todavía no resuelve, para que no pierdas tiempo buscándolo:</p></div>
+<div class="blk" data-sec="12. Lo que hoy no se puede hacer"><ul><li><strong>El RNC del cliente no se captura en la UI.</strong> El formulario de clientes no tiene ese campo y la caja tampoco lo pide: el crédito fiscal (E31) necesita un cliente que <strong>ya tenga el RNC cargado en su ficha</strong> (lo carga el administrador). La caja avisa <em>"El crédito fiscal necesita el RNC del cliente"</em> cuando no lo tiene.<li><strong>La venta a consumidor final por encima de RD$250,000 sin RNC</strong> no se frena en la caja: la DGII exige el RNC del comprador a partir de ese monto y el comprobante puede ser rechazado al enviarse.<li><strong>No hay movimientos de inventario</strong>: el stock se edita a mano y solo lo ajustan las ventas (descontan al completarse y devuelven al cancelarse).<li><strong>No hay pantalla de categorías</strong>: existen en el sistema y se usan en el producto, pero no se crean ni se editan desde la app.<li><strong>Nómina y asistencia no se guardan</strong>: la nómina se calcula y se muestra; la asistencia es de demostración.<li><strong>Reportes se arma con los datos en memoria</strong>, no con una consulta al servidor.<li><strong>El "Descargar PDF" de una venta imprime</strong> la vista del navegador: no genera un PDF propio.<li><strong>Los emisores y los rangos no se borran</strong>: un rango se anula, un emisor se desactiva.<li><strong>Recepción no tiene listado</strong>: se registra por id de comprobante.</ul></div>
+</div>
+<span id="brand" hidden>Manual del usuario de Volterp</span>
+<span id="foot-text" hidden>Volterp · Manual del usuario</span>
+<span id="numbers" hidden></span>
+<script type="application/json" id="outline-data">[{"level":1,"text":"Manual del usuario de Volterp","id":"manual-del-usuario-de-volterp","number":""},{"level":2,"text":"Cómo leer este manual","id":"como-leer-este-manual","number":"1"},{"level":2,"text":"1. El panel","id":"1-el-panel","number":"2"},{"level":2,"text":"2. Ventas","id":"2-ventas","number":"3"},{"level":2,"text":"3. Inventario","id":"3-inventario","number":"4"},{"level":2,"text":"4. Compras","id":"4-compras","number":"5"},{"level":2,"text":"5. Clientes y proveedores","id":"5-clientes-y-proveedores","number":"6"},{"level":2,"text":"6. Contabilidad","id":"6-contabilidad","number":"7"},{"level":2,"text":"7. Recursos humanos","id":"7-recursos-humanos","number":"8"},{"level":2,"text":"8. Proyectos y reportes","id":"8-proyectos-y-reportes","number":"9"},{"level":2,"text":"9. Facturación electrónica","id":"9-facturacion-electronica","number":"10"},{"level":2,"text":"10. Configuración y usuarios","id":"10-configuracion-y-usuarios","number":"11"},{"level":2,"text":"11. Soporte","id":"11-soporte","number":"12"},{"level":2,"text":"12. Lo que hoy no se puede hacer","id":"12-lo-que-hoy-no-se-puede-hacer","number":"13"}]</script>
+<script>
+
+(function () {
+  var brand = document.getElementById('brand').textContent;
+  var footText = document.getElementById('foot-text').textContent;
+  var withNumbers = !!document.getElementById('numbers');
+  var outline = JSON.parse(document.getElementById('outline-data').textContent);
+  var content = document.getElementById('content');
+  var indexHost = document.getElementById('index-blocks');
+
+  var stage = document.createElement('div');
+  stage.id = 'stage';
+  stage.style.cssText = 'position:absolute;left:-30000px;top:0;width:210mm;';
+  document.body.appendChild(stage);
+
+  function newSheet(descriptor) {
+    var sheet = document.createElement('div');
+    sheet.className = 'page';
+    sheet.innerHTML = '<div class="page-header"><span class="brand"></span><span class="descriptor"></span></div>'
+      + '<div class="page-body"></div>'
+      + '<div class="page-foot"><span class="repo"></span><span class="pn"></span></div>';
+    sheet.querySelector('.brand').textContent = brand;
+    sheet.querySelector('.descriptor').textContent = descriptor;
+    sheet.querySelector('.repo').textContent = footText;
+    stage.appendChild(sheet);
+    return sheet;
+  }
+
+  function fits(body) { return body.scrollHeight <= body.clientHeight + 1; }
+
+  // Las piezas de texto de un bloque de codigo: para partirlo por lineas sin
+  // perder el resaltado de sintaxis.
+  function piecesOf(code) {
+    var list = [];
+    (function walk(node) {
+      for (var i = 0; i < node.childNodes.length; i++) {
+        var child = node.childNodes[i];
+        if (child.nodeType === 3) list.push({ parent: node, node: child });
+        else walk(child);
+      }
+    })(code);
+    return list;
+  }
+
+  function countLines(pieces) {
+    var n = 0;
+    for (var i = 0; i < pieces.length; i++) {
+      var text = pieces[i].node.textContent;
+      for (var c = 0; c < text.length; c++) if (text.charAt(c) === '\n') n++;
+    }
+    return n;
+  }
+
+  // Deja solo las primeras k lineas (las piezas siguientes quedan vacias).
+  function truncateAt(pieces, k) {
+    var seen = 0;
+    for (var i = 0; i < pieces.length; i++) {
+      var piece = pieces[i];
+      var text = piece.node.textContent;
+      var nl = 0;
+      for (var c = 0; c < text.length; c++) if (text.charAt(c) === '\n') nl++;
+      if (seen + nl <= k) {
+        seen += nl;
+        if (seen === k) {
+          for (var j = i + 1; j < pieces.length; j++) pieces[j].node.textContent = '';
+          return { index: i + 1, tail: '' };
+        }
+        continue;
+      }
+      var cut = -1, cnt = 0;
+      for (var c2 = 0; c2 < text.length; c2++) {
+        if (text.charAt(c2) === '\n') {
+          cnt++;
+          if (seen + cnt === k) { cut = c2 + 1; break; }
+        }
+      }
+      if (cut < 0) cut = text.length;
+      var tail = text.slice(cut);
+      piece.node.textContent = text.slice(0, cut);
+      for (var j2 = i + 1; j2 < pieces.length; j2++) pieces[j2].node.textContent = '';
+      return { index: i, tail: tail };
+    }
+    return { index: pieces.length, tail: '' };
+  }
+
+  // Un bloque de codigo que no entra ni en una hoja vacia se parte por
+  // lineas: la mitad entra en esta hoja y el resto sigue en la siguiente.
+  // El bloque tiene que estar en la hoja mientras se mide.
+  function splitCode(block, body) {
+    var pre = block.querySelector('pre');
+    if (!pre) return null;
+    var code = pre.querySelector('code') || pre;
+    var pieces = piecesOf(code);
+    var total = countLines(pieces);
+    if (total < 4) return null;
+
+    var saved = pieces.map(function (piece) { return piece.node.textContent; });
+    var restore = function () {
+      pieces.forEach(function (piece, i) { piece.node.textContent = saved[i]; });
+    };
+
+    var lo = 1, hi = total - 1, best = 0;
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      restore();
+      truncateAt(pieces, mid);
+      if (fits(body)) { best = mid; lo = mid + 1; } else { hi = mid - 1; }
+    }
+    restore();
+    if (!best) return null;
+
+    var clone = pre.cloneNode(true);
+    var cloneCode = clone.querySelector('code') || clone;
+    var clonePieces = piecesOf(cloneCode);
+    var cut = truncateAt(pieces, best);
+    for (var i = 0; i < cut.index && clonePieces[i]; i++) {
+      if (clonePieces[i].parent) clonePieces[i].parent.removeChild(clonePieces[i].node);
+    }
+    if (cut.tail && clonePieces[cut.index]) clonePieces[cut.index].node.textContent = cut.tail;
+
+    var rest = block.cloneNode(true);
+    var restPre = rest.querySelector('pre');
+    restPre.parentNode.replaceChild(clone, restPre);
+
+    // La prueba de que al partir no se pierde ni una coma: lo que queda en la
+    // hoja mas lo que sigue tiene que ser el bloque entero.
+    var headText = pieces.map(function (piece) { return piece.node.textContent; }).join('');
+    var tailText = clonePieces.slice(cut.index).map(function (piece) { return piece.node.textContent; }).join('');
+    if (headText + tailText !== saved.join('')) {
+      console.log('VOLTERP: ALERTA - un bloque partido no conserva el texto');
+    }
+    return { tail: rest };
+  }
+
+  // Una tabla que no entra se parte por filas (el encabezado se repite).
+  function splitTable(block, body) {
+    var table = block.querySelector('table');
+    var tbody = table && table.querySelector('tbody');
+    if (!tbody) return null;
+    var rows = Array.prototype.slice.call(tbody.children);
+    if (rows.length < 4) return null;
+
+    var setRows = function (n) {
+      while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+      for (var i = 0; i < n; i++) tbody.appendChild(rows[i]);
+    };
+
+    var lo = 2, hi = rows.length - 1, best = 0;
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      setRows(mid);
+      if (fits(body)) { best = mid; lo = mid + 1; } else { hi = mid - 1; }
+    }
+    setRows(rows.length);
+    if (!best) return null;
+
+    setRows(best);
+    var rest = block.cloneNode(true);
+    var restTbody = rest.querySelector('tbody');
+    while (restTbody.firstChild) restTbody.removeChild(restTbody.firstChild);
+    for (var i = best; i < rows.length; i++) restTbody.appendChild(rows[i]);
+    return { tail: rest };
+  }
+
+  // Un bloque con varias partes (una lista, una secuencia de parrafos) se
+  // parte por partes: la mitad entra y el resto sigue en la hoja siguiente.
+  function splitParts(block, body, depth) {
+    depth = depth || 0;
+    var kids = Array.from(block.childNodes);
+    if (kids.length < 1) return null;
+
+    if (kids.length === 1 && kids[0].nodeType === 1 && depth < 4) {
+      // El bloque tiene una sola parte: se parte esa parte (una lista, un
+      // recuadro con muchos parrafos).
+      var sub = splitParts(kids[0], body, depth + 1);
+      if (!sub) return null;
+      var rest = block.cloneNode(false);
+      rest.appendChild(sub.tail);
+      return { tail: rest };
+    }
+
+    if (kids.length < 2) return null;
+
+    var setKids = function (n) {
+      while (block.firstChild) block.removeChild(block.firstChild);
+      for (var i = 0; i < n; i++) block.appendChild(kids[i]);
+    };
+
+    var lo = 1, hi = kids.length - 1, best = 0;
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      setKids(mid);
+      if (fits(body)) { best = mid; lo = mid + 1; } else { hi = mid - 1; }
+    }
+    setKids(kids.length);
+    if (!best) return null;
+
+    setKids(best);
+    var rest2 = block.cloneNode(false);
+    for (var i = best; i < kids.length; i++) rest2.appendChild(kids[i]);
+    return { tail: rest2 };
+  }
+
+  // Reparte los bloques en hojas: el que no entra abre la hoja siguiente. Un
+  // bloque que no entra ni en una hoja vacia se parte (codigo, tabla o
+  // bloque de partes) o se deja desbordar (lo demas: no se pierde contenido).
+  function compose(nodes, descriptorFor, label) {
+    var sheets = [];
+    var i = 0;
+    var spilled = 0;
+    var split = 0;
+    while (i < nodes.length) {
+      var sheet = newSheet(descriptorFor(nodes[i]));
+      var body = sheet.querySelector('.page-body');
+      while (i < nodes.length) {
+        var node = nodes[i];
+
+        // Un titulo de seccion abre hoja nueva (como en la casa).
+        if (node.dataset.opens === '1' && body.children.length) break;
+
+        body.appendChild(node);
+        if (fits(body)) { i++; continue; }
+
+        // No entra: se parte para que entre.
+        var parts = splitCode(node, body) || splitTable(node, body) || splitParts(node, body);
+        if (parts) {
+          nodes.splice(i + 1, 0, parts.tail);
+          i++;
+          split++;
+          continue;
+        }
+
+        body.removeChild(node);
+        if (body.children.length === 0) {
+          body.appendChild(node);
+          body.style.overflow = 'visible';
+          sheet.style.height = 'auto';
+          sheet.style.minHeight = '297mm';
+          spilled++;
+          console.log('VOLTERP: desborda <' + node.tagName.toLowerCase() + '> '
+            + (node.textContent || '').trim().slice(0, 70).replace(/\s+/g, ' '));
+          i++;
+        }
+        break;
+      }
+      sheets.push(sheet);
+    }
+    if (split) console.log('VOLTERP: ' + split + ' bloque(s) partidos (' + label + ')');
+    if (spilled) console.log('VOLTERP: ' + spilled + ' bloque(s) desbordan la hoja (' + label + ')');
+    return sheets;
+  }
+
+  var contentNodes = Array.prototype.slice.call(content.children);
+  var indexNodes = indexHost ? Array.prototype.slice.call(indexHost.children) : [];
+
+  // 1. El contenido, hoja por hoja.
+  var contentSheets = compose(contentNodes, function (node) { return node.dataset.sec || ''; }, 'contenido');
+
+  // En que hoja cae cada seccion: de ahi sale el numero de pagina del indice.
+  var sheetOf = {};
+  contentSheets.forEach(function (sheet, sheetIndex) {
+    Array.prototype.slice.call(sheet.querySelector('.page-body').children).forEach(function (node) {
+      if (node.dataset.outline !== undefined) sheetOf[node.dataset.outline] = sheetIndex;
+    });
+  });
+
+  // 2. El indice, hoja por hoja.
+  var indexSheets = indexNodes.length
+    ? compose(indexNodes, function () { return 'Tabla de contenidos'; }, 'indice')
+    : [];
+
+  // 3. Los numeros: la portada es la 1, el indice va detras y el contenido al
+  //    final. El total de hojas lo define el contenido.
+  var offset = 1 + indexSheets.length;
+  var total = offset + contentSheets.length;
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  indexSheets.forEach(function (sheet, i) {
+    if (withNumbers) sheet.querySelector('.pn').textContent = pad(2 + i);
+  });
+  contentSheets.forEach(function (sheet, i) {
+    if (withNumbers) sheet.querySelector('.pn').textContent = pad(offset + 1 + i);
+  });
+  indexNodes.forEach(function (node) {
+    var slot = node.querySelector('.toc-p');
+    if (!slot) return;
+    var at = sheetOf[node.dataset.outline];
+    slot.textContent = at === undefined ? '' : 'p. ' + pad(offset + 1 + at);
+  });
+
+  // 4. El orden final: portada, indice, contenido.
+  indexSheets.concat(contentSheets).forEach(function (sheet) {
+    document.body.appendChild(sheet);
+  });
+  stage.remove();
+  content.remove();
+  if (indexHost) indexHost.remove();
+
+  // 5. La portada cuenta las paginas ella misma: el dato no se escribe a
+  //    mano (un numero viejo en la portada es peor que no ponerlo).
+  var totalPages = 1 + indexSheets.length + contentSheets.length;
+  var stats = document.querySelectorAll('.cover-stat');
+  for (var s = 0; s < stats.length; s++) {
+    var label = (stats[s].dataset.metric || '').toLowerCase();
+    if (label.charAt(0) === 'p' && label.indexOf('gina') >= 0) {
+      var num = stats[s].querySelector('.num');
+      if (num) num.textContent = String(totalPages);
+    }
+  }
+
+  console.log('VOLTERP: hojas ' + totalPages + ' de ' + total);
+  document.body.dataset.composed = '1';
+})();
+
+</script>
 </body>
 </html>
