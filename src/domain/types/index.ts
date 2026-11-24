@@ -225,6 +225,11 @@ export interface CreateSaleRequest {
   documentType?: TipoDocumentoVenta;
   /** The sale leaves without a fiscal document: the backend has the flag. */
   isCommercialInvoice?: boolean;
+  /**
+   * The tax id of the buyer: the sale carries it. Empty means the backend
+   * resolves it from the client.
+   */
+  receptorTaxId?: string | null;
 }
 
 export interface UpdateSaleRequest {
@@ -235,6 +240,11 @@ export interface UpdateSaleRequest {
   notes: string | null;
   items: CreateSaleItemRequest[];
   documentType?: TipoDocumentoVenta;
+  /**
+   * The tax id of the buyer: the sale carries it. Empty means the backend
+   * resolves it from the client.
+   */
+  receptorTaxId?: string | null;
 }
 
 export interface ClientDto {
@@ -575,6 +585,11 @@ export interface FiscalReadinessDto {
   isReady: boolean;
   blockers: FiscalBlockerDto[];
   documentTypes: FiscalReadinessDocumentTypeDto[];
+  /**
+   * The amount from which the document has to name its buyer: the rule is
+   * the backend's, so the front asks instead of carrying a number of its own.
+   */
+  buyerTaxIdRequiredFrom?: number;
 }
 
 // Electronic invoicing (e-CF) contract. It lives in its own module because it

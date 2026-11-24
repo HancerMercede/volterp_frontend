@@ -47,6 +47,17 @@ const RATE_TWO_PRODUCT: Product = {
   taxCode: "ItbisTasa2",
 };
 
+// Una venta que llega al monto desde el que el comprobante tiene que
+// nombrar a su comprador.
+const BIG_PRODUCT: Product = {
+  ...PRODUCT,
+  id: "p4",
+  code: "PRD-004",
+  name: "Aire acondicionado",
+  price: 250000,
+  stock: 5,
+};
+
 const CLIENT: Client = {
   id: "c1",
   code: "CLI-001",
@@ -93,15 +104,25 @@ beforeEach(() => {
   useVentaStore.setState({ ventas: [], createVenta: vi.fn(async () => {}) });
 });
 
-const renderPos = () =>
+const renderPos = (buyerTaxIdRequiredFrom?: number) =>
   render(
-    <NuevaVenta editingSaleId={null} onSave={vi.fn()} onCancel={vi.fn()} />,
+    <NuevaVenta
+      editingSaleId={null}
+      buyerTaxIdRequiredFrom={buyerTaxIdRequiredFrom}
+      onSave={vi.fn()}
+      onCancel={vi.fn()}
+    />,
   );
 
-const renderEditando = (venta: SaleDto) => {
+const renderEditando = (venta: SaleDto, buyerTaxIdRequiredFrom?: number) => {
   useVentaStore.setState({ ventas: [venta] });
   return render(
-    <NuevaVenta editingSaleId={venta.id} onSave={vi.fn()} onCancel={vi.fn()} />,
+    <NuevaVenta
+      editingSaleId={venta.id}
+      buyerTaxIdRequiredFrom={buyerTaxIdRequiredFrom}
+      onSave={vi.fn()}
+      onCancel={vi.fn()}
+    />,
   );
 };
 
@@ -393,9 +414,137 @@ describe("NuevaVenta", () => {
     // The choice was refused: the sale never became a fiscal credit.
     expect(createVenta).not.toHaveBeenCalled();
     expect(addToast).toHaveBeenCalledWith(
-      "A fiscal credit needs the client tax id.",
+      "A fiscal credit needs the buyer's tax ID.",
       "warning",
     );
+  });
+
+  it("carries the tax id of the buyer the cashier typed in the sale", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    const completeVenta = vi.fn();
+    useVentaStore.setState({ createVenta, completeVenta });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.type(screen.getByLabelText("Buyer tax ID"), "101500018");
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(createVenta).toHaveBeenCalledWith(
+      expect.objectContaining({ receptorTaxId: "101500018" }),
+    );
+  });
+
+  it("carries the tax id of the buyer in the update of a pending sale", async () => {
+    const updateVenta = vi.fn(async () => {});
+    const completeVenta = vi.fn();
+    useVentaStore.setState({ updateVenta, completeVenta });
+
+    renderEditando(PENDING_SALE);
+
+    await userEvent.type(screen.getByLabelText("Buyer tax ID"), "101500018");
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(updateVenta).toHaveBeenCalledWith(
+      "sale-1",
+      expect.objectContaining({ receptorTaxId: "101500018" }),
+    );
+  });
+
+  it("shows the tax id of the buyer that the pending sale carries", () => {
+    renderEditando({ ...PENDING_SALE, receptorTaxId: "101500018" });
+
+    expect(screen.getByLabelText("Buyer tax ID")).toHaveValue("101500018");
+  });
+
+  it("accepts a fiscal credit when the cashier types the tax id and the client has none", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    const completeVenta = vi.fn();
+    const addToast = vi.fn();
+    useVentaStore.setState({ createVenta, completeVenta });
+    useUIStore.setState({ addToast });
+    useClienteStore.setState({ clientes: [{ ...CLIENT, taxId: null }] });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.type(screen.getByLabelText("Buyer tax ID"), "101500018");
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(
+      screen.getByRole("combobox", { name: "Document type" }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /fiscal credit/i }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(addToast).not.toHaveBeenCalledWith(
+      "A fiscal credit needs the buyer's tax ID.",
+      "warning",
+    );
+    expect(createVenta).toHaveBeenCalledWith(
+      expect.objectContaining({
+        documentType: "FiscalCredit",
+        receptorTaxId: "101500018",
+      }),
+    );
+  });
+
+  it("clears the tax id of the buyer when the caja is cleared", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    const completeVenta = vi.fn();
+    useVentaStore.setState({ createVenta, completeVenta });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.type(screen.getByLabelText("Buyer tax ID"), "101500018");
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(screen.getByLabelText("Buyer tax ID")).toHaveValue("");
+  });
+
+  it("warns when the consumption reaches the amount that has to name its buyer", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    const completeVenta = vi.fn();
+    const addToast = vi.fn();
+    useVentaStore.setState({ createVenta, completeVenta });
+    useUIStore.setState({ addToast });
+    useProductoStore.setState({ productos: [BIG_PRODUCT], fetchProductos: vi.fn() });
+
+    renderPos(250000);
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(addToast).toHaveBeenCalledWith(
+      "This document needs the buyer's tax ID.",
+      "warning",
+    );
+    expect(createVenta).not.toHaveBeenCalled();
+  });
+
+  it("does not warn when the consumption is below the amount that has to name its buyer", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    const completeVenta = vi.fn();
+    const addToast = vi.fn();
+    useVentaStore.setState({ createVenta, completeVenta });
+    useUIStore.setState({ addToast });
+
+    renderPos(250000);
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(addToast).not.toHaveBeenCalledWith(
+      "This document needs the buyer's tax ID.",
+      "warning",
+    );
+    expect(createVenta).toHaveBeenCalled();
   });
 
   it("issues the sale without a document when the client has no tax id", async () => {

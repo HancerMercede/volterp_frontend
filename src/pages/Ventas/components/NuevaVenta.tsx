@@ -25,6 +25,11 @@ import styles from "./NuevaVenta.module.css";
 
 interface Props {
   editingSaleId: string | null;
+  /**
+   * El monto desde el que el comprobante tiene que nombrar a su comprador:
+   * lo dice el backend (readiness), el front no lleva el numero.
+   */
+  buyerTaxIdRequiredFrom?: number;
   /** Una venta completada deja la caja vacia; un borrador no. */
   onSave: (completada: boolean) => void;
   onCancel: () => void;
@@ -71,6 +76,7 @@ const agruparLineas = (
 
 export function NuevaVenta({
   editingSaleId,
+  buyerTaxIdRequiredFrom,
   onSave,
   onCancel,
 }: Props) {
@@ -130,6 +136,15 @@ export function NuevaVenta({
   const [selectedCliente, setSelectedCliente] = useState<string | null>(
     editingVenta?.clienteId ?? null,
   );
+  // El RNC del comprador es de la venta: el cajero lo escribe cuando el
+  // cliente no lo tiene en su ficha.
+  const [receptorTaxId, setReceptorTaxId] = useState<string>(
+    editingVenta?.receptorTaxId ?? "",
+  );
+  const clienteData = clientes.find((c) => c.id === selectedCliente);
+  // El comprador de la venta: el RNC escrito en la caja o, si el cajero no
+  // escribio ninguno, el de la ficha del cliente.
+  const rncDelComprador = receptorTaxId.trim() || clienteData?.taxId || "";
   // El default es el comercial: la venta sale sin comprobante fiscal.
   const [documentoElegido, setDocumentoElegido] = useState<DocumentoVenta | null>(
     documentoDeLaVenta(editingVenta),
@@ -144,18 +159,16 @@ export function NuevaVenta({
     if (tipoDeLaVenta.current === editingVenta.id) return;
     tipoDeLaVenta.current = editingVenta.id;
     setDocumentoElegido((elegido) => elegido ?? documentoDeLaVenta(editingVenta));
+    setReceptorTaxId((actual) => actual || (editingVenta.receptorTaxId ?? ""));
   }, [editingVenta]);
 
-  // A fiscal credit needs the tax id of the client: without it the backend
+  // A fiscal credit needs the tax id of its buyer: without it the backend
   // refuses to complete the sale. The picker cannot disable the option, so
   // the choice is taken back and said out loud.
   const cambiarDocumento = (nuevo: DocumentoVenta) => {
-    if (nuevo === "credito") {
-      const clienteData = clientes.find((c) => c.id === selectedCliente);
-      if (!clienteData?.taxId) {
-        addToast(t("ventas.fiscalCreditNeedsTaxId"), "warning");
-        return;
-      }
+    if (nuevo === "credito" && !rncDelComprador) {
+      addToast(t("ventas.fiscalCreditNeedsTaxId"), "warning");
+      return;
     }
     setDocumentoElegido(nuevo);
   };
@@ -236,12 +249,14 @@ export function NuevaVenta({
       subtotal: item.subtotal,
     }));
 
-  // La caja queda para la siguiente venta: sin renglones y sin cliente. El
-  // borrador limpia igual que el completado.
+  // La caja queda para la siguiente venta: sin renglones, sin cliente y sin
+  // el RNC del comprador (es de el). El borrador limpia igual que el
+  // completado.
   const limpiarLaCaja = () => {
     setCarrito([]);
     setSelectedCliente(null);
     setDocumentoElegido(null);
+    setReceptorTaxId("");
   };
 
   const validateAndSubmit = async (completar: boolean) => {
@@ -255,10 +270,22 @@ export function NuevaVenta({
       return;
     }
 
-    const clienteData = clientes.find((c) => c.id === clienteElegido);
-
-    if (documento === "credito" && !clienteData?.taxId) {
+    if (documento === "credito" && !rncDelComprador) {
       addToast(t("ventas.fiscalCreditNeedsTaxId"), "warning");
+      return;
+    }
+
+    // El consumo (E32) es nominativo desde el monto que dice el backend: sin
+    // el RNC del comprador el comprobante no sale. Solo avisa al completar:
+    // el borrador puede esperar a que el cajero lo pida.
+    if (
+      completar &&
+      documento !== "credito" &&
+      buyerTaxIdRequiredFrom !== undefined &&
+      totales.total >= buyerTaxIdRequiredFrom &&
+      !rncDelComprador
+    ) {
+      addToast(t("ventas.buyerTaxIdRequired"), "warning");
       return;
     }
 
@@ -280,6 +307,9 @@ export function NuevaVenta({
           notes: null,
           items: buildSaleItems(),
           documentType,
+          // Solo lo que el cajero escribio: si no escribio nada, el backend
+          // lo resuelve con la ficha del cliente.
+          receptorTaxId: receptorTaxId.trim() || undefined,
         } as UpdateSaleRequest);
 
         if (completar) {
@@ -301,6 +331,7 @@ export function NuevaVenta({
           items: buildSaleItems(),
           documentType,
           isCommercialInvoice: esComercial,
+          receptorTaxId: receptorTaxId.trim() || undefined,
         } as CreateSaleRequest);
 
         // The sale is created pending and completed right away: the completion is what issues the document.
@@ -356,6 +387,23 @@ export function NuevaVenta({
             selectedClienteId={selectedCliente}
             onClienteSelect={setSelectedCliente}
           />
+          <div className={styles.compradorCampo}>
+            <label className={styles.compradorLabel} htmlFor="rnc-comprador">
+              {t("ventas.buyerTaxId")}
+            </label>
+            <input
+              id="rnc-comprador"
+              className={styles.compradorInput}
+              type="text"
+              inputMode="numeric"
+              value={receptorTaxId}
+              placeholder={clienteData?.taxId ?? ""}
+              onChange={(e) => setReceptorTaxId(e.target.value)}
+            />
+            <span className={styles.compradorHint}>
+              {t("ventas.buyerTaxIdHint")}
+            </span>
+          </div>
           <Carrito
             items={carrito}
             onQuantityChange={actualizarCantidad}

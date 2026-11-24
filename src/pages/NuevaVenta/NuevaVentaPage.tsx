@@ -39,6 +39,7 @@ export function NuevaVentaPage() {
       <NuevaVenta
         key={`nueva-venta-${ventaAEditar ?? "nueva"}`}
         editingSaleId={ventaAEditar}
+        buyerTaxIdRequiredFrom={readiness?.buyerTaxIdRequiredFrom}
         onSave={(completada) => {
           // La venta completada vuelve a la venta nueva. El borrador deja la
           // caja limpia (el componente la vacio) y la pantalla en su sitio.

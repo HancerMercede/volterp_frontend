@@ -87,6 +87,39 @@
   background: var(--background);
 }
 
+/* El RNC del comprador: es de la venta, no del cliente. */
+.compradorCampo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.compradorLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.compradorInput {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.compradorInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.compradorHint {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
 .descartarAccion {
   padding: 12px 16px 0;
 }

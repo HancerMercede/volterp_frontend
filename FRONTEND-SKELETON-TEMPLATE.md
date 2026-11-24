@@ -4046,7 +4046,7 @@ export default App;
           )}
 ```
 
-### La caja: el carrito, el cliente y el tipo del documento `[PRINCIPIO + STACK]`
+### La caja: el carrito, el cliente, el tipo del documento y el RNC del comprador `[PRINCIPIO + STACK]`
 
 **Por qué**: el carrito y el cliente se quedaban en la pantalla al completar: el cajero veía la venta anterior y podía cobrarla otra vez. Ahora la caja se limpia en los dos momentos —al guardar el borrador y al completar—: el borrador ya limpía y el completado limpia igual.
 
@@ -4057,16 +4057,20 @@ export default App;
 - **Al editar una venta, el selector trae el tipo de esa venta**: si es un crédito fiscal (`documentType === "FiscalCredit"`) se selecciona "credito"; en cualquier otro caso, "comercial". El tipo vive en `documentoElegido` y se inicializa desde la venta que se está editando.
 - **El carrito se siembra agrupando las líneas por producto**: si el back manda el mismo producto en dos líneas, quedan en una sola con la cantidad sumada y el subtotal recalculado. El PUT no reenvía duplicados.
 - **El estado fiscal no se lista**: vive en el detalle de la venta (`VentaDetail.tsx`), no en el listado.
+- **El RNC del comprador es de la venta, no del cliente**: el cajero lo escribe en la caja cuando el cliente no lo tiene en su ficha y viaja en el `receptorTaxId` del create/update. El front manda **solo lo que el cajero escribió**: si no escribió nada no opina, y el back lo resuelve con la ficha del cliente (que ya viene normalizada).
+- **Quién tiene que ser nombrado lo dice el back**: el crédito fiscal (E31) siempre y el consumo (E32) desde el monto que viaja en el readiness (`buyerTaxIdRequiredFrom` ✓). El front avisa **antes de completar** y nunca lleva el número: un número de la norma duplicado en el front es un número que se va de fecha sin que nadie lo note.
 
 **Snippet** (`src/pages/Ventas/components/NuevaVenta.tsx`):
 
 ```tsx
-  // La caja queda para la siguiente venta: sin renglones y sin cliente. El
-  // borrador limpia igual que el completado.
+  // La caja queda para la siguiente venta: sin renglones, sin cliente y sin
+  // el RNC del comprador (es de el). El borrador limpia igual que el
+  // completado.
   const limpiarLaCaja = () => {
     setCarrito([]);
     setSelectedCliente(null);
     setDocumentoElegido(null);
+    setReceptorTaxId("");
   };
 ```
 
