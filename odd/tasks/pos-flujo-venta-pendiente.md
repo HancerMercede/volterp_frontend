@@ -139,13 +139,6 @@ Todas significan lo mismo: **la petición llegó con `items: []`**.
 | ID | Specs | Route | Repo | Estado | Commit | Evidencia |
 |---|---|---|---|---|---|---|
 | T0 | S7 | inline | erp-mvp | **hecho** | — | Harness `src/test/harness/pos.tsx` + 13 tests de caracterización verdes contra el código sin modificar; **queda fuera del commit** (decisión del usuario, ver L6) |
-| T1 | S1, D1 | inline | erp-mvp | **cancelada** | — | El desplegable "Estado" se queda y sigue decidiendo el status (decisión del usuario, ver L6): la regla de S1 queda sin implementar |
-| T2 | S2 | inline | erp-mvp | **hecho** | 63d1a64 | El guard de empresa solo aplica al alta; el 403 se muestra en vez de tragarse |
-| T3 | S3 | inline | erp-mvp | **hecho** | 63d1a64 | Escribir en el buscador no borra la selección del cliente |
-| T4 | S4 | inline | erp-mvp | **hecho** | 63d1a64 | El guard de renglones va antes del de cliente; el POS nunca manda `items: []` |
-| T5 | S4 | handoff | **Volterp** | PENDING | — | `GetSalesByStatusAsync` incluye `Items` + test en `SaleRepositoryTests` |
-| T6 | S3, S4 | inline | erp-mvp | **hecho** | 63d1a64 | Deuda del contrato de `SearchableSelect` anotada en S3 y L6; i18n sin cambios (no se tocaron claves) |
-| T7 | S1-S4 | inline | erp-mvp | **parcial** | — | `tsc -b --noEmit` exit 0 y suite focal de Ventas 14/14 verdes; la suite completa y el check diferencial contra la base no se corrieron (ver L6) |
 
 **Orden**: **T0 → T1 → T2 → T3 → T4 → (T5 aparte, en el otro repo) → T6 → T7**. T0 va primero a propósito: la red de caracterización es la que permite tocar los guards sin miedo.
 
@@ -201,6 +194,25 @@ public async Task GetSalesByStatusAsync_ReturnsTheLinesOfEverySale()
 > "champ validame algo en el sistema de volterp, no estan completandoce las ventas pendientes ahora aparece esto"
 
 > "y tambien que no hay productos o items me da la exception de que no tiene items"
+
+### L7 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**T1-T7 cerradas** → la tabla queda solo con T0. T1 se implementó por otra vía (`7bb3ba6`: 'Completar Venta' completa y 'Guardar Borrador' deja pendiente; el desplegable 'Estado' pasó a badge de solo lectura) · T2-T4 y T6 en `63d1a64` · T5 está en el back (`e76d798`: `SaleRepository.GetSalesByStatusAsync` con `Include(i => i.Items)` + 2 tests) · T7 cerró con la suite, `tsc` y eslint (`7135b2e`). **T0 queda abierta**: la red de caracterización nunca llegó al repo (no hay `src/test/harness/pos.tsx` ni `NuevaVenta.characterization.test.tsx`) → sin ella no hay check diferencial contra la base. El único test de caracterización que sobrevive (`ClienteSelector.characterization.test.tsx`) tiene el docstring contradiciendo sus asserts: hoy es un test de regresión de T3.
+
+## Tareas cerradas
+
+Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de cada una está en el Log.
+
+| ID | Detalle |
+|---|---|
+| T1 | S1, D1 · inline · erp-mvp · **cancelada** · — · El desplegable "Estado" se queda y sigue decidiendo el status (decisión del usuario, ver L6): la regla de S1 queda sin implementar |
+| T2 | S2 · inline · erp-mvp · **hecho** · 63d1a64 · El guard de empresa solo aplica al alta; el 403 se muestra en vez de tragarse |
+| T3 | S3 · inline · erp-mvp · **hecho** · 63d1a64 · Escribir en el buscador no borra la selección del cliente |
+| T4 | S4 · inline · erp-mvp · **hecho** · 63d1a64 · El guard de renglones va antes del de cliente; el POS nunca manda `items: []` |
+| T5 | S4 · handoff · **Volterp** · PENDING · — · `GetSalesByStatusAsync` incluye `Items` + test en `SaleRepositoryTests` |
+| T6 | S3, S4 · inline · erp-mvp · **hecho** · 63d1a64 · Deuda del contrato de `SearchableSelect` anotada en S3 y L6; i18n sin cambios (no se tocaron claves) |
+| T7 | S1-S4 · inline · erp-mvp · **parcial** · — · `tsc -b --noEmit` exit 0 y suite focal de Ventas 14/14 verdes; la suite completa y el check diferencial contra la base no se corrieron (ver L6) |
+
 
 > "ahora me dice que no hay empresa seleccionada eso no pasaba valida que pudo haber cambiado porque estube haciendo ediciones"
 

@@ -123,13 +123,7 @@ El backend **todavía no tiene** estos endpoints. Esta es la especificación que
 
 | ID | S# | Route | Commit | Estado |
 | --- | --- | --- | --- | --- |
-| T1 | S9 | inline | `4b49a92` | HECHO — capa de contrato: tipos, config, servicios, i18n |
-| T2 | S1, S9 | inline | `a8d4c9d` | HECHO — login sin "Crear cuenta", borrar `Register`, rutas en `App.tsx` |
-| T3 | S2, S3, S4, S5 | delegado | `a8d4c9d` | HECHO — 4 pantallas públicas + 23 tests |
-| T4 | S6, S7, S8 | delegado | `a6d6a01` | HECHO — invitar, estados, acciones + 8 tests |
-| T5 | S9 | inline | `9785e92`, `dab3a0d` | HECHO — seam check (351 tests verdes), doc del skeleton, commits |
-| T6 | S6, S9 | inline | `dab3a0d` | HECHO — pestaña Usuarios para admin (decisión L3) |
-| T7 | — | inline | `7c2b8d5`, `7c96511` | HECHO — 403 con mensaje claro (L5) + fix de modales (L6) |
+| T8 | S9 | handoff al back (`Volterp`) | — | PENDING — **La mitad de backend**: el front ya llama 7 endpoints que el back **no tiene**: `/api/auth/forgot-password`, `/api/auth/reset-password`, `/api/auth/activate-account`, `/api/auth/link-status` (`config.ts:6-9`) y `/api/users/invite`, `/api/users/{id}/invite`, `/api/users/{id}/reset-password` (`userService.ts:28,46,55`) → 404 en las 4 pantallas públicas y en invitar/reenviar/restablecer. **El contrato real no es el de S6**: el modal pide contraseña (`UserManagement.tsx:376-384`) y el rol es plural (`InviteUserRequest.roles: string[]`, `types/index.ts:505-513`, `94f0170`) → el back hay que construirlo con el contrato del código, no con el de la spec |
 
 ## Log
 
@@ -137,6 +131,25 @@ El backend **todavía no tiene** estos endpoints. Esta es la especificación que
 
 > "Frontend (solo la interfaz)
 >
+
+### L7 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**T1-T7 cerradas** → la tabla queda con T8 (la mitad de backend, que no tenía fila). **Ojo con S6**: la spec dice 'el modal NO pide contraseña' y `POST /api/users/invite {email, fullName, role, username?}`, pero el código pide contraseña y manda `roles: string[]` → el contrato que hay que implementar en el back es el del código.
+
+## Tareas cerradas
+
+Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de cada una está en el Log.
+
+| ID | Detalle |
+|---|---|
+| T1 | S9 · inline · `4b49a92` · HECHO — capa de contrato: tipos, config, servicios, i18n |
+| T2 | S1, S9 · inline · `a8d4c9d` · HECHO — login sin "Crear cuenta", borrar `Register`, rutas en `App.tsx` |
+| T3 | S2, S3, S4, S5 · delegado · `a8d4c9d` · HECHO — 4 pantallas públicas + 23 tests |
+| T4 | S6, S7, S8 · delegado · `a6d6a01` · HECHO — invitar, estados, acciones + 8 tests |
+| T5 | S9 · inline · `9785e92`, `dab3a0d` · HECHO — seam check (351 tests verdes), doc del skeleton, commits |
+| T6 | S6, S9 · inline · `dab3a0d` · HECHO — pestaña Usuarios para admin (decisión L3) |
+| T7 | — · inline · `7c2b8d5`, `7c96511` · HECHO — 403 con mensaje claro (L5) + fix de modales (L6) |
+
 > Quitar "Crear cuenta" del login.
 > Pantallas: olvidé mi contraseña, restablecer, activar cuenta, enlace inválido.
 > En Admin > Usuarios: botón de invitar, estados y acciones de reenviar/restablecer. ya que es un ERP y no vamos a crear usuarios de la forma tradicional los usuarios se crean desde dentro del sistema."

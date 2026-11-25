@@ -167,21 +167,7 @@ Fuente: `Volterp.Api/Controllers/**` y `Volterp.Application/DTOs/**` del backend
 
 ## Tasks
 
-| ID | Specs | Ruta | Commit |
-|----|-------|------|--------|
-| T1 | S4, S11 | writer — tipos de dominio de e-CF (§3.2 paso 1 ✓) | `b0fab79` (enums) · `3503e79` (DTOs) |
-| T2 | S4, S11 | writer — services de e-CF + `ENDPOINTS` (§3.2 paso 2 ✓) | `f8d08ff` |
-| T3 | S4, S11 | writer — stores de e-CF (§3.2 paso 3 ✓) | `dbd7a86` (configuración fiscal) · `d40a103` (operación) |
-| T4 | S5 | writer — la venta muestra su estado fiscal | `474c19c` |
-| T5 | S3, S6, S7, S11 | writer — emisores del tenant (§3.2 pasos 4-7 ✓) | `e40b414` |
-| T6 | S3, S6, S11 | writer — rangos de e-NCF (§3.2 pasos 4-7 ✓) | `e40b414` |
-| T7 | S3, S6, S11 | writer — certificados del emisor (§3.2 pasos 4-7 ✓) | `adbbe83` |
-| T8 | S3, S7, S8, S9, S11 | writer — comprobantes: lista, veredicto, QR, retry, print (§3.2 pasos 4-7 ✓) | `544ce22` |
-| T9 | S3, S6, S11 | writer — recepción de comprobantes de terceros (§3.2 pasos 4-7 ✓) | `adbbe83` |
-| T10 | S3, S6, S11 | writer — modo de emisión, credenciales y secuencias normales (§3.2 pasos 4-7 ✓) | `544ce22` |
-| T11 | S6 | inline (parent) — permisos del módulo en `MATRIZ_PERMISOS` | `6252b03` · `b513fd3` · `79b380c` |
-| T12 | S1, S4 | inline (parent) — huecos reales del backend, documentados y no maquetados | Log L7 y L8 |
-| T13 | S11 | inline (parent) — snippets del template actualizados en el mismo commit | `f8d08ff` (config.ts + fetchWithAuth) · `6aa4fa2` (App.tsx) |
+**Cerrado**: las tareas de esta tabla están hechas (ver “Tareas cerradas” y el Log).
 
 ## Slices de entrega (PRs encadenados)
 
@@ -301,4 +287,29 @@ Al implementarlo contra el contrato aparecen dos huecos que **no se maquetan** (
 9. **Landmine de `useCrudForm`**: el hook valida **todos** los campos declarados, incluidos los que `DynamicFormFields` oculta por `showOnEdit`/`showOnCreate` → un campo required oculto bloquea el submit. Hoy sólo lo sufrirían páginas con `showOnCreate` + required (las de e-CF lo evitan declarando los campos por modo). **No se cambió el hook compartido** en esta feature (sería código compartido con riesgo de regresión): queda como deuda técnica con el test que la destapa.
 10. **Rutas del módulo duplicadas**: la venta enlaza a `/facturacion/comprobantes` mediante `src/pages/Ventas/components/comprobantesRoute.ts` y el `App.tsx` la declara por su cuenta → si la ruta cambia, hay que tocar los dos lados.
 
+
+
+### L9 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**T1-T13 cerradas** → la tabla queda vacía. El módulo está mergeado en `development` (`570e5f7` + `e62f616`): 8 services, 8 stores, 6 páginas (`src/pages/FacturacionElectronica/*`), rutas (`App.tsx:196-201`) y sus tests. El Goal que decía 'el frontend no consume ninguno de los diez endpoints de e-CF' quedó obsoleto. La evidencia de T11 ('permisos del módulo en MATRIZ_PERMISOS') quedó vieja: la matriz ya no vive en el front (`permisos.ts:40-42`; los permisos salen de la API, `3907340`). Los 'slices de entrega (PRs encadenados)' no aplican: no hay PRs que abrir. Del L8 quedan dos huecos sin fila: el back exige Admin/SuperAdmin en 6 escrituras y `ElectronicInvoiceSequenceDto` no expone 'anulado' (`RequiresExpiry` solo vuelve en la respuesta del save, y el PUT del rango no cambia emisor/tipo/from); y la mina de `useCrudForm` (valida `required` sin mirar `showOnEdit/showOnCreate` → un campo required oculto bloquea el submit).
+
+## Tareas cerradas
+
+Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de cada una está en el Log.
+
+| ID | Detalle |
+|---|---|
+| T1 | S4, S11 · writer — tipos de dominio de e-CF (§3.2 paso 1 ✓) · `b0fab79` (enums) · `3503e79` (DTOs) |
+| T2 | S4, S11 · writer — services de e-CF + `ENDPOINTS` (§3.2 paso 2 ✓) · `f8d08ff` |
+| T3 | S4, S11 · writer — stores de e-CF (§3.2 paso 3 ✓) · `dbd7a86` (configuración fiscal) · `d40a103` (operación) |
+| T4 | S5 · writer — la venta muestra su estado fiscal · `474c19c` |
+| T5 | S3, S6, S7, S11 · writer — emisores del tenant (§3.2 pasos 4-7 ✓) · `e40b414` |
+| T6 | S3, S6, S11 · writer — rangos de e-NCF (§3.2 pasos 4-7 ✓) · `e40b414` |
+| T7 | S3, S6, S11 · writer — certificados del emisor (§3.2 pasos 4-7 ✓) · `adbbe83` |
+| T8 | S3, S7, S8, S9, S11 · writer — comprobantes: lista, veredicto, QR, retry, print (§3.2 pasos 4-7 ✓) · `544ce22` |
+| T9 | S3, S6, S11 · writer — recepción de comprobantes de terceros (§3.2 pasos 4-7 ✓) · `adbbe83` |
+| T10 | S3, S6, S11 · writer — modo de emisión, credenciales y secuencias normales (§3.2 pasos 4-7 ✓) · `544ce22` |
+| T11 | S6 · inline (parent) — permisos del módulo en `MATRIZ_PERMISOS` · `6252b03` · `b513fd3` · `79b380c` |
+| T12 | S1, S4 · inline (parent) — huecos reales del backend, documentados y no maquetados · Log L7 y L8 |
+| T13 | S11 · inline (parent) — snippets del template actualizados en el mismo commit · `f8d08ff` (config.ts + fetchWithAuth) · `6aa4fa2` (App.tsx) |
 

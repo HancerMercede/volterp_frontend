@@ -95,17 +95,7 @@ El front lee **sólo `error.error`** (`src/infrastructure/api/fetchWithAuth.ts:3
 
 | ID | S# | Alcance | Ruta | Estado |
 |---|---|---|---|---|
-| T1 | S6, S7 | `src/styles/variables.css`: tokens semánticos de estado. `fetchWithAuth.ts` + `utils/apiError.ts` + `types.ts`: normalizar `error` / `message` / `ProblemDetails` en una forma interna | inline | HECHO — `f6b0e3e` (errores) + `5cc7a8d` (tokens); verificados presentes en esta rama |
-| T2 | S1, S9 | Sub-navegación: rutas hijas en `App.tsx`, botones en el `PageHeader` del padre, botón de volver en cada hija, claves i18n del padre | delegado | HECHO — `d131101` (botones del padre + `TransactionsPanel` + página `Transactions` + 7 claves i18n). La página de transacciones se levantó en T10 por duplicar al padre; las rutas en `App.tsx` las edita el padre |
-| T3 | S2 | `AccountDto`/`AccountRequest` en `domain/types`, `ACCOUNTS` en `config.ts`, `accountService.ts`, store de cuentas | delegado | HECHO — `AccountDto`/`AccountType`/`AccountRequest` (sin `companyId`), `ACCOUNTS: "/api/accounts"`, `accountService` con la forma canónica, `accountStore` con el shape universal |
-| T4 | S2 | Página `pages/Contabilidad/Accounts/` — árbol de cuentas, CRUD con `useCrudForm`, reglas del backend espejadas | delegado | HECHO — árbol armado y ordenado en el front, `mapEntityToForm`, `combobox` para el padre, mensajes del backend verbatim, gate Admin/SuperAdmin (ver L12), 11 tests |
-| T5 | S3, S4 | `CxC` y `CxP` como read-models: services sobre `/api/sales` y `/api/purchases`, agrupación por cliente/proveedor | delegado | HECHO — `083d14b` (`useAccountsReceivable`/`useAccountsPayable` + páginas `AccountsReceivable`/`AccountsPayable`, 16 tests) |
-| T6 | S2, S3, S4 | Rutas hijas en `App.tsx`, claves i18n de las páginas nuevas, tests de página (patrón `src/test/components/Compras.test.tsx`), seam check: `vitest --pool=threads` + `tsc -b && vite build` + `eslint .` | delegado | PENDIENTE |
-| T7 | S6 | **7 tokens referenciados y nunca declarados**: `--accent-color`, `--color-background`, `--color-primary`, `--surface-secondary`, `--surface-tertiary`, `--text-inverse`, `--text-inverse-muted` | inline | HECHO — los 4 que sí se usan, declarados (`ea606cd`); `--accent-color`, `--color-background` y `--color-primary` no aparecen en `src/`: alias muertos, no hay nada que arreglar |
 | T8 | S3 | `config.ts` apunta a `/api/accounting-transactions`; la ruta del controller es `/api/accountingtransactions` | inline | PENDIENTE — fase de conexión al backend |
-| T9 | S2 | **Espejar las reglas que el front puede comprobar**: auto-padre excluido del combobox, prefijo del código del hijo validado contra el código del padre, borrado bloqueado cuando la cuenta tiene hijas. Más las sondas de regresión del gate quehengas de verificar | delegado | HECHO — 3 reglas previenen en el front, gate endurecido en el camino de escritura, 25 tests verdes |
-| T10 | S1 | **Se cae la hija de transacciones**: el padre queda con el reporte de transacciones y las hijas son Cuentas, CxC y CxP | inline | HECHO — página, lazy, ruta, botón de navegación y 3 claves i18n levantados; el padre sigue renderizando `TransactionsPanel` |
-| T11 | S4 | **Imagen del proveedor en CxP**: la fila busca el proveedor en la colección (`useProveedores()`) por su `supplierId` real y muestra su `imageUrl` con `ImageCell` | inline | HECHO — `supplierId` aparte en la fila del read-model + columna con `ImageCell` y fallback a pravatar |
 
 T3+T4 y T5 son unidades independientes con superficies disjuntas → lanzables en paralelo. T1 y T2 son prerrequisitos de ambas.
 
@@ -116,6 +106,28 @@ T3+T4 y T5 son unidades independientes con superficies disjuntas → lanzables e
 **Commits heredados de `development`** (la rama vieja `feature/compras-alta-fix` ya no existe, pero sus commits entraron a `development`): `4afd1a0` Compras (proveedor buscable + editor de líneas) · `2ae51f7` VentaDetail (código de negocio) · `7413757` RRHH (reordenamiento) · `ea7c60f` Inventario (reformateo) · `f6b0e3e` error del API · `5cc7a8d` tokens de estado.
 
 ## Log
+
+
+### L17 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**T1-T7 y T9-T11 cerradas** → la tabla queda solo con T8. Las rutas hijas (`App.tsx:180-182`), las claves i18n, los tests de página (`Contabilidad`, `Accounts`, `AccountsReceivable`, `AccountsPayable`, `AccountsGate`) y la imagen del proveedor en CxP están. La rama `feature/contabilidad-modulo` ya no existe (mergeada, `aca7294`). **T8 sigue PENDING**: `config.ts:22` apunta a `/api/accounting-transactions` y el back enruta `[Route("api/[controller]")]` → `/api/accountingtransactions` → el panel de transacciones del padre da 404 hoy.
+
+## Tareas cerradas
+
+Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de cada una está en el Log.
+
+| ID | Detalle |
+|---|---|
+| T1 | S6, S7 · `src/styles/variables.css`: tokens semánticos de estado. `fetchWithAuth.ts` + `utils/apiError.ts` + `types.ts`: normalizar `error` / `message` / `ProblemDetails` en una forma interna · inline · HECHO — `f6b0e3e` (errores) + `5cc7a8d` (tokens); verificados presentes en esta rama |
+| T2 | S1, S9 · Sub-navegación: rutas hijas en `App.tsx`, botones en el `PageHeader` del padre, botón de volver en cada hija, claves i18n del padre · delegado · HECHO — `d131101` (botones del padre + `TransactionsPanel` + página `Transactions` + 7 claves i18n). La página de transacciones se levantó en T10 por duplicar al padre; las rutas en `App.tsx` las edita el padre |
+| T3 | S2 · `AccountDto`/`AccountRequest` en `domain/types`, `ACCOUNTS` en `config.ts`, `accountService.ts`, store de cuentas · delegado · HECHO — `AccountDto`/`AccountType`/`AccountRequest` (sin `companyId`), `ACCOUNTS: "/api/accounts"`, `accountService` con la forma canónica, `accountStore` con el shape universal |
+| T4 | S2 · Página `pages/Contabilidad/Accounts/` — árbol de cuentas, CRUD con `useCrudForm`, reglas del backend espejadas · delegado · HECHO — árbol armado y ordenado en el front, `mapEntityToForm`, `combobox` para el padre, mensajes del backend verbatim, gate Admin/SuperAdmin (ver L12), 11 tests |
+| T5 | S3, S4 · `CxC` y `CxP` como read-models: services sobre `/api/sales` y `/api/purchases`, agrupación por cliente/proveedor · delegado · HECHO — `083d14b` (`useAccountsReceivable`/`useAccountsPayable` + páginas `AccountsReceivable`/`AccountsPayable`, 16 tests) |
+| T6 | S2, S3, S4 · Rutas hijas en `App.tsx`, claves i18n de las páginas nuevas, tests de página (patrón `src/test/components/Compras.test.tsx`), seam check: `vitest --pool=threads` + `tsc -b && vite build` + `eslint .` · delegado · PENDIENTE |
+| T7 | S6 · **7 tokens referenciados y nunca declarados**: `--accent-color`, `--color-background`, `--color-primary`, `--surface-secondary`, `--surface-tertiary`, `--text-inverse`, `--text-inverse-muted` · inline · HECHO — los 4 que sí se usan, declarados (`ea606cd`); `--accent-color`, `--color-background` y `--color-primary` no aparecen en `src/`: alias muertos, no hay nada que arreglar |
+| T9 | S2 · **Espejar las reglas que el front puede comprobar**: auto-padre excluido del combobox, prefijo del código del hijo validado contra el código del padre, borrado bloqueado cuando la cuenta tiene hijas. Más las sondas de regresión del gate quehengas de verificar · delegado · HECHO — 3 reglas previenen en el front, gate endurecido en el camino de escritura, 25 tests verdes |
+| T10 | S1 · **Se cae la hija de transacciones**: el padre queda con el reporte de transacciones y las hijas son Cuentas, CxC y CxP · inline · HECHO — página, lazy, ruta, botón de navegación y 3 claves i18n levantados; el padre sigue renderizando `TransactionsPanel` |
+| T11 | S4 · **Imagen del proveedor en CxP**: la fila busca el proveedor en la colección (`useProveedores()`) por su `supplierId` real y muestra su `imageUrl` con `ImageCell` · inline · HECHO — `supplierId` aparte en la fila del read-model + columna con `ImageCell` y fallback a pravatar |
 
 ### L1 — 2026-11-06
 

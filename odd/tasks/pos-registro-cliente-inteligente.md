@@ -68,15 +68,7 @@ El RNC del comprador **vive en la ficha del cliente** → el back lo resuelve co
 
 ## Tasks
 
-| ID | Specs | Route | Repo | Estado | Commit | Evidencia |
-|---|---|---|---|---|---|---|
-| T1 | S1-S6 | inline (parent) | erp-mvp | DONE | `7900f9b` | El doc reescrito con el diseño de la bandera (S1-S6) + el log L1-L13 |
-| T2 | S1, S2 | handoff (worker) | erp-mvp | DONE | `7900f9b` | El check "El comprador no está registrado" y los dos modos: apagada el riel queda como antes de UX12 (solo el picker, sin caja de RNC), prendida las dos cajas (nombre + RNC) |
-| T3 | S2 | handoff (worker) | erp-mvp | DONE | `7900f9b` | La venta sale sin ficha: `clienteId: null` + `clienteName` escrito + `receptorTaxId`; con la bandera apagada el RNC no viaja (lo pone la ficha) |
-| T4 | S3, S4 | handoff (worker) | erp-mvp | DONE | `7900f9b` | La guarda: con la bandera prendida se exige el nombre escrito; apagada sigue exigiendo cliente del padrón; los avisos del RNC no se tocan |
-| T5 | S1-S6 | handoff (worker) | erp-mvp | DONE | `7900f9b` | i18n `es`/`en` (4 claves de la caja + `clientes.clientTaxId`; se fue `buyerTaxIdHint` sin uso) + snippet del template + 6 tests nuevos y 5 del UX12 actualizados |
-| T6 | S6 | handoff (worker) | erp-mvp | DONE | `7900f9b` | El RNC en la ficha del cliente: campo opcional en `CLIENTE_FIELDS` + `defaultValues` + `mapEntityToForm` (§4.5) + `taxId: trim() || null` en el alta y la edición |
-| T7 | S6 | inline (parent) | erp-mvp | DONE | `c23787c` | La página de Clientes tiene archivo de test (`src/test/components/Clientes.test.tsx`): el `taxId` de la ficha (alta, edición y la normalización del `null` del DTO) con 6 tests verdes · la caja ya estaba cubierta por los 43 tests de `NuevaVenta.test.tsx` |
+**Cerrado**: las tareas de esta tabla están hechas (ver “Tareas cerradas” y el Log).
 
 ## Log
 
@@ -153,6 +145,25 @@ Verificado leyendo el repo `D:\source\my_projects\Volterp` (solo lectura, autori
 ### L8 — 2026-11-24 — revisión del padre sobre el diff del worker
 
 El diff implementa las specs tal cual ✓ (el check, el nombre escrito, `clienteId: null`, la guarda plana, el hint condicional, `limpiarLaCaja`, CSS solo con tokens, 4 claves en `es` y `en`, 4 tests, snippet del template + la línea de regla). **Tres cosas para corregir**:
+
+
+### L16 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**T1-T7 cerradas** → la tabla queda vacía. Commits: `7900f9b` (T1-T6) + `c23787c` (T7, el test de la ficha del cliente) + `23cc0a0` (este plan). Todo está en `origin/development` (`23cc0a0`): el L15 que decía 'Sin push ⏳ el commit queda local' quedó obsoleto. La rama `feature/ux12-receptor-rnc` ya no existe (mergeada). El conteo '43 tests de NuevaVenta.test.tsx' del L15 quedó viejo: el archivo tiene más casos.
+
+## Tareas cerradas
+
+Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de cada una está en el Log.
+
+| ID | Detalle |
+|---|---|
+| T1 | S1-S6 · inline (parent) · erp-mvp · DONE · `7900f9b` · El doc reescrito con el diseño de la bandera (S1-S6) + el log L1-L13 |
+| T2 | S1, S2 · handoff (worker) · erp-mvp · DONE · `7900f9b` · El check "El comprador no está registrado" y los dos modos: apagada el riel queda como antes de UX12 (solo el picker, sin caja de RNC), prendida las dos cajas (nombre + RNC) |
+| T3 | S2 · handoff (worker) · erp-mvp · DONE · `7900f9b` · La venta sale sin ficha: `clienteId: null` + `clienteName` escrito + `receptorTaxId`; con la bandera apagada el RNC no viaja (lo pone la ficha) |
+| T4 | S3, S4 · handoff (worker) · erp-mvp · DONE · `7900f9b` · La guarda: con la bandera prendida se exige el nombre escrito; apagada sigue exigiendo cliente del padrón; los avisos del RNC no se tocan |
+| T5 | S1-S6 · handoff (worker) · erp-mvp · DONE · `7900f9b` · i18n `es`/`en` (4 claves de la caja + `clientes.clientTaxId`; se fue `buyerTaxIdHint` sin uso) + snippet del template + 6 tests nuevos y 5 del UX12 actualizados |
+| T6 | S6 · handoff (worker) · erp-mvp · DONE · `7900f9b` · El RNC en la ficha del cliente: campo opcional en `CLIENTE_FIELDS` + `defaultValues` + `mapEntityToForm` (§4.5) + `taxId: trim() · null` en el alta y la edición |
+| T7 | S6 · inline (parent) · erp-mvp · DONE · `c23787c` · La página de Clientes tiene archivo de test (`src/test/components/Clientes.test.tsx`): el `taxId` de la ficha (alta, edición y la normalización del `null` del DTO) con 6 tests verdes · la caja ya estaba cubierta por los 43 tests de `NuevaVenta.test.tsx` |
 
 1. **`.compradorFlag` sin `align-items: center`** → el default de flex es `stretch` y el checkbox se deforma en vertical.
 2. **Acentos: el worker acertó** → la casa escribe los comentarios del código **sin acentos** ("despues", "lineas", "escribio") y la copy al usuario **con** acentos ("El carrito está vacío") → el padre los había puesto con acentos y los revirtió (L10).
