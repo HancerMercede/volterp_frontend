@@ -95,7 +95,7 @@ El front lee **sólo `error.error`** (`src/infrastructure/api/fetchWithAuth.ts:3
 
 | ID | S# | Alcance | Ruta | Estado |
 |---|---|---|---|---|
-| T8 | S3 | `config.ts` apunta a `/api/accounting-transactions`; la ruta del controller es `/api/accountingtransactions` | inline | PENDIENTE — fase de conexión al backend |
+| T8 | S3 | `config.ts` apunta a `/api/accounting-transactions`; la ruta del controller es `/api/accountingtransactions` | inline | DONE — `95f38b8`: la ruta corregida a `/api/accountingtransactions` → el panel de transacciones del padre deja de dar 404 (el snippet del template, en el mismo commit ✓) |
 
 T3+T4 y T5 son unidades independientes con superficies disjuntas → lanzables en paralelo. T1 y T2 son prerrequisitos de ambas.
 
@@ -277,7 +277,15 @@ Al explicar `SupplierPayable` (la fila del read-model de CxP, que **no** duplica
 
 ### L17 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
 
-**T1-T7 y T9-T11 cerradas** → la tabla queda solo con T8. Las rutas hijas (`App.tsx:180-182`), las claves i18n, los tests de página (`Contabilidad`, `Accounts`, `AccountsReceivable`, `AccountsPayable`, `AccountsGate`) y la imagen del proveedor en CxP están. La rama `feature/contabilidad-modulo` ya no existe (mergeada, `aca7294`). **T8 sigue PENDING**: `config.ts:22` apunta a `/api/accounting-transactions` y el back enruta `[Route("api/[controller]")]` → `/api/accountingtransactions` → el panel de transacciones del padre da 404 hoy.
+**T1-T7 y T9-T11 cerradas** → la tabla queda solo con T8. Las rutas hijas (`App.tsx:180-182`), las claves i18n, los tests de página (`Contabilidad`, `Accounts`, `AccountsReceivable`, `AccountsPayable`, `AccountsGate`) y la imagen del proveedor en CxP están. La rama `feature/contabilidad-modulo` ya no existe (mergeada, `aca7294`).
+
+### L18 — 2026-11-25 — T8 cerrada: las transacciones contables ya pegan al back
+
+- **El bug** ✓: `config.ts:22` apuntaba a `/api/accounting-transactions` y el back enruta `[Route("api/[controller]")]` → `/api/accountingtransactions` (`AccountingTransactionsController.cs:4`) → el panel de transacciones del padre (`/contabilidad`) daba **404** en las 5 llamadas del service (`accountingTransactionService.ts:19,25,33,46,56`).
+- **El fix** ✓ (`95f38b8`): **una línea** en `config.ts` + **el snippet del template en el mismo commit** (`FRONTEND-SKELETON-TEMPLATE.md:679`, que traía la ruta vieja) → la maintenance rule: el snippet va con el archivo que toca ✓.
+- **Verificación** ✓: `npx vitest run` de los 5 archivos de contabilidad → **47 verdes / 0 rojos** ✓ · `npx tsc -p tsconfig.app.json --noEmit` exit 0 ✓ · `npx eslint src/infrastructure/api/config.ts` exit 0 ✓.
+- **Lo que sigue para que el módulo diga la verdad** ✓: (a) el **`/api/accounts` que el front ya llama no existe en `development`** → vive en la rama `feature/accounting` del back (su `AccountsController`), sin mergear; (b) **no hay endpoint agrupado de CxC/CxP** en ningún lado → el CxC/CxP del front agrupa en el cliente una página de 100 (`useAccountsReceivable.ts:16`, `useAccountsPayable.ts:16`) → **el saldo que muestra no es el saldo real**.
+- **Risk**: none ✓ (una ruta ✓ · ningún dato ✓ · el snippet del template va con el código ✓). **T8 sigue PENDING**: `config.ts:22` apunta a `/api/accounting-transactions` y el back enruta `[Route("api/[controller]")]` → `/api/accountingtransactions` → el panel de transacciones del padre da 404 hoy.
 
 ## Relevant Files
 
