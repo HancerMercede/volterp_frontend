@@ -191,6 +191,14 @@ El padre "corrigió" los comentarios del worker poniéndoles acentos. Al verific
 - **El campo del RNC en la ficha se queda** ✓ y es **opcional**: si el cliente lo tiene se carga; si no, queda vacío ✓ (`ClientDto.taxId?: string | null` → opcional, no `required`).
 - **Qué es visual y qué no**: la caja es visual + payload (todo dentro del contrato existente ✓); el formulario de Clientes es el único punto donde el front **escribe un dato que antes no viajaba** (el RNC del cliente).
 
+### L13 — 2026-11-24 — verificación y entrega
+
+- **Verificación independiente** (`gentle-ai-verify` sobre el diff `9b17188..7900f9b`): **0 bloqueantes** · S1-S4 **cumple** con evidencia `path:line` · el snippet del §2.9 del template coincide **literalmente** con el código (0 líneas faltantes) · baseline vs candidato: la caja 32/32 → **39/39**, la suite completa 644 → **651 tests** en 76 archivos, `tsc` exit 0 en ambos y `eslint` exit 0 (los mismos 5 errores preexistentes) · los 5 tests del UX12 actualizados **no se debilitaron** ✓.
+- **Lo que el padre verificó por su cuenta**: el contrato del back leído en el código (`CreateSaleRequest` · `SaleService` · `MapBuyer` · `Rnc` · `CreateClientDto`/`UpdateClientDto` · `ClientService` · `Client.UpdateTaxId` · `Sale.SetReceptorTaxId`) · la focal 39/39 · la suite 76 archivos / 651 tests · `tsc -p tsconfig.app.json` exit 0 · eslint exit 0.
+- **Advisory del back (no se toca: es regla intencional)**: `Sale.SetReceptorTaxId` **no borra** el RNC cuando el request no trae uno (*"A request that does not name a buyer does not erase the one the sale already has"*) → si en una venta se cambia el comprador de "sin ficha" a "del padrón", el RNC del comprador anterior sobrevive ✓ (comportamiento del back, fuera de alcance).
+- **Hueco declarado**: la página de Clientes **no tiene archivo de test** → el campo `taxId` de la ficha no tiene cobertura de página (el verificador lo tapó y dejó 22 sondas verdes en un scratch que ya se borró).
+- **Entrega**: commit `7900f9b` → merge fast-forward a `development` → `git push origin development` (`0e0e358..7900f9b`) ✓. El push lleva 4 commits: el de manuales que estaba sin pushear + los 2 de UX12 + este.
+
 ## Relevant Files
 
 - `src/pages/Ventas/components/NuevaVenta.tsx` — la caja: el cliente, el RNC del comprador y el guard de cliente.
