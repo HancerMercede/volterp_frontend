@@ -76,7 +76,7 @@ El RNC del comprador **vive en la ficha del cliente** → el back lo resuelve co
 | T4 | S3, S4 | handoff (worker) | erp-mvp | DONE | `7900f9b` | La guarda: con la bandera prendida se exige el nombre escrito; apagada sigue exigiendo cliente del padrón; los avisos del RNC no se tocan |
 | T5 | S1-S6 | handoff (worker) | erp-mvp | DONE | `7900f9b` | i18n `es`/`en` (4 claves de la caja + `clientes.clientTaxId`; se fue `buyerTaxIdHint` sin uso) + snippet del template + 6 tests nuevos y 5 del UX12 actualizados |
 | T6 | S6 | handoff (worker) | erp-mvp | DONE | `7900f9b` | El RNC en la ficha del cliente: campo opcional en `CLIENTE_FIELDS` + `defaultValues` + `mapEntityToForm` (§4.5) + `taxId: trim() || null` en el alta y la edición |
-| T7 | S6 | handoff (worker) | erp-mvp | **PENDING** | — | **Cobertura de la ficha**: la página de Clientes no tiene archivo de test → el campo `taxId` (alta, edición y la normalización del `null` del DTO) queda sin prueba de página. Hay 22 sondas verdes del verificador listas para llevar al repo (17 de la caja + 5 de Clientes) |
+| T7 | S6 | inline (parent) | erp-mvp | DONE | `c23787c` | La página de Clientes tiene archivo de test (`src/test/components/Clientes.test.tsx`): el `taxId` de la ficha (alta, edición y la normalización del `null` del DTO) con 6 tests verdes · la caja ya estaba cubierta por los 43 tests de `NuevaVenta.test.tsx` |
 
 ## Log
 
@@ -208,6 +208,22 @@ El padre "corrigió" los comentarios del worker poniéndoles acentos. Al verific
 - El verificador dejó **22 sondas verdes** en un scratch (`VerifierPos.test.tsx`: 17 de la caja · `VerifierClientes.test.tsx`: 5 de la ficha) → el scratch se borró, pero el contenido exacto está en su reporte → es lo que hay que llevar al repo.
 - Los **5 errores preexistentes** de `npx eslint .` (`PoncheCard` · `Issuers` · `Ranges` · `VentaDetail`×2) siguen sin tocarse ✓.
 - El **advisory del back** (`Sale.SetReceptorTaxId` no borra el RNC si el request no trae uno) queda como está: es regla intencional del back ✓.
+
+### L15 — 2026-11-25 — T7 cerrada: la ficha del cliente tiene cobertura
+
+- **T7 (DONE)** ✓: `src/test/components/Clientes.test.tsx` (nuevo ✓) → la página de Clientes **tiene archivo de test** ✓ → el `taxId` de la ficha queda cubierto ✓:
+  - el alta **recorta** el RNC (`"  101-500-018  "` → `"101-500-018"` ✓)
+  - el alta **sin** RNC manda `null` y no `""` ✓
+  - la edición muestra el RNC del cliente ✓
+  - el DTO con `taxId: null` deja el input **vacío** (no "null") ✓
+  - la edición **recorta** el RNC ✓
+  - la edición con el campo **borrado** manda `null` ✓
+- **La caja ya estaba cubierta** ✓: `src/test/components/NuevaVenta.test.tsx` tiene 43 tests ✓ y el flujo que las 17 sondas del verificador apuntaban (la caja del RNC ✓ · la bandera ✓ · el nombre escrito a mano ✓ · el aviso del umbral ✓) ya está ahí ✓ → el hueco era **solo** la ficha ✓.
+- **Verificación** ✓: `npx vitest run src/test/components/Clientes.test.tsx --pool=forks` → **6 verdes / 0 rojos** ✓ (7.81s ✓).
+- **El runner del front es frágil, y no es culpa del test** ✓: con el caché frío el worker **no levanta** ("Timeout waiting for worker to respond" ✓) → el arranque (setup 39s + import 25s + transform 16s + environment 21s ✓) pasa los 60s que el pool espera ✓ → es la lentitud de D: ✓ → se comprobó con un archivo **preexistente** (88.79s ✓) → con el caché tibio el archivo nuevo corre en 7.81s ✓.
+- **Sin tocar el código de producción** ✓: solo el archivo de test nuevo ✓ → los 5 errores de eslint preexistentes siguen sin tocarse ✓ → el advisory del back sigue como está ✓.
+- **Risk**: none ✓ (solo cobertura ✓ · no cambia ninguna fila guardada ✓ · no toca el contrato ✓).
+- **Sin push** ⏳: el commit queda local ✓ → el push es decisión del dueño ✓.
 
 ## Relevant Files
 
