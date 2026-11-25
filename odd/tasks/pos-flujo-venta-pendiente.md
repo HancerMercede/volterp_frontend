@@ -187,17 +187,6 @@ public async Task GetSalesByStatusAsync_ReturnsTheLinesOfEverySale()
 | ECF / e-NCF | Flujo separado, sin relación con estos guards |
 | Filtro de `Company` en `GetSaleByIdAsync` (lo pide el mapper) | Fuera del alcance de este plan |
 
-## Log
-
-### L1 — 2026-11-10 — pedido original
-
-> "champ validame algo en el sistema de volterp, no estan completandoce las ventas pendientes ahora aparece esto"
-
-> "y tambien que no hay productos o items me da la exception de que no tiene items"
-
-### L7 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
-
-**T1-T7 cerradas** → la tabla queda solo con T0. T1 se implementó por otra vía (`7bb3ba6`: 'Completar Venta' completa y 'Guardar Borrador' deja pendiente; el desplegable 'Estado' pasó a badge de solo lectura) · T2-T4 y T6 en `63d1a64` · T5 está en el back (`e76d798`: `SaleRepository.GetSalesByStatusAsync` con `Include(i => i.Items)` + 2 tests) · T7 cerró con la suite, `tsc` y eslint (`7135b2e`). **T0 queda abierta**: la red de caracterización nunca llegó al repo (no hay `src/test/harness/pos.tsx` ni `NuevaVenta.characterization.test.tsx`) → sin ella no hay check diferencial contra la base. El único test de caracterización que sobrevive (`ClienteSelector.characterization.test.tsx`) tiene el docstring contradiciendo sus asserts: hoy es un test de regresión de T3.
 
 ## Tareas cerradas
 
@@ -213,6 +202,13 @@ Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de c
 | T6 | S3, S4 · inline · erp-mvp · **hecho** · 63d1a64 · Deuda del contrato de `SearchableSelect` anotada en S3 y L6; i18n sin cambios (no se tocaron claves) |
 | T7 | S1-S4 · inline · erp-mvp · **parcial** · — · `tsc -b --noEmit` exit 0 y suite focal de Ventas 14/14 verdes; la suite completa y el check diferencial contra la base no se corrieron (ver L6) |
 
+## Log
+
+### L1 — 2026-11-10 — pedido original
+
+> "champ validame algo en el sistema de volterp, no estan completandoce las ventas pendientes ahora aparece esto"
+
+> "y tambien que no hay productos o items me da la exception de que no tiene items"
 
 > "ahora me dice que no hay empresa seleccionada eso no pasaba valida que pudo haber cambiado porque estube haciendo ediciones"
 
@@ -260,6 +256,10 @@ Durante la reproducción se creó una venta desechable (`PRB-TMP-01`) para proba
 - **Fuera del commit**: `src/test/harness/pos.tsx` y `src/test/components/NuevaVenta.characterization.test.tsx` (depende del harness) quedan sin commitear por decisión del usuario.
 - Verificación de hoy: `npx tsc -b --noEmit` exit 0 y suite focal de Ventas 14/14 verdes. La suite completa y el check diferencial contra la base no se corrieron hoy.
 - Trabajo sobre `development`; sin rama y sin push.
+
+### L7 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**T1-T7 cerradas** → la tabla queda solo con T0. T1 se implementó por otra vía (`7bb3ba6`: 'Completar Venta' completa y 'Guardar Borrador' deja pendiente; el desplegable 'Estado' pasó a badge de solo lectura) · T2-T4 y T6 en `63d1a64` · T5 está en el back (`e76d798`: `SaleRepository.GetSalesByStatusAsync` con `Include(i => i.Items)` + 2 tests) · T7 cerró con la suite, `tsc` y eslint (`7135b2e`). **T0 queda abierta**: la red de caracterización nunca llegó al repo (no hay `src/test/harness/pos.tsx` ni `NuevaVenta.characterization.test.tsx`) → sin ella no hay check diferencial contra la base. El único test de caracterización que sobrevive (`ClienteSelector.characterization.test.tsx`) tiene el docstring contradiciendo sus asserts: hoy es un test de regresión de T3.
 
 ## Relevant Files
 

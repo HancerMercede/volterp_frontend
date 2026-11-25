@@ -89,19 +89,6 @@ Con cliente seleccionado se muestran sus iniciales en un avatar, su nombre, su t
 | Paleta de la referencia (crema, verde lima, casi negro) | No es la identidad de Volterp (navy `#0B1A33` + ámbar `#FBBF24`, el favicon y el `VolterpMark`). Se adopta la estructura; los acentos usan los tokens del proyecto. |
 | POS como pantalla dedicada | El nuestro es un overlay fullscreen (`NuevaVenta.module.css:1-12`), adecuado para un ERP. En la referencia no hay "Cancelar" en el rail, solo la X. |
 
-## Log
-
-- **L1 — 2026-11-06**: "mira analiza esta imagen del POS y valida si podemos mejorar lo que ya tenemos con esta referencia la ventana de ventas el pos. dejame saber no edites nada"
-- **L2 — 2026-11-06**: "armemos el plan para mejorarla / Ojo esto es un cambio de visibilidad no de logica de negocio"
-- **L3 — Análisis**: el POS actual es de tres columnas (`NuevaVenta.tsx:96-107`, `NuevaVenta.module.css:14-32`); el catálogo está truncado a la última página cargada (`productoStore.ts:38-42` + `config/pagination.ts:1` + `SelectorProducto.tsx:45-53`); la moneda está triplicada y sin `RD$` ni decimales; no hay método de pago; `notes` va hardcoded a `null`; el POS no tiene tests.
-- **L4 — Decisión**: el fix de carga del catálogo entra (es un bug de visibilidad, no una regla); el método de pago y la nota salen (persisten datos); la paleta se mantiene.
-- **L5 — Siguiente paso**: implementar T1 (RED → GREEN) sobre `development` y encadenar el resto.
-- **L6 — 2026-11-06**: "El panel de productos ya muestra el total de los productos y si hay mas los pagina no veo problemas explicame" / "Lo respeta siempre lo respeta". Verificado: la API sí respeta `pageSize` (`PaginationExtensions.cs:9-11` → `CountAsync` + `Skip/Take(pageSize)`), pero el único llamador en toda la app es `Inventario.tsx:52` con `ITEMS_PER_PAGE = 10`, y `fetchProductos` reemplaza el array (`productoStore.ts:38-42`): el store nunca pasa de 10 productos. Por eso la paginación del panel del POS es inalcanzable (`SelectorProducto.tsx:30` pagina de 50 sobre 10 → `totalProductPages = 1` → el `<Pagination>` de la línea 103 nunca renderiza) y su `total` sería `filteredProducts.length` (la página cargada), no el `totalCount` real. La página de Inventario sí está bien (`Inventario.tsx:218` → `getInfo(totalCount)`).
-- **L7 — Decisión de requisito (L6)**: S2 se reescribe: el panel debe mostrar el **total real** y **paginar si hay más**. Queda abierto cómo se sirve el catálogo en el POS (paginación server-side como Inventario vs. catálogo completo en memoria para la grilla continua de la referencia).
-
-### L1 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
-
-**T1-T8 cerradas** → la tabla queda vacía. Commits: `6210f29` (T1, T7), `d88f045` (T3, T5, T6), `53aaed8` (T4), `820b617` (T8), `4e4603d` (el degradado del L15); mergeada en `development` (`c7881d8`). Las filas que tenían '—' en la columna de commit ya tienen su hash.
 
 ## Tareas cerradas
 
@@ -118,6 +105,15 @@ Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de c
 | T7 | S2 · inline · 6210f29 · hecho · GREEN: placeholder de escáner + badge F2 + card con iniciales y (+) |
 | T8 | S3 · inline · — · hecho · GREEN: la línea del carrito en dos filas (nombre arriba; "c/u", stepper y total abajo) |
 
+## Log
+
+- **L1 — 2026-11-06**: "mira analiza esta imagen del POS y valida si podemos mejorar lo que ya tenemos con esta referencia la ventana de ventas el pos. dejame saber no edites nada"
+- **L2 — 2026-11-06**: "armemos el plan para mejorarla / Ojo esto es un cambio de visibilidad no de logica de negocio"
+- **L3 — Análisis**: el POS actual es de tres columnas (`NuevaVenta.tsx:96-107`, `NuevaVenta.module.css:14-32`); el catálogo está truncado a la última página cargada (`productoStore.ts:38-42` + `config/pagination.ts:1` + `SelectorProducto.tsx:45-53`); la moneda está triplicada y sin `RD$` ni decimales; no hay método de pago; `notes` va hardcoded a `null`; el POS no tiene tests.
+- **L4 — Decisión**: el fix de carga del catálogo entra (es un bug de visibilidad, no una regla); el método de pago y la nota salen (persisten datos); la paleta se mantiene.
+- **L5 — Siguiente paso**: implementar T1 (RED → GREEN) sobre `development` y encadenar el resto.
+- **L6 — 2026-11-06**: "El panel de productos ya muestra el total de los productos y si hay mas los pagina no veo problemas explicame" / "Lo respeta siempre lo respeta". Verificado: la API sí respeta `pageSize` (`PaginationExtensions.cs:9-11` → `CountAsync` + `Skip/Take(pageSize)`), pero el único llamador en toda la app es `Inventario.tsx:52` con `ITEMS_PER_PAGE = 10`, y `fetchProductos` reemplaza el array (`productoStore.ts:38-42`): el store nunca pasa de 10 productos. Por eso la paginación del panel del POS es inalcanzable (`SelectorProducto.tsx:30` pagina de 50 sobre 10 → `totalProductPages = 1` → el `<Pagination>` de la línea 103 nunca renderiza) y su `total` sería `filteredProducts.length` (la página cargada), no el `totalCount` real. La página de Inventario sí está bien (`Inventario.tsx:218` → `getInfo(totalCount)`).
+- **L7 — Decisión de requisito (L6)**: S2 se reescribe: el panel debe mostrar el **total real** y **paginar si hay más**. Queda abierto cómo se sirve el catálogo en el POS (paginación server-side como Inventario vs. catálogo completo en memoria para la grilla continua de la referencia).
 - **L8 — 2026-11-06**: "No estoy de acuerdo con que el pos cargue todo creo que como esta esta bien por el momento" / "para este cambio lo haremos en una rama nueva para no ensuciar development" / "solo quiero mejorar la experiencia del user para eso es el plan". Decisiones: **T2 cancelado** (la carga del catálogo no se toca, el POS sigue usando el `productoStore`); la implementación va en la rama `feature/pos-visibility-redesign`; el alcance es solo UX/visibilidad.
 - **L9 — 2026-11-06**: "creo que ya entendi lo que me decias tener una carga para el pos de los productos aparte porque actualmente los que usa son los de la memoria es eso?" — confirmado: el POS consume el array en memoria del `productoStore` (persistido en localStorage), nunca pide productos. Queda sin implementar por L8.
 - **L10 — Verificación de la unidad 1**: `SelectorProducto.test.tsx` (4 tests, RED→GREEN) + `tsc` limpio + `eslint` limpio en lo tocado + suite 26 archivos / 241 tests verde. Commit `6210f29`.
@@ -127,3 +123,7 @@ Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de c
 - **L14 — 2026-11-06 (T8, la línea del carrito)**: con captura del usuario se vio que la línea metía cinco cosas en una sola fila: el nombre quedaba truncado ("Azúcar ...") y el precio unitario se partía en dos líneas ("c/u RD$" / "95.00"). Fix: la línea pasa a dos filas — arriba el nombre (ancho completo) con el botón de quitar; abajo "c/u", el stepper y el total de línea. Se elimina el contenedor `.cartItemInfo`. El botón `×` gana `aria-label` con `ventas.removeFromCart`. Test nuevo en `Carrito.test.tsx`: el precio unitario y el stepper comparten fila. Verificación: `tsc` limpio, `eslint` limpio, suite 30 archivos / 251 tests verde.
 - **L15 — 2026-11-06 (degradado de marca en las cabeceras del POS)**: el usuario pidió el mismo degradado del sidebar en el header del POS. El literal estaba duplicado en `Sidebar.module.css:3`, así que se subió a `variables.css` como `--brand-gradient` y el sidebar ahora lo consume por variable (mismo render, una sola fuente de verdad). Se aplicó a las dos cabeceras del POS: la de "Productos" (`SelectorProducto.module.css`) y la de "Venta actual" (`NuevaVenta.module.css`), con el título en blanco, el contador de artículos en blanco translúcido y "Vaciar" en rojo claro (`#F87171`) para que lea sobre el navy. Sin test: es un cambio puramente visual de CSS (no hay RED determinable en jsdom) — la verificación es estructural por lectura del CSS más la suite completa verde (30 archivos / 252 tests).
 - **L16 — 2026-11-06 (ajustes de la card de cliente)**: por indicación del usuario se saca el `text-decoration: underline` del link "Cambiar" (queda texto gris con `cursor: pointer`). Además el `<select>` de clientes gana `aria-label` con `ventas.client` (los dos `<select>` del POS no se distinguían para lectores de pantalla) y se agrega un test de integración en `NuevaVenta.test.tsx` que prueba que al elegir un cliente aparece la card con nombre, teléfono y "Cambiar".
+
+### L1 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**T1-T8 cerradas** → la tabla queda vacía. Commits: `6210f29` (T1, T7), `d88f045` (T3, T5, T6), `53aaed8` (T4), `820b617` (T8), `4e4603d` (el degradado del L15); mergeada en `development` (`c7881d8`). Las filas que tenían '—' en la columna de commit ya tienen su hash.

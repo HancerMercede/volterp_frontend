@@ -105,12 +105,6 @@ T3+T4 y T5 son unidades independientes con superficies disjuntas → lanzables e
 
 **Commits heredados de `development`** (la rama vieja `feature/compras-alta-fix` ya no existe, pero sus commits entraron a `development`): `4afd1a0` Compras (proveedor buscable + editor de líneas) · `2ae51f7` VentaDetail (código de negocio) · `7413757` RRHH (reordenamiento) · `ea7c60f` Inventario (reformateo) · `f6b0e3e` error del API · `5cc7a8d` tokens de estado.
 
-## Log
-
-
-### L17 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
-
-**T1-T7 y T9-T11 cerradas** → la tabla queda solo con T8. Las rutas hijas (`App.tsx:180-182`), las claves i18n, los tests de página (`Contabilidad`, `Accounts`, `AccountsReceivable`, `AccountsPayable`, `AccountsGate`) y la imagen del proveedor en CxP están. La rama `feature/contabilidad-modulo` ya no existe (mergeada, `aca7294`). **T8 sigue PENDING**: `config.ts:22` apunta a `/api/accounting-transactions` y el back enruta `[Route("api/[controller]")]` → `/api/accountingtransactions` → el panel de transacciones del padre da 404 hoy.
 
 ## Tareas cerradas
 
@@ -128,6 +122,8 @@ Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de c
 | T9 | S2 · **Espejar las reglas que el front puede comprobar**: auto-padre excluido del combobox, prefijo del código del hijo validado contra el código del padre, borrado bloqueado cuando la cuenta tiene hijas. Más las sondas de regresión del gate quehengas de verificar · delegado · HECHO — 3 reglas previenen en el front, gate endurecido en el camino de escritura, 25 tests verdes |
 | T10 | S1 · **Se cae la hija de transacciones**: el padre queda con el reporte de transacciones y las hijas son Cuentas, CxC y CxP · inline · HECHO — página, lazy, ruta, botón de navegación y 3 claves i18n levantados; el padre sigue renderizando `TransactionsPanel` |
 | T11 | S4 · **Imagen del proveedor en CxP**: la fila busca el proveedor en la colección (`useProveedores()`) por su `supplierId` real y muestra su `imageUrl` con `ImageCell` · inline · HECHO — `supplierId` aparte en la fila del read-model + columna con `ImageCell` y fallback a pravatar |
+
+## Log
 
 ### L1 — 2026-11-06
 
@@ -278,6 +274,10 @@ Al explicar `SupplierPayable` (la fila del read-model de CxP, que **no** duplica
 - **El fix**: la fila del read-model ahora lleva **`supplierId: string | null` aparte** de la clave del grupo (`id`). Hace falta porque la clave del grupo puede ser el nombre del proveedor o `doc:COM-001`, no el id real — buscar por `id` sólo funcionaba en las compras que traen `supplierId`.
 - **Límite del approach**: `useColecciones()` carga la **primera página de 100** proveedores (`useColecciones.ts:7`), así que los que no estén en esa página salen sin foto. Es el mismo comportamiento que Compras hoy.
 - **Drift de formato**: el editor del owner guarda con comillas dobles (prettier); la convención del repo (§4.7) es comillas simples en código. Queda pendiente normalizar (encaja con la migración del repo a inglés).
+
+### L17 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**T1-T7 y T9-T11 cerradas** → la tabla queda solo con T8. Las rutas hijas (`App.tsx:180-182`), las claves i18n, los tests de página (`Contabilidad`, `Accounts`, `AccountsReceivable`, `AccountsPayable`, `AccountsGate`) y la imagen del proveedor en CxP están. La rama `feature/contabilidad-modulo` ya no existe (mergeada, `aca7294`). **T8 sigue PENDING**: `config.ts:22` apunta a `/api/accounting-transactions` y el back enruta `[Route("api/[controller]")]` → `/api/accountingtransactions` → el panel de transacciones del padre da 404 hoy.
 
 ## Relevant Files
 

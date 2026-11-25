@@ -123,18 +123,8 @@ El backend **todavía no tiene** estos endpoints. Esta es la especificación que
 
 | ID | S# | Route | Commit | Estado |
 | --- | --- | --- | --- | --- |
-| T8 | S9 | handoff al back (`Volterp`) | — | PENDING — **La mitad de backend**: el front ya llama 7 endpoints que el back **no tiene**: `/api/auth/forgot-password`, `/api/auth/reset-password`, `/api/auth/activate-account`, `/api/auth/link-status` (`config.ts:6-9`) y `/api/users/invite`, `/api/users/{id}/invite`, `/api/users/{id}/reset-password` (`userService.ts:28,46,55`) → 404 en las 4 pantallas públicas y en invitar/reenviar/restablecer. **El contrato real no es el de S6**: el modal pide contraseña (`UserManagement.tsx:376-384`) y el rol es plural (`InviteUserRequest.roles: string[]`, `types/index.ts:505-513`, `94f0170`) → el back hay que construirlo con el contrato del código, no con el de la spec |
+| T8 | S9 | handoff al back (`Volterp`) | — | PENDING | **La mitad de backend**: el front ya llama 7 endpoints que el back **no tiene**: `/api/auth/forgot-password`, `/api/auth/reset-password`, `/api/auth/activate-account`, `/api/auth/link-status` (`config.ts:6-9`) y `/api/users/invite`, `/api/users/{id}/invite`, `/api/users/{id}/reset-password` (`userService.ts:28,46,55`) → 404 en las 4 pantallas públicas y en invitar/reenviar/restablecer. **El contrato real no es el de S6**: el modal pide contraseña (`UserManagement.tsx:376-384`) y el rol es plural (`InviteUserRequest.roles: string[]`, `types/index.ts:505-513`, `94f0170`) → el back hay que construirlo con el contrato del código, no con el de la spec |
 
-## Log
-
-### L1 — 2026-11-07 — pedido original
-
-> "Frontend (solo la interfaz)
->
-
-### L7 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
-
-**T1-T7 cerradas** → la tabla queda con T8 (la mitad de backend, que no tenía fila). **Ojo con S6**: la spec dice 'el modal NO pide contraseña' y `POST /api/users/invite {email, fullName, role, username?}`, pero el código pide contraseña y manda `roles: string[]` → el contrato que hay que implementar en el back es el del código.
 
 ## Tareas cerradas
 
@@ -150,6 +140,12 @@ Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de c
 | T6 | S6, S9 · inline · `dab3a0d` · HECHO — pestaña Usuarios para admin (decisión L3) |
 | T7 | — · inline · `7c2b8d5`, `7c96511` · HECHO — 403 con mensaje claro (L5) + fix de modales (L6) |
 
+## Log
+
+### L1 — 2026-11-07 — pedido original
+
+> "Frontend (solo la interfaz)
+>
 > Quitar "Crear cuenta" del login.
 > Pantallas: olvidé mi contraseña, restablecer, activar cuenta, enlace inválido.
 > En Admin > Usuarios: botón de invitar, estados y acciones de reenviar/restablecer. ya que es un ERP y no vamos a crear usuarios de la forma tradicional los usuarios se crean desde dentro del sistema."
@@ -190,6 +186,10 @@ El usuario preguntó por el 401: "lo saca de la página pero debe decirle un men
 Causa (confirmada por el usuario y verificada en el código): el overlay de `Modal`/`ConfirmModal` cerraba con `onClick`, y el `click` se dispara sobre el **ancestro común** cuando el mousedown empieza dentro del modal y el mouseup cae fuera. Al seleccionar texto de un input y arrastrar más allá del borde, el modal se cerraba.
 
 **Fix**: decidir en el `mousedown` (`onMouseDown` en el overlay + `stopPropagation` en la card). Un press que empieza dentro nunca alcanza el overlay; un press fuera sigue cerrando. Cubierto por `src/test/components/Modal.test.tsx` (RED verificado contra el código viejo).
+
+### L7 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**T1-T7 cerradas** → la tabla queda con T8 (la mitad de backend, que no tenía fila). **Ojo con S6**: la spec dice 'el modal NO pide contraseña' y `POST /api/users/invite {email, fullName, role, username?}`, pero el código pide contraseña y manda `roles: string[]` → el contrato que hay que implementar en el back es el del código.
 
 ## Relevant files
 

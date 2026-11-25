@@ -99,6 +99,28 @@ T3–T6 son unidades independientes con superficies de edición disjuntas y se l
 
 **Nota de entorno**: en Windows el pool `forks` de vitest no arranca (`Timeout waiting for worker to respond`). El runner correcto es `npx vitest run --pool=threads`.
 
+
+## Tareas cerradas
+
+Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de cada una está en el Log.
+
+| ID | Detalle |
+|---|---|
+| T1 | S6, S7, S8 · `src/test/design-tokens.test.ts` — guard de tokens: props declaradas, cero literales, sin `backdrop-filter`, contraste AA · inline · HECHO — `cb23616` + `89eb3fe` (25 tests) |
+| T2 | S2, S3, S5, S8 · `src/styles/variables.css` reescrito + `index.html` (link de fuentes) · inline · HECHO — `e71e85c` |
+| T3 | S4, S6, S7 · `src/components/UI/**` — 13 primitivas a token plano · delegado · HECHO — **sin commitear** |
+| T4 | S1, S4, S6, S7 · `src/components/Layout/**`, `Dashboard`, `Asistencia`, `RRHH`, `Support`, `UserManagement`, `LanguageSwitcher` · delegado · HECHO — **sin commitear** |
+| T5 | S3, S5, S6, S7 · `src/pages/Login/**`, `src/pages/Register/**` — hero + display font · delegado · HECHO — **sin commitear** |
+| T6 | S3, S6, S7 · `src/pages/**` restantes + `src/pages/Ventas/components/**` · delegado · HECHO — **sin commitear** |
+| T7 | S6, S7, S10 · seam check: vitest + build + lint + verificación visual · inline · PENDIENTE — **ROJO** (2 fallos) |
+| T8 | S4 · 20 `backdrop-filter` + uso de `--glass-bg` / `--surface-blur` → superficies planas · inline · PENDIENTE |
+| T9 | S2, S7 · 9 `color: var(--primary)` → `--primary-text` (canvas crema) / `--primary-on-dark` (panel oscuro) · inline · PENDIENTE |
+| T10 | S5 · `--font-display`: 8 reglas con faux bold + heroes Login/Register · inline · BLOQUEADO — decisión de S5 pendiente |
+| T11 | S8 · tokens faltantes (`--primary-strong`, `--primary-soft-hover`), `--border-light`, limpieza de aliases legacy · inline · PENDIENTE |
+| T12 | S6 · blind spot del guard: hex percent-encoded en data URIs (5 archivos) + `public/favicon.svg` violeta · inline · PENDIENTE |
+| T13 | S10 · hero Register: texto crema sobre gradiente crema→oscuro; acento `--info` azul fuera de paleta · inline · PENDIENTE |
+| T14 | S6, S7, S10 · seam check final: `vitest --pool=threads` + `tsc -b && vite build` + `eslint .` + verificación visual · inline · PENDIENTE |
+
 ## Log
 
 ### L1 — 2026-11-05
@@ -150,32 +172,6 @@ Estado verificado sobre disco:
 - **Token layer**: en pie. `--primary #FF632B`, `--primary-text #B03A0A`, `--background #F9F3EA`, `--surface #FDFCF9`, `--text-muted #6B6257`, `--font-display 'Archivo Black'`, `--font-body 'Plus Jakarta Sans'`. Fuentes cargadas en `index.html:7-9`.
 - **S6 (tokenización)**: cumplida. Cero literales `#hex`/`rgb()`/`hsl()` en `.module.css` y `.tsx` fuera de `variables.css`.
 - **Guard**: `npx vitest run src/test/design-tokens.test.ts --pool=threads` → **25 tests, 23 verdes, 2 rojos**.
-
-### L9 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
-
-**La tabla entera queda anulada**: el trabajo nunca llegó a `development` (la rama se reseteó a `692ab4a`; lo sin commitear quedó en el stash `634ab2c`), el guard `src/test/design-tokens.test.ts` no existe y `variables.css` conserva el ámbar `#FACC15` con `--font-display: 'Plus Jakarta Sans'`. **Este plan no se retoma** (banner de ABANDONADO en la cabecera). Las filas salen de la tabla; quedan como registro.
-
-## Tareas cerradas
-
-Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de cada una está en el Log.
-
-| ID | Detalle |
-|---|---|
-| T1 | S6, S7, S8 · `src/test/design-tokens.test.ts` — guard de tokens: props declaradas, cero literales, sin `backdrop-filter`, contraste AA · inline · HECHO — `cb23616` + `89eb3fe` (25 tests) |
-| T2 | S2, S3, S5, S8 · `src/styles/variables.css` reescrito + `index.html` (link de fuentes) · inline · HECHO — `e71e85c` |
-| T3 | S4, S6, S7 · `src/components/UI/**` — 13 primitivas a token plano · delegado · HECHO — **sin commitear** |
-| T4 | S1, S4, S6, S7 · `src/components/Layout/**`, `Dashboard`, `Asistencia`, `RRHH`, `Support`, `UserManagement`, `LanguageSwitcher` · delegado · HECHO — **sin commitear** |
-| T5 | S3, S5, S6, S7 · `src/pages/Login/**`, `src/pages/Register/**` — hero + display font · delegado · HECHO — **sin commitear** |
-| T6 | S3, S6, S7 · `src/pages/**` restantes + `src/pages/Ventas/components/**` · delegado · HECHO — **sin commitear** |
-| T7 | S6, S7, S10 · seam check: vitest + build + lint + verificación visual · inline · PENDIENTE — **ROJO** (2 fallos) |
-| T8 | S4 · 20 `backdrop-filter` + uso de `--glass-bg` / `--surface-blur` → superficies planas · inline · PENDIENTE |
-| T9 | S2, S7 · 9 `color: var(--primary)` → `--primary-text` (canvas crema) / `--primary-on-dark` (panel oscuro) · inline · PENDIENTE |
-| T10 | S5 · `--font-display`: 8 reglas con faux bold + heroes Login/Register · inline · BLOQUEADO — decisión de S5 pendiente |
-| T11 | S8 · tokens faltantes (`--primary-strong`, `--primary-soft-hover`), `--border-light`, limpieza de aliases legacy · inline · PENDIENTE |
-| T12 | S6 · blind spot del guard: hex percent-encoded en data URIs (5 archivos) + `public/favicon.svg` violeta · inline · PENDIENTE |
-| T13 | S10 · hero Register: texto crema sobre gradiente crema→oscuro; acento `--info` azul fuera de paleta · inline · PENDIENTE |
-| T14 | S6, S7, S10 · seam check final: `vitest --pool=threads` + `tsc -b && vite build` + `eslint .` + verificación visual · inline · PENDIENTE |
-
   - `does not use backdrop-filter anywhere` → 20 ofensores (S4 nunca aplicada).
   - `never paints text with --primary or --primary-hover` → 9 ofensores (S2/S7 incumplidas).
 - **S5 invertida**: `--font-display` está en el wordmark del sidebar y en 8 títulos de página (`PageHeader`, Clientes, Compras, Configuración, Inventario, Reportes ×2, Ventas) — **no** en los 3 sitios que nombra S5 (hero Login, hero Register, título de bienvenida del Dashboard). Además 8 de esas reglas emparejan la display con `font-weight` numérico → faux bold (Archivo Black es de un solo peso).
@@ -187,3 +183,7 @@ Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de c
 ### L8 — 2026-11-05 — decisión abierta (S5)
 
 S5 dice que la display vive **sólo** en los 3 heroes/títulos nombrados; la implementación la puso en los 8 títulos de página y no en los heroes. Hay que elegir cuál es la verdad y reescribir la spec. Bloquea T10.
+
+### L9 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**La tabla entera queda anulada**: el trabajo nunca llegó a `development` (la rama se reseteó a `692ab4a`; lo sin commitear quedó en el stash `634ab2c`), el guard `src/test/design-tokens.test.ts` no existe y `variables.css` conserva el ámbar `#FACC15` con `--font-display: 'Plus Jakarta Sans'`. **Este plan no se retoma** (banner de ABANDONADO en la cabecera). Las filas salen de la tabla; quedan como registro.

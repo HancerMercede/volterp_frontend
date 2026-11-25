@@ -38,13 +38,6 @@ La venta manda **su** RNC; la ficha del cliente solo rellena el hueco cuando la 
 
 **Cerrado**: las tareas de esta tabla están hechas (ver “Tareas cerradas” y el Log).
 
-## Log
-
-### L1 — 2026-11-24 — el dueño abre la fase 2
-
-### L3 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
-
-**T1 y T2 cerradas** → la tabla queda vacía. `c4c2ac1` (la caja lleva el RNC del comprador) + `7900f9b` (merge a development) + `9b17188` (este plan). El L2 que decía 'sin correr: el node_modules del front está roto' quedó obsoleto: la suite y el build corren. El RNC viaja en create y en update, se limpia con la caja y el aviso del consumo usa el umbral del readiness (`NuevaVentaPage.tsx:42`).
 
 ## Tareas cerradas
 
@@ -55,6 +48,9 @@ Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de c
 | T1 | S1, S2 · inline (parent) · DONE · Los tipos llevan `receptorTaxId` ✓ · la caja lo pide, lo envía, lo carga al editar y lo limpia ✓ · el crédito fiscal (E31) se puede elegir con el RNC escrito ✓ · el consumo (E32) avisa antes de completar con el umbral del readiness ✓ · i18n `ventas.*` en `es`/`en` ✓ · 7 tests nuevos + 1 actualizado ✓ · el snippet de la caja en el `FRONTEND-SKELETON-TEMPLATE.md` al día ✓ |
 | T2 | S1-S3 · handoff (owner) · PENDING · **La suite y el build los corre el dueño**: el `node_modules` del front estaba roto (`node_modules/vitest` vacío y `.bin` sin binarios → la config `vitest/config` no cargaba) → el dueño reinstala y corre `npx vitest run` + `npm run build` ✓ |
 
+## Log
+
+### L1 — 2026-11-24 — el dueño abre la fase 2
 
 > (el dueño: *"Ok comencemos pero no hagas trabajo paralelo si es el backend primero y luego el front o viceversa"* · *"lee el template tambien no solo el readme"* · *"no hagas nada que no siga el patron del proyecto recuerdalo"*)
 
@@ -75,6 +71,10 @@ Filas que salen de la tabla de tareas: el trabajo ya está hecho. El commit de c
 - **El template al día** ✓: el snippet de `limpiarLaCaja` y las reglas de §2.9 (la caja) se actualizaron en el mismo cambio ✓ (la regla de mantenimiento del template ✓).
 - **Tests** ✓: 7 nuevos (el RNC viaja en el create ✓ · en el update ✓ · el crédito fiscal se acepta con el RNC escrito ✓ · la caja lo limpia ✓ · la venta muestra el RNC que ya traía ✓ · avisa en el consumo desde el umbral ✓ · no avisa por debajo ✓) + el existente del mensaje del crédito fiscal actualizado ✓ → **sin correr**: el `node_modules` del front está roto (vitest vacío ✓) → los corre el dueño ✓.
 - **Riesgo**: none ✓ (el front consume un campo que el back ya expone ✓ · la copia y el comportamiento anterior siguen en pie ✓ · no cambia ningún dato guardado ✓).
+
+### L3 — 2026-11-25 — reconciliación: la tabla de tareas queda solo con lo que falta
+
+**T1 y T2 cerradas** → la tabla queda vacía. `c4c2ac1` (la caja lleva el RNC del comprador) + `7900f9b` (merge a development) + `9b17188` (este plan). El L2 que decía 'sin correr: el node_modules del front está roto' quedó obsoleto: la suite y el build corren. El RNC viaja en create y en update, se limpia con la caja y el aviso del consumo usa el umbral del readiness (`NuevaVentaPage.tsx:42`).
 
 ## Relevant Files
 
