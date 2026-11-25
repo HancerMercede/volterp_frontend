@@ -70,12 +70,13 @@ El RNC del comprador **vive en la ficha del cliente** → el back lo resuelve co
 
 | ID | Specs | Route | Repo | Estado | Commit | Evidencia |
 |---|---|---|---|---|---|---|
-| T1 | S1-S6 | inline (parent) | erp-mvp | DONE | `8aefdf1` | El doc reescrito con el diseño de la bandera (S1-S6) + el log L1-L12 |
-| T2 | S1, S2 | handoff (worker) | erp-mvp | DONE | `8aefdf1` | El check "El comprador no está registrado" y los dos modos: apagada el riel queda como antes de UX12 (solo el picker, sin caja de RNC), prendida las dos cajas (nombre + RNC) |
-| T3 | S2 | handoff (worker) | erp-mvp | DONE | `8aefdf1` | La venta sale sin ficha: `clienteId: null` + `clienteName` escrito + `receptorTaxId`; con la bandera apagada el RNC no viaja (lo pone la ficha) |
-| T4 | S3, S4 | handoff (worker) | erp-mvp | DONE | `8aefdf1` | La guarda: con la bandera prendida se exige el nombre escrito; apagada sigue exigiendo cliente del padrón; los avisos del RNC no se tocan |
-| T5 | S1-S6 | handoff (worker) | erp-mvp | DONE | `8aefdf1` | i18n `es`/`en` (4 claves de la caja + `clientes.clientTaxId`; se fue `buyerTaxIdHint` sin uso) + snippet del template + 6 tests nuevos y 5 del UX12 actualizados |
-| T6 | S6 | handoff (worker) | erp-mvp | DONE | `8aefdf1` | El RNC en la ficha del cliente: campo opcional en `CLIENTE_FIELDS` + `defaultValues` + `mapEntityToForm` (§4.5) + `taxId: trim() || null` en el alta y la edición |
+| T1 | S1-S6 | inline (parent) | erp-mvp | DONE | `7900f9b` | El doc reescrito con el diseño de la bandera (S1-S6) + el log L1-L13 |
+| T2 | S1, S2 | handoff (worker) | erp-mvp | DONE | `7900f9b` | El check "El comprador no está registrado" y los dos modos: apagada el riel queda como antes de UX12 (solo el picker, sin caja de RNC), prendida las dos cajas (nombre + RNC) |
+| T3 | S2 | handoff (worker) | erp-mvp | DONE | `7900f9b` | La venta sale sin ficha: `clienteId: null` + `clienteName` escrito + `receptorTaxId`; con la bandera apagada el RNC no viaja (lo pone la ficha) |
+| T4 | S3, S4 | handoff (worker) | erp-mvp | DONE | `7900f9b` | La guarda: con la bandera prendida se exige el nombre escrito; apagada sigue exigiendo cliente del padrón; los avisos del RNC no se tocan |
+| T5 | S1-S6 | handoff (worker) | erp-mvp | DONE | `7900f9b` | i18n `es`/`en` (4 claves de la caja + `clientes.clientTaxId`; se fue `buyerTaxIdHint` sin uso) + snippet del template + 6 tests nuevos y 5 del UX12 actualizados |
+| T6 | S6 | handoff (worker) | erp-mvp | DONE | `7900f9b` | El RNC en la ficha del cliente: campo opcional en `CLIENTE_FIELDS` + `defaultValues` + `mapEntityToForm` (§4.5) + `taxId: trim() || null` en el alta y la edición |
+| T7 | S6 | handoff (worker) | erp-mvp | **PENDING** | — | **Cobertura de la ficha**: la página de Clientes no tiene archivo de test → el campo `taxId` (alta, edición y la normalización del `null` del DTO) queda sin prueba de página. Hay 22 sondas verdes del verificador listas para llevar al repo (17 de la caja + 5 de Clientes) |
 
 ## Log
 
@@ -198,6 +199,15 @@ El padre "corrigió" los comentarios del worker poniéndoles acentos. Al verific
 - **Advisory del back (no se toca: es regla intencional)**: `Sale.SetReceptorTaxId` **no borra** el RNC cuando el request no trae uno (*"A request that does not name a buyer does not erase the one the sale already has"*) → si en una venta se cambia el comprador de "sin ficha" a "del padrón", el RNC del comprador anterior sobrevive ✓ (comportamiento del back, fuera de alcance).
 - **Hueco declarado**: la página de Clientes **no tiene archivo de test** → el campo `taxId` de la ficha no tiene cobertura de página (el verificador lo tapó y dejó 22 sondas verdes en un scratch que ya se borró).
 - **Entrega**: commit `7900f9b` → merge fast-forward a `development` → `git push origin development` (`0e0e358..7900f9b`) ✓. El push lleva 4 commits: el de manuales que estaba sin pushear + los 2 de UX12 + este.
+
+### L14 — 2026-11-24 — lo que queda pendiente
+
+> "Ok manana cubrimos con los test lo que quedo pendiente"
+
+- **T7 (PENDIENTE)**: la página de Clientes **no tiene archivo de test** → el campo `taxId` de la ficha (alta, edición y la normalización del `null` del DTO) queda sin cobertura de página.
+- El verificador dejó **22 sondas verdes** en un scratch (`VerifierPos.test.tsx`: 17 de la caja · `VerifierClientes.test.tsx`: 5 de la ficha) → el scratch se borró, pero el contenido exacto está en su reporte → es lo que hay que llevar al repo.
+- Los **5 errores preexistentes** de `npx eslint .` (`PoncheCard` · `Issuers` · `Ranges` · `VentaDetail`×2) siguen sin tocarse ✓.
+- El **advisory del back** (`Sale.SetReceptorTaxId` no borra el RNC si el request no trae uno) queda como está: es regla intencional del back ✓.
 
 ## Relevant Files
 
