@@ -4057,18 +4057,106 @@ export default App;
 - **Al editar una venta, el selector trae el tipo de esa venta**: si es un crédito fiscal (`documentType === "FiscalCredit"`) se selecciona "credito"; en cualquier otro caso, "comercial". El tipo vive en `documentoElegido` y se inicializa desde la venta que se está editando.
 - **El carrito se siembra agrupando las líneas por producto**: si el back manda el mismo producto en dos líneas, quedan en una sola con la cantidad sumada y el subtotal recalculado. El PUT no reenvía duplicados.
 - **El estado fiscal no se lista**: vive en el detalle de la venta (`VentaDetail.tsx`), no en el listado.
-- **El RNC del comprador es de la venta, no del cliente**: el cajero lo escribe en la caja cuando el cliente no lo tiene en su ficha y viaja en el `receptorTaxId` del create/update. El front manda **solo lo que el cajero escribió**: si no escribió nada no opina, y el back lo resuelve con la ficha del cliente (que ya viene normalizada).
+- **La caja tiene dos modos y los declara un check**: el check "El comprador no está registrado" los prende y apaga. **Apagado** (el comprador está en el padrón) el riel queda como antes de UX12: solo el picker de cliente, sin caja de RNC y sin hint. **Prendido** (el comprador no tiene ficha) el picker desaparece y aparecen las dos cajas: "Nombre del comprador" y "RNC del comprador": la venta sale con `clienteId: null`, el nombre escrito y el RNC que escribió el cajero. Por seguridad el nombre solo se puede escribir con la bandera prendida: con la apagada la caja ni existe.
+- **El RNC del comprador vive en la ficha del cliente y solo se edita sin ficha**: la ficha lo pide en su formulario y el back lo resuelve con `client.TaxId` cuando la venta no trae RNC. **Con la bandera apagada el front no manda RNC** (`receptorTaxId: undefined`) — lo pone la ficha; **con la bandera prendida viaja `receptorTaxId.trim() || undefined`**: solo lo que escribió el cajero. Nadie cambia el RNC de un cliente del padrón desde el mostrador.
+- **El estado del RNC y el del nombre sobreviven al cambio de modo**: no se borran al apagar o prender la bandera; el payload decide si el RNC viaja.
+- **La guarda cambia de forma, no de sitio**: con la bandera prendida sin nombre, avisa y no sale; con la apagada sin cliente del padrón, avisa "Seleccione un cliente, por favor.". El aviso del RNC (`fiscalCreditNeedsTaxId` / `buyerTaxIdRequired`) es el mismo en los dos modos.
 - **Quién tiene que ser nombrado lo dice el back**: el crédito fiscal (E31) siempre y el consumo (E32) desde el monto que viaja en el readiness (`buyerTaxIdRequiredFrom` ✓). El front avisa **antes de completar** y nunca lleva el número: un número de la norma duplicado en el front es un número que se va de fecha sin que nadie lo note.
 
 **Snippet** (`src/pages/Ventas/components/NuevaVenta.tsx`):
 
 ```tsx
-  // La caja queda para la siguiente venta: sin renglones, sin cliente y sin
-  // el RNC del comprador (es de el). El borrador limpia igual que el
-  // completado.
+  // El comprador puede no estar en el padron de la compania: el cajero lo declara y lo nombra a mano.
+  const ventaSinCliente = editingVenta?.clienteId === null;
+  const [compradorSinRegistro, setCompradorSinRegistro] = useState<boolean>(
+    ventaSinCliente,
+  );
+  const [nombreComprador, setNombreComprador] = useState<string>(
+    ventaSinCliente ? (editingVenta?.clienteName ?? "") : "",
+  );
+  const [receptorTaxId, setReceptorTaxId] = useState<string>(
+    ventaSinCliente ? (editingVenta?.receptorTaxId ?? "") : "",
+  );
+  // El RNC que nombra al comprador: con la bandera prendida es el que
+  // escribio el cajero; con la apagada lo pone la ficha del cliente.
+  const rncDelComprador = compradorSinRegistro
+    ? receptorTaxId.trim()
+    : clienteData?.taxId || "";
+```
+
+```tsx
+          {!compradorSinRegistro && (
+            <ClienteSelector
+              clientes={clientes}
+              selectedClienteId={selectedCliente}
+              onClienteSelect={setSelectedCliente}
+            />
+          )}
+          <label className={styles.compradorFlag}>
+            <input
+              type="checkbox"
+              checked={compradorSinRegistro}
+              onChange={(e) => {
+                setCompradorSinRegistro(e.target.checked);
+                if (e.target.checked) setSelectedCliente(null);
+              }}
+            />
+            {t("ventas.buyerNotRegistered")}
+          </label>
+          {compradorSinRegistro && (
+            <>
+              <div className={styles.compradorCampo}>
+                <label
+                  className={styles.compradorLabel}
+                  htmlFor="nombre-comprador"
+                >
+                  {t("ventas.buyerName")}
+                </label>
+                <input
+                  id="nombre-comprador"
+                  className={styles.compradorInput}
+                  type="text"
+                  value={nombreComprador}
+                  onChange={(e) => setNombreComprador(e.target.value)}
+                />
+              </div>
+              <div className={styles.compradorCampo}>
+                <label className={styles.compradorLabel} htmlFor="rnc-comprador">
+                  {t("ventas.buyerTaxId")}
+                </label>
+                <input
+                  id="rnc-comprador"
+                  className={styles.compradorInput}
+                  type="text"
+                  inputMode="numeric"
+                  value={receptorTaxId}
+                  onChange={(e) => setReceptorTaxId(e.target.value)}
+                />
+                <span className={styles.compradorHint}>
+                  {t("ventas.buyerNotRegisteredHint")}
+                </span>
+              </div>
+            </>
+          )}
+```
+
+```tsx
+    // El RNC solo viaja cuando el comprador no tiene ficha: con la bandera
+    // apagada lo pone la ficha del cliente y el front no opina.
+    const receptorTaxIdDeLaVenta = compradorSinRegistro
+      ? receptorTaxId.trim() || undefined
+      : undefined;
+```
+
+```tsx
+  // La caja queda para la siguiente venta: sin renglones, sin cliente, sin
+  // el nombre del comprador y sin el RNC del comprador (es de el). El
+  // borrador limpia igual que el completado.
   const limpiarLaCaja = () => {
     setCarrito([]);
     setSelectedCliente(null);
+    setCompradorSinRegistro(false);
+    setNombreComprador("");
     setDocumentoElegido(null);
     setReceptorTaxId("");
   };

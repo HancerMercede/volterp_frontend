@@ -59,6 +59,14 @@ export function Clientes() {
         span: 6,
       },
       {
+        name: "taxId",
+        label: t("clientes.clientTaxId"),
+        type: "text",
+        placeholder: "101-500-018",
+        section: "formSections.identity",
+        span: 6,
+      },
+      {
         name: "email",
         label: t("clientes.clientEmail"),
         type: "email",
@@ -109,15 +117,31 @@ export function Clientes() {
       email: "",
       phone: "",
       address: "",
+      taxId: "",
       imageUrl: "",
       isActive: true,
     },
-    onCreate: (data) => addCliente(data as ClientRequest),
-    onUpdate: (id, data) => updateCliente(id, data as ClientRequest),
+    onCreate: (data) =>
+      addCliente({ ...data, taxId: data.taxId.trim() || null } as ClientRequest),
+    onUpdate: (id, data) =>
+      updateCliente(id, {
+        ...data,
+        taxId: data.taxId.trim() || null,
+      } as ClientRequest),
     onSuccess: () => {
       setShowForm(false);
       fetchClientes(pageNumber, ITEMS_PER_PAGE);
     },
+    // El DTO trae el RNC vacio: el input controlado no puede tener null.
+    mapEntityToForm: (entity) => ({
+      name: (entity.name as string) ?? "",
+      email: (entity.email as string) ?? "",
+      phone: (entity.phone as string) ?? "",
+      address: (entity.address as string) ?? "",
+      taxId: (entity.taxId as string | null) ?? "",
+      imageUrl: (entity.imageUrl as string | null) ?? "",
+      isActive: (entity.isActive as boolean) ?? true,
+    }),
   });
 
   const filteredClientes = useFilter({

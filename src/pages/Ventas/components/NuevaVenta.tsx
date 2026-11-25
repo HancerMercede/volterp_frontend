@@ -136,15 +136,25 @@ export function NuevaVenta({
   const [selectedCliente, setSelectedCliente] = useState<string | null>(
     editingVenta?.clienteId ?? null,
   );
+  // El comprador puede no estar en el padron de la compania: el cajero lo declara y lo nombra a mano.
+  const ventaSinCliente = editingVenta?.clienteId === null;
+  const [compradorSinRegistro, setCompradorSinRegistro] = useState<boolean>(
+    ventaSinCliente,
+  );
+  const [nombreComprador, setNombreComprador] = useState<string>(
+    ventaSinCliente ? (editingVenta?.clienteName ?? "") : "",
+  );
   // El RNC del comprador es de la venta: el cajero lo escribe cuando el
-  // cliente no lo tiene en su ficha.
+  // comprador no tiene ficha.
   const [receptorTaxId, setReceptorTaxId] = useState<string>(
-    editingVenta?.receptorTaxId ?? "",
+    ventaSinCliente ? (editingVenta?.receptorTaxId ?? "") : "",
   );
   const clienteData = clientes.find((c) => c.id === selectedCliente);
-  // El comprador de la venta: el RNC escrito en la caja o, si el cajero no
-  // escribio ninguno, el de la ficha del cliente.
-  const rncDelComprador = receptorTaxId.trim() || clienteData?.taxId || "";
+  // El RNC que nombra al comprador: con la bandera prendida es el que
+  // escribio el cajero; con la apagada lo pone la ficha del cliente.
+  const rncDelComprador = compradorSinRegistro
+    ? receptorTaxId.trim()
+    : clienteData?.taxId || "";
   // El default es el comercial: la venta sale sin comprobante fiscal.
   const [documentoElegido, setDocumentoElegido] = useState<DocumentoVenta | null>(
     documentoDeLaVenta(editingVenta),
@@ -159,7 +169,21 @@ export function NuevaVenta({
     if (tipoDeLaVenta.current === editingVenta.id) return;
     tipoDeLaVenta.current = editingVenta.id;
     setDocumentoElegido((elegido) => elegido ?? documentoDeLaVenta(editingVenta));
-    setReceptorTaxId((actual) => actual || (editingVenta.receptorTaxId ?? ""));
+    setReceptorTaxId(
+      (actual) =>
+        actual ||
+        (editingVenta.clienteId === null
+          ? (editingVenta.receptorTaxId ?? "")
+          : ""),
+    );
+    setCompradorSinRegistro(
+      (actual) => actual || (editingVenta.clienteId === null),
+    );
+    setNombreComprador(
+      (actual) =>
+        actual ||
+        (editingVenta.clienteId === null ? (editingVenta.clienteName ?? "") : ""),
+    );
   }, [editingVenta]);
 
   // A fiscal credit needs the tax id of its buyer: without it the backend
@@ -249,12 +273,14 @@ export function NuevaVenta({
       subtotal: item.subtotal,
     }));
 
-  // La caja queda para la siguiente venta: sin renglones, sin cliente y sin
-  // el RNC del comprador (es de el). El borrador limpia igual que el
-  // completado.
+  // La caja queda para la siguiente venta: sin renglones, sin cliente, sin
+  // el nombre del comprador y sin el RNC del comprador (es de el). El
+  // borrador limpia igual que el completado.
   const limpiarLaCaja = () => {
     setCarrito([]);
     setSelectedCliente(null);
+    setCompradorSinRegistro(false);
+    setNombreComprador("");
     setDocumentoElegido(null);
     setReceptorTaxId("");
   };
@@ -264,8 +290,12 @@ export function NuevaVenta({
       addToast(t("ventas.cartEmptyWarning"), "warning");
       return;
     }
-    const clienteElegido = selectedCliente;
-    if (!clienteElegido) {
+    // Con la bandera prendida el comprador no esta en el padron: la venta sale con el nombre escrito a mano.
+    if (compradorSinRegistro && !nombreComprador.trim()) {
+      addToast(t("ventas.buyerNameRequired"), "warning");
+      return;
+    }
+    if (!compradorSinRegistro && !selectedCliente) {
       addToast(t("ventas.selectClientWarning"), "warning");
       return;
     }
@@ -289,6 +319,16 @@ export function NuevaVenta({
       return;
     }
 
+    const clienteId = compradorSinRegistro ? null : selectedCliente;
+    const clienteName = compradorSinRegistro
+      ? nombreComprador.trim()
+      : clienteData?.name || null;
+    // El RNC solo viaja cuando el comprador no tiene ficha: con la bandera
+    // apagada lo pone la ficha del cliente y el front no opina.
+    const receptorTaxIdDeLaVenta = compradorSinRegistro
+      ? receptorTaxId.trim() || undefined
+      : undefined;
+
     const total = carrito.reduce((acc, item) => acc + item.subtotal, 0);
 
     // La factura comercial sale sin comprobante fiscal: el back la marca con
@@ -300,16 +340,14 @@ export function NuevaVenta({
     try {
       if (editingSaleId) {
         await updateVenta(editingSaleId, {
-          clienteId: clienteElegido,
-          clienteName: clienteData?.name || null,
+          clienteId,
+          clienteName,
           status: "Pending",
           total,
           notes: null,
           items: buildSaleItems(),
           documentType,
-          // Solo lo que el cajero escribio: si no escribio nada, el backend
-          // lo resuelve con la ficha del cliente.
-          receptorTaxId: receptorTaxId.trim() || undefined,
+          receptorTaxId: receptorTaxIdDeLaVenta,
         } as UpdateSaleRequest);
 
         if (completar) {
@@ -323,15 +361,15 @@ export function NuevaVenta({
 
         const creada = await createVenta({
           companyId: currentCompany.id,
-          clienteId: clienteElegido,
-          clienteName: clienteData?.name || null,
+          clienteId,
+          clienteName,
           status: "Pending",
           total,
           notes: null,
           items: buildSaleItems(),
           documentType,
           isCommercialInvoice: esComercial,
-          receptorTaxId: receptorTaxId.trim() || undefined,
+          receptorTaxId: receptorTaxIdDeLaVenta,
         } as CreateSaleRequest);
 
         // The sale is created pending and completed right away: the completion is what issues the document.
@@ -382,28 +420,59 @@ export function NuevaVenta({
           </div>
         </div>
         <div className={styles.railBody}>
-          <ClienteSelector
-            clientes={clientes}
-            selectedClienteId={selectedCliente}
-            onClienteSelect={setSelectedCliente}
-          />
-          <div className={styles.compradorCampo}>
-            <label className={styles.compradorLabel} htmlFor="rnc-comprador">
-              {t("ventas.buyerTaxId")}
-            </label>
-            <input
-              id="rnc-comprador"
-              className={styles.compradorInput}
-              type="text"
-              inputMode="numeric"
-              value={receptorTaxId}
-              placeholder={clienteData?.taxId ?? ""}
-              onChange={(e) => setReceptorTaxId(e.target.value)}
+          {!compradorSinRegistro && (
+            <ClienteSelector
+              clientes={clientes}
+              selectedClienteId={selectedCliente}
+              onClienteSelect={setSelectedCliente}
             />
-            <span className={styles.compradorHint}>
-              {t("ventas.buyerTaxIdHint")}
-            </span>
-          </div>
+          )}
+          <label className={styles.compradorFlag}>
+            <input
+              type="checkbox"
+              checked={compradorSinRegistro}
+              onChange={(e) => {
+                setCompradorSinRegistro(e.target.checked);
+                if (e.target.checked) setSelectedCliente(null);
+              }}
+            />
+            {t("ventas.buyerNotRegistered")}
+          </label>
+          {compradorSinRegistro && (
+            <>
+              <div className={styles.compradorCampo}>
+                <label
+                  className={styles.compradorLabel}
+                  htmlFor="nombre-comprador"
+                >
+                  {t("ventas.buyerName")}
+                </label>
+                <input
+                  id="nombre-comprador"
+                  className={styles.compradorInput}
+                  type="text"
+                  value={nombreComprador}
+                  onChange={(e) => setNombreComprador(e.target.value)}
+                />
+              </div>
+              <div className={styles.compradorCampo}>
+                <label className={styles.compradorLabel} htmlFor="rnc-comprador">
+                  {t("ventas.buyerTaxId")}
+                </label>
+                <input
+                  id="rnc-comprador"
+                  className={styles.compradorInput}
+                  type="text"
+                  inputMode="numeric"
+                  value={receptorTaxId}
+                  onChange={(e) => setReceptorTaxId(e.target.value)}
+                />
+                <span className={styles.compradorHint}>
+                  {t("ventas.buyerNotRegisteredHint")}
+                </span>
+              </div>
+            </>
+          )}
           <Carrito
             items={carrito}
             onQuantityChange={actualizarCantidad}

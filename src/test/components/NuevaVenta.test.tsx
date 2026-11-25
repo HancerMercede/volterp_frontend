@@ -426,13 +426,34 @@ describe("NuevaVenta", () => {
 
     renderPos();
 
-    await chooseClient();
+    // El RNC solo se escribe con la bandera prendida.
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+    await userEvent.type(screen.getByLabelText("Buyer name"), "Comercial del Este");
     await userEvent.type(screen.getByLabelText("Buyer tax ID"), "101500018");
     await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
     await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
 
     expect(createVenta).toHaveBeenCalledWith(
       expect.objectContaining({ receptorTaxId: "101500018" }),
+    );
+  });
+
+  it("does not carry the tax id of the buyer while it is in the registry", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    useVentaStore.setState({ createVenta });
+    useClienteStore.setState({ clientes: [{ ...CLIENT, taxId: "101500018" }] });
+
+    renderPos();
+
+    await chooseClient();
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    // El RNC lo pone la ficha del cliente: el front no manda RNC.
+    expect(createVenta).toHaveBeenCalledWith(
+      expect.objectContaining({ receptorTaxId: undefined }),
     );
   });
 
@@ -443,6 +464,10 @@ describe("NuevaVenta", () => {
 
     renderEditando(PENDING_SALE);
 
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+    await userEvent.type(screen.getByLabelText("Buyer name"), "Comercial del Este");
     await userEvent.type(screen.getByLabelText("Buyer tax ID"), "101500018");
     await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
 
@@ -453,22 +478,30 @@ describe("NuevaVenta", () => {
   });
 
   it("shows the tax id of the buyer that the pending sale carries", () => {
-    renderEditando({ ...PENDING_SALE, receptorTaxId: "101500018" });
+    // Una venta sin cliente abre la caja en modo bandera: su RNC se ve.
+    renderEditando({
+      ...PENDING_SALE,
+      clienteId: null,
+      clienteName: "Comercial del Este",
+      receptorTaxId: "101500018",
+    });
 
     expect(screen.getByLabelText("Buyer tax ID")).toHaveValue("101500018");
   });
 
-  it("accepts a fiscal credit when the cashier types the tax id and the client has none", async () => {
+  it("accepts a fiscal credit when the cashier types the tax id and the buyer is not registered", async () => {
     const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
     const completeVenta = vi.fn();
     const addToast = vi.fn();
     useVentaStore.setState({ createVenta, completeVenta });
     useUIStore.setState({ addToast });
-    useClienteStore.setState({ clientes: [{ ...CLIENT, taxId: null }] });
 
     renderPos();
 
-    await chooseClient();
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+    await userEvent.type(screen.getByLabelText("Buyer name"), "Comercial del Este");
     await userEvent.type(screen.getByLabelText("Buyer tax ID"), "101500018");
     await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
     await userEvent.click(
@@ -498,12 +531,20 @@ describe("NuevaVenta", () => {
 
     renderPos();
 
-    await chooseClient();
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+    await userEvent.type(screen.getByLabelText("Buyer name"), "Comercial del Este");
     await userEvent.type(screen.getByLabelText("Buyer tax ID"), "101500018");
     await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
     await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
 
-    expect(screen.getByLabelText("Buyer tax ID")).toHaveValue("");
+    // La caja queda limpia: la bandera desprendida y el RNC sin caja.
+    expect(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    ).not.toBeChecked();
+    expect(screen.queryByLabelText("Buyer name")).toBeNull();
+    expect(screen.queryByLabelText("Buyer tax ID")).toBeNull();
   });
 
   it("warns when the consumption reaches the amount that has to name its buyer", async () => {
@@ -662,6 +703,104 @@ describe("NuevaVenta", () => {
 
     expect(createVenta).not.toHaveBeenCalled();
     expect(addToast).toHaveBeenCalledWith("Select a client, please.", "warning");
+  });
+
+  it("names the buyer by hand when the cashier declares it is not registered", async () => {
+    const createVenta = vi.fn(async () => ({ id: "sale-1" }) as SaleDto);
+    const completeVenta = vi.fn();
+    useVentaStore.setState({ createVenta, completeVenta });
+
+    renderPos();
+
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+    await userEvent.type(screen.getByLabelText("Buyer name"), "Comercial del Este");
+    await userEvent.type(screen.getByLabelText("Buyer tax ID"), "101500018");
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    // El comprador no esta en el padron: la venta sale sin ficha, con el
+    // nombre escrito y el RNC que dio.
+    expect(createVenta).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clienteId: null,
+        clienteName: "Comercial del Este",
+        receptorTaxId: "101500018",
+      }),
+    );
+  });
+
+  it("asks for the name of the buyer when it is not registered", async () => {
+    const createVenta = vi.fn(async () => {});
+    const addToast = vi.fn();
+    useVentaStore.setState({ createVenta });
+    useUIStore.setState({ addToast });
+
+    renderPos();
+
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: /Complete Sale/ }));
+
+    expect(createVenta).not.toHaveBeenCalled();
+    expect(addToast).toHaveBeenCalledWith("Type the buyer's name.", "warning");
+  });
+
+  it("hides the client picker when the buyer is not registered", async () => {
+    renderPos();
+
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+
+    expect(screen.queryByRole("combobox", { name: "Client" })).toBeNull();
+  });
+
+  it("shows the tax id box only when the buyer is not registered", async () => {
+    renderPos();
+
+    // Con la bandera apagada el riel queda como antes: solo el picker.
+    expect(screen.queryByLabelText("Buyer tax ID")).toBeNull();
+
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+
+    expect(screen.getByLabelText("Buyer tax ID")).toBeInTheDocument();
+  });
+
+  it("keeps the tax id of the buyer when the flag is toggled", async () => {
+    renderPos();
+
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+    await userEvent.type(screen.getByLabelText("Buyer tax ID"), "101500018");
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    );
+
+    // El estado no se borra al cambiar de modo: el payload decide si viaja.
+    expect(screen.getByLabelText("Buyer tax ID")).toHaveValue("101500018");
+  });
+
+  it("opens a pending sale without a client with the buyer written by hand", () => {
+    renderEditando({
+      ...PENDING_SALE,
+      clienteId: null,
+      clienteName: "Comercial del Este",
+    });
+
+    expect(screen.getByLabelText("Buyer name")).toHaveValue("Comercial del Este");
+    expect(
+      screen.getByRole("checkbox", { name: "The buyer is not registered" }),
+    ).toBeChecked();
   });
 
   it("discards a pending sale and goes back to the list", async () => {
