@@ -19,7 +19,7 @@ export const API_CONFIG = {
     SUPPLIERS: "/api/suppliers",
     PURCHASES: "/api/purchases",
     EMPLOYEES: "/api/employees",
-    ACCOUNTING_TRANSACTIONS: "/api/accounting-transactions",
+    ACCOUNTING_TRANSACTIONS: "/api/accountingtransactions",
     ACCOUNTS: "/api/accounts",
     CLIENTS: "/api/clients",
     PROJECTS: "/api/projects",
