@@ -442,11 +442,11 @@ export interface AccountingTransactionDto {
   id: string;
   code: string;
   description: string;
-  type: "Income" | "Expense";
+  transactionType: "Debit" | "Credit";
   amount: number;
-  date: string;
+  transactionDate: string;
   category: string;
-  status: "Reconciled" | "Pending";
+  status: "Active" | "Pending";
   referenceNumber: string | null;
   notes: string | null;
   createdAt: string | null;

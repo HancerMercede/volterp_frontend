@@ -28,18 +28,18 @@ import { money } from '../../../utils/currency';
 
 type TransactionFormValues = {
   description: string;
-  type: 'Income' | 'Expense';
+  transactionType: 'Debit' | 'Credit';
   amount: number;
-  date: string;
+  transactionDate: string;
   category: string;
-  status: 'Pending' | 'Reconciled';
+  status: 'Active' | 'Pending';
 }
 
 const DEFAULT_TRANSACTION_VALUES: TransactionFormValues = {
   description: '',
-  type: 'Income',
+  transactionType: 'Credit',
   amount: 0,
-  date: '',
+  transactionDate: '',
   category: '',
   status: 'Pending',
 };
@@ -70,7 +70,7 @@ export function TransactionsPanel() {
     deleteTransaccion,
   } = useTransaccionStore();
 
-  type typeStatus = 'todos' | 'Income' | 'Expense';
+  type typeStatus = 'todos' | 'Credit' | 'Debit';
 
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -85,13 +85,13 @@ export function TransactionsPanel() {
 
   const PAGE_FIELDS: FormField[] = [
     {
-      name: 'type',
+      name: 'transactionType',
       label: t('common.type'),
       type: 'select',
       required: true,
       options: [
-        { value: 'Income', label: t('contabilidad.income') },
-        { value: 'Expense', label: t('contabilidad.expense') },
+        { value: 'Credit', label: t('contabilidad.income') },
+        { value: 'Debit', label: t('contabilidad.expense') },
       ],
     },
     {
@@ -107,7 +107,7 @@ export function TransactionsPanel() {
       required: true,
       options: [
         { value: 'Pending', label: t('contabilidad.pending') },
-        { value: 'Reconciled', label: t('contabilidad.reconciled') },
+        { value: 'Active', label: t('common.active') },
       ],
     },
   ];
@@ -122,7 +122,7 @@ export function TransactionsPanel() {
       placeholder: t('contabilidad.descriptionPlaceholder'),
     },
     {
-      name: 'date',
+      name: 'transactionDate',
       label: t('common.date'),
       type: 'date',
       required: true,
@@ -163,7 +163,7 @@ export function TransactionsPanel() {
 
   const matchesType = useCallback(
     (t: AccountingTransactionDto) =>
-      filterTipo === 'todos' || t.type == filterTipo,
+      filterTipo === 'todos' || t.transactionType == filterTipo,
     [filterTipo],
   );
 
@@ -211,10 +211,10 @@ export function TransactionsPanel() {
   const paginationInfo = getInfo(totalCount);
 
   const totalIngresos = transacciones
-    .filter((t) => t.type === 'Income')
+    .filter((t) => t.transactionType === 'Credit')
     .reduce((acc, t) => acc + t.amount, 0);
   const totalEgresos = transacciones
-    .filter((t) => t.type === 'Expense')
+    .filter((t) => t.transactionType === 'Debit')
     .reduce((acc, t) => acc + t.amount, 0);
   const balance = totalIngresos - totalEgresos;
 
@@ -239,9 +239,9 @@ export function TransactionsPanel() {
       header: t('common.type'),
       render: (tr: AccountingTransactionDto) => (
         <span
-          className={`${styles.badge} ${tr.type === 'Income' ? styles.ingreso : styles.egreso}`}
+          className={`${styles.badge} ${tr.transactionType === 'Credit' ? styles.ingreso : styles.egreso}`}
         >
-          {tr.type === 'Income'
+          {tr.transactionType === 'Credit'
             ? t('contabilidad.income')
             : t('contabilidad.expense')}
         </span>
@@ -251,8 +251,8 @@ export function TransactionsPanel() {
       key: 'monto',
       header: t('common.amount'),
       render: (tr: AccountingTransactionDto) => (
-        <span className={tr.type === 'Income' ? styles.positivo : styles.negativo}>
-          {tr.type === 'Income' ? '+' : '-'}
+        <span className={tr.transactionType === 'Credit' ? styles.positivo : styles.negativo}>
+          {tr.transactionType === 'Credit' ? '+' : '-'}
           {formatCurrency(tr.amount)}
         </span>
       ),
@@ -265,17 +265,17 @@ export function TransactionsPanel() {
     {
       key: 'fecha',
       header: t('common.date'),
-      render: (tr: AccountingTransactionDto) => tr.date,
+      render: (tr: AccountingTransactionDto) => tr.transactionDate,
     },
     {
       key: 'estado',
       header: t('common.status'),
       render: (tr: AccountingTransactionDto) => (
         <span
-          className={`${styles.badge} ${tr.status === 'Reconciled' ? styles.conciliada : styles.pendiente}`}
+          className={`${styles.badge} ${tr.status === 'Active' ? styles.conciliada : styles.pendiente}`}
         >
-          {tr.status === 'Reconciled'
-            ? t('contabilidad.reconciled')
+          {tr.status === 'Active'
+            ? t('common.active')
             : t('contabilidad.pending')}
         </span>
       ),
@@ -320,8 +320,8 @@ export function TransactionsPanel() {
           className={styles.select}
         >
           <option value='todos'>{t('contabilidad.filterAll')}</option>
-          <option value='Income'>{t('contabilidad.income')}</option>
-          <option value='Expense'>{t('contabilidad.expenses')}</option>
+          <option value='Credit'>{t('contabilidad.income')}</option>
+          <option value='Debit'>{t('contabilidad.expenses')}</option>
         </select>
         <Button
           className={styles.newTransaction}
@@ -376,16 +376,16 @@ export function TransactionsPanel() {
             <div className={styles.segmented}>
               <button
                 type='button'
-                className={`${styles.segment} ${form.values.type === 'Income' ? styles.segmentActive : ''}`}
-                onClick={() => form.setFieldValue('type', 'Income')}
+                className={`${styles.segment} ${form.values.transactionType === 'Credit' ? styles.segmentActive : ''}`}
+                onClick={() => form.setFieldValue('transactionType', 'Credit')}
               >
                 <ArrowUp size={16} />
                 {t('contabilidad.income')}
               </button>
               <button
                 type='button'
-                className={`${styles.segment} ${form.values.type === 'Expense' ? styles.segmentActive : ''}`}
-                onClick={() => form.setFieldValue('type', 'Expense')}
+                className={`${styles.segment} ${form.values.transactionType === 'Debit' ? styles.segmentActive : ''}`}
+                onClick={() => form.setFieldValue('transactionType', 'Debit')}
               >
                 <ArrowDown size={16} />
                 {t('contabilidad.expense')}
@@ -445,10 +445,10 @@ export function TransactionsPanel() {
               </button>
               <button
                 type='button'
-                className={`${styles.segment} ${form.values.status === 'Reconciled' ? styles.segmentActive : ''}`}
-                onClick={() => form.setFieldValue('status', 'Reconciled')}
+                className={`${styles.segment} ${form.values.status === 'Active' ? styles.segmentActive : ''}`}
+                onClick={() => form.setFieldValue('status', 'Active')}
               >
-                {t('contabilidad.reconciled')}
+                {t('common.active')}
               </button>
             </div>
             {form.errors.status && (
